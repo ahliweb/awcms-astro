@@ -135,6 +135,13 @@ src/
 - **Gambar artikel.** [`src/lib/article-images.ts`](src/lib/article-images.ts)
   mengembalikan `src: undefined` dan setiap pemanggil merender blok bertoken.
   Butuh endpoint resolusi media di sisi awcms, atau seni lokal di `src/assets/`.
+  Rasionya sudah ditetapkan: seluruh bingkai memakai `--ratio-visual` (16∶9),
+  dan sumber berasio lain akan **dipotong** — bukan diperkecil. Aturan isinya
+  ada di [`AGENTS.md`](AGENTS.md#gambar).
+- **Gerbang rasio gambar.** Repo rujukan memeriksa rasio setiap sumber (termasuk
+  `viewBox` SVG) dan mencocokkan format berkas dengan isinya, bukan dengan
+  ekstensinya. Di sini aturannya tertulis tetapi belum punya pemeriksa; ia ikut
+  menunggu gerbang audit di butir pertama.
 - **Paginasi konten.** `GET /api/v1/blog/posts` membatasi 100 baris per
   permintaan; adapter **melempar** saat menyentuh batas itu alih-alih diam-diam
   memotong. Perbaikan sebenarnya adalah build feed berpaginasi di sisi awcms.
@@ -151,6 +158,8 @@ src/
 | Dokumen                                                                              | Isi                                     |
 | ------------------------------------------------------------------------------------ | --------------------------------------- |
 | [`AGENTS.md`](AGENTS.md)                                                             | Kontrak kerja repo                      |
+| [`CHANGELOG.md`](CHANGELOG.md)                                                       | Riwayat rilis, dilipat dari changeset   |
+| [`.changesets/README.md`](.changesets/README.md)                                     | Cara menulis catatan perubahan          |
 | [`docs/awcms-astro/README.md`](docs/awcms-astro/README.md)                           | Posisi standar di keluarga AWCMS        |
 | [`docs/awcms-astro/standar-teknis.md`](docs/awcms-astro/standar-teknis.md)           | Aturan teknis yang mengikat             |
 | [`docs/awcms-astro/ui-ux-design-system.md`](docs/awcms-astro/ui-ux-design-system.md) | Design token, komponen, aksesibilitas   |

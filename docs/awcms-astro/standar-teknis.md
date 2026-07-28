@@ -91,8 +91,19 @@ Aturan penulisan yang mengikat:
 | Potongan ditetapkan lewat `width`/`height`, bukan hanya `object-fit` | Ya |
 | Satu entitas konten = satu gambar unik, dipetakan terpusat dari slug | Ya |
 | SVG wajib XML valid; `&` telanjang membuat browser diam-diam gagal merender | Ya |
-| Sumber di-commit beresolusi penuh, tidak dikompresi manual | Ya |
+| **Rasio sumber sama dengan rasio bingkainya** | Ya |
+| **Format dibaca dari isi berkas, bukan ekstensinya** | Ya |
+| **Teks di dalam gambar hanya label topik** — tanpa nominal, tanggal, identitas, dokumen tiruan, atau antarmuka aplikasi | Ya |
+| **Tanpa lambang, logo, atau atribut instansi negara di dalam ilustrasi** | Ya |
+| Teks terkecil di dalam SVG tetap terbaca pada lebar kartu tersempit | Ya |
+| Sumber di-commit apa adanya, tidak dikompresi manual | Ya |
 | `public/` hanya untuk berkas yang butuh URL tetap | Ya |
+
+Empat aturan bertanda tebal lahir dari cacat nyata dan bukan kehati-hatian teoretis; rinciannya di [ADR-0013](../adr/0013-ilustrasi-tanpa-atribut-instansi.md).
+
+**Rasio adalah yang paling mudah terlewat.** Bingkai memakai `object-fit: cover`, jadi sumber berasio lain tidak diperkecil — ia dipotong, diam-diam, di setiap ukuran layar. Sumber 1∶1 pada bingkai 16∶9 kehilangan 22% teratas, dan judul gambar hampir selalu ada di sana.
+
+**Dua aturan isi menuntut mata manusia.** Pemeriksa tidak bisa membaca isi gambar. Katakan itu terus terang di dokumentasi: aturan yang tampak terjaga padahal tidak lebih berbahaya daripada aturan yang jelas-jelas manual.
 
 ## SEO dan share
 
@@ -115,7 +126,8 @@ Target WCAG 2.1 AA. Yang mengikat:
 - Skip link ke konten utama adalah elemen pertama di dalam `<body>`, teksnya dari katalog PO.
 - Navigasi dapat dioperasikan penuh dengan keyboard; item aktif ditandai `aria-current`.
 - Kontras cukup pada tema terang dan gelap.
-- `prefers-reduced-motion: reduce` dihormati.
+- `prefers-reduced-motion: reduce` dihormati. Animasi dekoratif **dimatikan**, bukan dipercepat — aturan `*` global hanya memangkas durasi, dan animasi 0,01 md tetap berkedip.
+- Umpan balik hover juga aktif pada `:focus-visible`, sehingga pengguna keyboard tidak mendapat versi yang lebih miskin.
 - Tabel data memakai `th` dengan `scope` benar dan dapat di-scroll horizontal tanpa membuat `body` ikut scroll.
 - **Kontrol yang bergantung pada JavaScript disembunyikan bila API-nya tidak tersedia.** Tombol yang diam saat diklik lebih buruk daripada tombol yang tidak ada.
 - Fungsi inti tetap bekerja tanpa JavaScript.

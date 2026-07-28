@@ -100,6 +100,9 @@ Sebuah pekerjaan selesai bila **seluruhnya** terpenuhi:
 - [ ] Tidak ada secret yang terekspos.
 - [ ] Tampilan layak pakai dari lebar 360px sampai desktop.
 - [ ] Metadata SEO, kartu share, dan structured data tidak rusak.
+- [ ] Teks antarmuka baru masuk katalog PO, termasuk `alt`, `aria-label`, `title`, dan `placeholder`.
+- [ ] Gambar baru berasio sama dengan bingkainya, tanpa lambang instansi, dan teksnya hanya label topik.
+- [ ] Teks di dalam gambar terbaca pada lebar 360px.
 - [ ] Disclaimer independensi dan peringatan kanal resmi tetap tampil di seluruh locale.
 - [ ] Dokumentasi diperbarui bila workflow, struktur, atau konfigurasi berubah.
 - [ ] Changeset ditulis bila perubahan memengaruhi konten publik, struktur, dependency, atau deployment.

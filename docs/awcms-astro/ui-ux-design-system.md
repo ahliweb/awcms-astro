@@ -170,6 +170,12 @@ Mobile-first dari 360px. Tabel dibungkus `.table-responsive` — otomatis untuk 
 
 `<Image>` dari `astro:assets`, tidak pernah `<img>` mentah. Potongan ditetapkan lewat `width`/`height` — dipotong saat build, bukan oleh `object-fit` di browser, sehingga piksel yang tidak tampil tidak ikut diunduh. Layar pertama `loading="eager"` + `fetchpriority="high"`; sisanya `lazy`.
 
+**Satu rasio untuk seluruh situs, dipakai bingkai maupun sumber.** Di repo ini 16∶9. Bingkai memakai `object-fit: cover`, jadi sumber berasio lain tidak diperkecil — ia dipotong, diam-diam, di setiap ukuran layar. Sumber 1∶1 pada bingkai 16∶9 kehilangan 22% teratas, dan judul gambar hampir selalu ada di sana.
+
+Teks di dalam gambar ikut menyusut bersama gambarnya. Pada kartu selebar 328px — viewport 360px — kanvas 800px tampil pada skala 0,41: teks 12px menjadi 5px. Tetapkan ambang tipografi dari lebar kartu tersempit, bukan dari tampilan di layar desktop.
+
+Isi gambar tunduk pada [ADR-0013](../adr/0013-ilustrasi-tanpa-atribut-instansi.md): tanpa lambang instansi, tanpa data tiruan, teks hanya label topik.
+
 ## Jalur adopsi token saat integrasi
 
 ```mermaid
