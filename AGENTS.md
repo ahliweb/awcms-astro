@@ -79,6 +79,14 @@ Konten ditarik saat **build**, bukan saat request.
   Menstandarkan situs baru tidak boleh menuntut penyuntingan komponen.
 - **Setiap variabel env yang dibaca kode wajib ada di `.env.example`**, disertai
   penjelasan konsekuensi salah isi — bukan sekadar nama.
+- **`package-lock.json` wajib merupakan pernyataan tentang repo ini.**
+  `npm ci` menolak lockfile yang KURANG tetapi menerima lockfile yang BERLEBIH
+  dengan exit 0 — paket tak-terdeklarasi tetap terpasang di setiap CI run tanpa
+  satu peringatan pun. `npm run check:lockfile` menutup celah itu; ia berjalan
+  di CI **sebelum** `npm ci`.
+- **Regenerasi lockfile lewat `npm install` penuh**, tidak pernah
+  `--package-lock-only`. Yang terakhir menghilangkan biner opsional lintas
+  platform, dan kegagalannya baru muncul di mesin orang lain.
 - **Baca env lewat `src/lib/env.ts`**, bukan `import.meta.env` langsung.
   Variabel non-`PUBLIC_` bisa terbaca `undefined` di dalam chunk prerender
   meskipun nilainya ada di `.env`, dan kegagalannya menyamar jadi masalah lain.

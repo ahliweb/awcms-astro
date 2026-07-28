@@ -14,6 +14,24 @@ updates:
     commit-message:
       prefix: chore
       include: scope
+    ignore:
+      # TypeScript 7 belum bisa dipasang di repo ini, dan bukan karena kita.
+      # `@astrojs/check@0.9.10` — rilis TERBARU per 2026-07-28 — menyatakan
+      # `peerDependencies: { typescript: "^5.0.0 || ^6.0.0" }`, jadi npm menolak
+      # pohonnya dengan ERESOLVE sebelum satu berkas pun di-typecheck.
+      #
+      # Tanpa entri ini Dependabot membuka ulang PR yang sama setiap minggu, dan
+      # satu-satunya cara "menghijaukannya" adalah `--legacy-peer-deps`, yang
+      # memasang kombinasi yang penulis @astrojs/check sendiri nyatakan tidak
+      # didukung.
+      #
+      # Rentangnya sengaja `>=7`, bukan "major": TypeScript 6 MASIH di dalam
+      # peer range, jadi bump ke 6 tetap boleh lewat.
+      #
+      # HAPUS entri ini begitu @astrojs/check melebarkan peer range-nya.
+      # Periksa dengan: npm view @astrojs/check peerDependencies
+      - dependency-name: typescript
+        versions: [">=7"]
 
   - package-ecosystem: github-actions
     directory: /

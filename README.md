@@ -45,12 +45,24 @@ npm install
 npm run dev              # http://localhost:4321
 ```
 
-| Perintah          | Kegunaan                                        |
-| ----------------- | ----------------------------------------------- |
-| `npm run dev`     | Server pengembangan                             |
-| `npm run check`   | `astro check` — typecheck + diagnostik template  |
-| `npm run build`   | `astro check` lalu `astro build` → `dist/`      |
-| `npm run preview` | Menyajikan hasil build                          |
+| Perintah                 | Kegunaan                                             |
+| ------------------------ | ---------------------------------------------------- |
+| `npm run dev`            | Server pengembangan                                  |
+| `npm run check`          | Gerbang lockfile lalu `astro check`                  |
+| `npm run check:lockfile` | Hanya gerbang lockfile — murni baca berkas           |
+| `npm run build`          | `npm run check` lalu `astro build` → `dist/`         |
+| `npm run preview`        | Menyajikan hasil build                               |
+
+Setelah mengubah dependency, regenerasi lockfile dengan **`npm install` penuh**:
+
+```bash
+rm -rf node_modules package-lock.json && npm install
+```
+
+Jangan memakai `npm install --package-lock-only`. Ia menghasilkan lockfile yang
+kehilangan biner opsional lintas platform (`@esbuild/*`,
+`@astrojs/compiler-binding-*`, `fsevents`), sehingga `npm ci` gagal di macOS dan
+Windows sementara Linux tetap hijau.
 
 ## Tenant: apa yang terjadi kalau tidak disebut
 

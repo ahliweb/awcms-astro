@@ -17,8 +17,9 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro check && astro build",
-    "check": "astro check",
+    "build": "npm run check && astro build",
+    "check": "npm run check:lockfile && astro check",
+    "check:lockfile": "node scripts/cek-lockfile.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "release": "node scripts/rilis.mjs"
