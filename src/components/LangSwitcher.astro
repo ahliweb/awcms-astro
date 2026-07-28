@@ -1,0 +1,43 @@
+---
+import LangFlag from './LangFlag.astro';
+import { getLocaleFromPath, swapLocalePath, localeMeta, locales } from '../config/site';
+import { t } from '../lib/po';
+
+interface Props {
+  /**
+   * Path yang ditukar locale-nya. Diisi hanya bila path halaman ini bukan URL
+   * nyata — halaman 404 mengarahkan pengalih bahasa ke beranda tiap locale.
+   */
+  path?: string;
+}
+
+const { path } = Astro.props;
+const locale = getLocaleFromPath(Astro.url.pathname);
+const pathname = path ?? Astro.url.pathname;
+---
+
+<!-- <details> dipakai agar daftar bahasa tetap bisa dibuka tanpa JavaScript.
+     Enam bahasa terlalu banyak untuk chip berjajar di layar 360px. -->
+<details class="lang-switcher">
+  <summary class="chip lang-switcher-trigger" aria-label={t(locale, 'lang.switch.label')}>
+    <LangFlag locale={locale} uid="current" />
+    <span>{localeMeta[locale].iso.toUpperCase()}</span>
+    <svg class="lang-switcher-caret" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9" /></svg>
+  </summary>
+  <ul class="lang-switcher-menu" aria-label={t(locale, 'lang.switch.label')}>
+    {locales.map((loc) => (
+      <li>
+        <a
+          href={swapLocalePath(pathname, loc)}
+          hreflang={localeMeta[loc].htmlLang}
+          lang={localeMeta[loc].htmlLang}
+          aria-current={loc === locale ? 'true' : undefined}
+          class={loc === locale ? 'is-current' : undefined}
+        >
+          <LangFlag locale={loc} uid={loc} />
+          <span>{localeMeta[loc].nama}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</details>

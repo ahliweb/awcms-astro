@@ -1,0 +1,43 @@
+name: Laporan bug
+description: Situs error, tampilan rusak, atau tautan mati
+labels: ["bug"]
+body:
+  - type: input
+    id: halaman
+    attributes:
+      label: Halaman
+      placeholder: /nij/sim/jenis-sim/
+    validations:
+      required: true
+
+  - type: textarea
+    id: gejala
+    attributes:
+      label: Apa yang terjadi
+    validations:
+      required: true
+
+  - type: textarea
+    id: harapan
+    attributes:
+      label: Apa yang seharusnya terjadi
+    validations:
+      required: true
+
+  - type: input
+    id: lingkungan
+    attributes:
+      label: Browser dan perangkat
+      placeholder: Chrome Android 14 / Firefox desktop
+    validations:
+      required: false
+
+  - type: dropdown
+    id: lebar
+    attributes:
+      label: Lebar layar
+      options:
+        - Ponsel (di bawah 480px)
+        - Tablet (480-1024px)
+        - Desktop (di atas 1024px)
+        - Tidak yakin

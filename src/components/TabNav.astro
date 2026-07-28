@@ -1,0 +1,27 @@
+---
+import { siteConfig, getLocaleFromPath, localePath } from '../config/site';
+import { t } from '../lib/po';
+
+interface Props {
+  currentTab?: string;
+}
+
+const { currentTab } = Astro.props;
+const locale = getLocaleFromPath(Astro.url.pathname);
+---
+
+<nav class="tab-nav-container" aria-label={t(locale, 'nav.aria')}>
+  {siteConfig.tabs.map((tab) => {
+    const href = localePath(locale, `/${tab.slug}/`);
+    const isActive = currentTab === tab.slug;
+    return (
+      <a
+        href={href}
+        class="tab-link"
+        aria-current={isActive ? 'page' : undefined}
+      >
+        <span>{tab.name}</span>
+      </a>
+    );
+  })}
+</nav>

@@ -1,0 +1,39 @@
+---
+import { getLocaleFromPath } from '../config/site';
+import { t } from '../lib/po';
+
+interface Props {
+  variant?: 'general' | 'gakkum' | 'footer';
+}
+
+const { variant = 'general' } = Astro.props;
+const locale = getLocaleFromPath(Astro.url.pathname);
+---
+
+{variant === 'footer' && (
+  <div style="font-size: 0.825rem; color: var(--text-muted); line-height: 1.5;">
+    <p style="margin-bottom: 0.5rem;">
+      <strong>{t(locale, 'disclaimer.footer.label')}</strong> {t(locale, 'disclaimer.footer.p1')}
+    </p>
+    <p style="margin: 0;">
+      {t(locale, 'disclaimer.footer.p2')}
+    </p>
+  </div>
+)}
+
+{variant === 'general' && (
+  <aside class="disclaimer-box" aria-label={t(locale, 'disclaimer.general.aria')}>
+    <strong>⚠️ {t(locale, 'disclaimer.general.label')}</strong> {t(locale, 'disclaimer.general.body')}
+  </aside>
+)}
+
+{variant === 'gakkum' && (
+  <aside class="warning-box" aria-label={t(locale, 'disclaimer.gakkum.aria')}>
+    <strong>🚨 {t(locale, 'disclaimer.gakkum.title')}</strong>
+    <ul style="margin-top: 0.5rem; padding-left: 1.25rem; margin-bottom: 0;">
+      <li>{t(locale, 'disclaimer.gakkum.1')}</li>
+      <li>{t(locale, 'disclaimer.gakkum.2')}</li>
+      <li>{t(locale, 'disclaimer.gakkum.3')}</li>
+    </ul>
+  </aside>
+)}

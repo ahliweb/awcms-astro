@@ -1,0 +1,76 @@
+---
+import { getLocaleFromPath } from '../config/site';
+import { t } from '../lib/po';
+
+interface BiayaItem {
+  item: string;
+  nominal: string;
+  jenis: 'pnbp' | 'pajak-daerah' | 'asuransi' | 'lainnya';
+  sumber: string;
+}
+
+interface Props {
+  biaya: BiayaItem[];
+  dasarHukum?: string[];
+}
+
+const { biaya = [], dasarHukum = [] } = Astro.props;
+const locale = getLocaleFromPath(Astro.url.pathname);
+
+function getBadgeClass(jenis: BiayaItem['jenis']) {
+  switch (jenis) {
+    case 'pnbp': return 'badge badge-pnbp';
+    case 'pajak-daerah': return 'badge badge-pajak';
+    default: return 'badge';
+  }
+}
+---
+
+{(biaya.length > 0 || dasarHukum.length > 0) && (
+  <div class="my-6">
+    <h3 style="display: flex; align-items: center; gap: 0.5rem;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+      {t(locale, 'biaya.title')}
+    </h3>
+
+    {biaya.length > 0 && (
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th scope="col">{t(locale, 'biaya.col.item')}</th>
+              <th scope="col">{t(locale, 'biaya.col.kategori')}</th>
+              <th scope="col">{t(locale, 'biaya.col.nominal')}</th>
+              <th scope="col">{t(locale, 'biaya.col.sumber')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {biaya.map((b) => (
+              <tr>
+                <td style="font-weight: 600;">{b.item}</td>
+                <td>
+                  <span class={getBadgeClass(b.jenis)}>
+                    {t(locale, `biaya.jenis.${b.jenis}`)}
+                  </span>
+                </td>
+                <td style="font-family: monospace; font-weight: 600; color: var(--text-primary);">{b.nominal}</td>
+                <td style="font-size: 0.85rem; color: var(--text-muted);">{b.sumber}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+
+    {dasarHukum.length > 0 && (
+      <div style="background: var(--bg-subtle); padding: 1rem; border-radius: var(--radius-md); font-size: 0.875rem; margin-top: 1rem;">
+        <strong style="color: var(--text-primary); display: block; margin-bottom: 0.5rem;">{t(locale, 'biaya.dasarHukum')}</strong>
+        <ul style="padding-left: 1.25rem; color: var(--text-secondary); margin: 0;">
+          {dasarHukum.map((dh) => (
+            <li>{dh}</li>
+          ))}
+        </ul>
+      </div>
+    )}
+  </div>
+)}

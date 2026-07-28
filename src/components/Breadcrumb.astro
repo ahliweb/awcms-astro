@@ -1,0 +1,49 @@
+---
+import { getLocaleFromPath, localePath, getSiteUrl } from '../config/site';
+import { t } from '../lib/po';
+
+interface BreadcrumbItem {
+  name: string;
+  url: string;
+}
+
+interface Props {
+  items: BreadcrumbItem[];
+}
+
+const { items } = Astro.props;
+const locale = getLocaleFromPath(Astro.url.pathname);
+
+const fullItems = [
+  { name: t(locale, 'breadcrumb.home'), url: localePath(locale, '/') },
+  ...items
+];
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": fullItems.map((item, index) => ({
+    "@type": "ListItem",
+    "position": index + 1,
+    "name": item.name,
+    "item": item.url.startsWith('http') ? item.url : getSiteUrl(item.url)
+  }))
+};
+---
+
+<nav aria-label={t(locale, 'breadcrumb.aria')} class="my-4">
+  <ol style="display: flex; flex-wrap: wrap; gap: 0.5rem; list-style: none; font-size: 0.875rem; color: var(--text-muted);">
+    {fullItems.map((item, idx) => (
+      <li style="display: flex; align-items: center; gap: 0.5rem;">
+        {idx > 0 && <span aria-hidden="true" style="color: var(--text-muted);">›</span>}
+        {idx === fullItems.length - 1 ? (
+          <span style="color: var(--text-primary); font-weight: 600;" aria-current="page">{item.name}</span>
+        ) : (
+          <a href={item.url} style="color: var(--text-secondary); text-decoration: none;">{item.name}</a>
+        )}
+      </li>
+    ))}
+  </ol>
+</nav>
+
+<script is:inline type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />

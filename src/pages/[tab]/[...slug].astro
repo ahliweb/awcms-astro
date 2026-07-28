@@ -1,0 +1,38 @@
+---
+/**
+ * Article detail in the DEFAULT locale, at the root (`/panduan/some-article/`).
+ *
+ * Counterpart to `[lang]/[tab]/[...slug].astro`. Both call the same
+ * `getArticles()` adapter, which is what guarantees the two locales produce the
+ * same set of slugs — the property that makes every language switch land on a
+ * real page instead of a 404.
+ */
+import ArtikelLayout from "../../layouts/ArtikelLayout.astro";
+import { siteConfig, defaultLocale } from "../../config/site";
+import { getArticles } from "../../lib/content";
+
+export async function getStaticPaths() {
+  const paths = [];
+
+  for (const tab of siteConfig.tabs) {
+    for (const item of await getArticles(tab.slug, defaultLocale)) {
+      paths.push({
+        params: { tab: tab.slug, slug: item.slug },
+        props: {
+          entry: item.entry,
+          slug: item.slug,
+          isFallback: item.isFallback
+        }
+      });
+    }
+  }
+
+  return paths;
+}
+
+const { entry, slug, isFallback } = Astro.props;
+---
+
+<ArtikelLayout entry={entry} slug={slug} isFallback={isFallback}>
+  <Fragment set:html={entry.bodyHtml} />
+</ArtikelLayout>

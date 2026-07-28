@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Menahan run lama saat push baru datang ke branch yang sama.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v7
+
+      # Versi Node dibaca dari .nvmrc supaya tidak pernah menyimpang dari
+      # `engines` di package.json dan dari lingkungan pengembang.
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Pasang dependency
+        run: npm ci
+
+      # `astro check` (typecheck + template diagnostics) lalu `astro build`.
+      #
+      # The build reaches a real awcms instance, so CI needs one. Without the
+      # variables below the build fails at the first content fetch — by design:
+      # a template whose CI passes without ever proving it can talk to its
+      # content source is a template that discovers the break in production.
+      - name: Build
+        run: npm run build
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+          SITE_NAME: ${{ vars.SITE_NAME }}
+          SITE_LOCALES: ${{ vars.SITE_LOCALES }}
+          AWCMS_API_URL: ${{ vars.AWCMS_API_URL }}
+          AWCMS_TENANT_CODE: ${{ vars.AWCMS_TENANT_CODE }}
+          AWCMS_DEFAULT_TENANT_CODE: ${{ vars.AWCMS_DEFAULT_TENANT_CODE }}
+          AWCMS_API_TOKEN: ${{ secrets.AWCMS_API_TOKEN }}
+
+      - name: Audit dependency
+        run: npm audit --audit-level=low
+
+      - name: Simpan hasil build
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist
+          retention-days: 7

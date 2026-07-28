@@ -1,0 +1,1147 @@
+/*
+ * Design tokens dan gaya dasar awcms-astro.
+ *
+ * ## Kenapa tidak ada @import font
+ *
+ * Repo rujukan template ini memuat Inter dan Outfit dari `fonts.googleapis.com`.
+ * Baris itu SENGAJA dibuang di sini, dan bukan karena selera:
+ *
+ *   1. Ia mengirim alamat IP dan User-Agent setiap pembaca ke pihak ketiga
+ *      sebelum pembaca melakukan apa pun — persis yang dijanjikan TIDAK terjadi
+ *      oleh larangan skrip pihak ketiga di AGENTS.md. Font bukan skrip, tapi
+ *      permintaannya sama-sama terjadi tanpa persetujuan.
+ *   2. Ia menambah satu origin ke jalur render kritis, di situs yang pembacanya
+ *      justru berada di jaringan yang tidak dapat diandalkan.
+ *   3. Ia menjadikan halaman ini mustahil dilayani di jaringan tertutup.
+ *
+ * Butuh font khusus? Self-host: taruh berkasnya di `public/fonts/`, deklarasikan
+ * `@font-face` di sini, dan tambahkan namanya di depan `--font-sans`. Origin
+ * tetap satu, dan halaman tetap terbaca sebelum font selesai diunduh.
+ */
+:root {
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --font-heading: var(--font-sans);
+
+  /* Theme Palette - Professional Deep Slate & Kalteng Emerald/Teal accents */
+  --bg-primary: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #ffffff;
+  --bg-subtle: #f1f5f9;
+  
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  
+  --border-color: #e2e8f0;
+  --border-focus: #0284c7;
+
+  --accent-primary: #0284c7;      /* Vivid Blue */
+  --accent-hover: #0369a1;
+  --accent-subtle: #e0f2fe;
+  
+  --emerald-primary: #059669;     /* Kalteng Green Accent */
+  --emerald-subtle: #dcfce7;
+  
+  --badge-pnbp-bg: #eff6ff;
+  --badge-pnbp-text: #1e40af;
+  --badge-pajak-bg: #fef2f2;
+  --badge-pajak-text: #991b1b;
+  
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 10px -2px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 12px 24px -4px rgba(15, 23, 42, 0.12), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
+  --shadow-glow: 0 0 20px rgba(2, 132, 199, 0.2);
+
+  /* Sapuan kilau diagonal saat hover. Di tema terang permukaannya putih, jadi
+     kilau putih tidak terlihat — dipakai rona aksen. Komponen yang latar
+     hover-nya sudah pekat (mis. .share-btn) menimpa nilainya dengan putih. */
+  --kilau-warna: rgba(2, 132, 199, 0.16);
+  --kilau-puncak: rgba(2, 132, 199, 0.34);
+  --kilau-durasi: 0.85s;
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+
+  --max-width: 1200px;
+}
+
+[data-theme="dark"] {
+  --bg-primary: #090d16;
+  --bg-surface: #111827;
+  --bg-surface-elevated: #1f2937;
+  --bg-subtle: #1e293b;
+  
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  
+  --border-color: #1f2937;
+  --border-focus: #38bdf8;
+
+  --accent-primary: #38bdf8;
+  --accent-hover: #7dd3fc;
+  --accent-subtle: #0c4a6e;
+
+  --emerald-primary: #10b981;
+  --emerald-subtle: #064e3b;
+
+  --badge-pnbp-bg: #1e3a8a;
+  --badge-pnbp-text: #bfdbfe;
+  --badge-pajak-bg: #7f1d1d;
+  --badge-pajak-text: #fecaca;
+
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 25px rgba(56, 189, 248, 0.25);
+
+  --kilau-warna: rgba(255, 255, 255, 0.10);
+  --kilau-puncak: rgba(255, 255, 255, 0.26);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg-primary: #090d16;
+    --bg-surface: #111827;
+    --bg-surface-elevated: #1f2937;
+    --bg-subtle: #1e293b;
+    
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    
+    --border-color: #1f2937;
+    --border-focus: #38bdf8;
+
+    --accent-primary: #38bdf8;
+    --accent-hover: #7dd3fc;
+    --accent-subtle: #0c4a6e;
+
+    --emerald-primary: #10b981;
+    --emerald-subtle: #064e3b;
+
+    --badge-pnbp-bg: #1e3a8a;
+    --badge-pnbp-text: #bfdbfe;
+    --badge-pajak-bg: #7f1d1d;
+    --badge-pajak-text: #fecaca;
+
+    --kilau-warna: rgba(255, 255, 255, 0.10);
+    --kilau-puncak: rgba(255, 255, 255, 0.26);
+  }
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: var(--font-sans);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Base Accessibility: Skip Link */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 1rem;
+  background: var(--accent-primary);
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  z-index: 100;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  text-decoration: none;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+a {
+  color: var(--accent-primary);
+  text-decoration: none;
+  transition: color 0.25s cubic-bezier(0.4, 0, 0.2, 1), text-decoration 0.25s ease;
+}
+
+a:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  color: var(--text-primary);
+  line-height: 1.25;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+h1 { font-size: 2.25rem; }
+h2 { font-size: 1.75rem; margin-top: 2rem; }
+h3 { font-size: 1.35rem; margin-top: 1.5rem; }
+
+p {
+  margin-bottom: 1rem;
+  color: var(--text-secondary);
+}
+
+.container {
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes floatAnim {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(2, 132, 199, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(2, 132, 199, 0.45);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-float {
+  animation: floatAnim 6s ease-in-out infinite;
+}
+
+/* Header & Tab Navigation */
+.header-wrapper {
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-sm);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 0;
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-decoration: none !important;
+}
+
+.brand-logo:hover {
+  opacity: 0.92;
+}
+
+/* Lambang berdiri sendiri sebagai item flex, bukan bagian dari teks. Dengan
+   `align-items: center` pada .brand-logo ia otomatis berada di tengah secara
+   vertikal terhadap nama yang membungkus jadi dua baris — dan kedua baris nama
+   itu mulai dari batas kiri yang sama, tidak lagi terdorong lebar lambang. */
+.brand-mark {
+  flex-shrink: 0;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.brand-name {
+  line-height: 1.25;
+  /* Pemenggalan dijaga di antara kata, bukan di tengah kata. */
+  overflow-wrap: break-word;
+}
+
+.brand-logo .badge-kalteng {
+  font-size: 0.75rem;
+  background: var(--emerald-primary);
+  color: #ffffff;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 0 2px 4px rgba(5, 150, 105, 0.25);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.header-tagline {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+@media (max-width: 640px) {
+  .header-tagline {
+    display: none;
+  }
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid var(--border-color);
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.active,
+  &:hover {
+    background: var(--accent-subtle);
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+    text-decoration: none;
+  }
+}
+
+/* Theme Toggle Button Icon Rules */
+.theme-toggle-btn .sun-icon { display: block; }
+.theme-toggle-btn .moon-icon { display: none; }
+
+[data-theme="dark"] .theme-toggle-btn .sun-icon { display: none; }
+[data-theme="dark"] .theme-toggle-btn .moon-icon { display: block; }
+
+/* Bendera pada pengalih bahasa — menampilkan bahasa TUJUAN, sama seperti
+   labelnya. Ukuran 3:2 mengikuti viewBox komponen LangFlag. */
+.lang-flag {
+  width: 21px;
+  height: 14px;
+  flex-shrink: 0;
+  border-radius: 2px;
+  display: block;
+}
+
+/* Tab Navigation UI */
+.tab-nav-container {
+  display: flex;
+  overflow-x: auto;
+  gap: 0.35rem;
+  border-bottom: 2px solid transparent;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.tab-nav-container::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.15rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  border-bottom: 3px solid transparent;
+  white-space: nowrap;
+  transition: all 0.25s ease;
+  text-decoration: none !important;
+}
+
+.tab-link:hover {
+  color: var(--accent-primary);
+  background: var(--bg-subtle);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+
+.tab-link[aria-current="page"] {
+  color: var(--accent-primary);
+  border-bottom-color: var(--accent-primary);
+  background: var(--accent-subtle);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+
+/* Rich Hero Banner & Hero Visual Section */
+.hero-banner-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 2.5rem;
+  align-items: center;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #0284c7 100%);
+  color: #ffffff;
+  padding: 3rem 2.5rem;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 2rem;
+  animation: fadeInUp 0.7s ease-out;
+}
+
+@media (max-width: 900px) {
+  .hero-banner-grid {
+    grid-template-columns: 1fr;
+    padding: 2rem 1.5rem;
+    gap: 1.5rem;
+  }
+}
+
+.hero-banner-content h1 {
+  color: #ffffff;
+  font-size: 2.35rem;
+  line-height: 1.2;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.hero-banner-content p {
+  color: #e2e8f0;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.hero-visual-frame {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-glow);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  background: rgba(15, 23, 42, 0.4);
+}
+
+.hero-visual-frame img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.hero-visual-frame:hover img {
+  transform: scale(1.03);
+}
+
+/* Feature Page Header Visual */
+.feature-hero {
+  display: grid;
+  grid-template-columns: 1.3fr 0.7fr;
+  gap: 2rem;
+  align-items: center;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: 2rem;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 2rem;
+  animation: fadeInUp 0.5s ease-out;
+}
+
+@media (max-width: 768px) {
+  .feature-hero {
+    grid-template-columns: 1fr;
+    padding: 1.5rem;
+  }
+}
+
+.feature-hero-img {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  max-height: 220px;
+}
+
+.feature-hero-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Cards & Grid Layouts */
+.grid-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.75rem;
+  margin: 1.5rem 0;
+}
+
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--accent-primary);
+}
+
+.card-img-wrapper {
+  width: 100%;
+  height: 170px;
+  overflow: hidden;
+  position: relative;
+  background: var(--bg-subtle);
+}
+
+.card-img-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover .card-img-wrapper img {
+  transform: scale(1.06);
+}
+
+.card-content {
+  padding: 1.35rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.card-title {
+  font-size: 1.15rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+  transition: color 0.2s ease;
+}
+
+.card:hover .card-title {
+  color: var(--accent-primary);
+}
+
+.card-desc {
+  font-size: 0.925rem;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  flex-grow: 1;
+  line-height: 1.5;
+}
+
+.card-meta {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.825rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* Badge Tags */
+.badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.badge-nasional { background: #e0e7ff; color: #3730a3; }
+.badge-provinsi { background: #dcfce7; color: #166534; }
+.badge-kabupaten { background: #fef3c7; color: #92400e; }
+
+[data-theme="dark"] .badge-nasional { background: #312e81; color: #c7d2fe; }
+[data-theme="dark"] .badge-provinsi { background: #064e3b; color: #a7f3d0; }
+[data-theme="dark"] .badge-kabupaten { background: #78350f; color: #fde68a; }
+
+.badge-pnbp { background: var(--badge-pnbp-bg); color: var(--badge-pnbp-text); }
+.badge-pajak { background: var(--badge-pajak-bg); color: var(--badge-pajak-text); }
+
+/* Table Wrapper for Horizontal Scroll */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  background: var(--bg-surface);
+}
+
+table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.925rem;
+}
+
+table.data-table th,
+table.data-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+table.data-table th {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+table.data-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+table.data-table tbody tr:hover {
+  background: var(--bg-subtle);
+}
+
+/* Tabel yang ditulis di markdown artikel tidak bisa diberi class, jadi
+   digayakan lewat selector turunan agar tampil sama dengan .data-table.
+   display: block membuat tabel itu sendiri yang men-scroll, karena markdown
+   tidak menghasilkan pembungkus .table-responsive. */
+.content-body table {
+  width: 100%;
+  /* Scroll ditangani pembungkus .table-responsive yang disisipkan rehype plugin.
+     min-width menjaga kolom tetap lapang; tanpa ini tiap sel pecah menjadi
+     banyak baris di layar sempit. */
+  min-width: 34rem;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.925rem;
+}
+
+.content-body table th,
+.content-body table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: top;
+}
+
+.content-body table th {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.content-body table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.content-body table tbody tr:hover {
+  background: var(--bg-subtle);
+}
+
+/* Kolom pertama tabel artikel hampir selalu label pendek (golongan SIM,
+   jenis layanan). Menahannya agar tidak dipecah per kata membuat tabel
+   terbaca meski harus di-scroll di layar sempit. */
+.content-body table td:first-child {
+  white-space: nowrap;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Accordion UI */
+.accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+}
+
+.accordion-item {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.accordion-item[open] {
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.accordion-header {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  text-align: left;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.accordion-header:hover {
+  background: var(--bg-subtle);
+}
+
+.accordion-content {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  display: none;
+  background: var(--bg-surface);
+  animation: fadeInUp 0.25s ease-out;
+}
+
+.accordion-item[open] .accordion-content {
+  display: block;
+}
+
+/* Disclaimer & Notice Box */
+.disclaimer-box {
+  background: #fefce8;
+  border-left: 4px solid #eab308;
+  color: #854d0e;
+  padding: 1.15rem 1.35rem;
+  border-radius: var(--radius-sm);
+  margin: 1.5rem 0;
+  font-size: 0.925rem;
+  line-height: 1.5;
+  box-shadow: var(--shadow-sm);
+}
+
+[data-theme="dark"] .disclaimer-box {
+  background: #422006;
+  border-left-color: #f59e0b;
+  color: #fef08a;
+}
+
+.warning-box {
+  background: #fef2f2;
+  border-left: 4px solid #ef4444;
+  color: #991b1b;
+  padding: 1.15rem 1.35rem;
+  border-radius: var(--radius-sm);
+  margin: 1.5rem 0;
+  font-size: 0.925rem;
+  box-shadow: var(--shadow-sm);
+}
+
+[data-theme="dark"] .warning-box {
+  background: #450a0a;
+  border-left-color: #f87171;
+  color: #fecaca;
+}
+
+/* Footer Styling */
+footer {
+  margin-top: auto;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-color);
+  padding: 3rem 0 2rem;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+/* Utility Classes */
+.mt-4 { margin-top: 1rem; }
+.mb-4 { margin-bottom: 1rem; }
+.my-6 { margin-top: 1.75rem; margin-bottom: 1.75rem; }
+.text-center { text-align: center; }
+
+/* ==========================================================================
+   SKALA JUDUL DI LAYAR SEMPIT
+   Target dukungan terkecil 360px. Pada ukuran itu h1 2.25rem memakan empat
+   baris dan mendorong isi artikel jauh ke bawah lipatan. Hanya ukuran teks
+   yang diturunkan; warna, bobot, dan tata letak hasil redesign tidak diubah.
+   ========================================================================== */
+@media (max-width: 640px) {
+  h1 { font-size: 1.75rem; }
+  h2 { font-size: 1.35rem; margin-top: 1.5rem; }
+  h3 { font-size: 1.15rem; margin-top: 1.25rem; }
+
+  .hero-banner-content h1 { font-size: 1.75rem; }
+  .artikel-title { font-size: 1.75rem; }
+  .artikel-lead { font-size: 1rem; }
+}
+
+@media (max-width: 400px) {
+  h1,
+  .hero-banner-content h1,
+  .artikel-title { font-size: 1.5rem; }
+}
+
+/* Redesign menambahkan animasi fadeInUp, floatAnim, dan pulseGlow. Pengguna
+   yang mengaktifkan "kurangi gerakan" di sistem operasinya harus tetap bisa
+   memakai situs tanpa animasi — ini butir checklist aksesibilitas di AGENTS.md. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ==========================================================================
+   PENGALIH BAHASA (6 locale)
+   Memakai <details>/<summary> supaya daftar bahasa tetap bisa dibuka tanpa
+   JavaScript. Enam chip berjajar tidak muat di layar 360px.
+   ========================================================================== */
+.lang-switcher {
+  position: relative;
+}
+
+.lang-switcher-trigger {
+  list-style: none;
+  user-select: none;
+}
+
+.lang-switcher-trigger::-webkit-details-marker {
+  display: none;
+}
+
+.lang-switcher-caret {
+  transition: transform 0.2s ease;
+}
+
+.lang-switcher[open] .lang-switcher-caret {
+  transform: rotate(180deg);
+}
+
+.lang-switcher-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  z-index: 60;
+  min-width: 14rem;
+  margin: 0;
+  padding: 0.35rem;
+  list-style: none;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+}
+
+.lang-switcher-menu a {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-decoration: none !important;
+  min-height: 44px;
+}
+
+.lang-switcher-menu a:hover,
+.lang-switcher-menu a:focus-visible {
+  background: var(--bg-subtle);
+  color: var(--accent-primary);
+}
+
+.lang-switcher-menu a.is-current {
+  background: var(--accent-subtle);
+  color: var(--accent-primary);
+  font-weight: 700;
+}
+
+/* ─── Bagikan ke media sosial ───────────────────────────────────────────────
+   Tombol berukuran minimal 44px agar tetap bisa disentuh dengan nyaman di
+   ponsel, yang merupakan mayoritas pembaca situs ini. */
+.share-box {
+  margin: 2.5rem 0 1rem;
+  padding: 1.25rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+}
+
+.share-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--text-primary);
+}
+
+.share-lead {
+  margin: 0.35rem 0 0.9rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.share-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.55rem 0.95rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none !important;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.share-btn:hover,
+.share-btn:focus-visible {
+  background: var(--share-color, var(--accent-primary));
+  border-color: var(--share-color, var(--accent-primary));
+  color: #ffffff;
+}
+
+/* Ikon X berlatar hitam pekat; pada tema gelap kontrasnya hilang. */
+:root[data-theme='dark'] .share-x:hover,
+:root[data-theme='dark'] .share-x:focus-visible {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: #000000;
+}
+
+.share-status {
+  margin: 0.75rem 0 0;
+  font-size: 0.85rem;
+  color: var(--emerald-primary, var(--accent-primary));
+  min-height: 1.2em;
+}
+
+@media (max-width: 480px) {
+  .share-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .share-btn {
+    justify-content: center;
+  }
+}
+
+/* ==========================================================================
+   KILAU HOVER — sapuan cahaya diagonal
+   Standar interaksi repo ini: setiap tombol dan setiap tautan yang dibungkus
+   card atau area khusus mendapat satu sapuan cahaya yang bergerak dari pojok
+   kiri atas ke pojok kanan bawah saat hover atau fokus keyboard.
+
+   Daftar permukaan di bawah adalah kontrak, bukan kumpulan kebetulan. Ia
+   disinkronkan dengan docs/awcms-astro/ui-ux-design-system.md dan diperiksa
+   `npm run audit`. Komponen baru cukup menambahkan class `kilau`.
+
+   Tiga hal yang membuatnya aman dan bukan sekadar hiasan:
+   - `overflow: hidden` pada host memotong sapuan mengikuti sudut membulatnya;
+     tanpa itu pita cahaya menonjol keluar dari kartu.
+   - `pointer-events: none` memastikan lapisan ini tidak pernah menghalangi
+     klik, termasuk pada kartu yang seluruhnya berupa <a>.
+   - Sapuan dimatikan penuh pada `prefers-reduced-motion`, bukan dipercepat.
+     Animasi 0,01 md tetap berkedip, dan kedipan justru lebih mengganggu.
+   ========================================================================== */
+
+@keyframes kilau-diagonal {
+  0% {
+    opacity: 0;
+    transform: translate3d(-100%, -100%, 0);
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(100%, 100%, 0);
+  }
+}
+
+/* kilau:permukaan:mulai */
+.kilau,
+.card,
+.chip,
+.share-btn,
+.wilayah-filter-btn,
+.lang-switcher-menu a {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+/* kilau:permukaan:selesai */
+
+.kilau::after,
+.card::after,
+.chip::after,
+.share-btn::after,
+.wilayah-filter-btn::after,
+.lang-switcher-menu a::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 38%,
+    var(--kilau-warna) 47%,
+    var(--kilau-puncak) 50%,
+    var(--kilau-warna) 53%,
+    transparent 62%
+  );
+}
+
+.kilau:hover::after,
+.kilau:focus-visible::after,
+.card:hover::after,
+.card:focus-visible::after,
+.chip:hover::after,
+.chip:focus-visible::after,
+.share-btn:hover::after,
+.share-btn:focus-visible::after,
+.wilayah-filter-btn:hover::after,
+.wilayah-filter-btn:focus-visible::after,
+.lang-switcher-menu a:hover::after,
+.lang-switcher-menu a:focus-visible::after {
+  animation: kilau-diagonal var(--kilau-durasi) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Latar hover tombol berbagi selalu warna pekat merek, di tema mana pun.
+   Rona aksen akan tenggelam di atasnya; putih yang terbaca. */
+.share-btn {
+  --kilau-warna: rgba(255, 255, 255, 0.18);
+  --kilau-puncak: rgba(255, 255, 255, 0.42);
+}
+
+/* Tombol filter wilayah sebelumnya memakai tampilan bawaan browser. Sapuan
+   cahaya di atas tombol tanpa gaya justru menegaskan bahwa ia terlewat. */
+.wilayah-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  padding: 0.6rem 1.25rem;
+  border: 1px solid var(--accent-primary);
+  border-radius: var(--radius-md);
+  background: var(--accent-primary);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  --kilau-warna: rgba(255, 255, 255, 0.18);
+  --kilau-puncak: rgba(255, 255, 255, 0.42);
+}
+
+.wilayah-filter-btn:hover,
+.wilayah-filter-btn:focus-visible {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  box-shadow: var(--shadow-md);
+}
+
+/* Kontras teks putih di atas --accent-primary tema gelap (#38bdf8) tidak
+   memadai; di sana tombolnya dibalik menjadi teks gelap. */
+[data-theme='dark'] .wilayah-filter-btn {
+  color: #06263a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .wilayah-filter-btn {
+    color: #06263a;
+  }
+}
+
+/* Dimatikan penuh, bukan dipercepat. */
+@media (prefers-reduced-motion: reduce) {
+  .kilau::after,
+  .card::after,
+  .chip::after,
+  .share-btn::after,
+  .wilayah-filter-btn::after,
+  .lang-switcher-menu a::after {
+    content: none;
+  }
+}
+
+/* Chip di dalam hero selalu berdiri di atas gradien gelap, apa pun temanya —
+   gradiennya nilai tetap, bukan token. Rona aksen akan hilang di sana. */
+.hero-banner-grid .chip {
+  --kilau-warna: rgba(255, 255, 255, 0.18);
+  --kilau-puncak: rgba(255, 255, 255, 0.42);
+}

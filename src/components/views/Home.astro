@@ -1,0 +1,99 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import DisclaimerNote from '../DisclaimerNote.astro';
+import { siteConfig, getLocaleFromPath, localePath } from '../../config/site';
+import { getArticles } from '../../lib/content';
+import { socialImage } from '../../lib/social-image';
+import { collectionSchema } from '../../lib/schema';
+import { t } from '../../lib/po';
+
+const locale = getLocaleFromPath(Astro.url.pathname);
+
+const counts: Record<string, number> = {};
+for (const tab of siteConfig.tabs) {
+  counts[tab.slug] = (await getArticles(tab.slug, locale)).length;
+}
+
+const schema = collectionSchema(
+  t(locale, 'home.sectionTitle'),
+  t(locale, 'home.sectionLead'),
+  siteConfig.tabs.map((tab) => ({
+    name: t(locale, `home.tab.${tab.slug}.title`),
+    url: localePath(locale, `/${tab.slug}/`),
+  }))
+);
+---
+
+<BaseLayout
+  title={t(locale, 'home.title')}
+  description={t(locale, 'home.description')}
+  ogImage={socialImage('beranda')}
+  schema={schema}
+>
+  <section class="hero-banner-grid">
+    <div class="hero-banner-content">
+      <span class="badge" style="background: var(--emerald-primary); color: #ffffff; margin-bottom: 1rem;">
+        {t(locale, 'home.badge')}
+      </span>
+      <h1>
+        {t(locale, 'home.h1')}
+      </h1>
+      <p>
+        {t(locale, 'home.lead')}
+      </p>
+      <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        {/* Panah dan pin adalah hiasan: dipisahkan dari teks katalog supaya
+            penerjemah tidak perlu ikut memindahkannya, dan supaya pembaca
+            layar tidak melafalkan "round pushpin" di ujung kalimat. */}
+        <a href="#kanal-layanan" class="chip" style="background: var(--emerald-primary); color: #ffffff; border: none; padding: 0.6rem 1.25rem; font-size: 0.95rem;">
+          {t(locale, 'home.ctaKanal')}
+          <span aria-hidden="true">↓</span>
+        </a>
+      </div>
+    </div>
+    <div class="hero-visual-frame animate-float">
+      <div class="visual-placeholder visual-hero" role="img" aria-label={t(locale, 'home.heroAlt')}></div>
+    </div>
+  </section>
+
+  <section class="my-6" id="kanal-layanan">
+    <h2>{t(locale, 'home.sectionTitle')}</h2>
+    <p style="color: var(--text-muted);">
+      {t(locale, 'home.sectionLead')}
+    </p>
+
+    <div class="grid-cards">
+      {siteConfig.tabs.map((tab) => (
+        <a href={localePath(locale, `/${tab.slug}/`)} class="card" style="text-decoration: none;">
+          <div class="card-img-wrapper">
+            <div class="visual-placeholder" role="img" aria-label={t(locale, `home.tab.${tab.slug}.title`)}></div>
+          </div>
+          <div class="card-content">
+            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <h3 class="card-title" style="margin: 0;">{t(locale, `home.tab.${tab.slug}.title`)}</h3>
+              <span class="badge" style="background: var(--accent-subtle); color: var(--accent-primary);">
+                {counts[tab.slug]} {t(locale, 'home.articleCount')}
+              </span>
+            </div>
+            <p class="card-desc">{t(locale, `home.tab.${tab.slug}.desc`)}</p>
+            <div class="card-meta" style="color: var(--accent-primary);">
+              <span>{t(locale, 'home.cta')} {tab.name}</span>
+              <span aria-hidden="true">→</span>
+            </div>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="my-6" style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.75rem;">
+    <h2>{t(locale, 'home.principles.title')}</h2>
+    <ul style="padding-left: 1.25rem; color: var(--text-secondary); line-height: 1.8;">
+      <li><strong>{t(locale, 'home.principles.1.label')}</strong> {t(locale, 'home.principles.1.body')}</li>
+      <li><strong>{t(locale, 'home.principles.2.label')}</strong> {t(locale, 'home.principles.2.body')}</li>
+      <li><strong>{t(locale, 'home.principles.3.label')}</strong> {t(locale, 'home.principles.3.body')}</li>
+    </ul>
+  </section>
+
+  <DisclaimerNote variant="general" />
+</BaseLayout>

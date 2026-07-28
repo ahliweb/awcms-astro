@@ -1,0 +1,255 @@
+---
+import TabNav from '../components/TabNav.astro';
+import DisclaimerNote from '../components/DisclaimerNote.astro';
+import LangSwitcher from '../components/LangSwitcher.astro';
+import ShareButtons from '../components/ShareButtons.astro';
+import {
+  siteConfig,
+  getSiteUrl,
+  getLocaleFromPath,
+  localePath,
+  swapLocalePath,
+  localeHtmlLang,
+  locales,
+  type Locale,
+} from '../config/site';
+import { t } from '../lib/po';
+import { DEFAULT_SOCIAL_IMAGE, SOCIAL_IMAGE_HEIGHT, SOCIAL_IMAGE_WIDTH } from '../lib/social-image';
+import { siteSchema } from '../lib/schema';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  currentTab?: string;
+  /** URL absolut kartu share. Wajib PNG — lihat `src/lib/social-image.ts`. */
+  ogImage?: string;
+  /** Teks alternatif kartu share; dibaca pembaca layar di lini masa sosial. */
+  ogImageAlt?: string;
+  canonicalUrl?: string;
+  ogType?: 'website' | 'article';
+  /** JSON-LD tambahan khas halaman ini (Article, ItemList, Place, …). */
+  schema?: Record<string, unknown> | Array<Record<string, unknown>>;
+  /** Metadata `article:*` Open Graph; hanya diisi halaman artikel. */
+  articleMeta?: { modifiedTime: string; section: string; tags: string[] };
+  /** Menyembunyikan tombol bagikan; dipakai halaman yang tidak layak dibagikan. */
+  hideShare?: boolean;
+  /**
+   * Halaman yang tidak boleh masuk indeks (404). Selain memasang `noindex`,
+   * canonical dan hreflang ikut dilepas: halaman 404 Bahasa Indonesia disajikan
+   * host sebagai `/404.html`, bukan `/404/`, sehingga alternate-nya akan
+   * menunjuk URL yang tidak ada.
+   */
+  noindex?: boolean;
+  /** Path yang dipakai pengalih bahasa bila path halaman ini bukan URL nyata. */
+  langSwitchPath?: string;
+}
+
+const locale = getLocaleFromPath(Astro.url.pathname);
+const pathname = Astro.url.pathname;
+
+const {
+  title,
+  description = t(locale, 'home.description'),
+  currentTab,
+  ogImage = DEFAULT_SOCIAL_IMAGE,
+  ogImageAlt = t(locale, 'share.imageAlt'),
+  canonicalUrl = getSiteUrl(pathname.endsWith('/') ? pathname : `${pathname}/`),
+  ogType = 'website',
+  schema,
+  articleMeta,
+  hideShare = false,
+  noindex = false,
+  langSwitchPath,
+} = Astro.props;
+
+const fullTitle = title.includes('Lalu Lintas Melayani')
+  ? title
+  : `${title} — Lalu Lintas Melayani`;
+
+const metaDescription = description.slice(0, 160);
+
+// hreflang: setiap halaman punya pasangan di seluruh locale karena route
+// dibangun berpasangan, jadi alternate selalu valid.
+const alternates = locales.map((loc: Locale) => ({
+  hreflang: localeHtmlLang[loc],
+  href: getSiteUrl(swapLocalePath(pathname, loc)),
+}));
+
+// Satu blok JSON-LD per halaman: identitas situs selalu ada, skema khas halaman
+// digabung di belakangnya. Crawler membaca @graph sebagai satu kesatuan.
+const pageSchemas = schema ? (Array.isArray(schema) ? schema : [schema]) : [];
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [...siteSchema(locale, canonicalUrl), ...pageSchemas],
+};
+---
+
+<!DOCTYPE html>
+<html lang={localeHtmlLang[locale]}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    {!noindex && <link rel="canonical" href={canonicalUrl} />}
+    {noindex && <meta name="robots" content="noindex, follow" />}
+
+    <title>{fullTitle}</title>
+    <meta name="description" content={metaDescription} />
+    <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+
+    {!noindex && alternates.map((alt: { hreflang: string; href: string }) => (
+      <link rel="alternate" hreflang={alt.hreflang} href={alt.href} />
+    ))}
+    {!noindex && <link rel="alternate" hreflang="x-default" href={getSiteUrl(swapLocalePath(pathname, 'id'))} />}
+
+    {/* Open Graph / Facebook. Kartu share selalu PNG dengan ukuran eksplisit:
+        pengunduh pratinjau tidak menjalankan JavaScript dan tidak seragam
+        mendukung SVG, dan tanpa width/height sebagian menunda render kartunya. */}
+    <meta property="og:type" content={ogType} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={metaDescription} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:secure_url" content={ogImage} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content={String(SOCIAL_IMAGE_WIDTH)} />
+    <meta property="og:image:height" content={String(SOCIAL_IMAGE_HEIGHT)} />
+    <meta property="og:image:alt" content={ogImageAlt} />
+    {/* Empat bahasa daerah tidak punya kode og:locale yang dikenal crawler,
+        jadi dipetakan ke id_ID — keempatnya memang bahasa daerah Indonesia. */}
+    <meta property="og:locale" content={locale === 'en' ? 'en_US' : 'id_ID'} />
+    <meta property="og:site_name" content={siteConfig.name} />
+    {articleMeta && (
+      <>
+        <meta property="article:published_time" content={articleMeta.modifiedTime} />
+        <meta property="article:modified_time" content={articleMeta.modifiedTime} />
+        <meta property="article:section" content={articleMeta.section} />
+        {articleMeta.tags.map((tag: string) => <meta property="article:tag" content={tag} />)}
+      </>
+    )}
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={canonicalUrl} />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={metaDescription} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={ogImageAlt} />
+
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+    <!-- Tema dipasang sebelum paint pertama agar tidak ada kedip (FOUC).
+         Tanpa JavaScript atribut ini tidak terpasang, dan tema mengikuti
+         prefers-color-scheme lewat media query di global.css. -->
+    <script is:inline>
+      (function () {
+        var root = document.documentElement;
+        root.classList.add('has-js');
+        try {
+          var stored = localStorage.getItem('theme');
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          root.dataset.theme = stored === 'light' || stored === 'dark'
+            ? stored
+            : (prefersDark ? 'dark' : 'light');
+        } catch (e) {
+          root.dataset.theme = 'light';
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">{t(locale, 'ui.skipToMain')}</a>
+
+    <header class="header-wrapper">
+      <div class="container header-top">
+        {/* Lambang dipisahkan dari nama supaya kedua barisnya rata kiri saat
+            nama membungkus di layar sempit, dan lambangnya tetap di tengah
+            secara vertikal terhadap blok nama — bukan menempel di baris
+            pertama. aria-hidden karena ia hiasan: pembaca layar cukup
+            mendengar nama situsnya. */}
+        <a href={localePath(locale, '/')} class="brand-logo">
+          <span class="brand-mark" aria-hidden="true">🚔</span>
+          <span class="brand-name">{siteConfig.name}</span>
+          <span class="badge-kalteng">Kalteng</span>
+        </a>
+        <div class="header-actions">
+          <div class="header-tagline">
+            {t(locale, 'header.tagline')}
+          </div>
+          <LangSwitcher path={langSwitchPath} />
+          <button
+            type="button"
+            class="chip theme-toggle-btn"
+            data-theme-toggle
+            aria-label={t(locale, 'ui.themeToggle')}
+          >
+            <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+            <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="container">
+        <TabNav currentTab={currentTab} />
+      </div>
+    </header>
+
+    <main class="container my-6" id="main-content">
+      <slot />
+      {!hideShare && <ShareButtons title={fullTitle} url={canonicalUrl} />}
+    </main>
+
+    <footer>
+      <div class="container">
+        <div class="footer-grid">
+          <div>
+            <h4 style="font-size: 1.1rem; margin-bottom: 0.75rem; color: var(--text-primary);">{t(locale, 'footer.about.title')}</h4>
+            <p style="font-size: 0.875rem; color: var(--text-muted);">
+              {t(locale, 'footer.about.body')}
+            </p>
+          </div>
+          <div>
+            <h4 style="font-size: 1rem; margin-bottom: 0.75rem; color: var(--text-primary);">{t(locale, 'footer.kanal.title')}</h4>
+            <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+              {siteConfig.tabs.map((tab) => (
+                <li>
+                  <a href={localePath(locale, `/${tab.slug}/`)}>{t(locale, `home.tab.${tab.slug}.title`)}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h4 style="font-size: 1rem; margin-bottom: 0.75rem; color: var(--text-primary);">{t(locale, 'footer.more.title')}</h4>
+            <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+              <li><a href={localePath(locale, '/sitemap/')}>{t(locale, 'footer.sitemap')}</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <DisclaimerNote variant="footer" />
+
+        <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border-color); text-align: center; font-size: 0.8rem; color: var(--text-muted);">
+          &copy; 2023 - {new Date().getFullYear()} {t(locale, 'footer.copyright')}
+        </div>
+      </div>
+    </footer>
+
+    <script is:inline>
+      (function () {
+        var root = document.documentElement;
+        document.querySelectorAll('[data-theme-toggle]').forEach(function (button) {
+          button.addEventListener('click', function () {
+            var next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+            root.dataset.theme = next;
+            try {
+              localStorage.setItem('theme', next);
+            } catch (e) {
+              /* localStorage diblokir: tema tetap berganti untuk sesi ini */
+            }
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>

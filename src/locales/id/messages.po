@@ -1,0 +1,267 @@
+# Indonesian UI string catalogue for awcms-astro.
+#
+# These are INTERFACE strings, not content. Content lives in awcms and is
+# translated by editors there; this catalogue is part of the template and is
+# translated by whoever maintains the repo. A missing key falls back to the
+# default locale and then to the key itself, so an untranslated catalogue
+# degrades to a readable page rather than to raw key names on screen.
+msgid ""
+msgstr ""
+"Language: id\\n"
+"Content-Type: text/plain; charset=UTF-8\\n"
+
+msgid "ui.skipToMain"
+msgstr "Lompat ke konten utama"
+
+msgid "ui.themeToggle"
+msgstr "Ganti tema terang/gelap"
+
+msgid "nav.aria"
+msgstr "Navigasi utama"
+
+msgid "breadcrumb.aria"
+msgstr "Jejak navigasi"
+
+msgid "breadcrumb.home"
+msgstr "Beranda"
+
+msgid "lang.switch.label"
+msgstr "Pilih bahasa"
+
+msgid "header.tagline"
+msgstr "Informasi publik yang bisa dipercaya"
+
+msgid "home.title"
+msgstr "Beranda"
+
+msgid "home.h1"
+msgstr "Informasi publik, disusun agar terbaca"
+
+msgid "home.badge"
+msgstr "Situs informasi"
+
+msgid "home.lead"
+msgstr "Panduan, layanan, dan informasi resmi dalam satu tempat — ditulis untuk pembaca umum, bukan untuk ahli."
+
+msgid "home.description"
+msgstr "Situs informasi publik yang dibangun di atas template awcms-astro."
+
+msgid "home.cta"
+msgstr "Mulai dari panduan"
+
+msgid "home.ctaKanal"
+msgstr "Lihat semua kanal"
+
+msgid "home.heroAlt"
+msgstr "Ilustrasi halaman depan"
+
+msgid "home.sectionTitle"
+msgstr "Kanal informasi"
+
+msgid "home.sectionLead"
+msgstr "Setiap kanal berisi artikel yang ditinjau berkala."
+
+msgid "home.articleCount"
+msgstr "artikel"
+
+msgid "home.principles.title"
+msgstr "Prinsip penyusunan"
+
+msgid "home.principles.1.label"
+msgstr "Akurasi di atas kelengkapan"
+
+msgid "home.principles.1.body"
+msgstr "Yang belum terverifikasi ditulis apa adanya, tidak ditebak."
+
+msgid "home.principles.2.label"
+msgstr "Sumber selalu disebut"
+
+msgid "home.principles.2.body"
+msgstr "Setiap angka dan aturan membawa rujukannya sendiri."
+
+msgid "home.principles.3.label"
+msgstr "Tanpa pelacakan pembaca"
+
+msgid "home.principles.3.body"
+msgstr "Tanpa skrip pihak ketiga, tanpa piksel, tanpa form pengumpul data."
+
+msgid "home.tab.panduan.title"
+msgstr "Panduan"
+
+msgid "home.tab.panduan.desc"
+msgstr "Langkah demi langkah untuk urusan yang sering ditanyakan."
+
+msgid "home.tab.layanan.title"
+msgstr "Layanan"
+
+msgid "home.tab.layanan.desc"
+msgstr "Apa saja yang tersedia, syaratnya, dan berapa lama."
+
+msgid "home.tab.informasi.title"
+msgstr "Informasi"
+
+msgid "home.tab.informasi.desc"
+msgstr "Pengumuman, perubahan aturan, dan hal yang perlu diketahui."
+
+msgid "tab.panduan.h1"
+msgstr "Panduan"
+
+msgid "tab.panduan.lead"
+msgstr "Petunjuk praktis, disusun urut."
+
+msgid "tab.panduan.pageTitle"
+msgstr "Panduan"
+
+msgid "tab.panduan.metaDesc"
+msgstr "Kumpulan panduan langkah demi langkah."
+
+msgid "tab.layanan.h1"
+msgstr "Layanan"
+
+msgid "tab.layanan.lead"
+msgstr "Daftar layanan beserta syarat dan biayanya."
+
+msgid "tab.layanan.pageTitle"
+msgstr "Layanan"
+
+msgid "tab.layanan.metaDesc"
+msgstr "Daftar layanan beserta syarat dan biayanya."
+
+msgid "tab.informasi.h1"
+msgstr "Informasi"
+
+msgid "tab.informasi.lead"
+msgstr "Pengumuman dan perubahan yang perlu diketahui."
+
+msgid "tab.informasi.pageTitle"
+msgstr "Informasi"
+
+msgid "tab.informasi.metaDesc"
+msgstr "Pengumuman dan perubahan yang perlu diketahui."
+
+msgid "artikel.updated"
+msgstr "Diperbarui"
+
+msgid "artikel.review"
+msgstr "Ditinjau ulang sebelum"
+
+msgid "artikel.estimasi"
+msgstr "Perkiraan waktu"
+
+msgid "artikel.pelaksana"
+msgstr "Pelaksana"
+
+msgid "syarat.title"
+msgstr "Syarat dan dokumen"
+
+msgid "procedure.title"
+msgstr "Langkah-langkah"
+
+msgid "faq.title"
+msgstr "Pertanyaan yang sering diajukan"
+
+msgid "biaya.title"
+msgstr "Rincian biaya"
+
+msgid "biaya.col.item"
+msgstr "Item"
+
+msgid "biaya.col.nominal"
+msgstr "Nominal"
+
+msgid "biaya.col.kategori"
+msgstr "Kategori"
+
+msgid "biaya.col.sumber"
+msgstr "Sumber"
+
+msgid "biaya.dasarHukum"
+msgstr "Dasar hukum"
+
+msgid "translation.notice"
+msgstr "Versi bahasa ini belum tersedia; yang ditampilkan adalah versi bahasa sumber."
+
+msgid "share.title"
+msgstr "Bagikan halaman ini"
+
+msgid "share.lead"
+msgstr "Tautan biasa — tidak ada skrip penyedia sosial yang dimuat."
+
+msgid "share.whatsapp"
+msgstr "Bagikan ke WhatsApp"
+
+msgid "share.facebook"
+msgstr "Bagikan ke Facebook"
+
+msgid "share.x"
+msgstr "Bagikan ke X"
+
+msgid "share.telegram"
+msgstr "Bagikan ke Telegram"
+
+msgid "share.copy"
+msgstr "Salin tautan"
+
+msgid "share.copied"
+msgstr "Tautan disalin"
+
+msgid "share.imageAlt"
+msgstr "Kartu berbagi halaman"
+
+msgid "disclaimer.general.label"
+msgstr "Catatan"
+
+msgid "disclaimer.general.aria"
+msgstr "Catatan"
+
+msgid "disclaimer.general.body"
+msgstr "Informasi di halaman ini disusun untuk pembaca umum dan bukan nasihat resmi."
+
+msgid "disclaimer.footer.label"
+msgstr "Penafian"
+
+msgid "disclaimer.footer.p1"
+msgstr "Situs ini berdiri independen dan bukan kanal resmi instansi mana pun."
+
+msgid "disclaimer.footer.p2"
+msgstr "Pastikan kembali setiap angka dan prosedur pada sumber resminya sebelum bertindak."
+
+msgid "footer.about.title"
+msgstr "Tentang situs ini"
+
+msgid "footer.about.body"
+msgstr "Dibangun dengan template awcms-astro: statis, ringan, dan bisa dibaca tanpa JavaScript."
+
+msgid "footer.kanal.title"
+msgstr "Kanal"
+
+msgid "footer.more.title"
+msgstr "Lainnya"
+
+msgid "footer.sitemap"
+msgstr "Peta situs"
+
+msgid "footer.copyright"
+msgstr "Seluruh hak cipta."
+
+msgid "sitemap.h1"
+msgstr "Peta situs"
+
+msgid "sitemap.pageTitle"
+msgstr "Peta situs"
+
+msgid "sitemap.metaDesc"
+msgstr "Seluruh halaman di situs ini."
+
+msgid "404.h1"
+msgstr "Halaman tidak ditemukan"
+
+msgid "404.lead"
+msgstr "Tautannya mungkin sudah berubah. Coba mulai dari salah satu kanal berikut."
+
+msgid "404.pageTitle"
+msgstr "Halaman tidak ditemukan"
+
+msgid "404.metaDesc"
+msgstr "Halaman yang Anda cari tidak ada."
+

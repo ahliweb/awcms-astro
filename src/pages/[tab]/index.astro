@@ -1,0 +1,27 @@
+---
+/**
+ * Section index in the DEFAULT locale, at the root (`/panduan/`).
+ *
+ * The reference implementation this template came from wrote one hand-authored
+ * file per section here (`/sim/`, `/stnk/`, …) because its five sections were
+ * fixed forever. A template cannot do that: sections are configuration
+ * (`siteConfig.tabs`), so the root routes are generated exactly like the
+ * prefixed ones in `[lang]/[tab]/`.
+ *
+ * The default locale stays at the ROOT rather than under a prefix so that URLs
+ * already indexed in that language never move when a second language is added.
+ */
+import TabIndex from "../../components/views/TabIndex.astro";
+import { siteConfig } from "../../config/site";
+
+export function getStaticPaths() {
+  return siteConfig.tabs.map((tab) => ({
+    params: { tab: tab.slug },
+    props: { tab: tab.slug }
+  }));
+}
+
+const { tab } = Astro.props;
+---
+
+<TabIndex tab={tab} />

@@ -1,0 +1,12 @@
+---
+import { getLocaleFromPath, localeMeta } from '../config/site';
+import { t } from '../lib/po';
+
+const locale = getLocaleFromPath(Astro.url.pathname);
+---
+
+<aside class="disclaimer-box" lang="id" aria-label={t(locale, 'translation.notice.aria')}>
+  <strong>{t(locale, 'translation.notice.label')}</strong>
+  {t(locale, 'translation.notice.body')}
+  <span> ({localeMeta[locale].nama})</span>
+</aside>

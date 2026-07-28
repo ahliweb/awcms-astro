@@ -1,0 +1,44 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumb from '../Breadcrumb.astro';
+import { siteConfig, getLocaleFromPath, localePath } from '../../config/site';
+import { getArticles } from '../../lib/content';
+import { t } from '../../lib/po';
+
+const locale = getLocaleFromPath(Astro.url.pathname);
+
+const sections = [] as { title: string; links: { href: string; label: string }[] }[];
+
+for (const tab of siteConfig.tabs) {
+  const links = (await getArticles(tab.slug, locale)).map((item) => ({
+    href: localePath(locale, `/${tab.slug}/${item.slug}/`),
+    label: item.entry.data.title,
+  }));
+  sections.push({ title: t(locale, `home.tab.${tab.slug}.title`), links });
+}
+
+const breadcrumbItems = [
+  { name: t(locale, 'sitemap.h1'), url: localePath(locale, '/sitemap/') }
+];
+---
+
+<BaseLayout title={t(locale, 'sitemap.pageTitle')} description={t(locale, 'sitemap.metaDesc')}>
+  <Breadcrumb items={breadcrumbItems} />
+
+  <section class="my-4">
+    <h1>{t(locale, 'sitemap.h1')}</h1>
+  </section>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin: 2rem 0;">
+    {sections.map((section) => (
+      <div>
+        <h3>{section.title}</h3>
+        <ul style="padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.4rem;">
+          {section.links.map((link) => (
+            <li><a href={link.href}>{link.label}</a></li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </div>
+</BaseLayout>

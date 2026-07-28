@@ -1,0 +1,9 @@
+---
+import NotFound from '../../components/views/NotFound.astro';
+import { prefixedLocales } from '../../config/site';
+
+export function getStaticPaths() {
+  return prefixedLocales.map((lang) => ({ params: { lang } }));
+}
+---
+<NotFound />

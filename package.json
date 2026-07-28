@@ -1,0 +1,32 @@
+{
+  "name": "awcms-astro",
+  "type": "module",
+  "version": "0.1.0",
+  "private": false,
+  "description": "AWCMS family template for public static sites on Astro, integrated with ahliweb/awcms as its content backend.",
+  "homepage": "https://github.com/ahliweb/awcms-astro",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ahliweb/awcms-astro.git"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.12.0",
+    "npm": ">=10.9.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro check && astro build",
+    "check": "astro check",
+    "preview": "astro preview",
+    "astro": "astro",
+    "release": "node scripts/rilis.mjs"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@astrojs/sitemap": "^3.7.3",
+    "astro": "^7.1.4",
+    "typescript": "^5.9.3"
+  }
+}

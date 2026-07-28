@@ -1,0 +1,129 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
+import SyaratList from '../components/SyaratList.astro';
+import ProcedureSteps from '../components/ProcedureSteps.astro';
+import BiayaTable from '../components/BiayaTable.astro';
+import FaqAccordion from '../components/FaqAccordion.astro';
+import DisclaimerNote from '../components/DisclaimerNote.astro';
+import TranslationNotice from '../components/TranslationNotice.astro';
+import { getLocaleFromPath, getSiteUrl, localePath, localeHtmlLang } from '../config/site';
+import { getArticleImage } from '../lib/article-images';
+import { socialImage } from '../lib/social-image';
+import { articleSchema } from '../lib/schema';
+import { t } from '../lib/po';
+
+interface Props {
+  entry: any; // Content collection entry
+  slug: string;
+  isFallback?: boolean;
+}
+
+const { entry, slug, isFallback = false } = Astro.props;
+const data = entry.data;
+const locale = getLocaleFromPath(Astro.url.pathname);
+
+const tabNames: Record<string, string> = {
+  sim: 'SIM',
+  stnk: 'STNK',
+  bpkb: 'BPKB',
+  pengawalan: 'PENGAWALAN',
+  gakkum: 'GAKKUM',
+};
+
+const articleVisual = getArticleImage(data.kategori, slug);
+const shareCard = socialImage(slug);
+const canonicalUrl = getSiteUrl(localePath(locale, `/${data.kategori}/${slug}/`));
+
+const tabName = tabNames[data.kategori] || data.kategori.toUpperCase();
+const pageTitle = `${data.title} | ${tabName}`;
+
+const breadcrumbItems = [
+  { name: tabName, url: localePath(locale, `/${data.kategori}/`) },
+  { name: data.title, url: localePath(locale, `/${data.kategori}/${slug}/`) }
+];
+
+const dateFormat: Intl.DateTimeFormatOptions = {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+};
+
+const updatedDateStr = new Date(data.updatedDate).toLocaleDateString(localeHtmlLang[locale], dateFormat);
+const reviewDueDateStr = data.reviewDueDate
+  ? new Date(data.reviewDueDate).toLocaleDateString(localeHtmlLang[locale], dateFormat)
+  : undefined;
+
+const schema = articleSchema({
+  locale,
+  canonicalUrl,
+  title: data.title,
+  description: data.description,
+  image: shareCard,
+  imageAlt: articleVisual.alt,
+  updatedDate: new Date(data.updatedDate),
+  section: tabName,
+  tags: data.tags ?? [],
+});
+---
+
+<BaseLayout
+  title={pageTitle}
+  description={data.description}
+  currentTab={data.kategori}
+  ogType="article"
+  ogImage={shareCard}
+  ogImageAlt={articleVisual.alt}
+  schema={schema}
+  articleMeta={{
+    modifiedTime: new Date(data.updatedDate).toISOString(),
+    section: tabName,
+    tags: data.tags ?? [],
+  }}
+>
+  <article>
+    <Breadcrumb items={breadcrumbItems} />
+
+    {isFallback && <TranslationNotice />}
+
+    <header style="margin: 1.5rem 0; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
+      <div style="width: 100%; max-height: 280px; border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 1.25rem; box-shadow: var(--shadow-md); position: relative; background: var(--bg-subtle);">
+        <div class="visual-placeholder visual-hero" role="img" aria-label={articleVisual.alt}></div>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
+        {data.variasiWilayah && (
+          <span class="badge" style="background: #e0f2fe; color: #0369a1;">
+            {t(locale, 'artikel.variasiWilayah')}
+          </span>
+        )}
+      </div>
+
+      <h1 class="artikel-title">{data.title}</h1>
+      <p class="artikel-lead">{data.description}</p>
+
+      <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; font-size: 0.85rem; color: var(--text-muted); margin-top: 1rem;">
+        <div>📅 {t(locale, 'artikel.updated')} <strong>{updatedDateStr}</strong></div>
+        <div>🔍 {t(locale, 'artikel.review')} <strong>{reviewDueDateStr}</strong></div>
+        {data.unitPelaksana && <div>🏛️ {t(locale, 'artikel.pelaksana')} <strong>{data.unitPelaksana}</strong></div>}
+        {data.estimasiWaktu && <div>⏱️ {t(locale, 'artikel.estimasi')} <strong>{data.estimasiWaktu}</strong></div>}
+      </div>
+    </header>
+
+    {data.kategori === 'gakkum' && <DisclaimerNote variant="gakkum" />}
+
+    <div class="content-body" style="font-size: 1.05rem; line-height: 1.7; color: var(--text-primary);">
+      <slot />
+    </div>
+
+    <SyaratList syarat={data.syaratDokumen} />
+
+    <ProcedureSteps steps={data.langkah} />
+
+    <BiayaTable biaya={data.biaya} dasarHukum={data.dasarHukum} />
+
+    <FaqAccordion faq={data.faq} />
+
+    <DisclaimerNote variant="general" />
+  </article>
+</BaseLayout>

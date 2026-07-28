@@ -1,0 +1,55 @@
+---
+import { getLocaleFromPath } from '../config/site';
+import { t } from '../lib/po';
+
+interface FaqItem {
+  q: string;
+  a: string;
+}
+
+interface Props {
+  faq: FaqItem[];
+}
+
+const { faq = [] } = Astro.props;
+const locale = getLocaleFromPath(Astro.url.pathname);
+
+const faqSchema = faq.length > 0 ? {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": faq.map((item) => ({
+    "@type": "Question",
+    "name": item.q,
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": item.a
+    }
+  }))
+} : null;
+---
+
+{faq.length > 0 && (
+  <section class="my-6" aria-labelledby="faq-heading">
+    <h3 id="faq-heading" style="display: flex; align-items: center; gap: 0.5rem;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+      {t(locale, 'faq.title')}
+    </h3>
+    <div class="accordion">
+      {faq.map((item) => (
+        <details class="accordion-item">
+          <summary class="accordion-header">
+            <span>{item.q}</span>
+            <span aria-hidden="true" style="font-size: 1.25rem;">+</span>
+          </summary>
+          <div class="accordion-content">
+            <p style="margin: 0;">{item.a}</p>
+          </div>
+        </details>
+      ))}
+    </div>
+  </section>
+)}
+
+{faqSchema && (
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+)}

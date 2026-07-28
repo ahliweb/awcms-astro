@@ -1,0 +1,31 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { siteConfig, getLocaleFromPath, localePath } from '../../config/site';
+import { t } from '../../lib/po';
+
+const locale = getLocaleFromPath(Astro.url.pathname);
+---
+
+<BaseLayout
+  title={t(locale, '404.pageTitle')}
+  description={t(locale, '404.metaDesc')}
+  noindex
+  hideShare
+  langSwitchPath="/"
+>
+  <section class="my-4">
+    <h1>{t(locale, '404.h1')}</h1>
+    <p class="artikel-lead">
+      {t(locale, '404.lead')}
+    </p>
+  </section>
+
+  <div class="grid-cards">
+    {siteConfig.tabs.map((tab) => (
+      <a href={localePath(locale, `/${tab.slug}/`)} class="card">
+        <h3 class="card-title">{tab.name}</h3>
+        <p class="card-desc">{t(locale, `home.tab.${tab.slug}.title`)}</p>
+      </a>
+    ))}
+  </div>
+</BaseLayout>

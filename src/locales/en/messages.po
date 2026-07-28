@@ -1,0 +1,267 @@
+# English UI string catalogue for awcms-astro.
+#
+# These are INTERFACE strings, not content. Content lives in awcms and is
+# translated by editors there; this catalogue is part of the template and is
+# translated by whoever maintains the repo. A missing key falls back to the
+# default locale and then to the key itself, so an untranslated catalogue
+# degrades to a readable page rather than to raw key names on screen.
+msgid ""
+msgstr ""
+"Language: en\\n"
+"Content-Type: text/plain; charset=UTF-8\\n"
+
+msgid "ui.skipToMain"
+msgstr "Skip to main content"
+
+msgid "ui.themeToggle"
+msgstr "Toggle light/dark theme"
+
+msgid "nav.aria"
+msgstr "Main navigation"
+
+msgid "breadcrumb.aria"
+msgstr "Breadcrumb"
+
+msgid "breadcrumb.home"
+msgstr "Home"
+
+msgid "lang.switch.label"
+msgstr "Choose a language"
+
+msgid "header.tagline"
+msgstr "Public information you can rely on"
+
+msgid "home.title"
+msgstr "Home"
+
+msgid "home.h1"
+msgstr "Public information, written to be read"
+
+msgid "home.badge"
+msgstr "Information site"
+
+msgid "home.lead"
+msgstr "Guides, services, and notices in one place — written for ordinary readers, not for specialists."
+
+msgid "home.description"
+msgstr "A public information site built on the awcms-astro template."
+
+msgid "home.cta"
+msgstr "Start with the guides"
+
+msgid "home.ctaKanal"
+msgstr "See every section"
+
+msgid "home.heroAlt"
+msgstr "Home page illustration"
+
+msgid "home.sectionTitle"
+msgstr "Sections"
+
+msgid "home.sectionLead"
+msgstr "Each section holds articles that are reviewed on a schedule."
+
+msgid "home.articleCount"
+msgstr "articles"
+
+msgid "home.principles.title"
+msgstr "How this is written"
+
+msgid "home.principles.1.label"
+msgstr "Accuracy over completeness"
+
+msgid "home.principles.1.body"
+msgstr "Anything unverified is marked as such rather than guessed."
+
+msgid "home.principles.2.label"
+msgstr "Sources are always named"
+
+msgid "home.principles.2.body"
+msgstr "Every figure and rule carries its own reference."
+
+msgid "home.principles.3.label"
+msgstr "No reader tracking"
+
+msgid "home.principles.3.body"
+msgstr "No third-party scripts, no pixels, no data-collecting forms."
+
+msgid "home.tab.panduan.title"
+msgstr "Guides"
+
+msgid "home.tab.panduan.desc"
+msgstr "Step-by-step answers to the questions asked most often."
+
+msgid "home.tab.layanan.title"
+msgstr "Services"
+
+msgid "home.tab.layanan.desc"
+msgstr "What is available, what it requires, and how long it takes."
+
+msgid "home.tab.informasi.title"
+msgstr "Notices"
+
+msgid "home.tab.informasi.desc"
+msgstr "Announcements, rule changes, and things worth knowing."
+
+msgid "tab.panduan.h1"
+msgstr "Guides"
+
+msgid "tab.panduan.lead"
+msgstr "Practical instructions, in order."
+
+msgid "tab.panduan.pageTitle"
+msgstr "Guides"
+
+msgid "tab.panduan.metaDesc"
+msgstr "Step-by-step guides."
+
+msgid "tab.layanan.h1"
+msgstr "Services"
+
+msgid "tab.layanan.lead"
+msgstr "Services with their requirements and costs."
+
+msgid "tab.layanan.pageTitle"
+msgstr "Services"
+
+msgid "tab.layanan.metaDesc"
+msgstr "Services with their requirements and costs."
+
+msgid "tab.informasi.h1"
+msgstr "Notices"
+
+msgid "tab.informasi.lead"
+msgstr "Announcements and changes worth knowing."
+
+msgid "tab.informasi.pageTitle"
+msgstr "Notices"
+
+msgid "tab.informasi.metaDesc"
+msgstr "Announcements and changes worth knowing."
+
+msgid "artikel.updated"
+msgstr "Updated"
+
+msgid "artikel.review"
+msgstr "Review due before"
+
+msgid "artikel.estimasi"
+msgstr "Estimated time"
+
+msgid "artikel.pelaksana"
+msgstr "Handled by"
+
+msgid "syarat.title"
+msgstr "Requirements and documents"
+
+msgid "procedure.title"
+msgstr "Steps"
+
+msgid "faq.title"
+msgstr "Frequently asked questions"
+
+msgid "biaya.title"
+msgstr "Costs"
+
+msgid "biaya.col.item"
+msgstr "Item"
+
+msgid "biaya.col.nominal"
+msgstr "Amount"
+
+msgid "biaya.col.kategori"
+msgstr "Category"
+
+msgid "biaya.col.sumber"
+msgstr "Source"
+
+msgid "biaya.dasarHukum"
+msgstr "Legal basis"
+
+msgid "translation.notice"
+msgstr "This language is not available yet; the source-language version is shown."
+
+msgid "share.title"
+msgstr "Share this page"
+
+msgid "share.lead"
+msgstr "Plain links — no social provider script is loaded."
+
+msgid "share.whatsapp"
+msgstr "Share on WhatsApp"
+
+msgid "share.facebook"
+msgstr "Share on Facebook"
+
+msgid "share.x"
+msgstr "Share on X"
+
+msgid "share.telegram"
+msgstr "Share on Telegram"
+
+msgid "share.copy"
+msgstr "Copy link"
+
+msgid "share.copied"
+msgstr "Link copied"
+
+msgid "share.imageAlt"
+msgstr "Page share card"
+
+msgid "disclaimer.general.label"
+msgstr "Note"
+
+msgid "disclaimer.general.aria"
+msgstr "Note"
+
+msgid "disclaimer.general.body"
+msgstr "This page is written for general readers and is not official advice."
+
+msgid "disclaimer.footer.label"
+msgstr "Disclaimer"
+
+msgid "disclaimer.footer.p1"
+msgstr "This site is independent and is not the official channel of any institution."
+
+msgid "disclaimer.footer.p2"
+msgstr "Check every figure and procedure against its official source before acting on it."
+
+msgid "footer.about.title"
+msgstr "About this site"
+
+msgid "footer.about.body"
+msgstr "Built with the awcms-astro template: static, light, and readable without JavaScript."
+
+msgid "footer.kanal.title"
+msgstr "Sections"
+
+msgid "footer.more.title"
+msgstr "More"
+
+msgid "footer.sitemap"
+msgstr "Sitemap"
+
+msgid "footer.copyright"
+msgstr "All rights reserved."
+
+msgid "sitemap.h1"
+msgstr "Sitemap"
+
+msgid "sitemap.pageTitle"
+msgstr "Sitemap"
+
+msgid "sitemap.metaDesc"
+msgstr "Every page on this site."
+
+msgid "404.h1"
+msgstr "Page not found"
+
+msgid "404.lead"
+msgstr "That link may have moved. Try starting from one of the sections below."
+
+msgid "404.pageTitle"
+msgstr "Page not found"
+
+msgid "404.metaDesc"
+msgstr "The page you were looking for does not exist."
+

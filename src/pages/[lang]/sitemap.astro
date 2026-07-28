@@ -1,0 +1,9 @@
+---
+import SitemapView from '../../components/views/SitemapView.astro';
+import { prefixedLocales } from '../../config/site';
+
+export function getStaticPaths() {
+  return prefixedLocales.map((lang) => ({ params: { lang } }));
+}
+---
+<SitemapView />

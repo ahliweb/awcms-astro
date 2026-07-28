@@ -1,0 +1,16 @@
+---
+import TabIndex from '../../../components/views/TabIndex.astro';
+import { siteConfig, prefixedLocales } from '../../../config/site';
+
+export function getStaticPaths() {
+  return prefixedLocales.flatMap((lang) =>
+    siteConfig.tabs.map((tab) => ({
+      params: { lang, tab: tab.slug },
+      props: { tab: tab.slug },
+    }))
+  );
+}
+
+const { tab } = Astro.props;
+---
+<TabIndex tab={tab} />
