@@ -15,6 +15,7 @@
  * commit dan tag diserahkan ke tangan manusia; perintah persisnya dicetak.
  */
 import fs from 'node:fs';
+import path from 'node:path';
 import { execSync } from 'node:child_process';
 
 const args = process.argv.slice(2);
@@ -77,8 +78,13 @@ if (!apply) {
 // ── Verifikasi sebelum menulis apa pun ───────────────────────────────────────
 console.log('\nMenjalankan npm run build ...');
 execSync('npm run build', { stdio: 'inherit' });
-console.log('Menjalankan npm run audit ...');
-execSync('npm run audit', { stdio: 'inherit' });
+// Gerbang audit konten belum ada di template ini (lihat README, "Yang belum
+// ada"). Memanggilnya tanpa syarat membuat setiap rilis gagal di langkah yang
+// tidak ada isinya; menjalankannya begitu ia ditulis adalah yang diinginkan.
+if (pkg.scripts?.audit) {
+  console.log('Menjalankan npm run audit ...');
+  execSync('npm run audit', { stdio: 'inherit' });
+}
 
 // ── Lipat changeset ke CHANGELOG.md ──────────────────────────────────────────
 // Tanggal lokal, bukan UTC: merilis malam hari WIB akan tercatat mundur sehari
@@ -92,17 +98,30 @@ const body = pending
       // Heading changeset diturunkan dua tingkat agar bersarang rapi di bawah
       // heading versi: judul changeset jadi `###`, sub-bagiannya jadi `####`.
       .replace(/^(#{1,4}) /gm, (_, hashes) => `${'#'.repeat(hashes.length + 2)} `)
+      // Tautan relatif ditulis dari sudut pandang `.changesets/`, tetapi
+      // CHANGELOG.md tinggal di akar repo. Menyalinnya apa adanya membuat
+      // setiap tautan meleset satu tingkat — dan itu baru ketahuan di CI,
+      // karena gerbang audit berjalan sebelum changeset dilipat.
+      .replace(/\]\((?!https?:|mailto:|#)([^)]+)\)/g, (_, target) => {
+        const [jalur, anchor] = target.split('#');
+        const akar = path.posix.normalize(path.posix.join('.changesets', jalur));
+        return `](${akar}${anchor ? `#${anchor}` : ''})`;
+      })
       .trim()
   )
   .join('\n\n');
 
-const changelog = fs.readFileSync('CHANGELOG.md', 'utf8');
+const changelog = fs.existsSync('CHANGELOG.md') ? fs.readFileSync('CHANGELOG.md', 'utf8') : '';
 if (changelog.includes(`\n## [${next}]`)) {
   console.error(`CHANGELOG.md sudah memuat bagian untuk ${next}. Rapikan dulu sebelum merilis.`);
   process.exit(1);
 }
+// Sebelum rilis pertama belum ada satu pun heading versi. `indexOf` menjawab -1
+// untuk keadaan itu, dan `slice(0, -1)` diam-diam memotong karakter terakhir
+// preambul alih-alih menyisipkan di belakangnya.
 const marker = '\n## [';
-const at = changelog.indexOf(marker);
+const ketemu = changelog.indexOf(marker);
+const at = ketemu === -1 ? changelog.length : ketemu;
 const entry = `\n## [${next}] — ${today}\n\n${body || '_Tidak ada changeset; lihat riwayat git._'}\n`;
 fs.writeFileSync('CHANGELOG.md', changelog.slice(0, at) + entry + changelog.slice(at));
 
