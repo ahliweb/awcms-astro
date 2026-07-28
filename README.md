@@ -50,6 +50,7 @@ npm run dev              # http://localhost:4321
 | `npm run dev`            | Server pengembangan                                  |
 | `npm run check`          | Gerbang lockfile lalu `astro check`                  |
 | `npm run check:lockfile` | Hanya gerbang lockfile — murni baca berkas           |
+| `npm test`               | Unit test renderer blok (Node test runner, nol dep)  |
 | `npm run build`          | `npm run check` lalu `astro build` → `dist/`         |
 | `npm run preview`        | Menyajikan hasil build                               |
 
