@@ -20,6 +20,7 @@
     "build": "npm run check && astro build",
     "check": "npm run check:lockfile && astro check",
     "check:lockfile": "node scripts/cek-lockfile.mjs",
+    "test": "node --experimental-strip-types --test tests/*.test.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "release": "node scripts/rilis.mjs"
