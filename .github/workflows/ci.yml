@@ -38,6 +38,14 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
 
+      # Sebelum `npm ci`, bukan sesudah. Gerbang ini murni pembacaan berkas,
+      # dan `npm ci` sendiri buta terhadap lockfile yang BERLEBIH — ia memasang
+      # paket tak-terdeklarasi lalu keluar dengan status 0. Menjalankannya lebih
+      # dulu membuat kegagalannya terbaca sebagai "lockfile menyimpang", bukan
+      # sebagai kegagalan typecheck di langkah yang tidak ada hubungannya.
+      - name: Lockfile sinkron dengan package.json
+        run: npm run check:lockfile
+
       - name: Pasang dependency
         run: npm ci
 
