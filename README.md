@@ -37,6 +37,11 @@ memang disengaja: situs tetap tayang saat awcms mati, tidak ada permukaan
 serangan runtime, dan konten baru tayang setelah build berikutnya — bukan
 seketika. Kalau butuh seketika, `awcms-micro` template yang tepat, bukan ini.
 
+"Build berikutnya" tidak berarti menunggu seseorang menekan tombol: awcms
+memicu rebuild lewat webhook begitu sebuah post terbit, jadi jeda antara redaksi
+menekan *publish* dan pembaca melihatnya adalah lama build, bukan lama seseorang
+teringat. Rantainya di [`docs/deploy-coolify.md`](docs/deploy-coolify.md).
+
 ## Menjalankan
 
 ```bash
@@ -122,6 +127,8 @@ src/
 ├── locales/<locale>/messages.po
 ├── pages/                # locale default di root, locale lain lewat [lang]/
 └── styles/global.css     # design token + standar interaksi
+Dockerfile                # build statis → image nginx non-root, port 8080
+ops/nginx-situs.conf      # penyajian keluaran statis di dalam image
 ```
 
 ## Yang belum ada (backlog eksplisit, bukan kelalaian)
@@ -154,6 +161,7 @@ src/
 | [`docs/awcms-astro/standar-teknis.md`](docs/awcms-astro/standar-teknis.md)           | Aturan teknis yang mengikat             |
 | [`docs/awcms-astro/ui-ux-design-system.md`](docs/awcms-astro/ui-ux-design-system.md) | Design token, komponen, aksesibilitas   |
 | [`docs/awcms-astro/integrasi-awcms.md`](docs/awcms-astro/integrasi-awcms.md)         | Kontrak integrasi dengan awcms          |
+| [`docs/deploy-coolify.md`](docs/deploy-coolify.md)                                   | Deploy dan rebuild lewat webhook        |
 
 ## Lisensi
 
