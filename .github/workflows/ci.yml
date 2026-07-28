@@ -52,6 +52,13 @@ jobs:
       - name: Astro check
         run: npm run check
 
+      # Runs in `check`, not `build`: these are pure unit tests over the block
+      # renderer and need no content source at all. Putting them behind the
+      # conditional build would mean the template repo — the one place this code
+      # is actually reviewed — never runs them.
+      - name: Unit tests
+        run: npm test
+
       - name: Audit dependency
         run: npm audit --audit-level=low
 

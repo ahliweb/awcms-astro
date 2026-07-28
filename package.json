@@ -20,6 +20,7 @@
     "build": "npm run check && astro build",
     "check": "npm run check:lockfile && astro check",
     "check:lockfile": "node scripts/cek-lockfile.mjs",
+    "test": "node --experimental-strip-types --test tests/*.test.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "release": "node scripts/rilis.mjs"
@@ -28,6 +29,6 @@
     "@astrojs/check": "^0.9.10",
     "@astrojs/sitemap": "^3.7.3",
     "astro": "^7.1.4",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.3"
   }
 }
