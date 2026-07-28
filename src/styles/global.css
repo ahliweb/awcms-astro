@@ -64,6 +64,21 @@
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
 
+  /*
+   * Satu rasio gambar untuk seluruh situs, dipakai bingkai MAUPUN sumber.
+   *
+   * Setiap bingkai di bawah memakai `object-fit: cover`, jadi sumber berasio
+   * lain tidak diperkecil — ia dipotong, diam-diam, di setiap ukuran layar.
+   * Sumber 1∶1 pada bingkai 16∶9 kehilangan 22% teratas dan 22% terbawah, dan
+   * judul gambar hampir selalu ada di sana. Repo rujukan template ini kehilangan
+   * judul pada sebelas banner sekaligus sebelum ada yang menyadarinya.
+   *
+   * Menggantinya di sini boleh; menggantinya HANYA di sini yang tidak boleh —
+   * seni yang sudah disiapkan situs ikut harus dibangkitkan ulang pada rasio
+   * yang sama.
+   */
+  --ratio-visual: 16 / 9;
+
   --max-width: 1200px;
 }
 
@@ -446,6 +461,7 @@ p {
 
 .hero-visual-frame {
   position: relative;
+  aspect-ratio: var(--ratio-visual);
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-glow);
@@ -455,7 +471,7 @@ p {
 
 .hero-visual-frame img {
   width: 100%;
-  height: auto;
+  height: 100%;
   display: block;
   object-fit: cover;
   transition: transform 0.5s ease;
@@ -488,10 +504,10 @@ p {
 }
 
 .feature-hero-img {
+  aspect-ratio: var(--ratio-visual);
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-md);
-  max-height: 220px;
 }
 
 .feature-hero-img img {
@@ -530,7 +546,7 @@ p {
 
 .card-img-wrapper {
   width: 100%;
-  height: 170px;
+  aspect-ratio: var(--ratio-visual);
   overflow: hidden;
   position: relative;
   background: var(--bg-subtle);
@@ -545,6 +561,59 @@ p {
 
 .card:hover .card-img-wrapper img {
   transform: scale(1.06);
+}
+
+/*
+ * Bingkai visual kepala artikel. Rasionya sama dengan seluruh bingkai lain;
+ * dulu ia hanya `max-height` inline, sehingga tingginya bergantung pada isi —
+ * dan tanpa isi ia setinggi nol.
+ */
+.article-hero-frame {
+  width: 100%;
+  aspect-ratio: var(--ratio-visual);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  background: var(--bg-subtle);
+}
+
+.article-hero-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/*
+ * Pengganti ilustrasi saat situs belum punya seni.
+ *
+ * `getArticleImage()` mengembalikan `src: undefined` selama template ini belum
+ * dipasangi seni lokal atau resolusi media awcms. Itu keadaan yang didukung,
+ * bukan yang rusak — tetapi hanya bila ada yang merendernya. Sebelum blok ini
+ * ada, setiap pemanggil merender `<div>` tanpa satu pun aturan gaya: tingginya
+ * nol, dan bingkai yang seharusnya menahan tata letak halaman ikut hilang.
+ *
+ * Rasionya ditetapkan di elemen ini sendiri, bukan diwarisi dari bingkainya,
+ * supaya ia tetap punya tinggi di pemanggil mana pun.
+ */
+.visual-placeholder {
+  width: 100%;
+  aspect-ratio: var(--ratio-visual);
+  display: block;
+  background-color: var(--bg-subtle);
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0,
+    transparent 14px,
+    var(--border-color) 14px,
+    var(--border-color) 15px
+  );
+}
+
+.visual-placeholder.visual-hero {
+  background-color: var(--accent-subtle);
 }
 
 .card-content {
