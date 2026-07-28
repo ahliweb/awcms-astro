@@ -31,10 +31,13 @@ Pertanyaan yang menentukan bentuk skema: **kesalahan apa yang paling merugikan p
 ## 4. Konten dan aset
 
 - [ ] Tulis satu artikel lengkap di locale default sebagai acuan bentuk.
+- [ ] **Tetapkan satu rasio gambar untuk seluruh situs**, lalu pakai rasio itu di setiap bingkai **dan** setiap sumber. Bingkai memakai `object-fit: cover`; sumber berasio lain dipotong diam-diam, bukan diperkecil.
 - [ ] Siapkan gambar sumber di `src/assets/images/`.
 - [ ] Isi peta `src/lib/article-images.ts` — satu entitas = satu gambar unik.
 - [ ] Sesuaikan `scripts/kartu-share.mjs`: nama kartu yang perlu dibangkitkan.
 - [ ] `public/og-image.png` 1200×630 sebagai kartu baku.
+
+Bila ilustrasi dibangkitkan sendiri, **jangan biarkan konfigurasinya menyisipkan markup mentah**. Escape seluruh teks di satu tempat. Pintu markup mentah terlihat praktis dan hanya butuh sekali dipakai untuk meloloskan `&` telanjang yang membuat browser gagal merender tanpa satu pun pesan error.
 
 ## 5. Sesuaikan gerbang audit
 
@@ -51,7 +54,8 @@ Pertanyaan yang menentukan bentuk skema: **kesalahan apa yang paling merugikan p
 
 - [ ] Sesuaikan design token di `:root` — lihat [`ui-ux-design-system.md`](ui-ux-design-system.md).
 - [ ] Pastikan kontras cukup di tema terang **dan** gelap.
-- [ ] Uji dari lebar 360px sampai desktop.
+- [ ] Uji dari lebar 360px sampai desktop — termasuk **membaca teks di dalam gambar** pada lebar tersempit.
+- [ ] Umpan balik hover juga aktif pada `:focus-visible`; matikan animasi dekoratif sepenuhnya saat `prefers-reduced-motion`, bukan sekadar dipercepat.
 
 Tampilan dikerjakan terakhir karena ia satu-satunya lapisan yang murah diubah.
 
@@ -86,5 +90,9 @@ npm run release -- minor --apply
 | Memakai `<img>` mentah "sementara" | Optimasi terlewat tanpa satu pun peringatan |
 | Menaruh string UI langsung di `.astro` | String itu tidak akan pernah bisa diterjemahkan, dan halamannya tetap tampak benar dalam locale default sehingga tidak ada yang menyadarinya |
 | Membiarkan `public/` menampung gambar konten | Seluruh gambar lolos dari pipeline optimasi |
+| Rasio sumber gambar berbeda dari rasio bingkainya | Gambar tetap tampil, hanya isinya yang terpotong — tidak ada yang menyadarinya sampai ada yang membaca teks di dalamnya |
+| Memercayai ekstensi berkas gambar | Berkas `.png` yang isinya JPEG berjalan normal sampai ada perkakas yang membacanya menurut namanya |
+| Menaruh nominal atau data di dalam gambar | Ia lolos dari aturan yang menjaga angka lain, dan tidak ikut diperbarui saat angkanya berubah |
+| Menulis tautan relatif di changeset tanpa menyesuaikannya saat dilipat | Tautan meleset satu tingkat, dan gerbang tidak melihatnya karena berjalan sebelum pelipatan |
 | Menunda ADR sampai "nanti" | Alasan keputusan hilang; usulan yang sama muncul lagi enam bulan kemudian |
 | Menyalin komponen halaman per locale | Enam salinan yang perlahan menyimpang satu sama lain |

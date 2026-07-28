@@ -55,6 +55,12 @@ Konten ditarik saat **build**, bukan saat request.
   berbagi milik penyedia sosial. Berbagi memakai tautan biasa.
 - **Tidak ada pengumpulan data pribadi pembaca.** Tanpa form, tanpa analytics
   yang mengikat identitas.
+- **Tidak ada lambang, logo, atau atribut resmi instansi negara** — termasuk di
+  dalam ilustrasi.
+- **Tidak ada dokumen, kuitansi, nomor registrasi, identitas, atau antarmuka
+  aplikasi pemerintah yang direkayasa**, dalam bentuk apa pun termasuk
+  ilustrasi. Pembaca bisa menyimpulkan itu rupa yang asli, dan kesimpulan itu
+  memudahkan penipuan.
 
 ### Antarmuka
 
@@ -64,7 +70,10 @@ Konten ditarik saat **build**, bukan saat request.
   tidak ada.
 - **Aksesibilitas WCAG 2.1 AA** adalah batas, bukan target: kontras cukup di
   kedua tema, fokus terlihat, navigasi keyboard penuh, `prefers-reduced-motion`
-  dihormati.
+  dihormati. Animasi dekoratif **dimatikan** saat itu diminta, bukan dipercepat
+  — aturan `*` global hanya memangkas durasi, dan animasi 0,01 md tetap
+  berkedip. Umpan balik hover juga aktif pada `:focus-visible`, sehingga
+  pengguna keyboard tidak mendapat versi yang lebih miskin.
 - **Mobile-first dari 360px.**
 - **String antarmuka lewat katalog PO**, tidak pernah ditulis langsung di
   komponen. Key yang belum diterjemahkan jatuh ke locale default lalu ke
@@ -72,6 +81,44 @@ Konten ditarik saat **build**, bukan saat request.
   nama key di layar.
 - **Token desain, bukan nilai lepas.** Tidak ada gaya sekali pakai; komponen
   baru memakai token yang sudah ada di `src/styles/global.css`.
+
+### Gambar
+
+Template ini belum membawa satu pun ilustrasi, tetapi bingkainya sudah ada dan
+aturan di bawah berlaku sejak gambar pertama dimasukkan situs yang memakainya.
+
+- **Satu rasio untuk seluruh situs, dipakai bingkai maupun sumber.** Nilainya
+  `--ratio-visual` di `src/styles/global.css`, saat ini 16∶9. Bingkai memakai
+  `object-fit: cover`, jadi sumber berasio lain **tidak** diperkecil — ia
+  dipotong, diam-diam, di setiap ukuran layar. Sumber 1∶1 pada bingkai 16∶9
+  kehilangan 22% teratas dan 22% terbawah, dan judul gambar hampir selalu ada di
+  sana. Repo rujukan kehilangan judul pada sebelas banner sekaligus sebelum ada
+  yang menyadarinya, dan tidak ada satu pun build yang gagal karenanya.
+- **Mengubah `--ratio-visual` berarti membangkitkan ulang seluruh seni.**
+  Mengubahnya hanya di CSS memindahkan potongannya, bukan menghilangkannya.
+- **Format dibaca dari isi berkas, bukan dari ekstensinya.** Sebelas berkas di
+  repo rujukan ber-ekstensi `.png` padahal isinya JPEG.
+- **SVG wajib XML valid.** Satu `&` telanjang membuat browser diam-diam gagal
+  merender gambarnya — tanpa satu pun pesan error.
+- **Teks di dalam gambar hanya label topik.** Tanpa nominal, tanggal, nomor
+  registrasi, nama orang, dokumen tiruan, atau antarmuka aplikasi pemerintah.
+  Angka di dalam gambar tidak bisa membawa sumber dan dasar hukumnya, sehingga
+  ia lolos dari aturan yang menjaga seluruh angka lain — dan ia tidak ikut
+  diperbarui saat tarifnya berubah.
+- **Tanpa lambang, logo, atau atribut instansi negara — termasuk di dalam
+  ilustrasi.** Situs dari template ini adalah portal independen, dan lambang
+  negara di halamannya membantah pernyataan itu dalam satu pandangan.
+- **Teks terkecil di dalam SVG minimal 22px pada kanvas 800px.** Pada kartu
+  selebar 328px — viewport 360px — kanvas 800px tampil pada skala 0,41, jadi di
+  bawah ambang itu teksnya tampil di bawah 9px dan praktis tidak terbaca.
+- **`src: undefined` adalah keadaan yang didukung.** Setiap pemanggil merender
+  `.visual-placeholder`. Ilustrasi yang hilang tidak boleh menjadi halaman yang
+  hilang — maupun bingkai setinggi nol.
+
+Dua aturan isi di atas — teks gambar dan lambang instansi — **tidak bisa
+diperiksa mesin**. Katakan itu terus terang alih-alih membiarkannya tampak
+terjaga; aturan yang tampak terjaga padahal tidak lebih berbahaya daripada
+aturan yang jelas-jelas manual.
 
 ### Konfigurasi
 
@@ -97,6 +144,8 @@ Konten ditarik saat **build**, bukan saat request.
 - [ ] Halaman baru bekerja dengan JavaScript dimatikan.
 - [ ] String antarmuka baru masuk ke SELURUH katalog locale.
 - [ ] Locale default dan locale berprefiks menghasilkan jumlah halaman yang sama.
+- [ ] Gambar baru berasio `--ratio-visual`, ekstensinya sesuai isi berkas, tanpa
+      lambang instansi maupun data tiruan, dan teksnya terbaca pada lebar 360px.
 - [ ] Variabel env baru terdokumentasi di `.env.example`.
 - [ ] Dokumen yang menjelaskan perilaku yang berubah ikut diperbarui.
 
