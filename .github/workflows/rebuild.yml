@@ -1,0 +1,111 @@
+name: Rebuild
+
+# ---------------------------------------------------------------------------
+# Memicu build ulang situs di Coolify.
+#
+# ## Ini BUKAN jalur utama
+#
+# Jalur utama konten berjalan tanpa GitHub sama sekali: awcms menerbitkan post,
+# outbox-nya mengirim webhook ke Coolify, Coolify menarik repo dan membangun
+# ulang. Rinciannya di docs/deploy-coolify.md.
+#
+# Workflow ini ada untuk dua hal yang tidak dijawab jalur itu:
+#
+#   1. `workflow_dispatch` — tombol "rebuild sekarang" saat seseorang perlu
+#      memaksa build tanpa menerbitkan apa pun di awcms.
+#   2. `schedule` — jaring pengaman. Webhook bisa hilang: awcms sedang mati saat
+#      dispatcher mencoba, tokennya dicabut, atau consumer-nya di-pause dan lupa
+#      dilanjutkan. Tanpa jaring ini situs bisa basi berhari-hari tanpa satu pun
+#      sinyal, karena tidak ada yang gagal — yang terjadi justru tidak ada yang
+#      terjadi. Sekali sehari cukup untuk memulihkan diri dan cukup murah untuk
+#      diabaikan.
+#
+# `repository_dispatch` juga diterima, untuk deployment yang lebih memilih
+# GitHub sebagai perantara alih-alih memberi awcms kredensial Coolify.
+# ---------------------------------------------------------------------------
+
+on:
+  workflow_dispatch:
+    inputs:
+      alasan:
+        description: "Kenapa rebuild ini dipicu (masuk ke ringkasan run)"
+        required: false
+        default: "Dipicu manual"
+  repository_dispatch:
+    types: [awcms-content-published]
+  schedule:
+    # 19:10 UTC = 02:10 WIB. Jam sepi, dan bukan menit ke-0 — GitHub menunda
+    # cron yang menumpuk di awal jam, kadang sampai puluhan menit.
+    - cron: "10 19 * * *"
+
+# Dua rebuild yang tumpang tindih hanya membuang slot builder; yang terakhir
+# selalu yang benar karena ia menarik konten terbaru.
+concurrency:
+  group: rebuild
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  picu:
+    name: Picu deploy Coolify
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      # Repo template ini sendiri tidak punya instans Coolify — ia cetakan,
+      # bukan situs. Sama seperti gerbang build di ci.yml, syaratnya dinyatakan
+      # eksplisit supaya "tidak jalan" tidak pernah menyamar jadi "lulus".
+      - name: Periksa apakah target deploy dikonfigurasi
+        id: syarat
+        run: |
+          if [ -n "${{ vars.COOLIFY_APP_UUID }}" ] && [ -n "${{ vars.COOLIFY_API_URL }}" ]; then
+            echo "siap=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "siap=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "### Rebuild DILEWATI"
+              echo ""
+              echo "\`vars.COOLIFY_API_URL\` atau \`vars.COOLIFY_APP_UUID\` kosong."
+              echo ""
+              echo "Ini normal untuk repo template itu sendiri. Untuk sebuah situs, isi repository variables \`COOLIFY_API_URL\` dan \`COOLIFY_APP_UUID\`, serta secret \`COOLIFY_API_TOKEN\` — lihat \`docs/deploy-coolify.md\`."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Picu deploy
+        if: steps.syarat.outputs.siap == 'true'
+        env:
+          COOLIFY_API_URL: ${{ vars.COOLIFY_API_URL }}
+          COOLIFY_APP_UUID: ${{ vars.COOLIFY_APP_UUID }}
+          COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN }}
+          ALASAN: ${{ github.event.inputs.alasan || github.event.action || github.event_name }}
+        run: |
+          set -euo pipefail
+
+          # Endpoint deploy Coolify, bukan /restart. `/restart` hanya membuat
+          # ulang container dari image yang SUDAH ada — ia tidak menarik repo
+          # dan tidak membangun ulang, sehingga konten baru tidak pernah masuk.
+          # Ini persis jebakan yang sudah terdokumentasi di
+          # ahliweb/serv-dinkesdocker docs/17-simfar-autodeploy.md.
+          kode=$(curl -sS -o /tmp/jawaban.json -w '%{http_code}' \
+            -X GET "${COOLIFY_API_URL%/}/api/v1/deploy?uuid=${COOLIFY_APP_UUID}" \
+            -H "Authorization: Bearer ${COOLIFY_API_TOKEN}" \
+            -H "Accept: application/json")
+
+          echo "HTTP $kode"
+          cat /tmp/jawaban.json
+
+          if [ "$kode" -lt 200 ] || [ "$kode" -ge 300 ]; then
+            echo "::error::Coolify menolak permintaan deploy (HTTP $kode)."
+            exit 1
+          fi
+
+          {
+            echo "### Rebuild dipicu"
+            echo ""
+            echo "- Alasan: \`${ALASAN}\`"
+            echo "- Aplikasi Coolify: \`${COOLIFY_APP_UUID}\`"
+            echo ""
+            echo "Permintaan ini hanya MEMICU build. Hasil build-nya ada di dasbor Coolify — sukses di sini bukan pernyataan bahwa situsnya berhasil dibangun."
+          } >> "$GITHUB_STEP_SUMMARY"

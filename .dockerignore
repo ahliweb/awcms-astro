@@ -1,0 +1,21 @@
+# Jangan pernah mengirim secret ke build context.
+.env
+.env.*
+!.env.example
+
+# Dipasang ulang / dibangun ulang di dalam image.
+node_modules/
+dist/
+.astro/
+
+# Tidak dipakai membangun, dan menyalinnya membatalkan cache lapisan sumber
+# setiap kali ada commit atau catatan yang berubah.
+.git/
+.github/
+.claude/
+.changesets/
+docs/
+*.md
+
+.DS_Store
+npm-debug.log*
