@@ -15,10 +15,18 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    name: Build
+  # ---------------------------------------------------------------------------
+  # Selalu jalan. Tidak butuh backend apa pun.
+  #
+  # `astro check` menjalankan typecheck penuh plus diagnostik template — ia
+  # menangkap komponen yang merujuk prop yang tidak ada, impor yang putus, dan
+  # tipe adapter yang menyimpang dari kontraknya. Itu adalah sebagian besar
+  # cara template ini bisa rusak, dan tidak satu pun darinya butuh konten.
+  # ---------------------------------------------------------------------------
+  check:
+    name: Check
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@v7
@@ -33,27 +41,79 @@ jobs:
       - name: Pasang dependency
         run: npm ci
 
-      # `astro check` (typecheck + template diagnostics) lalu `astro build`.
-      #
-      # The build reaches a real awcms instance, so CI needs one. Without the
-      # variables below the build fails at the first content fetch — by design:
-      # a template whose CI passes without ever proving it can talk to its
-      # content source is a template that discovers the break in production.
+      - name: Astro check
+        run: npm run check
+
+      - name: Audit dependency
+        run: npm audit --audit-level=low
+
+  # ---------------------------------------------------------------------------
+  # Build penuh — hanya jalan bila repo ini benar-benar punya sumber konten.
+  #
+  # ## Kenapa dikondisikan, dan kenapa BUKAN dengan memberi build sebuah
+  # ## backend tiruan
+  #
+  # `npm run build` menarik konten dari awcms sungguhan. Repo template ini
+  # sendiri tidak punya instans awcms — ia adalah cetakan, bukan situs. Ada tiga
+  # pilihan dan dua di antaranya salah:
+  #
+  #   1. Jalankan build tanpa variabel apa pun. `main` merah selamanya, dan
+  #      merah permanen berhenti dibaca orang — persis saat ia akhirnya berarti
+  #      sesuatu.
+  #   2. Beri build sebuah awcms tiruan supaya selalu hijau. Ini yang paling
+  #      menggoda dan paling berbahaya: gerbangnya lulus tanpa pernah
+  #      membuktikan template ini bisa bicara dengan sumber kontennya, sehingga
+  #      kerusakan integrasi baru ditemukan di produksi.
+  #   3. Nyatakan syaratnya secara eksplisit: build jalan kalau — dan hanya
+  #      kalau — `vars.AWCMS_API_URL` diisi. Sebuah SITUS yang dibangun dari
+  #      template ini selalu mengisinya, jadi di sana gerbang ini selalu jalan.
+  #
+  # Pilihan 3 yang dipakai. `report` di bawah membuat kondisinya terlihat di
+  # ringkasan run, supaya "build tidak jalan" tidak pernah menyamar sebagai
+  # "build lulus".
+  # ---------------------------------------------------------------------------
+  build:
+    name: Build
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Pasang dependency
+        run: npm ci
+
+      - name: Laporkan apakah sumber konten dikonfigurasi
+        run: |
+          if [ -n "${{ vars.AWCMS_API_URL }}" ]; then
+            echo "AWCMS_API_URL terisi — build penuh dijalankan." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "AWCMS_API_URL KOSONG — build penuh DILEWATI." >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "Ini normal untuk repo template itu sendiri. Untuk sebuah situs, isi repository variables SITE_URL, AWCMS_API_URL, AWCMS_TENANT_CODE dan secret AWCMS_API_TOKEN — tanpa itu integrasi ke awcms tidak pernah teruji di CI." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Build
+        if: vars.AWCMS_API_URL != ''
         run: npm run build
         env:
           SITE_URL: ${{ vars.SITE_URL }}
           SITE_NAME: ${{ vars.SITE_NAME }}
+          SITE_DESCRIPTION: ${{ vars.SITE_DESCRIPTION }}
           SITE_LOCALES: ${{ vars.SITE_LOCALES }}
           AWCMS_API_URL: ${{ vars.AWCMS_API_URL }}
           AWCMS_TENANT_CODE: ${{ vars.AWCMS_TENANT_CODE }}
           AWCMS_DEFAULT_TENANT_CODE: ${{ vars.AWCMS_DEFAULT_TENANT_CODE }}
           AWCMS_API_TOKEN: ${{ secrets.AWCMS_API_TOKEN }}
 
-      - name: Audit dependency
-        run: npm audit --audit-level=low
-
       - name: Simpan hasil build
+        if: vars.AWCMS_API_URL != ''
         uses: actions/upload-artifact@v7
         with:
           name: dist
