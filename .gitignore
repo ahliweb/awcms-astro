@@ -9,3 +9,34 @@ npm-debug.log*
 pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# graphify skill: cache dan penanda yang spesifik mesin/pengguna tidak pernah
+# masuk repo. Aturan ini mengikuti `ahliweb/awcms`, yang MELACAK keluaran graf
+# yang bisa dibagikan (`graph.json`, `manifest.json`, `GRAPH_REPORT.md`) tetapi
+# tidak pernah melacak yang di bawah ini.
+#
+# Ditambahkan setelah sebuah run meninggalkan `graphify-out/cache/` (480 KB)
+# sebagai direktori untracked di repo ini: satu `git add -A` yang tidak hati-hati
+# sudah cukup untuk memasukkannya ke riwayat selamanya.
+graphify-out/cache/
+
+# SELURUH berkas ber-titik di dalam graphify-out adalah intermediate atau
+# penanda, tidak pernah keluaran yang dibagikan: keluaran yang dibagikan bernama
+# tanpa titik (`graph.json`, `manifest.json`, `cost.json`, `GRAPH_REPORT.md`).
+# Aturan menyeluruh dipakai, bukan enumerasi, karena run yang TERPUTUS
+# meninggalkan berkas yang tidak ada di daftar mana pun — repo ini membawa tujuh
+# di antaranya saat aturan ini ditulis (`.graphify_ast.json`,
+# `.graphify_chunk_NN.json`, `.graphify_detect.json`, `.graphify_uncached.txt`,
+# `.detect_err.txt`, dan dua penanda path). Enumerasi hanya menjaga run yang
+# selesai rapi; justru run yang gagal yang meninggalkan sampah.
+graphify-out/.*
+
+# Salinan bertanggal yang dibuat graphify pada setiap rebuild — duplikat penuh
+# dari artefak hidup di sebelahnya.
+graphify-out/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/
+
+# graph.html sengaja tidak dilacak: graphify berhenti memancarkannya begitu
+# korpus melewati batas node visualisasi (salinan ter-commit lalu membusuk diam
+# -diam), dan ukurannya menggandakan beban tiap rebuild terhadap riwayat.
+# Ia satu perintah saja dari `graph.json` yang memang dilacak.
+graphify-out/graph.html
