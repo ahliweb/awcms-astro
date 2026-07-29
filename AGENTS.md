@@ -16,7 +16,7 @@ Konten ditarik saat **build**, bukan saat request.
 1. Satu iterasi = satu scope atomic. Selesaikan dan validasi sebelum pindah.
 2. Buat branch dari `main` sebelum menyentuh kode. Jangan commit langsung ke
    `main`.
-3. `npm run build` harus bersih sebelum pekerjaan dinyatakan selesai. `build`
+3. `bun run build` harus bersih sebelum pekerjaan dinyatakan selesai. `build`
    sudah mencakup `astro check`; melewatinya adalah penyebab tersering "hijau
    lokal, merah di CI".
 4. Conventional Commits (`feat:`, `fix:`, `docs:`, `refactor:`, `chore:`).
@@ -126,21 +126,37 @@ aturan yang jelas-jelas manual.
   Menstandarkan situs baru tidak boleh menuntut penyuntingan komponen.
 - **Setiap variabel env yang dibaca kode wajib ada di `.env.example`**, disertai
   penjelasan konsekuensi salah isi — bukan sekadar nama.
-- **`package-lock.json` wajib merupakan pernyataan tentang repo ini.**
-  `npm ci` menolak lockfile yang KURANG tetapi menerima lockfile yang BERLEBIH
-  dengan exit 0 — paket tak-terdeklarasi tetap terpasang di setiap CI run tanpa
-  satu peringatan pun. `npm run check:lockfile` menutup celah itu; ia berjalan
-  di CI **sebelum** `npm ci`.
-- **Regenerasi lockfile lewat `npm install` penuh**, tidak pernah
-  `--package-lock-only`. Yang terakhir menghilangkan biner opsional lintas
-  platform, dan kegagalannya baru muncul di mesin orang lain.
+- **Bun adalah runtime dan package manager repo ini** (ADR-0015). Versinya
+  dipin di TIGA tempat yang wajib bergerak bersama: `packageManager` +
+  `engines.bun` di `package.json`, `bun-version` di `.github/workflows/ci.yml`,
+  dan tag image di `Dockerfile`. Menaikkan salah satu saja membuat build lokal,
+  CI, dan image berbeda perilaku — diam-diam.
+- **`bun.lock` wajib merupakan pernyataan tentang repo ini**, dan wajib
+  di-commit. `bun run check:lockfile` memeriksanya sebelum install: nama
+  workspace harus milik repo ini (lockfile hasil salinan repo lain persis
+  dikenali dari sini) dan blok dependency harus sama persis dengan
+  `package.json`. Install di CI dan di image selalu
+  `bun install --frozen-lockfile`.
+- **Regenerasi lockfile penuh**: `rm -rf node_modules bun.lock && bun install`.
+- **Jangan menamai script sama dengan biner yang dipanggilnya.** `bun run`
+  menyelesaikan nama ke script `package.json` **sebelum** `node_modules/.bin`,
+  jadi sebuah script `"astro": "bun --bun astro"` membuat setiap script lain
+  yang memanggil `astro` masuk rekursi tak terbatas — dan matinya berbunyi
+  `E2BIG: Argument list too long`, yang tidak menyebut sebabnya sama sekali.
+  Untuk perintah Astro sekali pakai: `bunx astro <perintah>`.
+- **`bun install` TIDAK menolak peer-dependency mismatch** seperti npm — ia
+  memperingatkan lalu memasang. Karena itu batas peer yang penting (mis. pin
+  `typescript` untuk `@astrojs/check`) ditulis eksplisit di
+  `.github/dependabot.yml`; tanpa itu bump yang tidak didukung terpasang mulus
+  dan gagal jauh dari sebabnya.
 - **Baca env lewat `src/lib/env.ts`**, bukan `import.meta.env` langsung.
   Variabel non-`PUBLIC_` bisa terbaca `undefined` di dalam chunk prerender
   meskipun nilainya ada di `.env`, dan kegagalannya menyamar jadi masalah lain.
 
 ## Definition of Done
 
-- [ ] `npm run build` bersih (termasuk `astro check`).
+- [ ] `bun run build` bersih (termasuk `astro check`).
+- [ ] `bun test` hijau.
 - [ ] Halaman baru bekerja dengan JavaScript dimatikan.
 - [ ] String antarmuka baru masuk ke SELURUH katalog locale.
 - [ ] Locale default dan locale berprefiks menghasilkan jumlah halaman yang sama.
@@ -155,3 +171,21 @@ aturan yang jelas-jelas manual.
 Mengubahnya ke `'server'` menarik kembali runtime, dependensi basis data yang
 hidup, dan seluruh kontrol operasional keluarga AWCMS. Keputusan itu ditulis
 sebagai ADR lebih dulu, bukan diambil lewat satu baris di `astro.config.mjs`.
+
+**Satu ADR seperti itu sudah ada:**
+[ADR-0014](docs/adr/0014-rendering-campuran-dan-bff-portal.md) (Jualanku.info)
+memutuskan pola **static-by-default dengan rute on-demand** — adapter dipasang,
+`output` **tetap** `static`, dan hanya `/penjual/**`, `/affiliate/**` (selain
+landing), serta `/_portal-api/**` yang menyatakan `export const prerender = false`.
+Rancangannya di [`docs/awcms-astro/jualanku/`](docs/awcms-astro/jualanku/README.md).
+
+Tiga hal yang perlu dibaca sebelum menyentuh area itu:
+
+- **Belum ada implementasinya.** Adapter, rute portal, dan `_portal-api` belum
+  ada; `astro.config.mjs` masih statis tanpa adapter. Prasyaratnya di
+  [`04-kesiapan.md`](docs/awcms-astro/jualanku/04-kesiapan.md).
+- **BFF tidak memutuskan apa pun yang punya konsekuensi bisnis.** Kepemilikan,
+  entitlement, dan transisi status diputuskan `awcms`. Aturan yang hanya hidup di
+  repo ini adalah aturan yang tidak ada.
+- **Aksesibilitas permukaan Jualanku bertarget WCAG 2.2 AA**, naik dari 2.1 AA di
+  atas. Aturan lain di dokumen ini tetap berlaku penuh.
