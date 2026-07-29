@@ -1,40 +1,43 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 /**
- * Memastikan `package-lock.json` benar-benar milik `package.json` di repo ini.
+ * Memastikan `bun.lock` benar-benar milik `package.json` di repo ini.
  *
  * ## Kenapa gerbang ini ada
  *
- * `npm ci` TIDAK menangkap kelas cacat ini. Ia menolak lockfile yang KURANG —
- * dependency di manifest yang tidak ada di lock — tetapi menerima lockfile yang
- * BERLEBIH tanpa sepatah kata pun. Repo ini lahir dari menyalin repo lain, dan
- * `package.json`-nya ditulis ulang sementara lockfile-nya ikut terbawa apa
- * adanya. Hasilnya lolos `npm ci` dengan exit 0: setiap CI run dan setiap
- * clone memasang `sharp` dan `@astrojs/markdown-remark` yang tidak dideklarasi
- * siapa pun, sementara lockfile-nya masih mengaku bernama
- * `web-lalulintasmelayani.com@1.7.0`.
+ * Repo ini lahir dari menyalin repo lain: `package.json`-nya ditulis ulang
+ * sementara lockfile-nya ikut terbawa apa adanya, dan setiap CI run memasang
+ * `sharp` serta `@astrojs/markdown-remark` yang tidak dideklarasi siapa pun —
+ * dengan exit 0, karena `npm ci` menolak lockfile yang KURANG tetapi menerima
+ * lockfile yang BERLEBIH tanpa sepatah kata pun.
  *
- * `npm ls` juga tidak bisa dipakai sebagai gerbang: ia MENCETAK "extraneous"
- * lalu keluar dengan status 0 — hijau sambil melaporkan masalahnya.
+ * Sejak ADR-0015 repo ini memakai Bun, dan `bun install --frozen-lockfile`
+ * memang lebih ketat daripada `npm ci`. Gerbang ini tetap dipertahankan karena
+ * tiga hal yang tidak dijawab perintah itu:
  *
- * Yang berbahaya bukan `sharp`-nya. Yang berbahaya adalah lockfile berhenti
- * menjadi pernyataan tentang proyek ini: audit dependency memeriksa pohon yang
- * salah, dan versi terpasang tidak lagi bisa dibaca dari manifest.
+ *   1. Ia berjalan **sebelum** dependency dipasang dan tanpa jaringan, sehingga
+ *      kegagalannya terbaca "lockfile menyimpang" — bukan kegagalan install
+ *      yang harus ditebak sebabnya.
+ *   2. Ia memeriksa **identitas** lockfile (`workspaces[""].name`). Lockfile
+ *      hasil salinan repo lain persis dikenali dari sini, dan itu justru cacat
+ *      yang benar-benar pernah terjadi di repo ini.
+ *   3. Ia menyatakan aturannya sebagai kode yang bisa dibaca, bukan sebagai
+ *      perilaku implisit sebuah flag yang bisa berubah antar versi Bun.
  *
  * ## Apa yang diperiksa
  *
- * Identitas (name, version) dan SELURUH blok dependency di entri root lockfile
- * harus sama persis dengan `package.json`. Murni pembacaan berkas — tanpa
- * jaringan, tanpa `node_modules`, jadi aman dijalankan sebelum `npm ci`.
+ * Nama workspace root dan SELURUH blok dependency di entri root lockfile harus
+ * sama persis dengan `package.json`. Murni pembacaan berkas — tanpa jaringan,
+ * tanpa `node_modules`, jadi aman dijalankan sebelum `bun install`.
  *
  * ## Yang SENGAJA tidak diperiksa
  *
- * Isi pohon di luar entri root. Memverifikasinya menuntut penyelesaian ulang
- * dependency, dan cara termurah untuk itu — `npm install --package-lock-only` —
- * menghasilkan lockfile yang MENGHILANGKAN paket biner opsional lintas
- * platform (`@esbuild/*`, `@astrojs/compiler-binding-*`, `fsevents`). Gerbang
- * yang menuntut keluaran itu justru akan memaksa lockfile yang membuat
- * `npm ci` gagal di macOS dan Windows. Regenerasi lockfile WAJIB lewat
- * `npm install` penuh.
+ * Isi pohon di luar entri root, dan **versi proyek**: `bun.lock` tidak merekam
+ * `version` sama sekali (berbeda dari `package-lock.json` yang menyimpannya di
+ * dua tempat). Karena itu menaikkan versi rilis tidak lagi bisa membuat
+ * lockfile hanyut — satu kelas cacat yang hilang dengan sendirinya setelah
+ * pindah ke Bun.
+ *
+ * Regenerasi lockfile: `rm -rf node_modules bun.lock && bun install`.
  */
 
 import { readFileSync } from "node:fs";
@@ -43,45 +46,82 @@ import { fileURLToPath } from "node:url";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-function bacaJson(namaBerkas) {
+/**
+ * `bun.lock` adalah JSONC: ia memakai trailing comma, yang ditolak `JSON.parse`.
+ * Menghapusnya dengan regex sederhana salah — koma di dalam string ("a, b")
+ * bisa ikut termakan. Pemindai di bawah melacak keadaan string dan escape, lalu
+ * hanya membuang koma yang benar-benar di luar string dan diikuti `}` atau `]`.
+ *
+ * @param {string} teks
+ * @returns {string}
+ */
+function buangTrailingComma(teks) {
+  let hasil = "";
+  let diDalamString = false;
+  let terescape = false;
+
+  for (let i = 0; i < teks.length; i += 1) {
+    const c = teks[i];
+
+    if (diDalamString) {
+      hasil += c;
+      if (terescape) terescape = false;
+      else if (c === "\\") terescape = true;
+      else if (c === '"') diDalamString = false;
+      continue;
+    }
+
+    if (c === '"') {
+      diDalamString = true;
+      hasil += c;
+      continue;
+    }
+
+    if (c === ",") {
+      let j = i + 1;
+      while (j < teks.length && /\s/.test(teks[j])) j += 1;
+      if (teks[j] === "}" || teks[j] === "]") continue;
+    }
+
+    hasil += c;
+  }
+
+  return hasil;
+}
+
+/** @param {string} namaBerkas */
+function bacaJsonc(namaBerkas) {
   const jalur = join(repoRoot, namaBerkas);
   try {
-    return JSON.parse(readFileSync(jalur, "utf8"));
+    return JSON.parse(buangTrailingComma(readFileSync(jalur, "utf8")));
   } catch (error) {
     console.error(`Tidak bisa membaca ${namaBerkas}: ${error.message}`);
     process.exit(1);
   }
 }
 
-const pkg = bacaJson("package.json");
-const lock = bacaJson("package-lock.json");
-const akar = lock.packages?.[""];
+const pkg = bacaJsonc("package.json");
+const lock = bacaJsonc("bun.lock");
+const akar = lock.workspaces?.[""];
 
 const masalah = [];
 
 if (!akar) {
   masalah.push(
-    'package-lock.json tidak punya entri root (packages[""]). Butuh lockfileVersion 2 atau lebih.'
+    'bun.lock tidak punya entri workspace root (workspaces[""]). Regenerasi lockfile.'
   );
 }
 
-if (lock.lockfileVersion < 3) {
+if (lock.lockfileVersion === undefined) {
   masalah.push(
-    `lockfileVersion ${lock.lockfileVersion} — repo ini menuntut 3 (npm >= 10, sesuai "engines").`
+    "bun.lock tidak menyatakan lockfileVersion — kemungkinan besar bukan lockfile Bun."
   );
 }
 
-for (const bidang of ["name", "version"]) {
-  if (lock[bidang] !== pkg[bidang]) {
-    masalah.push(
-      `package-lock.json ${bidang} = ${JSON.stringify(lock[bidang])}, package.json ${bidang} = ${JSON.stringify(pkg[bidang])}.`
-    );
-  }
-  if (akar && akar[bidang] !== pkg[bidang]) {
-    masalah.push(
-      `Entri root lockfile ${bidang} = ${JSON.stringify(akar[bidang])}, package.json ${bidang} = ${JSON.stringify(pkg[bidang])}.`
-    );
-  }
+if (akar && akar.name !== pkg.name) {
+  masalah.push(
+    `Entri root lockfile name = ${JSON.stringify(akar.name)}, package.json name = ${JSON.stringify(pkg.name)}. Lockfile ini milik proyek lain.`
+  );
 }
 
 const BLOK_DEPENDENCY = [
@@ -97,10 +137,12 @@ for (const blok of BLOK_DEPENDENCY) {
 
   for (const [nama, rentang] of Object.entries(diManifest)) {
     if (!(nama in diLock)) {
-      masalah.push(`${blok}: "${nama}" ada di package.json tetapi tidak di lockfile.`);
+      masalah.push(
+        `${blok}: "${nama}" ada di package.json tetapi tidak di bun.lock.`
+      );
     } else if (diLock[nama] !== rentang) {
       masalah.push(
-        `${blok}: "${nama}" diminta ${rentang} di package.json, tetapi lockfile mencatat ${diLock[nama]}.`
+        `${blok}: "${nama}" diminta ${rentang} di package.json, tetapi bun.lock mencatat ${diLock[nama]}.`
       );
     }
   }
@@ -108,20 +150,20 @@ for (const blok of BLOK_DEPENDENCY) {
   for (const nama of Object.keys(diLock)) {
     if (!(nama in diManifest)) {
       masalah.push(
-        `${blok}: "${nama}" ada di lockfile tetapi TIDAK dideklarasi package.json — ia tetap terpasang di setiap npm ci.`
+        `${blok}: "${nama}" ada di bun.lock tetapi TIDAK dideklarasi package.json — ia tetap terpasang di setiap install.`
       );
     }
   }
 }
 
 if (masalah.length > 0) {
-  console.error("package-lock.json tidak sinkron dengan package.json:\n");
+  console.error("bun.lock tidak sinkron dengan package.json:\n");
   for (const baris of masalah) {
     console.error(`  - ${baris}`);
   }
-  console.error("\nPerbaiki dengan regenerasi PENUH (bukan --package-lock-only):");
-  console.error("\n  rm -rf node_modules package-lock.json && npm install\n");
+  console.error("\nPerbaiki dengan regenerasi penuh:");
+  console.error("\n  rm -rf node_modules bun.lock && bun install\n");
   process.exit(1);
 }
 
-console.log("package-lock.json sinkron dengan package.json.");
+console.log("bun.lock sinkron dengan package.json.");

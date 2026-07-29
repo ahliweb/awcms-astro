@@ -28,9 +28,10 @@ Sumber resmi yang dipakai:
 
 ## Definition of Done
 
-- [ ] `npm run build` sukses tanpa error `astro check`
-- [ ] `npm run audit` melaporkan 0 error
-- [ ] `npm audit` melaporkan 0 kerentanan
+- [ ] `bun run build` sukses tanpa error `astro check`
+- [ ] `bun test` hijau
+- [ ] `bun run audit` melaporkan 0 error
+- [ ] `bun audit` melaporkan 0 kerentanan
 - [ ] Tampilan layak pakai dari 360px sampai desktop
 - [ ] Dokumentasi diperbarui bila workflow/struktur/konfigurasi berubah
 - [ ] Changeset ditulis di `.changesets/`

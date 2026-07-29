@@ -42,7 +42,7 @@ flowchart TB
 | `src/content.config.ts` | Diganti kontrak API + validasi sisi server |
 | `src/content/*.md` | Migrasi sekali jalan ke `awcms_blog_posts` |
 | `src/data/*.ts` | Menjadi taxonomy/term atau tetap statis — lihat di bawah |
-| `astro.config.mjs` | `output: 'static'` → `'server'`; runtime mengikuti standar keluarga (Bun) |
+| `astro.config.mjs` | `output: 'static'` **tetap**; adapter server dipasang dan hanya rute privat memakai `prerender = false` ([ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md)). Runtime sudah Bun sejak [ADR-0015](../adr/0015-runtime-bun-menutup-divergence-keluarga.md) |
 
 ## Pemetaan model data
 
@@ -107,7 +107,7 @@ Rekomendasi: **wilayah menjadi taxonomy term** (agar bisa difilter bersama artik
 
 Ini bagian terpenting dokumen ini.
 
-Hari ini, jaminan konten ditegakkan **saat build**: Zod di `content.config.ts` menolak frontmatter yang salah, dan `npm run audit` menolak pelanggaran aturan domain. Begitu konten pindah ke basis data, **build tidak lagi melihat isinya** — artikel dibuat lewat antarmuka, kapan saja, oleh siapa saja yang berwenang.
+Hari ini, jaminan konten ditegakkan **saat build**: Zod di `content.config.ts` menolak frontmatter yang salah, dan `bun run audit` menolak pelanggaran aturan domain. Begitu konten pindah ke basis data, **build tidak lagi melihat isinya** — artikel dibuat lewat antarmuka, kapan saja, oleh siapa saja yang berwenang.
 
 Tanpa penggantinya, seluruh jaminan berikut lenyap dalam senyap:
 
@@ -159,7 +159,7 @@ flowchart TD
   C --> D["4. Unggah gambar ke media-library, isi featured/seo media id"]
   D --> E["5. Tulis adapter lib/content.ts, kontrak LocalizedArticle tidak berubah"]
   E --> F["6. Bandingkan keluaran: 378 halaman, isi identik"]
-  F --> G["7. Pindah output ke server, runtime Bun"]
+  F --> G["7. Pasang adapter; rute privat jadi on-demand"]
   G --> H["8. Sesuaikan gerbang audit ke sumber API"]
 ```
 

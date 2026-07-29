@@ -16,7 +16,7 @@ Yang tetap relevan:
 
 | Area | Risiko |
 | --- | --- |
-| Dependency | Kerentanan transitif pada rantai build. Dijaga `npm audit`; wajib nol sebelum rilis |
+| Dependency | Kerentanan transitif pada rantai build. Dijaga `bun audit`; wajib nol sebelum rilis |
 | Konten | Markdown dirender sebagai HTML. Markup mentah di badan artikel dapat menyisipkan skrip |
 | Tautan keluar | Tautan ke kanal resmi wajib `rel="noopener noreferrer"` bila `target="_blank"` |
 | Aset | SVG yang dirasterisasi saat build dapat merujuk sumber daya eksternal |
@@ -28,7 +28,7 @@ Yang tetap relevan:
 - **Tidak ada skrip, SDK, widget, atau piksel pihak ketiga** — termasuk tombol berbagi resmi milik penyedia sosial. Berbagi memakai tautan `GET` biasa sehingga tidak ada data pembaca yang terkirim sebelum ia sendiri mengeklik.
 - **Tidak ada pengumpulan data pribadi pembaca** (NIK, nomor rangka, nomor mesin, nomor polisi, foto dokumen) lewat form apa pun.
 - **Tidak ada analytics yang melacak individu.**
-- `npm audit` wajib melaporkan nol kerentanan sebelum rilis.
+- `bun audit` wajib melaporkan nol kerentanan sebelum rilis.
 
 ## Bukan kerentanan keamanan
 

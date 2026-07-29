@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 /**
  * Menaikkan versi, melipat changeset ke CHANGELOG.md, dan menandai rilis `vX.Y.Z`.
  *
@@ -7,9 +7,9 @@
  * mesin, sehingga yang tersisa untuk manusia hanya menilai besar perubahannya.
  *
  * Pemakaian:
- *   npm run release -- patch            # pratinjau: tidak menyentuh berkas
- *   npm run release -- minor --apply    # tulis package.json + CHANGELOG.md
- *   npm run release -- minor --apply --commit   # sekalian commit dan tag
+ *   bun run release patch            # pratinjau: tidak menyentuh berkas
+ *   bun run release minor --apply    # tulis package.json + CHANGELOG.md
+ *   bun run release minor --apply --commit   # sekalian commit dan tag
  *
  * Tanpa --apply skrip hanya melapor. Tanpa --commit berkas ditulis tetapi
  * commit dan tag diserahkan ke tangan manusia; perintah persisnya dicetak.
@@ -76,14 +76,14 @@ if (!apply) {
 }
 
 // ── Verifikasi sebelum menulis apa pun ───────────────────────────────────────
-console.log('\nMenjalankan npm run build ...');
-execSync('npm run build', { stdio: 'inherit' });
+console.log('\nMenjalankan bun run build ...');
+execSync('bun run build', { stdio: 'inherit' });
 // Gerbang audit konten belum ada di template ini (lihat README, "Yang belum
 // ada"). Memanggilnya tanpa syarat membuat setiap rilis gagal di langkah yang
 // tidak ada isinya; menjalankannya begitu ia ditulis adalah yang diinginkan.
 if (pkg.scripts?.audit) {
-  console.log('Menjalankan npm run audit ...');
-  execSync('npm run audit', { stdio: 'inherit' });
+  console.log('Menjalankan bun run audit ...');
+  execSync('bun run audit', { stdio: 'inherit' });
 }
 
 // ── Lipat changeset ke CHANGELOG.md ──────────────────────────────────────────
@@ -130,18 +130,13 @@ for (const f of pending) fs.unlinkSync(`.changesets/${f}`);
 pkg.version = next;
 fs.writeFileSync('package.json', `${JSON.stringify(pkg, null, 2)}\n`);
 
-// package-lock.json menyimpan versi di dua tempat. Bila hanya package.json yang
-// dinaikkan, keduanya hanyut diam-diam sampai ada yang kebetulan menjalankan
-// `npm install` — dan versi di lock inilah yang terbaca `npm ci` di CI.
-const lockPath = 'package-lock.json';
-if (fs.existsSync(lockPath)) {
-  const lock = JSON.parse(fs.readFileSync(lockPath, 'utf8'));
-  lock.version = next;
-  if (lock.packages?.['']) lock.packages[''].version = next;
-  fs.writeFileSync(lockPath, `${JSON.stringify(lock, null, 2)}\n`);
-}
+// Tidak ada lockfile yang perlu disentuh di sini. `package-lock.json` dulu
+// menyimpan versi proyek di DUA tempat, dan keduanya hanyut diam-diam setiap
+// kali hanya package.json yang dinaikkan. `bun.lock` tidak merekam versi sama
+// sekali (hanya nama workspace + rentang dependency), jadi kelas cacat itu
+// hilang bersama perpindahan ke Bun — lihat scripts/cek-lockfile.mjs.
 
-console.log(`\nCHANGELOG.md, package.json, dan package-lock.json diperbarui ke ${next}.`);
+console.log(`\nCHANGELOG.md dan package.json diperbarui ke ${next}.`);
 
 // ── Commit dan tag ───────────────────────────────────────────────────────────
 if (!commit) {

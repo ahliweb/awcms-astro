@@ -31,36 +31,44 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # Versi Node dibaca dari .nvmrc supaya tidak pernah menyimpang dari
-      # `engines` di package.json dan dari lingkungan pengembang.
-      - uses: actions/setup-node@v7
+      # Versi Bun dipin eksplisit dan harus sama dengan `packageManager` di
+      # package.json serta tag image di Dockerfile — tiga tempat yang wajib
+      # bergerak bersama (ADR-0015).
+      - uses: oven-sh/setup-bun@v2
         with:
-          node-version-file: .nvmrc
-          cache: npm
+          bun-version: "1.3.14"
 
-      # Sebelum `npm ci`, bukan sesudah. Gerbang ini murni pembacaan berkas,
-      # dan `npm ci` sendiri buta terhadap lockfile yang BERLEBIH — ia memasang
-      # paket tak-terdeklarasi lalu keluar dengan status 0. Menjalankannya lebih
-      # dulu membuat kegagalannya terbaca sebagai "lockfile menyimpang", bukan
-      # sebagai kegagalan typecheck di langkah yang tidak ada hubungannya.
+      - name: Cache Bun install cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            bun-${{ runner.os }}-
+
+      # Sebelum install, bukan sesudah. Gerbang ini murni pembacaan berkas, jadi
+      # kegagalannya terbaca sebagai "lockfile menyimpang" — bukan sebagai
+      # kegagalan install atau typecheck di langkah yang tidak ada hubungannya.
+      # `bun install --frozen-lockfile` di bawah adalah lapis kedua: ia menolak
+      # bun.lock yang tidak cocok dengan package.json.
       - name: Lockfile sinkron dengan package.json
-        run: npm run check:lockfile
+        run: bun run check:lockfile
 
       - name: Pasang dependency
-        run: npm ci
+        run: bun install --frozen-lockfile
 
       - name: Astro check
-        run: npm run check
+        run: bun run check
 
       # Runs in `check`, not `build`: these are pure unit tests over the block
       # renderer and need no content source at all. Putting them behind the
       # conditional build would mean the template repo — the one place this code
       # is actually reviewed — never runs them.
       - name: Unit tests
-        run: npm test
+        run: bun test
 
       - name: Audit dependency
-        run: npm audit --audit-level=low
+        run: bun audit --audit-level=low
 
   # ---------------------------------------------------------------------------
   # Build penuh — hanya jalan bila repo ini benar-benar punya sumber konten.
@@ -68,7 +76,7 @@ jobs:
   # ## Kenapa dikondisikan, dan kenapa BUKAN dengan memberi build sebuah
   # ## backend tiruan
   #
-  # `npm run build` menarik konten dari awcms sungguhan. Repo template ini
+  # `bun run build` menarik konten dari awcms sungguhan. Repo template ini
   # sendiri tidak punya instans awcms — ia adalah cetakan, bukan situs. Ada tiga
   # pilihan dan dua di antaranya salah:
   #
@@ -96,13 +104,20 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v7
+      - uses: oven-sh/setup-bun@v2
         with:
-          node-version-file: .nvmrc
-          cache: npm
+          bun-version: "1.3.14"
+
+      - name: Cache Bun install cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            bun-${{ runner.os }}-
 
       - name: Pasang dependency
-        run: npm ci
+        run: bun install --frozen-lockfile
 
       - name: Laporkan apakah sumber konten dikonfigurasi
         run: |
@@ -116,7 +131,7 @@ jobs:
 
       - name: Build
         if: vars.AWCMS_API_URL != ''
-        run: npm run build
+        run: bun run build
         env:
           SITE_URL: ${{ vars.SITE_URL }}
           SITE_NAME: ${{ vars.SITE_NAME }}

@@ -137,7 +137,7 @@ Kolom terakhir menunjukkan padanan yang harus dituju saat integrasi, agar kompon
 
 Setiap tombol dan setiap tautan yang dibungkus card atau area khusus mendapat satu sapuan cahaya yang bergerak **dari pojok kiri atas ke pojok kanan bawah** saat hover maupun fokus keyboard. Sapuan berjalan sekali per interaksi, tidak berulang dan tidak berdenyut.
 
-Daftar permukaan adalah kontrak, bukan kumpulan kebetulan. Ia ditulis satu kali di `src/styles/global.css` di antara penanda `kilau:permukaan:mulai` dan `kilau:permukaan:selesai`, dan `npm run audit` memeriksa daftar itu sama persis dengan tabel di bawah:
+Daftar permukaan adalah kontrak, bukan kumpulan kebetulan. Ia ditulis satu kali di `src/styles/global.css` di antara penanda `kilau:permukaan:mulai` dan `kilau:permukaan:selesai`, dan `bun run audit` memeriksa daftar itu sama persis dengan tabel di bawah:
 
 <!-- kilau:permukaan:mulai -->
 | Permukaan | Dipakai untuk |

@@ -12,9 +12,9 @@
  *      that nothing reaches the output except through `escapeHtml` and a fixed
  *      tag. That claim needs adversarial input, not sunny-day input.
  *
- * Run with `npm test`.
+ * Run with `bun test`.
  */
-import { test, describe } from "node:test";
+import { test, describe } from "bun:test";
 import assert from "node:assert/strict";
 
 import {

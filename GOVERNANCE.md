@@ -43,11 +43,11 @@ flowchart TD
   ADR --> Setuju{"Disetujui maintainer?"}
   Setuju -->|Ya| Branch
   Setuju -->|Tidak| Tutup["Ditutup, ADR tetap disimpan berstatus Ditolak"]
-  Branch --> Gerbang["npm run build + npm run audit hijau"]
+  Branch --> Gerbang["bun run build + bun test + bun run audit hijau"]
   Gerbang --> Review["Review maintainer"]
   Review --> Merge["Merge + changeset"]
   Merge --> Rilis{"Saatnya rilis?"}
-  Rilis -->|Ya| Tag["npm run release -- <level>"]
+  Rilis -->|Ya| Tag["bun run release &lt;level&gt;"]
   Rilis -->|Tidak| Selesai["Selesai"]
 ```
 

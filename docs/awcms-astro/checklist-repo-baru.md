@@ -17,7 +17,7 @@ Ambil dari repo rujukan: `src/lib/`, `src/layouts/`, `src/components/` (kecuali 
 - [ ] `src/data/` — data referensi yang tidak boleh diketik ulang di markdown.
 - [ ] `astro.config.mjs` — `site`, `compressHTML: true`, pipeline markdown, `serialize` sitemap.
 - [ ] `package.json` — `name`, `description`, `homepage`, `repository`, `engines`, dan seluruh skrip.
-- [ ] `.nvmrc` — konsisten dengan `engines`.
+- [ ] Versi Bun konsisten di tiga tempat: `packageManager` + `engines.bun`, `bun-version` di CI, dan tag image di `Dockerfile`.
 
 Pertanyaan yang menentukan bentuk skema: **kesalahan apa yang paling merugikan pembaca situs ini, dan field mana yang membuat kesalahan itu sulit dilakukan?** Di repo rujukan jawabannya `cakupan` dan `biaya[].jenis` — keduanya memaksa keputusan yang kalau tidak dipaksa akan terlewat.
 
@@ -74,11 +74,12 @@ Tampilan dikerjakan terakhir karena ia satu-satunya lapisan yang murah diubah.
 ## 8. Rilis pertama
 
 ```bash
-npm install
-npm run build
-npm run audit          # harus 0 error
-npm audit              # harus 0 kerentanan
-npm run release -- minor --apply
+bun install
+bun run build
+bun test               # harus hijau
+bun run audit          # harus 0 error
+bun audit              # harus 0 kerentanan
+bun run release minor --apply
 ```
 
 ## Kesalahan yang paling sering terjadi

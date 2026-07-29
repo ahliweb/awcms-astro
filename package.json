@@ -10,25 +10,27 @@
     "url": "git+https://github.com/ahliweb/awcms-astro.git"
   },
   "license": "MIT",
+  "packageManager": "bun@1.3.14",
   "engines": {
-    "node": ">=22.12.0",
-    "npm": ">=10.9.0"
+    "bun": ">=1.3.0"
   },
   "scripts": {
-    "dev": "astro dev",
-    "start": "astro dev",
-    "build": "npm run check && astro build",
-    "check": "npm run check:lockfile && astro check",
-    "check:lockfile": "node scripts/cek-lockfile.mjs",
-    "test": "node --experimental-strip-types --test tests/*.test.mjs",
-    "preview": "astro preview",
-    "astro": "astro",
-    "release": "node scripts/rilis.mjs"
+    "dev": "bun --bun astro dev",
+    "start": "bun --bun astro dev",
+    "build": "bun run check && bun --bun astro build",
+    "check": "bun run check:lockfile && bun --bun astro check",
+    "check:lockfile": "bun scripts/cek-lockfile.mjs",
+    "test": "bun test",
+    "preview": "bun --bun astro preview",
+    "release": "bun scripts/rilis.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.10",
     "@astrojs/sitemap": "^3.7.3",
     "astro": "^7.1.4",
     "typescript": "^6.0.3"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.14"
   }
 }
