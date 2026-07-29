@@ -6,7 +6,7 @@ import sitemap from "@astrojs/sitemap";
  * config time — before `src/config/site.ts` runs — so it is read here directly
  * from the process environment rather than through that module.
  *
- * The localhost default keeps `npm run dev` working out of the box. It is NOT a
+ * The localhost default keeps `bun run dev` working out of the box. It is NOT a
  * safe production value: a build that ships with it publishes a sitemap and a
  * set of canonical links pointing at a machine nobody can reach.
  */
@@ -36,6 +36,13 @@ export default defineConfig({
    * never faces the public internet. Switching this to `server` pulls a
    * runtime, a live database dependency, and the family's whole operational
    * contract back in — make that decision in an ADR, not in a config edit.
+   *
+   * That ADR now exists, and it did NOT flip this value: ADR-0014 keeps
+   * `output: "static"` and reaches on-demand rendering through an adapter plus
+   * `export const prerender = false` on the few genuinely personal routes. If
+   * you are here to type `"server"`, read
+   * `docs/adr/0014-rendering-campuran-dan-bff-portal.md` first — the whole-site
+   * variant was considered and rejected there.
    */
   output: "static",
 

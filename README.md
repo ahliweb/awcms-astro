@@ -46,29 +46,32 @@ teringat. Rantainya di [`docs/deploy-coolify.md`](docs/deploy-coolify.md).
 
 ```bash
 cp .env.example .env     # isi AWCMS_API_URL, token, dan tenant
-npm install
-npm run dev              # http://localhost:4321
+bun install
+bun run dev              # http://localhost:4321
 ```
+
+Repo ini **Bun-only** (ADR-0015): Bun adalah runtime sekaligus package manager,
+versinya dipin di `packageManager`/`engines.bun`, dan `bun.lock` adalah
+satu-satunya lockfile.
 
 | Perintah                 | Kegunaan                                             |
 | ------------------------ | ---------------------------------------------------- |
-| `npm run dev`            | Server pengembangan                                  |
-| `npm run check`          | Gerbang lockfile lalu `astro check`                  |
-| `npm run check:lockfile` | Hanya gerbang lockfile — murni baca berkas           |
-| `npm test`               | Unit test renderer blok (Node test runner, nol dep)  |
-| `npm run build`          | `npm run check` lalu `astro build` → `dist/`         |
-| `npm run preview`        | Menyajikan hasil build                               |
+| `bun run dev`            | Server pengembangan                                  |
+| `bun run check`          | Gerbang lockfile lalu `astro check`                  |
+| `bun run check:lockfile` | Hanya gerbang lockfile — murni baca berkas           |
+| `bun test`               | Unit test renderer blok (`bun:test`, nol dep)        |
+| `bun run build`          | `bun run check` lalu `astro build` → `dist/`         |
+| `bun run preview`        | Menyajikan hasil build                               |
 
-Setelah mengubah dependency, regenerasi lockfile dengan **`npm install` penuh**:
+Setelah mengubah dependency, regenerasi lockfile penuh:
 
 ```bash
-rm -rf node_modules package-lock.json && npm install
+rm -rf node_modules bun.lock && bun install
 ```
 
-Jangan memakai `npm install --package-lock-only`. Ia menghasilkan lockfile yang
-kehilangan biner opsional lintas platform (`@esbuild/*`,
-`@astrojs/compiler-binding-*`, `fsevents`), sehingga `npm ci` gagal di macOS dan
-Windows sementara Linux tetap hijau.
+Di CI dan di dalam image, install selalu `bun install --frozen-lockfile` —
+tanpanya install boleh MEMPERBARUI `bun.lock` diam-diam, dan yang dibangun
+berhenti sama dengan yang di-review.
 
 ## Tenant: apa yang terjadi kalau tidak disebut
 

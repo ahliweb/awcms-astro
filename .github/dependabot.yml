@@ -1,6 +1,8 @@
 version: 2
 updates:
-  - package-ecosystem: npm
+  # Ekosistem `bun` sejak ADR-0015 (repo ini tidak lagi punya package-lock.json).
+  # Pola yang sama sudah dipakai `ahliweb/awcms`.
+  - package-ecosystem: bun
     directory: /
     schedule:
       interval: weekly
@@ -15,21 +17,21 @@ updates:
       prefix: chore
       include: scope
     ignore:
-      # TypeScript 7 belum bisa dipasang di repo ini, dan bukan karena kita.
-      # `@astrojs/check@0.9.10` — rilis TERBARU per 2026-07-28 — menyatakan
-      # `peerDependencies: { typescript: "^5.0.0 || ^6.0.0" }`, jadi npm menolak
-      # pohonnya dengan ERESOLVE sebelum satu berkas pun di-typecheck.
+      # TypeScript 7 belum didukung `@astrojs/check@0.9.10` — rilis TERBARU per
+      # 2026-07-28 — yang menyatakan
+      # `peerDependencies: { typescript: "^5.0.0 || ^6.0.0" }`.
       #
-      # Tanpa entri ini Dependabot membuka ulang PR yang sama setiap minggu, dan
-      # satu-satunya cara "menghijaukannya" adalah `--legacy-peer-deps`, yang
-      # memasang kombinasi yang penulis @astrojs/check sendiri nyatakan tidak
-      # didukung.
+      # Catatan setelah pindah ke Bun (ADR-0015): `bun install` TIDAK menolak
+      # peer mismatch seperti npm (ERESOLVE) — ia hanya memperingatkan lalu
+      # memasangnya. Entri ini karena itu justru LEBIH penting sekarang: tanpa
+      # ia, bump TypeScript 7 akan terpasang mulus dan gagal belakangan di
+      # `astro check` — kegagalan yang jauh dari sebabnya.
       #
       # Rentangnya sengaja `>=7`, bukan "major": TypeScript 6 MASIH di dalam
       # peer range, jadi bump ke 6 tetap boleh lewat.
       #
       # HAPUS entri ini begitu @astrojs/check melebarkan peer range-nya.
-      # Periksa dengan: npm view @astrojs/check peerDependencies
+      # Periksa dengan: bunx npm view @astrojs/check peerDependencies
       - dependency-name: typescript
         versions: [">=7"]
 

@@ -9,7 +9,7 @@ Kata **wajib** di dokumen ini berarti pelanggarannya menggagalkan gerbang mutu, 
 | Aspek | Keputusan | Alasan |
 | --- | --- | --- |
 | Framework | Astro 7, `output: 'static'` | Nol JavaScript pengiriman default; halaman tetap terbaca penuh tanpa JS |
-| Runtime | Node.js `>=22.12.0`, npm `>=10.9.0`, ditegakkan `engines` | Syarat Astro 7; menurunkan hambatan kontributor konten |
+| Runtime | Bun `>=1.3.0`, ditegakkan `engines.bun` + `packageManager` | Satu runtime untuk seluruh keluarga AWCMS (ADR-0015); `bun.lock` satu-satunya lockfile |
 | Framework UI | **Tidak ada** | Interaktivitas ditulis DOM vanilla. Tidak ada React/Vue/Svelte |
 | Styling | Satu berkas CSS global + design token | Tanpa framework CSS; token di `:root`, tema gelap lewat `data-theme` |
 | Konten | Content Layer API, markdown per koleksi per locale | Kontrak frontmatter tervalidasi saat build |
@@ -143,7 +143,7 @@ Target WCAG 2.1 AA. Yang mengikat:
 
 - Tidak ada secret, token, atau kredensial di repo. Repo statis tidak membutuhkannya.
 - Tidak ada skrip pihak ketiga, tidak ada pengumpulan data pribadi pembaca.
-- `npm audit` wajib nol sebelum rilis.
+- `bun audit` wajib nol sebelum rilis.
 - Tautan keluar `target="_blank"` wajib `rel="noopener noreferrer"`.
 
 ## Gerbang mutu
@@ -152,9 +152,9 @@ Empat gerbang, seluruhnya wajib hijau sebelum pekerjaan dinyatakan selesai:
 
 | Gerbang | Perintah | Menangkap |
 | --- | --- | --- |
-| Type check | `astro check` (di dalam `npm run build`) | Kesalahan tipe dan props |
-| Audit konten | `npm run audit` | Aturan konten, katalog PO, gambar, SEO, share, tautan mati, tautan antar dokumen dan sinkronisasi daftar skill, **key mentah yang bocor ke halaman, serta manifes paket dan versi lock** |
-| Audit dependency | `npm audit` | Kerentanan rantai build |
+| Type check | `astro check` (di dalam `bun run build`) | Kesalahan tipe dan props |
+| Audit konten | `bun run audit` | Aturan konten, katalog PO, gambar, SEO, share, tautan mati, tautan antar dokumen dan sinkronisasi daftar skill, **key mentah yang bocor ke halaman, serta manifes paket dan versi lock** |
+| Audit dependency | `bun audit` | Kerentanan rantai build |
 | CI | `.github/workflows/ci.yml` | Ketiganya, pada setiap PR |
 
 **Aturan baru wajib membawa pemeriksanya.** Aturan yang hanya tertulis di dokumentasi akan dilanggar cepat atau lambat — itu sebabnya gerbang audit ada ([ADR-0008](../adr/0008-audit-konten-sebagai-gerbang-rilis.md)).

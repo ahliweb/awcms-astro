@@ -27,16 +27,22 @@
 # secrets, `RUN --mount=type=secret` lebih ketat lagi dan bisa dipakai tanpa
 # mengubah apa pun di bawah selain baris `RUN`-nya.
 
-# Versi dikunci ke .nvmrc dan ke `engines` di package.json. Ketiganya harus
-# bergerak bersama; menaikkan salah satu saja adalah cara paling sunyi untuk
-# membuat build lokal dan build image berbeda perilaku.
-FROM node:22.23.1-alpine AS build
+# Versi Bun dikunci di tiga tempat yang harus bergerak bersama: tag image di
+# bawah, `packageManager` + `engines.bun` di package.json, dan `bun-version` di
+# .github/workflows/ci.yml. Menaikkan salah satu saja adalah cara paling sunyi
+# untuk membuat build lokal, build CI, dan build image berbeda perilaku
+# (ADR-0015).
+FROM oven/bun:1.3.14-alpine AS build
 WORKDIR /app
 
 # Lapisan dependency dipisah dari lapisan sumber supaya perubahan konten atau
-# komponen tidak membatalkan cache `npm ci`.
-COPY package.json package-lock.json ./
-RUN npm ci
+# komponen tidak membatalkan cache install.
+#
+# `--frozen-lockfile` bukan hiasan: tanpanya `bun install` boleh MEMPERBARUI
+# bun.lock di dalam image, dan build image berhenti membangun versi yang sama
+# dengan yang di-review.
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
 
 COPY . .
 
@@ -62,10 +68,10 @@ ENV SITE_URL=$SITE_URL \
     AWCMS_TENANT_ID=$AWCMS_TENANT_ID \
     AWCMS_DEFAULT_TENANT_CODE=$AWCMS_DEFAULT_TENANT_CODE
 
-# `npm run build` sudah mencakup gerbang lockfile dan `astro check`. Menjalankan
+# `bun run build` sudah mencakup gerbang lockfile dan `astro check`. Menjalankan
 # `astro build` langsung di sini akan melewatinya, dan deploy adalah tempat
 # terakhir yang pantas melewati gerbang.
-RUN npm run build
+RUN bun run build
 
 # ---- runtime: nginx non-root, hanya berkas statis --------------------------
 # Varian unprivileged berjalan sebagai UID 101 dan mendengarkan di 8080. Tidak

@@ -17,19 +17,20 @@ Kontributor agen AI: baca [`AGENTS.md`](AGENTS.md) lebih dulu. Ia kontrak kerja 
 ## Menyiapkan lingkungan
 
 ```bash
-node --version        # >= 22.12.0, sesuai .nvmrc
-npm install
-npm run dev           # http://localhost:4321
+bun --version         # >= 1.3.0, sesuai `engines.bun`
+bun install
+bun run dev           # http://localhost:4321
 ```
 
 | Perintah | Kegunaan |
 | --- | --- |
-| `npm run build` | Bangkitkan kartu share, lalu `astro check && astro build` |
-| `npm run audit` | Aturan konten, katalog PO, gambar, SEO, kartu share, tautan `dist/` |
-| `npm run kartu-share` | Paksa bangkitkan ulang kartu share |
-| `npm run release -- <level>` | Rilis bertag (wewenang maintainer) |
+| `bun run build` | Gerbang lockfile, `astro check`, lalu `astro build` |
+| `bun test` | Unit test renderer blok (`bun:test`) |
+| `bun run audit` | Aturan konten, katalog PO, gambar, SEO, kartu share, tautan `dist/` |
+| `bun run kartu-share` | Paksa bangkitkan ulang kartu share |
+| `bun run release <level>` | Rilis bertag (wewenang maintainer) |
 
-`npm run audit` membaca `dist/`, jadi jalankan `npm run build` lebih dulu.
+`bun run audit` membaca `dist/`, jadi jalankan `bun run build` lebih dulu.
 
 ## Alur kontribusi
 
@@ -41,7 +42,7 @@ npm run dev           # http://localhost:4321
 6. **Perbarui `updatedDate` dan `reviewDueDate`** pada setiap perubahan substantif.
 7. **Perbarui dokumentasi** bila workflow, struktur, atau konfigurasi berubah — pada iterasi yang sama.
 8. **Tulis changeset** di [`.changesets/`](.changesets/README.md) pada iterasi yang sama, bukan dirapel di akhir.
-9. **Jalankan `npm run build` dan `npm run audit`**; keduanya harus bersih.
+9. **Jalankan `bun run build`, `bun test`, dan `bun run audit`**; ketiganya harus bersih.
 10. **Buka Pull Request** dengan `Closes #<issue>`. Merge setelah review dan CI hijau, lalu hapus branch-nya.
 
 ### Penamaan branch
@@ -94,9 +95,10 @@ Sebuah pekerjaan selesai bila **seluruhnya** terpenuhi:
 - [ ] Klaim biaya, denda, dasar hukum, dan data unit layanan sudah diverifikasi ke sumber resmi.
 - [ ] `cakupan` artikel sesuai level keberlakuan informasinya.
 - [ ] `updatedDate` dan `reviewDueDate` diperbarui pada perubahan substantif.
-- [ ] `npm run build` sukses tanpa error `astro check`.
-- [ ] `npm run audit` melaporkan **0 error**.
-- [ ] `npm audit` melaporkan **0 kerentanan**.
+- [ ] `bun run build` sukses tanpa error `astro check`.
+- [ ] `bun test` hijau.
+- [ ] `bun run audit` melaporkan **0 error**.
+- [ ] `bun audit` melaporkan **0 kerentanan**.
 - [ ] Tidak ada secret yang terekspos.
 - [ ] Tampilan layak pakai dari lebar 360px sampai desktop.
 - [ ] Metadata SEO, kartu share, dan structured data tidak rusak.
