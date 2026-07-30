@@ -7,9 +7,44 @@ yang terlihat pembaca.
 
 ## Apa repo ini
 
-Template keluarga AWCMS untuk situs publik **statis** di Astro, dengan
-[`ahliweb/awcms`](https://github.com/ahliweb/awcms) sebagai backend konten.
-Konten ditarik saat **build**, bukan saat request.
+Template keluarga AWCMS di Astro dengan
+[`ahliweb/awcms`](https://github.com/ahliweb/awcms) sebagai backend konten dan
+system of record. Situs publiknya **statis**: konten ditarik saat **build**,
+bukan saat request. Sejak 31 Juli 2026 repo ini juga memikul **halaman admin
+owner/internal** (§Peran repo ini) — permukaan terautentikasi yang berjalan
+on-demand, bukan bagian dari build statis itu.
+
+## Peran repo ini (berlaku 31 Juli 2026)
+
+Repo ini memikul **dua** permukaan, dan keduanya dipisahkan tegas:
+
+| Permukaan | Audiens | Sifat |
+| --- | --- | --- |
+| Situs publik | pengunjung anonim | statis, di-build, boleh di-cache agresif |
+| **Admin OWNER/INTERNAL** | operator platform, staf internal | on-demand, terautentikasi, **tidak pernah di-cache bersama** |
+
+`awcms` memegang peran sebaliknya: frontend publik + admin milik **tenant**.
+Layar yang mengurus PLATFORM (master data global, aktivasi/rollback dataset,
+alat operator) dibangun **di sini**; layar yang dipakai tenant atas datanya
+sendiri tetap di `awcms`.
+
+Empat aturan yang mengikat, ditulis karena mudah dilanggar tanpa terlihat:
+
+1. **`awcms` tetap system of record.** Repo ini tanpa basis data; data admin
+   datang dari `/api/v1/*` lewat BFF (ADR-0014). Browser internal tidak pernah
+   memanggil `awcms` langsung dan tidak pernah memegang kredensialnya.
+2. **Izin tidak pindah bersama layar** — RBAC/ABAC default-deny milik `awcms`
+   tetap yang memutuskan. Layar di sini bukan jalur kedua yang lebih longgar.
+3. **Tidak ada cache bersama** antara permukaan publik dan permukaan admin.
+4. Setiap penambahan di permukaan admin dinilai sebagai **permukaan keamanan**,
+   bukan sekadar halaman.
+
+**Blocker yang harus diketahui sebelum memulai layar internal pertama:** dua
+kontrak yang dibutuhkan belum ada di `awcms` — header tenant tidak cocok
+(`x-awcms-tenant-id` vs `X-Tenant-Code`) dan belum ada kredensial mesin yang bisa
+dipegang BFF. Keduanya dicatat di `awcms` ADR-0047. Alasan dan aturan lengkap:
+[ADR-0017](docs/adr/0017-peran-admin-owner-internal.md); pasangannya di `awcms`
+adalah ADR-0048.
 
 ## Di mana pekerjaan boleh mendarat (berlaku 31 Juli 2026)
 
