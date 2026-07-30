@@ -11,6 +11,27 @@ Template keluarga AWCMS untuk situs publik **statis** di Astro, dengan
 [`ahliweb/awcms`](https://github.com/ahliweb/awcms) sebagai backend konten.
 Konten ditarik saat **build**, bukan saat request.
 
+## Di mana pekerjaan boleh mendarat (berlaku 31 Juli 2026)
+
+`ahliweb/awcms-mini` dan `ahliweb/awcms-micro` **dibekukan sebagai REFERENSI**.
+Sementara ini keduanya tidak dikembangkan: dibaca boleh, disalin polanya boleh,
+di-port keluar boleh — **mengirim perubahan ke sana tidak.** Pekerjaan mendarat
+langsung di `awcms-astro` dan `awcms`.
+
+Konsekuensi yang paling mudah terlewat, dan alasan aturan ini ditulis di sini
+alih-alih hanya diucapkan: `awcms/AGENTS.md` mensyaratkan **"fitur fondasi
+diuji lebih dulu di awcms-mini, baru di-port"**, dan menyatakan `awcms` "bukan
+tempat merintis fitur fondasi dari nol". Selama pembekuan ini berlaku, jalur itu
+**tidak bisa ditempuh** — tidak ada hulu yang menerima perubahan. Fitur fondasi
+karena itu dirintis langsung di `awcms`, dan syarat yang digantikannya (review
+keamanan untuk modul auth/access, ADR, gate `family:conformance:check`) tetap
+berlaku penuh. Menghapus satu rute bukan menghapus penjagaannya.
+
+Pembekuan ini **sementara**. Saat dicabut, keputusan pertama yang harus diambil
+adalah bagaimana perubahan yang sudah mendarat di `awcms` dipulangkan ke hulu —
+karena setiap fitur fondasi yang dirintis selama pembekuan adalah divergence
+sengaja yang belum tercatat di `awcms-family-compatibility.yaml`.
+
 ## Alur kerja wajib
 
 1. Satu iterasi = satu scope atomic. Selesaikan dan validasi sebelum pindah.

@@ -10,12 +10,17 @@ Positioning ini ditetapkan [ADR-0012](../adr/0012-repo-sebagai-standar-awcms-ast
 
 ## Posisi di keluarga AWCMS
 
-| Template | Mode | Basis data | Kapan dipakai |
-| --- | --- | --- | --- |
-| **`awcms-astro`** | Statis murni (SSG) | Tidak ada | Situs informasi publik, profil, dokumentasi, portal panduan. Konten dikelola lewat repo dan review |
-| `awcms-micro` | Online penuh, ramping | PostgreSQL | Website/e-commerce yang butuh konten dinamis sejak awal |
-| `awcms-mini` | Hybrid offline-first | PostgreSQL | Operasional lapangan dengan koneksi tidak dapat diandalkan |
-| `awcms` | Online-first, superset ERP/SaaS | PostgreSQL | Back-office, ERP, multi-tenant |
+| Template | Mode | Basis data | Kapan dipakai | Status |
+| --- | --- | --- | --- | --- |
+| **`awcms-astro`** | Statis murni (SSG) | Tidak ada | Situs informasi publik, profil, dokumentasi, portal panduan. Konten dikelola lewat repo dan review | **Dikembangkan** |
+| `awcms` | Online-first, superset ERP/SaaS | PostgreSQL | Back-office, ERP, multi-tenant | **Dikembangkan** |
+| `awcms-micro` | Online penuh, ramping | PostgreSQL | Website/e-commerce yang butuh konten dinamis sejak awal | Referensi (dibekukan 31 Juli 2026) |
+| `awcms-mini` | Hybrid offline-first | PostgreSQL | Operasional lapangan dengan koneksi tidak dapat diandalkan | Referensi (dibekukan 31 Juli 2026) |
+
+Dua baris terbawah masih menyatakan **kapan sebuah template cocok dipakai** —
+itu tidak berubah. Yang berubah adalah ke mana perubahan boleh dikirim: sejak
+31 Juli 2026 hanya `awcms-astro` dan `awcms` yang dikembangkan. Diagram di bawah
+karena itu menggambarkan jalur perpindahan yang tersedia, bukan repo yang aktif.
 
 ```mermaid
 flowchart LR

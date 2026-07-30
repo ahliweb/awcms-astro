@@ -8,12 +8,19 @@ menunggu basis data, dan CMS tidak pernah menghadap internet publik.
 
 ## Posisi di keluarga AWCMS
 
-| Template          | Mode                   | Basis data | Dipakai untuk                                            |
-| ----------------- | ---------------------- | ---------- | -------------------------------------------------------- |
-| **`awcms-astro`** | Statis (SSG)           | Tidak ada  | Situs informasi publik, profil, dokumentasi, portal       |
-| `awcms-micro`     | Online penuh, ramping  | PostgreSQL | Website/e-commerce yang dinamis sejak awal                |
-| `awcms-mini`      | Hybrid offline-first   | PostgreSQL | Operasional lapangan dengan koneksi tak dapat diandalkan  |
-| `awcms`           | Online-first, superset | PostgreSQL | Back-office, ERP, multi-tenant — **backend repo ini**     |
+| Template          | Mode                   | Basis data | Dipakai untuk                                            | Status                |
+| ----------------- | ---------------------- | ---------- | -------------------------------------------------------- | --------------------- |
+| **`awcms-astro`** | Statis (SSG)           | Tidak ada  | Situs informasi publik, profil, dokumentasi, portal       | **Dikembangkan**      |
+| `awcms`           | Online-first, superset | PostgreSQL | Back-office, ERP, multi-tenant — **backend repo ini**     | **Dikembangkan**      |
+| `awcms-micro`     | Online penuh, ramping  | PostgreSQL | Website/e-commerce yang dinamis sejak awal                | Referensi (dibekukan) |
+| `awcms-mini`      | Hybrid offline-first   | PostgreSQL | Operasional lapangan dengan koneksi tak dapat diandalkan  | Referensi (dibekukan) |
+
+Sejak **31 Juli 2026** hanya dua repo yang dikembangkan: repo ini dan `awcms`.
+`awcms-micro` dan `awcms-mini` dibekukan sebagai referensi — boleh dibaca dan
+di-port keluar, tidak menerima perubahan. Konsekuensinya bagi alur kerja ada di
+[`AGENTS.md`](AGENTS.md#di-mana-pekerjaan-boleh-mendarat-berlaku-31-juli-2026);
+yang terpenting, jalur "fitur fondasi diuji di `awcms-mini` dulu" tidak bisa
+ditempuh selama pembekuan berlaku.
 
 Repo ini adalah **implementasi rujukan** standar `awcms-astro`. Standarnya
 sendiri lahir dari `web-lalulintasmelayani.com`, situs enam bahasa yang sudah
