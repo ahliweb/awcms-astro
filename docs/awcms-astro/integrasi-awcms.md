@@ -69,6 +69,18 @@ Sisi kanan mengacu tabel `awcms_blog_posts` dan modul `blog-content` di awcms.
 
 `cakupan`, `syaratDokumen[]`, `langkah[]`, `biaya[]`, `dasarHukum[]`, `faq[]`, `wilayah[]`, `variasiWilayah`, `estimasiWaktu`, `unitPelaksana`, `reviewDueDate`.
 
+> **Yang benar-benar DIBACA template ini** adalah bagian dari daftar itu:
+> `urutan`, `kategori`, `syaratDokumen[]`, `langkah[]`, `biaya[]`,
+> `dasarHukum[]`, `faq[]`, `estimasiWaktu`, `reviewDueDate` — persis tipe
+> `AwcmsAstroBlock` di `src/lib/content.ts`. Sisanya (`cakupan`, `wilayah[]`,
+> `variasiWilayah`, `unitPelaksana`, `tags[]`) adalah field repo rujukan yang
+> didokumentasikan di sini sebagai rancangan pemetaan, bukan sebagai janji
+> render. Sebuah situs boleh menyimpannya di `content_json` — tetapi selama
+> `AwcmsAstroBlock` belum menyebutnya, tidak ada satu pun halaman yang
+> menampilkannya. Layout artikel pernah membaca `variasiWilayah` dan
+> `unitPelaksana` seolah keduanya ada; keduanya selalu `undefined`, dan
+> `entry: any` membuat typecheck tidak bisa mengatakannya.
+
 Dua jalur, dan pilihannya menentukan apakah data itu bisa dicari dan difilter:
 
 | Jalur | Untuk | Konsekuensi |

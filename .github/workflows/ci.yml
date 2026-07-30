@@ -136,6 +136,8 @@ jobs:
           SITE_URL: ${{ vars.SITE_URL }}
           SITE_NAME: ${{ vars.SITE_NAME }}
           SITE_DESCRIPTION: ${{ vars.SITE_DESCRIPTION }}
+          SITE_MARK: ${{ vars.SITE_MARK }}
+          SITE_SOCIAL_IMAGE: ${{ vars.SITE_SOCIAL_IMAGE }}
           SITE_LOCALES: ${{ vars.SITE_LOCALES }}
           AWCMS_API_URL: ${{ vars.AWCMS_API_URL }}
           AWCMS_TENANT_CODE: ${{ vars.AWCMS_TENANT_CODE }}

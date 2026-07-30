@@ -139,6 +139,12 @@ msgstr "Informasi"
 msgid "tab.informasi.metaDesc"
 msgstr "Pengumuman dan perubahan yang perlu diketahui."
 
+msgid "tab.articleNo"
+msgstr "Artikel "
+
+msgid "tab.readMoreCta"
+msgstr "Baca selengkapnya"
+
 msgid "artikel.updated"
 msgstr "Diperbarui"
 
@@ -147,9 +153,6 @@ msgstr "Ditinjau ulang sebelum"
 
 msgid "artikel.estimasi"
 msgstr "Perkiraan waktu"
-
-msgid "artikel.pelaksana"
-msgstr "Pelaksana"
 
 msgid "syarat.title"
 msgstr "Syarat dan dokumen"
@@ -178,8 +181,29 @@ msgstr "Sumber"
 msgid "biaya.dasarHukum"
 msgstr "Dasar hukum"
 
-msgid "translation.notice"
+# Kategori biaya. Key ini OPSIONAL: `BiayaTable` jatuh ke nilai mentah dari
+# `contentJson` bila key-nya tidak ada, jadi redaksi bebas memakai kategori
+# sendiri tanpa lebih dulu menyunting katalog.
+msgid "biaya.jenis.pnbp"
+msgstr "PNBP"
+
+msgid "biaya.jenis.pajak-daerah"
+msgstr "Pajak daerah"
+
+msgid "biaya.jenis.asuransi"
+msgstr "Asuransi"
+
+msgid "biaya.jenis.lainnya"
+msgstr "Lainnya"
+
+msgid "translation.notice.label"
+msgstr "Belum diterjemahkan."
+
+msgid "translation.notice.body"
 msgstr "Versi bahasa ini belum tersedia; yang ditampilkan adalah versi bahasa sumber."
+
+msgid "translation.notice.aria"
+msgstr "Penanda terjemahan"
 
 msgid "share.title"
 msgstr "Bagikan halaman ini"

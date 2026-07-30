@@ -7,7 +7,7 @@
  * its own name, tabs, and locales in this file; the point of the template is
  * that those are now inputs.
  */
-import { readEnvOr } from "../lib/env";
+import { readEnv, readEnvOr } from "../lib/env";
 
 /**
  * The locale whose article set is the SOURCE OF TRUTH.
@@ -54,14 +54,27 @@ export function isLocale(value: string): value is Locale {
  * `category`) — `slug` here must match the term slug there, because that is
  * what `src/lib/content.ts` queries on. Renaming a tab without renaming the
  * term produces an empty section rather than an error, so keep the two in step.
+ *
+ * `label` is a LAST-RESORT label, not the one readers normally see. Every
+ * surface renders `t(locale, 'home.tab.<slug>.title', tab.label)`, so the PO
+ * catalogue wins and this only shows up for a tab whose key nobody has written
+ * yet. An earlier version rendered a hard-coded uppercase `name` in the tab bar
+ * instead, which meant the site's main navigation was the one piece of
+ * interface that never translated — in a template whose whole point is being
+ * multilingual.
  */
 export const tabs = [
-  { slug: "panduan", name: "PANDUAN", label: "Panduan" },
-  { slug: "layanan", name: "LAYANAN", label: "Layanan" },
-  { slug: "informasi", name: "INFORMASI", label: "Informasi" }
+  { slug: "panduan", label: "Panduan" },
+  { slug: "layanan", label: "Layanan" },
+  { slug: "informasi", label: "Informasi" }
 ] as const;
 
 export type TabSlug = (typeof tabs)[number]["slug"];
+
+/** The PO key carrying a tab's reader-facing name, paired with its fallback. */
+export function tabTitleKey(slug: string): string {
+  return `home.tab.${slug}.title`;
+}
 
 /**
  * `SITE_URL` is read at BUILD time and must be the canonical absolute origin —
@@ -75,14 +88,47 @@ const siteUrl = readEnvOr("SITE_URL", "http://localhost:4321").replace(
   ""
 );
 
+/**
+ * The share card, or nothing.
+ *
+ * This template ships no card generator, so the honest default is **no
+ * `og:image` at all**. The previous version pointed every page at
+ * `/social/<slug>.png` — files produced by a script that only ever existed in
+ * the reference implementation. Nothing failed: the build was green, the tag
+ * was present, and every share preview on every page 404'd, while the
+ * `ImageObject` in the page's JSON-LD claimed a 1200×630 image that was not
+ * there. A missing card degrades to a text preview; a card that lies degrades
+ * to a broken one.
+ *
+ * Set `SITE_SOCIAL_IMAGE` to an absolute URL, or to a site-relative path for a
+ * file you have actually placed in `public/`.
+ */
+const socialImageRaw = readEnv("SITE_SOCIAL_IMAGE");
+
 export const siteConfig = {
   name: readEnvOr("SITE_NAME", "AWCMS Astro"),
   description: readEnvOr(
     "SITE_DESCRIPTION",
     "Public information site built on the awcms-astro family template."
   ),
+  /**
+   * An optional glyph shown before the site name in the header. Empty by
+   * default and rendered `aria-hidden` when set — it is decoration, and the
+   * accessible name of the header link is the site name alone.
+   *
+   * Do NOT put a state emblem, official logo, or institutional insignia here.
+   * A site built from this template is independent, and AGENTS.md §Keamanan
+   * rules that out; the reference implementation's police-car glyph was
+   * hard-coded into this header and is exactly what this field replaces.
+   */
+  mark: readEnv("SITE_MARK") ?? "",
   siteUrl,
   domain: new URL(siteUrl).host,
+  socialImage: socialImageRaw
+    ? socialImageRaw.startsWith("http")
+      ? socialImageRaw
+      : `${siteUrl}/${socialImageRaw.replace(/^\/+/, "")}`
+    : undefined,
   tabs
 };
 

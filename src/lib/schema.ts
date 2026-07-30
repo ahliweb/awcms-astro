@@ -8,7 +8,7 @@
  */
 import { siteConfig, getSiteUrl, localeHtmlLang, type Locale } from '../config/site';
 import { t } from './po';
-import { DEFAULT_SOCIAL_IMAGE, SOCIAL_IMAGE_HEIGHT, SOCIAL_IMAGE_WIDTH } from './social-image';
+import { SITE_SOCIAL_IMAGE, SOCIAL_IMAGE_HEIGHT, SOCIAL_IMAGE_WIDTH } from './social-image';
 
 type Schema = Record<string, unknown>;
 
@@ -53,11 +53,11 @@ export interface ArticleSchemaInput {
   canonicalUrl: string;
   title: string;
   description: string;
-  image: string;
+  /** URL absolut kartu share, atau `undefined` bila situs ini belum punya. */
+  image?: string;
   imageAlt: string;
   updatedDate: Date;
   section: string;
-  tags: string[];
 }
 
 /** Artikel panduan. `isAccessibleForFree` menegaskan tidak ada dinding bayar. */
@@ -68,7 +68,11 @@ export function articleSchema(input: ArticleSchemaInput): Schema {
     mainEntityOfPage: { '@id': input.canonicalUrl },
     headline: input.title.slice(0, 110),
     description: input.description,
-    image: imageObject(input.image, input.imageAlt),
+    // Properti `image` hanya muncul bila gambarnya benar-benar ada. Sebelumnya
+    // ia selalu ada dan selalu menyatakan ImageObject 1200×630 di URL yang
+    // tidak pernah dibangkitkan siapa pun — structured data yang salah lebih
+    // buruk daripada structured data yang tidak lengkap, karena ia diklaim.
+    ...(input.image ? { image: imageObject(input.image, input.imageAlt) } : {}),
     // Sumber tanggal hanya satu: `updatedDate`. Repo tidak menyimpan tanggal
     // terbit terpisah, dan mengarang `datePublished` yang berbeda akan menjadi
     // klaim yang tidak bisa dipertanggungjawabkan.
@@ -76,7 +80,6 @@ export function articleSchema(input: ArticleSchemaInput): Schema {
     dateModified: input.updatedDate.toISOString(),
     inLanguage: localeHtmlLang[input.locale],
     articleSection: input.section,
-    keywords: input.tags.join(', '),
     isPartOf: { '@id': WEBSITE_ID },
     publisher: { '@id': PUBLISHER_ID },
     isAccessibleForFree: true,
@@ -99,40 +102,13 @@ export function collectionSchema(name: string, description: string, items: Array
   };
 }
 
-/**
- * Halaman wilayah: cakupan layanan yang dijelaskan halaman ini.
- *
- * `areaServed` dipasang pada halamannya, bukan pada penerbit situs — yang
- * melayani wilayah adalah unit layanan yang didaftar, bukan situs ini.
- */
-export function wilayahSchema(canonicalUrl: string, nama: string, ibukota: string, jumlahUnit: number): Schema {
-  return {
-    '@type': 'CollectionPage',
-    '@id': `${canonicalUrl}#wilayah`,
-    mainEntityOfPage: { '@id': canonicalUrl },
-    name: nama,
-    about: {
-      '@type': 'AdministrativeArea',
-      name: nama,
-      containedInPlace: {
-        '@type': 'AdministrativeArea',
-        name: 'Provinsi Kalimantan Tengah',
-        containedInPlace: { '@type': 'Country', name: 'Indonesia' },
-      },
-    },
-    areaServed: {
-      '@type': 'AdministrativeArea',
-      name: nama,
-      address: {
-        '@type': 'PostalAddress',
-        addressLocality: ibukota,
-        addressRegion: 'Kalimantan Tengah',
-        addressCountry: 'ID',
-      },
-    },
-    numberOfItems: jumlahUnit,
-  };
-}
+// `wilayahSchema()` pernah ada di sini: pembangun `CollectionPage` yang
+// menanamkan "Provinsi Kalimantan Tengah" dan `addressRegion` repo rujukan
+// langsung di dalam kodenya. Tidak satu pun halaman template ini memanggilnya,
+// dan seandainya ada yang memanggil, ia akan menerbitkan klaim wilayah milik
+// situs lain. Dihapus, bukan digeneralisasi — sebuah situs yang benar-benar
+// butuh skema wilayah menulisnya dari datanya sendiri, bukan dari sisa data
+// situs lain.
 
 function imageObject(url: string, alt: string): Schema {
   return {
@@ -144,5 +120,5 @@ function imageObject(url: string, alt: string): Schema {
   };
 }
 
-/** Kartu share baku, dipakai halaman tanpa gambar sendiri. */
-export const defaultSocialImage = DEFAULT_SOCIAL_IMAGE;
+/** Kartu share situs ini, atau `undefined` bila belum ada. */
+export const defaultSocialImage = SITE_SOCIAL_IMAGE;

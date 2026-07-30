@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { siteConfig, getLocaleFromPath, localePath } from '../../config/site';
+import { siteConfig, getLocaleFromPath, localePath, tabTitleKey } from '../../config/site';
 import { t } from '../../lib/po';
 
 const locale = getLocaleFromPath(Astro.url.pathname);
@@ -20,11 +20,16 @@ const locale = getLocaleFromPath(Astro.url.pathname);
     </p>
   </section>
 
+  {/* Judul kartu adalah nama tab, isinya keterangan tab — dulu terbalik:
+      judulnya nilai HURUF BESAR dari konfigurasi dan keterangannya nama tab
+      yang sama, jadi setiap kartu menyebutkan dirinya dua kali. */}
   <div class="grid-cards">
     {siteConfig.tabs.map((tab) => (
       <a href={localePath(locale, `/${tab.slug}/`)} class="card">
-        <h3 class="card-title">{tab.name}</h3>
-        <p class="card-desc">{t(locale, `home.tab.${tab.slug}.title`)}</p>
+        <div class="card-content">
+          <h3 class="card-title">{t(locale, tabTitleKey(tab.slug), tab.label)}</h3>
+          <p class="card-desc">{t(locale, `home.tab.${tab.slug}.desc`, '')}</p>
+        </div>
       </a>
     ))}
   </div>

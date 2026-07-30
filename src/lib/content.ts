@@ -76,7 +76,16 @@ export type AwcmsAstroBlock = {
   reviewDueDate?: string;
 };
 
-/** The shape every component consumes. Identical to the markdown-backed original. */
+/**
+ * The shape every component consumes. Identical to the markdown-backed original.
+ *
+ * The list-shaped fields are NOT optional here even though they are optional in
+ * `AwcmsAstroBlock`: `toArticle()` defaults every one of them to `[]`, so a
+ * component never has to ask whether a list exists before mapping it. Declaring
+ * them optional anyway would push a `?? []` into every call site — and the one
+ * that forgets it is a build error in a component rather than a defaulted value
+ * in the adapter, which is the wrong place for that decision to live.
+ */
 export interface LocalizedArticle {
   slug: string;
   entry: {
@@ -88,7 +97,13 @@ export interface LocalizedArticle {
       urutan: number;
       kategori: string;
       canonicalUrl?: string;
-    } & Omit<AwcmsAstroBlock, "schemaVersion" | "urutan" | "kategori">;
+    } & Required<
+      Pick<
+        AwcmsAstroBlock,
+        "syaratDokumen" | "langkah" | "biaya" | "dasarHukum" | "faq"
+      >
+    > &
+      Pick<AwcmsAstroBlock, "estimasiWaktu" | "reviewDueDate">;
     bodyHtml: string;
   };
   /** True when this locale has no translation and the default-locale article is shown. */
@@ -139,19 +154,40 @@ function readBlock(post: AwcmsBlogPost): AwcmsAstroBlock {
     : { schemaVersion: 1 };
 }
 
-function toArticle(post: AwcmsBlogPost, isFallback: boolean): LocalizedArticle {
+/**
+ * `post` supplies the words; `source` supplies the article's IDENTITY.
+ *
+ * They are the same object for the default locale and differ for a translated
+ * one. Splitting them matters for two fields:
+ *
+ *   - `urutan` decides the order of the section index. Read from the
+ *     translation, a translator who left the field blank silently reorders that
+ *     language's whole section — the pages are all there, in a different order,
+ *     and nothing fails. Rule 3 in this file's header says order comes from an
+ *     explicit field; it has to be the SAME explicit field in every locale.
+ *   - `kategori` decides which tab the article belongs to. It was already
+ *     chosen by the default-locale post in `getArticles()`; re-reading it from
+ *     the translation would let a mistyped category there build a page whose
+ *     own breadcrumb points at a different section.
+ */
+function toArticle(
+  post: AwcmsBlogPost,
+  source: AwcmsBlogPost,
+  isFallback: boolean
+): LocalizedArticle {
   const block = readBlock(post);
+  const sourceBlock = readBlock(source);
 
   return {
-    slug: post.slug,
+    slug: source.slug,
     entry: {
       id: post.id,
       data: {
         title: post.title,
         description: post.metaDescription ?? post.excerpt ?? "",
         updatedDate: new Date(post.publishedAt ?? post.updatedAt),
-        urutan: block.urutan ?? 99,
-        kategori: block.kategori ?? "",
+        urutan: sourceBlock.urutan ?? 99,
+        kategori: sourceBlock.kategori ?? "",
         canonicalUrl: post.canonicalUrl ?? undefined,
         syaratDokumen: block.syaratDokumen ?? [],
         langkah: block.langkah ?? [],
@@ -203,13 +239,14 @@ export async function getArticles(
       // Rule 2: the adapter decides fallback, the component only reads it. A
       // translation that exists but carries a DIFFERENT slug still renders at
       // the source slug — the slug is the page's identity across locales, and
-      // localising it would break every cross-language link.
-      return toArticle(translated ?? source, !translated && locale !== defaultLocale);
+      // localising it would break every cross-language link. `toArticle` takes
+      // the source post for exactly that reason.
+      return toArticle(
+        translated ?? source,
+        source,
+        !translated && locale !== defaultLocale
+      );
     })
-    .map((article, index) => ({
-      ...article,
-      slug: sources[index].slug
-    }))
     // Rule 3: explicit order field, then title as a stable tiebreaker.
     .sort(
       (a, b) =>

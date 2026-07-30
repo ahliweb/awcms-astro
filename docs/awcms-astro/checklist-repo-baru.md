@@ -34,19 +34,32 @@ Pertanyaan yang menentukan bentuk skema: **kesalahan apa yang paling merugikan p
 - [ ] **Tetapkan satu rasio gambar untuk seluruh situs**, lalu pakai rasio itu di setiap bingkai **dan** setiap sumber. Bingkai memakai `object-fit: cover`; sumber berasio lain dipotong diam-diam, bukan diperkecil.
 - [ ] Siapkan gambar sumber di `src/assets/images/`.
 - [ ] Isi peta `src/lib/article-images.ts` — satu entitas = satu gambar unik.
-- [ ] Sesuaikan `scripts/kartu-share.mjs`: nama kartu yang perlu dibangkitkan.
-- [ ] `public/og-image.png` 1200×630 sebagai kartu baku.
+- [ ] Kartu share: **opsional, dan defaultnya tidak ada.** `awcms-astro` tidak
+      membawa pembangkit kartu (`scripts/kartu-share.mjs` hanya ada di repo
+      rujukan). Bila situs ini punya satu kartu baku, taruh berkasnya di
+      `public/` lalu tunjuk dengan `SITE_SOCIAL_IMAGE`; bila tidak, biarkan
+      variabelnya kosong dan halaman tidak memasang tag gambar sama sekali.
+      **Jangan mengisinya dengan berkas yang belum ada** — itu menerbitkan
+      pratinjau rusak di setiap halaman tanpa satu pun kegagalan build, dan
+      persis itu yang pernah terjadi di template ini.
 
 Bila ilustrasi dibangkitkan sendiri, **jangan biarkan konfigurasinya menyisipkan markup mentah**. Escape seluruh teks di satu tempat. Pintu markup mentah terlihat praktis dan hanya butuh sekali dipakai untuk meloloskan `&` telanjang yang membuat browser gagal merender tanpa satu pun pesan error.
 
-## 5. Sesuaikan gerbang audit
+## 5. Gerbang audit
 
-`scripts/audit-konten.mjs` membawa aturan domain repo rujukan. Sesuaikan:
+**`scripts/audit-konten.mjs` belum ada di `awcms-astro`** — ia tinggal di repo
+rujukan bersama aturan domainnya, dan README mendaftarkannya di "Yang belum
+ada". Yang sudah ada dan wajib tetap hijau:
 
-- [ ] Daftar koleksi dan locale.
-- [ ] Aturan khas domain (di repo rujukan: `pajak-daerah` vs `nasional`, minimal tiga FAQ, validitas slug wilayah).
-- [ ] Nama kartu share yang wajib ada.
-- [ ] Pemeriksaan SEO umumnya bisa dipakai apa adanya.
+- [ ] `bun test` — renderer blok (`tests/content-blocks.test.mjs`) dan gerbang
+      katalog PO (`tests/katalog-po.test.mjs`). Yang kedua menolak key yang
+      dipakai kode tetapi tidak ada di katalog, katalog locale yang tertinggal,
+      `msgstr` kosong, dan key tab yang belum ditulis untuk locale mana pun.
+- [ ] `bun run check` — gerbang lockfile lalu `astro check`.
+
+Bila situs ini menulis gerbang audit sendiri, yang belum tercakup dan paling
+berharga: rasio setiap sumber gambar (termasuk `viewBox` SVG), format berkas
+dibaca dari isinya alih-alih ekstensinya, dan tautan mati di `dist/`.
 
 **Setiap aturan baru di dokumentasi wajib membawa pemeriksanya ke sini.** Ini bagian yang paling sering dilewati, dan konsekuensinya paling lambat terasa.
 

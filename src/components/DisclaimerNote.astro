@@ -1,9 +1,19 @@
 ---
+/**
+ * Penafian situs.
+ *
+ * Pernah ada varian ketiga, `gakkum`, sisa repo rujukan: satu-satunya
+ * pemanggilnya adalah `data.kategori === 'gakkum'` di ArtikelLayout, sementara
+ * tab template ini `panduan`/`layanan`/`informasi` — jadi ia tidak pernah bisa
+ * tampil. Kelima key katalognya juga tidak pernah ditulis, jadi seandainya ia
+ * tampil ia akan memuntahkan nama key mentah ke layar. Dihapus daripada
+ * dilengkapi: varian yang isinya khas satu domain bukan milik template.
+ */
 import { getLocaleFromPath } from '../config/site';
 import { t } from '../lib/po';
 
 interface Props {
-  variant?: 'general' | 'gakkum' | 'footer';
+  variant?: 'general' | 'footer';
 }
 
 const { variant = 'general' } = Astro.props;
@@ -24,16 +34,5 @@ const locale = getLocaleFromPath(Astro.url.pathname);
 {variant === 'general' && (
   <aside class="disclaimer-box" aria-label={t(locale, 'disclaimer.general.aria')}>
     <strong>⚠️ {t(locale, 'disclaimer.general.label')}</strong> {t(locale, 'disclaimer.general.body')}
-  </aside>
-)}
-
-{variant === 'gakkum' && (
-  <aside class="warning-box" aria-label={t(locale, 'disclaimer.gakkum.aria')}>
-    <strong>🚨 {t(locale, 'disclaimer.gakkum.title')}</strong>
-    <ul style="margin-top: 0.5rem; padding-left: 1.25rem; margin-bottom: 0;">
-      <li>{t(locale, 'disclaimer.gakkum.1')}</li>
-      <li>{t(locale, 'disclaimer.gakkum.2')}</li>
-      <li>{t(locale, 'disclaimer.gakkum.3')}</li>
-    </ul>
   </aside>
 )}

@@ -1,12 +1,27 @@
 ---
-import { getLocaleFromPath, localeMeta } from '../config/site';
+/**
+ * Penanda bahwa artikel ini belum diterjemahkan dan yang tampil adalah versi
+ * bahasa sumber.
+ *
+ * Dua hal yang pernah salah di sini, keduanya diam:
+ *
+ *   1. `lang="id"` ditulis harfiah pada `<aside>`, padahal isi kotaknya justru
+ *      dalam bahasa PEMBACA — pembaca yang belum bisa membaca bahasa sumber
+ *      persis dia yang paling butuh penjelasan ini. Akibatnya pembaca layar
+ *      melafalkan kalimat bahasa Inggris dengan fonem Bahasa Indonesia. Atribut
+ *      itu dilepas: bahasa kotak ini sama dengan bahasa halamannya.
+ *   2. Nama bahasa yang disebut adalah `localeMeta[locale]`, yaitu bahasa yang
+ *      sedang dibaca — sehingga kotaknya berbunyi "belum tersedia dalam
+ *      English (English)". Yang dimaksud adalah bahasa SUMBER-nya.
+ */
+import { getLocaleFromPath, localeMeta, defaultLocale } from '../config/site';
 import { t } from '../lib/po';
 
 const locale = getLocaleFromPath(Astro.url.pathname);
 ---
 
-<aside class="disclaimer-box" lang="id" aria-label={t(locale, 'translation.notice.aria')}>
+<aside class="disclaimer-box" aria-label={t(locale, 'translation.notice.aria')}>
   <strong>{t(locale, 'translation.notice.label')}</strong>
   {t(locale, 'translation.notice.body')}
-  <span> ({localeMeta[locale].nama})</span>
+  <span lang={localeMeta[defaultLocale].htmlLang}> ({localeMeta[defaultLocale].nama})</span>
 </aside>

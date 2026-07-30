@@ -55,6 +55,14 @@ Konten ditarik saat **build**, bukan saat request.
   berbagi milik penyedia sosial. Berbagi memakai tautan biasa.
 - **Tidak ada pengumpulan data pribadi pembaca.** Tanpa form, tanpa analytics
   yang mengikat identitas.
+- **Jangan pernah mengiklankan aset yang tidak diterbitkan build ini.**
+  `og:image`, `twitter:image`, dan `ImageObject` JSON-LD adalah KLAIM, dan
+  klaim yang menunjuk 404 lebih buruk daripada tag yang tidak ada: pratinjau
+  tanpa gambar jatuh ke kartu teks yang rapi, pratinjau dengan gambar rusak
+  tidak jatuh ke mana pun. Template ini pernah memasang ketiganya di setiap
+  halaman, menunjuk `/social/<slug>.png` yang dibangkitkan skrip yang tidak
+  pernah ikut ke repo ini. Aset opsional dinyatakan lewat env dan **dilepas
+  seluruhnya saat kosong**, bukan diberi nilai default yang menebak.
 - **Tidak ada lambang, logo, atau atribut resmi instansi negara** — termasuk di
   dalam ilustrasi.
 - **Tidak ada dokumen, kuitansi, nomor registrasi, identitas, atau antarmuka
@@ -76,9 +84,20 @@ Konten ditarik saat **build**, bukan saat request.
   pengguna keyboard tidak mendapat versi yang lebih miskin.
 - **Mobile-first dari 360px.**
 - **String antarmuka lewat katalog PO**, tidak pernah ditulis langsung di
-  komponen. Key yang belum diterjemahkan jatuh ke locale default lalu ke
-  key-nya — jadi katalog yang tertinggal menghasilkan halaman terbaca, bukan
-  nama key di layar.
+  komponen. Ini berlaku juga bagi label yang datang dari konfigurasi: navigasi
+  utama pernah merender nilai HURUF BESAR dari `src/config/site.ts`, sehingga
+  permukaan paling terlihat di situs justru satu-satunya yang tidak pernah
+  ikut berganti bahasa.
+- **Rantai fallback `t()` berujung di NAMA KEY, dan nama key di layar bukan
+  "halaman terbaca".** Karena itu setiap key yang mungkin belum ada di katalog
+  mana pun — key yang dirangkai dari slug tab, dari kategori biaya, dari apa pun
+  yang ditentukan konfigurasi atau redaksi — **wajib** dipanggil dengan argumen
+  fallback yang layak dibaca: `t(locale, key, tab.label)`. Repo ini pernah
+  menerbitkan `translation.notice.label`, `biaya.jenis.pnbp`, `tab.articleNo`,
+  dan `tab.readMoreCta` sebagai teks yang dibaca pembaca, di kedua bahasa,
+  dengan `astro check` bersih dan build hijau. `tests/katalog-po.test.mjs`
+  sekarang menolak key literal tanpa fallback yang tidak ada di katalog — tetapi
+  ia tidak bisa melihat key dinamis, dan di sanalah aturan ini bekerja.
 - **Token desain, bukan nilai lepas.** Tidak ada gaya sekali pakai; komponen
   baru memakai token yang sudah ada di `src/styles/global.css`.
 
@@ -123,7 +142,18 @@ aturan yang jelas-jelas manual.
 ### Konfigurasi
 
 - **`src/config/site.ts` dan `.env` adalah satu-satunya tempat konfigurasi.**
-  Menstandarkan situs baru tidak boleh menuntut penyuntingan komponen.
+  Menstandarkan situs baru tidak boleh menuntut penyuntingan komponen. Aturan
+  ini yang paling sering dilanggar tanpa disadari, karena pelanggarannya tidak
+  pernah gagal — ia hanya menerbitkan identitas situs lain. Yang pernah
+  ditemukan tertanam harfiah di kode template ini: nama situs repo rujukan di
+  setiap `<title>`, emoji instansi dan lencana wilayah di header, `'id'`
+  sebagai `hreflang="x-default"`, peta lima nama tab repo rujukan, nama
+  provinsi di pembangun JSON-LD, dan bendera Merah Putih untuk setiap locale
+  yang bukan `en`. **Sebelum menulis nilai apa pun yang khas satu situs,
+  tanyakan apa yang terjadi bila situs berikutnya memakainya.**
+- **Nilai bawaan yang khas satu situs lebih buruk daripada nilai kosong.**
+  `SITE_MARK` dan `SITE_SOCIAL_IMAGE` kosong secara bawaan, dan kedua keadaan
+  kosong itu dirender penuh.
 - **Setiap variabel env yang dibaca kode wajib ada di `.env.example`**, disertai
   penjelasan konsekuensi salah isi — bukan sekadar nama.
 - **Bun adalah runtime dan package manager repo ini** (ADR-0015). Versinya
@@ -156,9 +186,15 @@ aturan yang jelas-jelas manual.
 ## Definition of Done
 
 - [ ] `bun run build` bersih (termasuk `astro check`).
-- [ ] `bun test` hijau.
+- [ ] `bun test` hijau — termasuk gerbang katalog `tests/katalog-po.test.mjs`.
 - [ ] Halaman baru bekerja dengan JavaScript dimatikan.
 - [ ] String antarmuka baru masuk ke SELURUH katalog locale.
+- [ ] Key yang dirangkai dari konfigurasi atau data redaksi dipanggil dengan
+      argumen fallback yang layak dibaca.
+- [ ] Tidak ada `any` pada props komponen yang menerima `LocalizedArticle`.
+      `entry: any` di `ArtikelLayout` menyembunyikan empat field yang tidak
+      pernah ada dan satu baris metadata yang selalu kosong; menggantinya
+      dengan tipe kontraknya menemukan seluruhnya dalam satu kali typecheck.
 - [ ] Locale default dan locale berprefiks menghasilkan jumlah halaman yang sama.
 - [ ] Gambar baru berasio `--ratio-visual`, ekstensinya sesuai isi berkas, tanpa
       lambang instansi maupun data tiruan, dan teksnya terbaca pada lebar 360px.

@@ -5,7 +5,13 @@ import { t } from '../lib/po';
 interface BiayaItem {
   item: string;
   nominal: string;
-  jenis: 'pnbp' | 'pajak-daerah' | 'asuransi' | 'lainnya';
+  /**
+   * Kategori biaya, apa adanya dari `contentJson`. Sengaja `string` dan bukan
+   * union empat nilai repo rujukan (`pnbp`, `pajak-daerah`, …): kontrak
+   * `AwcmsAstroBlock` di `src/lib/content.ts` juga `string`, dan redaksi mana
+   * pun bebas memakai kategori miliknya sendiri.
+   */
+  jenis: string;
   sumber: string;
 }
 
@@ -17,7 +23,20 @@ interface Props {
 const { biaya = [], dasarHukum = [] } = Astro.props;
 const locale = getLocaleFromPath(Astro.url.pathname);
 
-function getBadgeClass(jenis: BiayaItem['jenis']) {
+/**
+ * Nama kategori: katalog dulu, nilai mentahnya sebagai jaring pengaman.
+ *
+ * Tidak satu pun key `biaya.jenis.*` pernah ditulis di kedua katalog, dan
+ * `t()` tanpa fallback mengembalikan NAMA KEY-nya — jadi tabel biaya
+ * menampilkan lencana bertuliskan "biaya.jenis.pnbp" kepada pembaca, di kedua
+ * bahasa, tanpa satu pun kegagalan build. Fallback ke nilai mentah membuat
+ * kategori yang belum diterjemahkan tetap terbaca sebagai kata.
+ */
+function namaJenis(jenis: string): string {
+  return t(locale, `biaya.jenis.${jenis}`, jenis);
+}
+
+function getBadgeClass(jenis: string) {
   switch (jenis) {
     case 'pnbp': return 'badge badge-pnbp';
     case 'pajak-daerah': return 'badge badge-pajak';
@@ -50,7 +69,7 @@ function getBadgeClass(jenis: BiayaItem['jenis']) {
                 <td style="font-weight: 600;">{b.item}</td>
                 <td>
                   <span class={getBadgeClass(b.jenis)}>
-                    {t(locale, `biaya.jenis.${b.jenis}`)}
+                    {namaJenis(b.jenis)}
                   </span>
                 </td>
                 <td style="font-family: monospace; font-weight: 600; color: var(--text-primary);">{b.nominal}</td>
