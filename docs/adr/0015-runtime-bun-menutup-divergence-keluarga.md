@@ -58,8 +58,13 @@ tidak menunggu portal.** Konkretnya:
 6. CI memakai `oven-sh/setup-bun` dengan versi dipin, cache
    `~/.bun/install/cache`, `bun install --frozen-lockfile`, `bun test`, dan
    `bun audit --audit-level=low`.
-7. Image produksi dibangun dari `oven/bun:1.3.14-alpine`; stage runtime tetap
-   nginx unprivileged selama keluarannya statis.
+7. ~~Image produksi dibangun dari `oven/bun:1.3.14-alpine`; stage runtime tetap
+   nginx unprivileged selama keluarannya statis.~~
+   **DIAMANDEMEN [ADR-0016](0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md)
+   (31 Juli 2026):** nginx dilepas dari stack; Bun yang menyajikan keluaran build
+   di belakang Traefik/Coolify. Syarat "selama keluarannya statis" karena itu
+   tidak lagi relevan, dan pengecualian yang melemahkan klaim Bun-only repo ini
+   hilang bersamanya.
 8. Dependabot memakai `package-ecosystem: bun` (pola yang sudah dipakai `awcms`).
 9. **Versi Bun dipin di tiga tempat yang wajib bergerak bersama**: tag image
    Docker, `packageManager` + `engines.bun`, dan `bun-version` di CI.

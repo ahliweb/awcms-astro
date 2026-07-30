@@ -29,4 +29,5 @@ akan menunjuk dokumen yang salah.
 | ADR                                                        | Judul                                                                          | Status   |
 | ---------------------------------------------------------- | ------------------------------------------------------------------------------ | -------- |
 | [0014](0014-rendering-campuran-dan-bff-portal.md)          | Rendering campuran (static-by-default + rute on-demand) dan BFF portal Jualanku | Accepted (butir 3 diganti ADR-0015) |
-| [0015](0015-runtime-bun-menutup-divergence-keluarga.md)    | Runtime Bun: menutup divergence runtime dari keluarga AWCMS                     | Accepted |
+| [0015](0015-runtime-bun-menutup-divergence-keluarga.md)    | Runtime Bun: menutup divergence runtime dari keluarga AWCMS                     | Accepted (§7 diamandemen ADR-0016) |
+| [0016](0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md) | Penyajian oleh Bun di belakang Traefik/Coolify; nginx dilepas dari stack     | Accepted |
