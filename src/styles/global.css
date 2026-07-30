@@ -22,7 +22,7 @@
   --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   --font-heading: var(--font-sans);
 
-  /* Theme Palette - Professional Deep Slate & Kalteng Emerald/Teal accents */
+  /* Palet tema: deep slate dengan aksen biru dan emerald. */
   --bg-primary: #f8fafc;
   --bg-surface: #ffffff;
   --bg-surface-elevated: #ffffff;
@@ -39,7 +39,7 @@
   --accent-hover: #0369a1;
   --accent-subtle: #e0f2fe;
   
-  --emerald-primary: #059669;     /* Kalteng Green Accent */
+  --emerald-primary: #059669;
   --emerald-subtle: #dcfce7;
   
   --badge-pnbp-bg: #eff6ff;
@@ -309,18 +309,6 @@ p {
   overflow-wrap: break-word;
 }
 
-.brand-logo .badge-kalteng {
-  font-size: 0.75rem;
-  background: var(--emerald-primary);
-  color: #ffffff;
-  padding: 0.2rem 0.6rem;
-  border-radius: var(--radius-sm);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  box-shadow: 0 2px 4px rgba(5, 150, 105, 0.25);
-}
-
 .header-actions {
   display: flex;
   align-items: center;
@@ -376,6 +364,22 @@ p {
   flex-shrink: 0;
   border-radius: 2px;
   display: block;
+}
+
+/* Lencana kode ISO untuk locale yang belum punya bendera di LangFlag. Ia
+   menempati ruang yang sama persis dengan bendera, sehingga daftar bahasa
+   tetap rata saat sebagian locale bergambar dan sebagian tidak. */
+.lang-flag-kode {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
 }
 
 /* Tab Navigation UI */
@@ -662,14 +666,6 @@ p {
   letter-spacing: 0.025em;
 }
 
-.badge-nasional { background: #e0e7ff; color: #3730a3; }
-.badge-provinsi { background: #dcfce7; color: #166534; }
-.badge-kabupaten { background: #fef3c7; color: #92400e; }
-
-[data-theme="dark"] .badge-nasional { background: #312e81; color: #c7d2fe; }
-[data-theme="dark"] .badge-provinsi { background: #064e3b; color: #a7f3d0; }
-[data-theme="dark"] .badge-kabupaten { background: #78350f; color: #fde68a; }
-
 .badge-pnbp { background: var(--badge-pnbp-bg); color: var(--badge-pnbp-text); }
 .badge-pajak { background: var(--badge-pajak-bg); color: var(--badge-pajak-text); }
 
@@ -711,16 +707,103 @@ table.data-table tbody tr:hover {
   background: var(--bg-subtle);
 }
 
-/* Tabel yang ditulis di markdown artikel tidak bisa diberi class, jadi
-   digayakan lewat selector turunan agar tampil sama dengan .data-table.
-   display: block membuat tabel itu sendiri yang men-scroll, karena markdown
-   tidak menghasilkan pembungkus .table-responsive. */
+/* ==========================================================================
+   BADAN ARTIKEL — keluaran `renderContentBlocks()`
+   Kelas di bawah dipancarkan src/lib/content-blocks.ts dan TIDAK punya satu
+   pun aturan sebelum blok ini ada. Akibatnya bukan sekadar "kurang cantik":
+   sebuah `<img>` dari galeri CMS tampil pada lebar aslinya, dan satu gambar
+   2000px cukup untuk membuat seluruh halaman menggulir mendatar di layar
+   360px — target dukungan terkecil repo ini.
+   ========================================================================== */
+
+/* Batas mutlak: tidak ada satu pun media dari CMS yang boleh melebihi
+   kolomnya. Ditulis di `.content-body`, bukan di `.galeri`, supaya ia juga
+   berlaku bagi tipe blok yang belum ada saat baris ini ditulis. */
+.content-body img,
+.content-body svg,
+.content-body video,
+.content-body iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Kata panjang tanpa spasi (URL mentah, nomor perkara) tidak boleh melebarkan
+   halaman; ia dipenggal, bukan didorong keluar. */
+.content-body {
+  overflow-wrap: break-word;
+}
+
+.galeri {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.galeri-item {
+  margin: 0;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+/* Rasio dipaksakan bingkainya, sama seperti seluruh bingkai lain di berkas ini
+   (--ratio-visual). Sumber berasio lain DIPOTONG, tidak diperkecil — lihat
+   catatan pada --ratio-visual di atas sebelum menaruh seni di sini. */
+.galeri-item img {
+  width: 100%;
+  aspect-ratio: var(--ratio-visual);
+  object-fit: cover;
+  display: block;
+}
+
+.galeri-item figcaption {
+  padding: 0.6rem 0.85rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.video-berita {
+  margin: 1.5rem 0;
+  padding: 1rem 1.25rem;
+  background: var(--bg-subtle);
+  border-left: 4px solid var(--accent-primary);
+  border-radius: var(--radius-sm);
+}
+
+.video-berita figcaption {
+  margin-top: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Blok yang tidak bisa dirender situs ini: id media yang tidak bisa
+   diselesaikan, penyedia video yang tidak dikenal, tipe blok baru. Ia SENGAJA
+   terlihat — sebuah lubang yang tampak adalah temuan tinjauan halaman, sebuah
+   lubang yang tidak tampak adalah temuan pembaca. */
+.blok-tak-tersedia {
+  margin: 1rem 0;
+  padding: 0.85rem 1rem;
+  background: var(--bg-subtle);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* Tabel di badan artikel digayakan lewat selector turunan agar tampil sama
+   dengan .data-table. `renderContentBlocks()` belum memancarkan tabel sama
+   sekali (awcms tidak punya tipe blok tabel), jadi aturan ini menunggu tipe
+   itu ada — dan sengaja TIDAK memakai `min-width` seperti versi sebelumnya.
+   Versi itu memasang `min-width: 34rem` sambil menyebut pembungkus
+   `.table-responsive` "yang disisipkan rehype plugin"; pipeline markdown itu
+   sudah tidak ada di repo ini, jadi yang tersisa adalah tabel selebar 34rem
+   tanpa pembungkus penggulung — persis penyebab gulir mendatar di 360px. */
 .content-body table {
   width: 100%;
-  /* Scroll ditangani pembungkus .table-responsive yang disisipkan rehype plugin.
-     min-width menjaga kolom tetap lapang; tanpa ini tiap sel pecah menjadi
-     banyak baris di layar sempit. */
-  min-width: 34rem;
+  display: block;
+  overflow-x: auto;
   border-collapse: collapse;
   text-align: left;
   font-size: 0.925rem;
@@ -748,9 +831,9 @@ table.data-table tbody tr:hover {
   background: var(--bg-subtle);
 }
 
-/* Kolom pertama tabel artikel hampir selalu label pendek (golongan SIM,
-   jenis layanan). Menahannya agar tidak dipecah per kata membuat tabel
-   terbaca meski harus di-scroll di layar sempit. */
+/* Kolom pertama tabel artikel hampir selalu label pendek. Menahannya agar
+   tidak dipecah per kata membuat tabel terbaca meski harus di-scroll di layar
+   sempit. */
 .content-body table td:first-child {
   white-space: nowrap;
   font-weight: 600;
@@ -892,9 +975,24 @@ footer {
   .artikel-title { font-size: 1.5rem; }
 }
 
-/* Redesign menambahkan animasi fadeInUp, floatAnim, dan pulseGlow. Pengguna
-   yang mengaktifkan "kurangi gerakan" di sistem operasinya harus tetap bisa
-   memakai situs tanpa animasi — ini butir checklist aksesibilitas di AGENTS.md. */
+/* Animasi dekoratif DIMATIKAN saat "kurangi gerakan" diminta, bukan dipercepat.
+ *
+ * Blok ini sebelumnya memakai resep yang beredar luas — `animation-duration:
+ * 0.01ms !important` pada `*` — dan resep itu justru yang dilarang eksplisit
+ * oleh AGENTS.md §Antarmuka. Alasannya bukan kemurnian: animasi 0,01 md tidak
+ * hilang, ia BERKEDIP. Elemen melompat ke keadaan akhirnya dalam satu frame,
+ * dan bagi pengguna yang mematikan gerakan karena vertigo atau sensitivitas
+ * vestibular, kedipan mendadak persis kelas rangsang yang ingin ia hindari.
+ * `animation: none` menghapus animasinya sama sekali: elemen langsung tampil
+ * dalam keadaan akhirnya, tanpa satu frame pun transisi.
+ *
+ * Transisi tetap hanya dipangkas, tidak dinolkan — `transition: none` pada `*`
+ * juga mematikan perubahan warna fokus dan hover, dan menghilangkan umpan balik
+ * fokus adalah kerugian aksesibilitas yang lebih besar daripada gerak 0,01 md
+ * pada properti yang tidak berpindah tempat.
+ *
+ * Sapuan kilau punya blok `content: none` sendiri di bawah, dengan alasan yang
+ * sama. */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -903,17 +1001,18 @@ footer {
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
+    animation: none !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
 }
 
 /* ==========================================================================
-   PENGALIH BAHASA (6 locale)
+   PENGALIH BAHASA
    Memakai <details>/<summary> supaya daftar bahasa tetap bisa dibuka tanpa
-   JavaScript. Enam chip berjajar tidak muat di layar 360px.
+   JavaScript, dan supaya bentuknya tidak perlu berubah saat sebuah situs
+   menambah locale — chip berjajar berhenti muat di layar 360px sejak locale
+   ketiga.
    ========================================================================== */
 .lang-switcher {
   position: relative;
@@ -1069,8 +1168,9 @@ footer {
    kiri atas ke pojok kanan bawah saat hover atau fokus keyboard.
 
    Daftar permukaan di bawah adalah kontrak, bukan kumpulan kebetulan. Ia
-   disinkronkan dengan docs/awcms-astro/ui-ux-design-system.md dan diperiksa
-   `npm run audit`. Komponen baru cukup menambahkan class `kilau`.
+   disinkronkan dengan docs/awcms-astro/ui-ux-design-system.md dengan tangan —
+   repo ini belum punya gerbang audit yang memeriksanya (lihat README, "Yang
+   belum ada"). Komponen baru cukup menambahkan class `kilau`.
 
    Tiga hal yang membuatnya aman dan bukan sekadar hiasan:
    - `overflow: hidden` pada host memotong sapuan mengikuti sudut membulatnya;
@@ -1103,7 +1203,6 @@ footer {
 .card,
 .chip,
 .share-btn,
-.wilayah-filter-btn,
 .lang-switcher-menu a {
   position: relative;
   overflow: hidden;
@@ -1115,7 +1214,6 @@ footer {
 .card::after,
 .chip::after,
 .share-btn::after,
-.wilayah-filter-btn::after,
 .lang-switcher-menu a::after {
   content: '';
   position: absolute;
@@ -1141,8 +1239,6 @@ footer {
 .chip:focus-visible::after,
 .share-btn:hover::after,
 .share-btn:focus-visible::after,
-.wilayah-filter-btn:hover::after,
-.wilayah-filter-btn:focus-visible::after,
 .lang-switcher-menu a:hover::after,
 .lang-switcher-menu a:focus-visible::after {
   animation: kilau-diagonal var(--kilau-durasi) cubic-bezier(0.4, 0, 0.2, 1);
@@ -1155,55 +1251,13 @@ footer {
   --kilau-puncak: rgba(255, 255, 255, 0.42);
 }
 
-/* Tombol filter wilayah sebelumnya memakai tampilan bawaan browser. Sapuan
-   cahaya di atas tombol tanpa gaya justru menegaskan bahwa ia terlewat. */
-.wilayah-filter-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  min-height: 44px;
-  padding: 0.6rem 1.25rem;
-  border: 1px solid var(--accent-primary);
-  border-radius: var(--radius-md);
-  background: var(--accent-primary);
-  color: #ffffff;
-  font-family: inherit;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-  --kilau-warna: rgba(255, 255, 255, 0.18);
-  --kilau-puncak: rgba(255, 255, 255, 0.42);
-}
-
-.wilayah-filter-btn:hover,
-.wilayah-filter-btn:focus-visible {
-  background: var(--accent-hover);
-  border-color: var(--accent-hover);
-  box-shadow: var(--shadow-md);
-}
-
-/* Kontras teks putih di atas --accent-primary tema gelap (#38bdf8) tidak
-   memadai; di sana tombolnya dibalik menjadi teks gelap. */
-[data-theme='dark'] .wilayah-filter-btn {
-  color: #06263a;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) .wilayah-filter-btn {
-    color: #06263a;
-  }
-}
-
 /* Dimatikan penuh, bukan dipercepat. */
 @media (prefers-reduced-motion: reduce) {
   .kilau::after,
   .card::after,
   .chip::after,
   .share-btn::after,
-  .wilayah-filter-btn::after,
-  .lang-switcher-menu a::after {
+    .lang-switcher-menu a::after {
     content: none;
   }
 }

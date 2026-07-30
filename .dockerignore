@@ -17,5 +17,9 @@ dist/
 docs/
 *.md
 
+# Keluaran skill graphify: artefak analisis, bukan bahan build. Ukurannya
+# megabyte dan setiap rebuild-nya membatalkan cache lapisan sumber image.
+graphify-out/
+
 .DS_Store
 npm-debug.log*

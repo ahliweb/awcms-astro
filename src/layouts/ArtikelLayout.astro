@@ -7,14 +7,15 @@ import BiayaTable from '../components/BiayaTable.astro';
 import FaqAccordion from '../components/FaqAccordion.astro';
 import DisclaimerNote from '../components/DisclaimerNote.astro';
 import TranslationNotice from '../components/TranslationNotice.astro';
-import { getLocaleFromPath, getSiteUrl, localePath, localeHtmlLang } from '../config/site';
+import { getLocaleFromPath, getSiteUrl, localePath, localeHtmlLang, siteConfig, tabTitleKey } from '../config/site';
 import { getArticleImage } from '../lib/article-images';
-import { socialImage } from '../lib/social-image';
+import { SITE_SOCIAL_IMAGE } from '../lib/social-image';
 import { articleSchema } from '../lib/schema';
 import { t } from '../lib/po';
+import type { LocalizedArticle } from '../lib/content';
 
 interface Props {
-  entry: any; // Content collection entry
+  entry: LocalizedArticle['entry'];
   slug: string;
   isFallback?: boolean;
 }
@@ -23,19 +24,17 @@ const { entry, slug, isFallback = false } = Astro.props;
 const data = entry.data;
 const locale = getLocaleFromPath(Astro.url.pathname);
 
-const tabNames: Record<string, string> = {
-  sim: 'SIM',
-  stnk: 'STNK',
-  bpkb: 'BPKB',
-  pengawalan: 'PENGAWALAN',
-  gakkum: 'GAKKUM',
-};
-
 const articleVisual = getArticleImage(data.kategori, slug);
-const shareCard = socialImage(slug);
+const shareCard = SITE_SOCIAL_IMAGE;
 const canonicalUrl = getSiteUrl(localePath(locale, `/${data.kategori}/${slug}/`));
 
-const tabName = tabNames[data.kategori] || data.kategori.toUpperCase();
+// Nama tab datang dari katalog PO lewat konfigurasi tab, bukan dari peta
+// harfiah. Yang ada di sini sebelumnya adalah lima tab repo rujukan
+// (`sim`, `stnk`, `bpkb`, …) yang tidak pernah cocok dengan tab template ini,
+// sehingga setiap judul dan breadcrumb jatuh ke `kategori.toUpperCase()` —
+// terbaca, tetapi tidak pernah diterjemahkan.
+const tabConfig = siteConfig.tabs.find((tab) => tab.slug === data.kategori);
+const tabName = t(locale, tabTitleKey(data.kategori), tabConfig?.label ?? data.kategori);
 const pageTitle = `${data.title} | ${tabName}`;
 
 const breadcrumbItems = [
@@ -63,7 +62,6 @@ const schema = articleSchema({
   imageAlt: articleVisual.alt,
   updatedDate: new Date(data.updatedDate),
   section: tabName,
-  tags: data.tags ?? [],
 });
 ---
 
@@ -78,7 +76,6 @@ const schema = articleSchema({
   articleMeta={{
     modifiedTime: new Date(data.updatedDate).toISOString(),
     section: tabName,
-    tags: data.tags ?? [],
   }}
 >
   <article>
@@ -91,26 +88,25 @@ const schema = articleSchema({
         <div class="visual-placeholder visual-hero" role="img" aria-label={articleVisual.alt}></div>
       </div>
 
-      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
-        {data.variasiWilayah && (
-          <span class="badge" style="background: #e0f2fe; color: #0369a1;">
-            {t(locale, 'artikel.variasiWilayah')}
-          </span>
-        )}
-      </div>
-
       <h1 class="artikel-title">{data.title}</h1>
       <p class="artikel-lead">{data.description}</p>
 
+      {/* Setiap baris metadata tampil hanya bila nilainya ada. Baris tinjau
+          ulang dulu tanpa syarat, sehingga artikel tanpa `reviewDueDate`
+          menampilkan labelnya dengan nilai kosong di belakangnya — sebuah
+          janji tinjauan yang tidak pernah dibuat siapa pun.
+
+          Dua baris lain yang pernah ada di sini (`variasiWilayah` dan
+          `unitPelaksana`) membaca field yang tidak ada di kontrak
+          `LocalizedArticle`. Keduanya selalu bernilai `undefined`, jadi tidak
+          pernah tampil, dan `entry: any` membuat typecheck tidak bisa
+          mengatakannya. */}
       <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; font-size: 0.85rem; color: var(--text-muted); margin-top: 1rem;">
         <div>📅 {t(locale, 'artikel.updated')} <strong>{updatedDateStr}</strong></div>
-        <div>🔍 {t(locale, 'artikel.review')} <strong>{reviewDueDateStr}</strong></div>
-        {data.unitPelaksana && <div>🏛️ {t(locale, 'artikel.pelaksana')} <strong>{data.unitPelaksana}</strong></div>}
+        {reviewDueDateStr && <div>🔍 {t(locale, 'artikel.review')} <strong>{reviewDueDateStr}</strong></div>}
         {data.estimasiWaktu && <div>⏱️ {t(locale, 'artikel.estimasi')} <strong>{data.estimasiWaktu}</strong></div>}
       </div>
     </header>
-
-    {data.kategori === 'gakkum' && <DisclaimerNote variant="gakkum" />}
 
     <div class="content-body" style="font-size: 1.05rem; line-height: 1.7; color: var(--text-primary);">
       <slot />

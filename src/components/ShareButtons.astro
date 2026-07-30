@@ -1,14 +1,13 @@
 ---
 /**
- * Tombol bagikan ke kanal yang benar-benar dipakai pembaca di Kalimantan
- * Tengah, ditambah salin tautan.
+ * Tombol bagikan, ditambah salin tautan.
  *
  * Seluruhnya tautan `GET` biasa — tidak ada SDK, widget, piksel, atau skrip
  * pihak ketiga. Selain menjaga halaman tetap ringan, ini menutup jalur
  * pelacakan pembaca yang dilarang standar kepatuhan repo: tidak ada satu byte
  * pun yang dikirim ke penyedia sosial sampai pembaca sendiri mengekliknya.
  *
- * Tanpa JavaScript keempat tautan tetap berfungsi; hanya tombol salin tautan
+ * Tanpa JavaScript seluruh tautan tetap berfungsi; hanya tombol salin tautan
  * yang butuh JS, dan tombol itu disembunyikan bila JS tidak aktif.
  */
 import { getLocaleFromPath } from '../config/site';

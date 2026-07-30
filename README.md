@@ -59,7 +59,7 @@ satu-satunya lockfile.
 | `bun run dev`            | Server pengembangan                                  |
 | `bun run check`          | Gerbang lockfile lalu `astro check`                  |
 | `bun run check:lockfile` | Hanya gerbang lockfile — murni baca berkas           |
-| `bun test`               | Unit test renderer blok (`bun:test`, nol dep)        |
+| `bun test`               | Unit test renderer blok + gerbang katalog PO         |
 | `bun run build`          | `bun run check` lalu `astro build` → `dist/`         |
 | `bun run preview`        | Menyajikan hasil build                               |
 
@@ -127,6 +127,7 @@ src/
 │   ├── content.ts        # adapter: API → LocalizedArticle (kontrak komponen)
 │   ├── content-blocks.ts # blok terstruktur → HTML, tanpa jalur HTML mentah
 │   ├── po.ts             # katalog string antarmuka
+│   ├── po-parse.ts       # parser PO, dipisah agar bisa diuji tanpa Vite
 │   └── schema.ts         # JSON-LD
 ├── locales/<locale>/messages.po
 ├── pages/                # locale default di root, locale lain lewat [lang]/
@@ -138,10 +139,18 @@ ops/nginx-situs.conf      # penyajian keluaran statis di dalam image
 ## Yang belum ada (backlog eksplisit, bukan kelalaian)
 
 - **Gerbang audit konten.** Repo rujukan memilikinya dan itulah yang membuat
-  standar ini punya gigi. Aturannya di sana khas domain; versi generiknya
-  (paritas katalog, metadata SEO, tautan mati di `dist/`) belum ditulis di sini.
-- **Kartu share PNG.** Generatornya di repo rujukan terikat pada seni dan data
-  domainnya.
+  standar ini punya gigi. Aturannya di sana khas domain, dan versi generiknya
+  belum lengkap di sini. Satu bagiannya sudah ada:
+  [`tests/katalog-po.test.mjs`](tests/katalog-po.test.mjs) menjaga paritas
+  katalog dan menolak key yang dipakai kode tetapi tidak pernah ditulis — kelas
+  cacat yang menerbitkan nama key mentah ke layar pembaca. Metadata SEO dan
+  tautan mati di `dist/` masih menunggu.
+- **Kartu share per halaman.** Generatornya di repo rujukan terikat pada seni
+  dan data domainnya. Yang ada di sini hanya SATU kartu opsional lewat
+  `SITE_SOCIAL_IMAGE`; tanpa itu halaman tidak memasang tag gambar sama sekali
+  dan pratinjau sosial jatuh ke kartu teks. Itu keadaan yang **didukung** —
+  jangan menunjuk `SITE_SOCIAL_IMAGE` ke berkas yang belum ada, karena
+  pratinjau yang rusak tidak gagal di build mana pun.
 - **Gambar artikel.** [`src/lib/article-images.ts`](src/lib/article-images.ts)
   mengembalikan `src: undefined` dan setiap pemanggil merender blok bertoken.
   Butuh endpoint resolusi media di sisi awcms, atau seni lokal di `src/assets/`.

@@ -139,6 +139,12 @@ msgstr "Notices"
 msgid "tab.informasi.metaDesc"
 msgstr "Announcements and changes worth knowing."
 
+msgid "tab.articleNo"
+msgstr "Article "
+
+msgid "tab.readMoreCta"
+msgstr "Read more"
+
 msgid "artikel.updated"
 msgstr "Updated"
 
@@ -147,9 +153,6 @@ msgstr "Review due before"
 
 msgid "artikel.estimasi"
 msgstr "Estimated time"
-
-msgid "artikel.pelaksana"
-msgstr "Handled by"
 
 msgid "syarat.title"
 msgstr "Requirements and documents"
@@ -178,8 +181,29 @@ msgstr "Source"
 msgid "biaya.dasarHukum"
 msgstr "Legal basis"
 
-msgid "translation.notice"
+# Fee categories. These keys are OPTIONAL: `BiayaTable` falls back to the raw
+# value from `contentJson` when a key is absent, so an editorial team can use
+# its own categories without editing the catalogue first.
+msgid "biaya.jenis.pnbp"
+msgstr "State levy"
+
+msgid "biaya.jenis.pajak-daerah"
+msgstr "Regional tax"
+
+msgid "biaya.jenis.asuransi"
+msgstr "Insurance"
+
+msgid "biaya.jenis.lainnya"
+msgstr "Other"
+
+msgid "translation.notice.label"
+msgstr "Not translated yet."
+
+msgid "translation.notice.body"
 msgstr "This language is not available yet; the source-language version is shown."
+
+msgid "translation.notice.aria"
+msgstr "Translation notice"
 
 msgid "share.title"
 msgstr "Share this page"

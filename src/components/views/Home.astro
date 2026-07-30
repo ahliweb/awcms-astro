@@ -1,9 +1,8 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import DisclaimerNote from '../DisclaimerNote.astro';
-import { siteConfig, getLocaleFromPath, localePath } from '../../config/site';
+import { siteConfig, getLocaleFromPath, localePath, tabTitleKey } from '../../config/site';
 import { getArticles } from '../../lib/content';
-import { socialImage } from '../../lib/social-image';
 import { collectionSchema } from '../../lib/schema';
 import { t } from '../../lib/po';
 
@@ -18,7 +17,7 @@ const schema = collectionSchema(
   t(locale, 'home.sectionTitle'),
   t(locale, 'home.sectionLead'),
   siteConfig.tabs.map((tab) => ({
-    name: t(locale, `home.tab.${tab.slug}.title`),
+    name: t(locale, tabTitleKey(tab.slug), tab.label),
     url: localePath(locale, `/${tab.slug}/`),
   }))
 );
@@ -27,7 +26,6 @@ const schema = collectionSchema(
 <BaseLayout
   title={t(locale, 'home.title')}
   description={t(locale, 'home.description')}
-  ogImage={socialImage('beranda')}
   schema={schema}
 >
   <section class="hero-banner-grid">
@@ -66,18 +64,22 @@ const schema = collectionSchema(
       {siteConfig.tabs.map((tab) => (
         <a href={localePath(locale, `/${tab.slug}/`)} class="card" style="text-decoration: none;">
           <div class="card-img-wrapper">
-            <div class="visual-placeholder" role="img" aria-label={t(locale, `home.tab.${tab.slug}.title`)}></div>
+            <div class="visual-placeholder" role="img" aria-label={t(locale, tabTitleKey(tab.slug), tab.label)}></div>
           </div>
           <div class="card-content">
             <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.5rem;">
-              <h3 class="card-title" style="margin: 0;">{t(locale, `home.tab.${tab.slug}.title`)}</h3>
+              <h3 class="card-title" style="margin: 0;">{t(locale, tabTitleKey(tab.slug), tab.label)}</h3>
               <span class="badge" style="background: var(--accent-subtle); color: var(--accent-primary);">
                 {counts[tab.slug]} {t(locale, 'home.articleCount')}
               </span>
             </div>
-            <p class="card-desc">{t(locale, `home.tab.${tab.slug}.desc`)}</p>
+            <p class="card-desc">{t(locale, `home.tab.${tab.slug}.desc`, '')}</p>
             <div class="card-meta" style="color: var(--accent-primary);">
-              <span>{t(locale, 'home.cta')} {tab.name}</span>
+              {/* Dulu `{t('home.cta')} {tab.name}` — "Mulai dari panduan"
+                  disambung nama tab HURUF BESAR, jadi kartu Panduan berbunyi
+                  "Mulai dari panduan PANDUAN". Sekarang satu ajakan, satu
+                  nama tab, keduanya dari katalog. */}
+              <span>{t(locale, 'home.cta')} {t(locale, tabTitleKey(tab.slug), tab.label)}</span>
               <span aria-hidden="true">→</span>
             </div>
           </div>

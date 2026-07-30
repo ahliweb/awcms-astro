@@ -2,10 +2,9 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumb from '../Breadcrumb.astro';
 import DisclaimerNote from '../DisclaimerNote.astro';
-import { getLocaleFromPath, getSiteUrl, localePath, type TabSlug } from '../../config/site';
+import { getLocaleFromPath, getSiteUrl, localePath, siteConfig, tabTitleKey, type TabSlug } from '../../config/site';
 import { getArticles } from '../../lib/content';
 import { getArticleImage, getTabImage } from '../../lib/article-images';
-import { socialImage } from '../../lib/social-image';
 import { collectionSchema } from '../../lib/schema';
 import { t } from '../../lib/po';
 
@@ -18,17 +17,20 @@ const locale = getLocaleFromPath(Astro.url.pathname);
 
 const articles = await getArticles(tab, locale);
 
-const tabLabel = tab.toUpperCase();
-const title = t(locale, `tab.${tab}.pageTitle`);
-const description = t(locale, `tab.${tab}.metaDesc`);
+// Label breadcrumb datang dari katalog, bukan dari `tab.toUpperCase()`. Yang
+// terakhir itu tidak pernah diterjemahkan dan menyalahi kapitalisasi bahasa
+// mana pun yang ejaannya tidak sekadar huruf besar.
+const tabFallback = siteConfig.tabs.find((entry) => entry.slug === tab)?.label ?? tab;
+const tabLabel = t(locale, tabTitleKey(tab), tabFallback);
+const title = t(locale, `tab.${tab}.pageTitle`, tabFallback);
+const description = t(locale, `tab.${tab}.metaDesc`, '');
 
 const breadcrumbItems = [
   { name: tabLabel, url: localePath(locale, `/${tab}/`) }
 ];
 
-const shareCard = socialImage(`tab-${tab}`);
 const schema = collectionSchema(
-  t(locale, `tab.${tab}.h1`),
+  t(locale, `tab.${tab}.h1`, tabLabel),
   description,
   articles.map(({ entry, slug }) => ({
     name: entry.data.title,
@@ -42,7 +44,6 @@ const schema = collectionSchema(
   description={description}
   currentTab={tab}
   canonicalUrl={getSiteUrl(localePath(locale, `/${tab}/`))}
-  ogImage={shareCard}
   ogImageAlt={getTabImage(tab).alt}
   schema={schema}
 >
@@ -50,9 +51,9 @@ const schema = collectionSchema(
 
   <section class="feature-hero">
     <div>
-      <h1>{t(locale, `tab.${tab}.h1`)}</h1>
+      <h1>{t(locale, `tab.${tab}.h1`, tabLabel)}</h1>
       <p class="artikel-lead">
-        {t(locale, `tab.${tab}.lead`)}
+        {t(locale, `tab.${tab}.lead`, '')}
       </p>
     </div>
     <div class="feature-hero-img">

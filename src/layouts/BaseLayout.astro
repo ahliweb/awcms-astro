@@ -10,11 +10,14 @@ import {
   localePath,
   swapLocalePath,
   localeHtmlLang,
+  localeMeta,
   locales,
+  defaultLocale,
+  tabTitleKey,
   type Locale,
 } from '../config/site';
 import { t } from '../lib/po';
-import { DEFAULT_SOCIAL_IMAGE, SOCIAL_IMAGE_HEIGHT, SOCIAL_IMAGE_WIDTH } from '../lib/social-image';
+import { SITE_SOCIAL_IMAGE, SOCIAL_IMAGE_HEIGHT, SOCIAL_IMAGE_WIDTH } from '../lib/social-image';
 import { siteSchema } from '../lib/schema';
 import '../styles/global.css';
 
@@ -22,7 +25,11 @@ interface Props {
   title: string;
   description?: string;
   currentTab?: string;
-  /** URL absolut kartu share. Wajib PNG — lihat `src/lib/social-image.ts`. */
+  /**
+   * URL absolut kartu share. Wajib PNG — lihat `src/lib/social-image.ts`.
+   * Kosong berarti halaman ini tidak memasang tag gambar sama sekali; itu
+   * keadaan yang didukung dan merupakan bawaan template.
+   */
   ogImage?: string;
   /** Teks alternatif kartu share; dibaca pembaca layar di lini masa sosial. */
   ogImageAlt?: string;
@@ -30,8 +37,14 @@ interface Props {
   ogType?: 'website' | 'article';
   /** JSON-LD tambahan khas halaman ini (Article, ItemList, Place, …). */
   schema?: Record<string, unknown> | Array<Record<string, unknown>>;
-  /** Metadata `article:*` Open Graph; hanya diisi halaman artikel. */
-  articleMeta?: { modifiedTime: string; section: string; tags: string[] };
+  /**
+   * Metadata `article:*` Open Graph; hanya diisi halaman artikel.
+   *
+   * `tags` opsional: kontrak `AwcmsAstroBlock` belum membawa tag, jadi memaksa
+   * pemanggil mengirim `[]` hanya menyamarkan ketiadaannya sebagai daftar
+   * kosong yang disengaja.
+   */
+  articleMeta?: { modifiedTime: string; section: string; tags?: string[] };
   /** Menyembunyikan tombol bagikan; dipakai halaman yang tidak layak dibagikan. */
   hideShare?: boolean;
   /**
@@ -52,7 +65,7 @@ const {
   title,
   description = t(locale, 'home.description'),
   currentTab,
-  ogImage = DEFAULT_SOCIAL_IMAGE,
+  ogImage = SITE_SOCIAL_IMAGE,
   ogImageAlt = t(locale, 'share.imageAlt'),
   canonicalUrl = getSiteUrl(pathname.endsWith('/') ? pathname : `${pathname}/`),
   ogType = 'website',
@@ -63,9 +76,13 @@ const {
   langSwitchPath,
 } = Astro.props;
 
-const fullTitle = title.includes('Lalu Lintas Melayani')
+// Nama situs datang dari konfigurasi, bukan dari kode. Versi sebelumnya
+// menuliskan nama repo rujukan di sini secara harfiah, sehingga SETIAP judul
+// halaman di SETIAP situs yang lahir dari template ini berakhiran nama situs
+// orang lain — tanpa satu pun peringatan build.
+const fullTitle = title.includes(siteConfig.name)
   ? title
-  : `${title} — Lalu Lintas Melayani`;
+  : `${title} — ${siteConfig.name}`;
 
 const metaDescription = description.slice(0, 160);
 
@@ -75,6 +92,10 @@ const alternates = locales.map((loc: Locale) => ({
   hreflang: localeHtmlLang[loc],
   href: getSiteUrl(swapLocalePath(pathname, loc)),
 }));
+
+// og:locale memakai bentuk `xx_YY`, dan sumbernya `htmlLang` di localeMeta —
+// bukan daftar if/else. Sebuah locale baru cukup ditambahkan di satu tempat.
+const ogLocale = localeMeta[locale].htmlLang.replace('-', '_');
 
 // Satu blok JSON-LD per halaman: identitas situs selalu ada, skema khas halaman
 // digabung di belakangnya. Crawler membaca @graph sebagai satu kesatuan.
@@ -102,41 +123,61 @@ const jsonLd = {
     {!noindex && alternates.map((alt: { hreflang: string; href: string }) => (
       <link rel="alternate" hreflang={alt.hreflang} href={alt.href} />
     ))}
-    {!noindex && <link rel="alternate" hreflang="x-default" href={getSiteUrl(swapLocalePath(pathname, 'id'))} />}
+    {/* x-default menunjuk locale default repo ini, apa pun kodenya — bukan
+        `'id'` yang dulu ditulis harfiah di sini. Situs yang mengubah
+        `defaultLocale` tanpa menyentuh baris ini akan mengarahkan crawler ke
+        bahasa yang bukan bahasa sumbernya. */}
+    {!noindex && <link rel="alternate" hreflang="x-default" href={getSiteUrl(swapLocalePath(pathname, defaultLocale))} />}
 
-    {/* Open Graph / Facebook. Kartu share selalu PNG dengan ukuran eksplisit:
-        pengunduh pratinjau tidak menjalankan JavaScript dan tidak seragam
-        mendukung SVG, dan tanpa width/height sebagian menunda render kartunya. */}
+    {/* Open Graph / Facebook.
+
+        Tag gambar hanya dipasang bila kartunya benar-benar ada. Template ini
+        tidak membawa pembangkit kartu, dan versi sebelumnya tetap memasang
+        `og:image` ke `/social/<slug>.png` yang tidak pernah dibangkitkan
+        siapa pun — pratinjau rusak di setiap halaman, dengan build hijau.
+        Kartu share diisi lewat `SITE_SOCIAL_IMAGE`; lihat `.env.example`.
+
+        Saat ada, ia wajib PNG dengan ukuran eksplisit: pengunduh pratinjau
+        tidak menjalankan JavaScript dan tidak seragam mendukung SVG, dan tanpa
+        width/height sebagian menunda render kartunya. */}
     <meta property="og:type" content={ogType} />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={metaDescription} />
-    <meta property="og:image" content={ogImage} />
-    <meta property="og:image:secure_url" content={ogImage} />
-    <meta property="og:image:type" content="image/png" />
-    <meta property="og:image:width" content={String(SOCIAL_IMAGE_WIDTH)} />
-    <meta property="og:image:height" content={String(SOCIAL_IMAGE_HEIGHT)} />
-    <meta property="og:image:alt" content={ogImageAlt} />
-    {/* Empat bahasa daerah tidak punya kode og:locale yang dikenal crawler,
-        jadi dipetakan ke id_ID — keempatnya memang bahasa daerah Indonesia. */}
-    <meta property="og:locale" content={locale === 'en' ? 'en_US' : 'id_ID'} />
+    {ogImage && (
+      <>
+        <meta property="og:image" content={ogImage} />
+        <meta property="og:image:secure_url" content={ogImage} />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:width" content={String(SOCIAL_IMAGE_WIDTH)} />
+        <meta property="og:image:height" content={String(SOCIAL_IMAGE_HEIGHT)} />
+        <meta property="og:image:alt" content={ogImageAlt} />
+      </>
+    )}
+    <meta property="og:locale" content={ogLocale} />
     <meta property="og:site_name" content={siteConfig.name} />
     {articleMeta && (
       <>
         <meta property="article:published_time" content={articleMeta.modifiedTime} />
         <meta property="article:modified_time" content={articleMeta.modifiedTime} />
         <meta property="article:section" content={articleMeta.section} />
-        {articleMeta.tags.map((tag: string) => <meta property="article:tag" content={tag} />)}
+        {(articleMeta.tags ?? []).map((tag: string) => <meta property="article:tag" content={tag} />)}
       </>
     )}
 
-    <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image" />
+    {/* Twitter. `summary_large_image` menjanjikan gambar besar, jadi tanpa
+        kartu yang nyata kartunya diturunkan ke `summary` alih-alih menjanjikan
+        gambar yang tidak ada. */}
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
     <meta name="twitter:url" content={canonicalUrl} />
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={metaDescription} />
-    <meta name="twitter:image" content={ogImage} />
-    <meta name="twitter:image:alt" content={ogImageAlt} />
+    {ogImage && (
+      <>
+        <meta name="twitter:image" content={ogImage} />
+        <meta name="twitter:image:alt" content={ogImageAlt} />
+      </>
+    )}
 
     <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
@@ -168,11 +209,16 @@ const jsonLd = {
             nama membungkus di layar sempit, dan lambangnya tetap di tengah
             secara vertikal terhadap blok nama — bukan menempel di baris
             pertama. aria-hidden karena ia hiasan: pembaca layar cukup
-            mendengar nama situsnya. */}
+            mendengar nama situsnya.
+
+            Isinya datang dari `SITE_MARK` dan kosong secara bawaan. Dulu di
+            sini ada emoji mobil polisi dan lencana "Kalteng" yang ditulis
+            harfiah — atribut sebuah instansi dan sebuah wilayah, terbawa dari
+            repo rujukan, tampil di header setiap situs yang lahir dari
+            template ini. */}
         <a href={localePath(locale, '/')} class="brand-logo">
-          <span class="brand-mark" aria-hidden="true">🚔</span>
+          {siteConfig.mark && <span class="brand-mark" aria-hidden="true">{siteConfig.mark}</span>}
           <span class="brand-name">{siteConfig.name}</span>
-          <span class="badge-kalteng">Kalteng</span>
         </a>
         <div class="header-actions">
           <div class="header-tagline">
@@ -214,7 +260,7 @@ const jsonLd = {
             <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.4rem;">
               {siteConfig.tabs.map((tab) => (
                 <li>
-                  <a href={localePath(locale, `/${tab.slug}/`)}>{t(locale, `home.tab.${tab.slug}.title`)}</a>
+                  <a href={localePath(locale, `/${tab.slug}/`)}>{t(locale, tabTitleKey(tab.slug), tab.label)}</a>
                 </li>
               ))}
             </ul>
@@ -230,7 +276,13 @@ const jsonLd = {
         <DisclaimerNote variant="footer" />
 
         <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border-color); text-align: center; font-size: 0.8rem; color: var(--text-muted);">
-          &copy; 2023 - {new Date().getFullYear()} {t(locale, 'footer.copyright')}
+          {/* Tahun mulai tidak ditulis di sini: `2023` adalah tahun repo
+              rujukan berdiri, dan situs mana pun yang lahir dari template ini
+              akan mengklaim tahun itu sebagai tahunnya sendiri. Tahunnya
+              dibekukan saat build — situs ini dibangun ulang setidaknya sekali
+              sehari (lihat .github/workflows/rebuild.yml), jadi ia tidak
+              tertinggal. */}
+          &copy; {new Date().getFullYear()} {siteConfig.name}. {t(locale, 'footer.copyright')}
         </div>
       </div>
     </footer>

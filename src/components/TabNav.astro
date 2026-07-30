@@ -1,5 +1,14 @@
 ---
-import { siteConfig, getLocaleFromPath, localePath } from '../config/site';
+/**
+ * Navigasi utama.
+ *
+ * Labelnya lewat katalog PO seperti seluruh string antarmuka lain. Versi
+ * sebelumnya merender `tab.name` — nilai HURUF BESAR yang ditulis langsung di
+ * `src/config/site.ts` — sehingga navigasi utama justru satu-satunya permukaan
+ * yang tidak pernah ikut berganti bahasa. `tab.label` hanya dipakai bila
+ * key-nya belum ada di katalog mana pun.
+ */
+import { siteConfig, getLocaleFromPath, localePath, tabTitleKey } from '../config/site';
 import { t } from '../lib/po';
 
 interface Props {
@@ -20,7 +29,7 @@ const locale = getLocaleFromPath(Astro.url.pathname);
         class="tab-link"
         aria-current={isActive ? 'page' : undefined}
       >
-        <span>{tab.name}</span>
+        <span>{t(locale, tabTitleKey(tab.slug), tab.label)}</span>
       </a>
     );
   })}

@@ -17,7 +17,10 @@ const pathname = path ?? Astro.url.pathname;
 ---
 
 <!-- <details> dipakai agar daftar bahasa tetap bisa dibuka tanpa JavaScript.
-     Enam bahasa terlalu banyak untuk chip berjajar di layar 360px. -->
+     Bukan karena jumlah locale hari ini: begitu sebuah situs menambah locale
+     ketiga, chip berjajar berhenti muat di layar 360px, dan pengalih yang
+     berubah bentuk saat locale bertambah adalah pengalih yang harus ditulis
+     ulang saat itu terjadi. -->
 <details class="lang-switcher">
   <summary class="chip lang-switcher-trigger" aria-label={t(locale, 'lang.switch.label')}>
     <LangFlag locale={locale} uid="current" />
