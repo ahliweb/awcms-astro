@@ -100,14 +100,20 @@ sekarang.
 
 ## 5. Perubahan deployment
 
-| Aspek       | Sekarang                                   | Setelah portal aktif                                                        |
-| ----------- | ------------------------------------------ | ---------------------------------------------------------------------------- |
-| Image       | `node` build → `nginx-unprivileged` statis | Stage runtime menjalankan keluaran adapter (proses Node), nginx/Traefik di depan |
-| Port        | 8080 (nginx)                               | Port aplikasi + reverse proxy                                                |
-| Healthcheck | `wget` ke `/`                              | Endpoint kesehatan yang tidak menyentuh `awcms` (agar tidak menular gagal)   |
-| Nginx       | `try_files` ke berkas                      | Berkas statis + proxy ke aplikasi untuk rute on-demand                       |
-| Rebuild     | Webhook Coolify → rebuild penuh            | Tetap, untuk konten publik; portal tidak butuh rebuild                       |
-| Jaringan    | Publik → nginx                             | Publik → proxy → app; app → `awcms` lewat jaringan privat                    |
+Kolom "Sekarang" ikut berubah oleh
+[ADR-0016](../../adr/0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md):
+nginx sudah dilepas dan keluaran build disajikan proses Bun lewat adapter.
+Selisih yang tersisa bagi portal karena itu jauh lebih kecil daripada saat
+dokumen ini ditulis — yang belum ada tinggal rute on-demand-nya sendiri.
+
+| Aspek       | Sekarang                                        | Setelah portal aktif                                                       |
+| ----------- | ----------------------------------------------- | -------------------------------------------------------------------------- |
+| Image       | build Bun → proses Bun menyajikan `dist/client`  | Sama; stage runtime yang sama juga merender rute on-demand                 |
+| Port        | 8080 (proses Bun)                               | Tetap 8080 di belakang Traefik                                             |
+| Healthcheck | `wget` ke `/`                                   | Endpoint kesehatan yang tidak menyentuh `awcms` (agar tidak menular gagal) |
+| Penyaji     | adapter `@astrojs/node`, seluruh rute prerender | Adapter yang sama; sebagian rute `prerender = false`                       |
+| Rebuild     | Webhook Coolify → rebuild penuh                 | Tetap, untuk konten publik; portal tidak butuh rebuild                     |
+| Jaringan    | Publik → Traefik → proses Bun                   | Tetap; app → `awcms` lewat jaringan privat                                 |
 
 `awcms` dipindahkan ke origin privat/terbatas pada perubahan yang sama. Portal
 yang sudah jalan sementara `awcms` masih publik memberi keuntungan keamanan nol.

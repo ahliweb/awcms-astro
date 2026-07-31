@@ -126,6 +126,28 @@ sengaja yang belum tercatat di `awcms-family-compatibility.yaml`.
   ilustrasi. Pembaca bisa menyimpulkan itu rupa yang asli, dan kesimpulan itu
   memudahkan penipuan.
 
+### Penyajian
+
+- **`server/penyaji.mjs` adalah satu-satunya tempat header respons ditentukan**
+  (ADR-0016). Tiga header keamanan, dua aturan `Cache-Control`, dan kompresi
+  tinggal di sana dan tidak boleh tersebar ke tempat lain — di nginx aturan
+  serupa harus di-`include` ulang di setiap `location`, dan melupakannya
+  menghasilkan halaman tanpa satu pun header keamanan tanpa ada yang gagal.
+- **Jangan menulis penyaji berkas sendiri.** Penerjemahan URL menjadi path
+  berkas tetap milik adapter `@astrojs/node`. Setiap baris yang melakukannya
+  sendiri adalah baris yang bisa keliru menjadi pembacaan berkas arbitrer —
+  `..`, path ter-encode ganda, dan symlink adalah kelas cacat yang sudah
+  selesai bertahun-tahun lalu di pustaka yang dipakai adapter, dan kegagalannya
+  bukan halaman jelek.
+- **HTML tidak pernah di-cache lama; aset `/_astro/` selalu `immutable`.**
+  Keduanya berperilaku benar secara diam-diam ketika salah: situs tetap tayang,
+  hanya rebuild yang sukses tidak pernah terlihat pembaca. Karena itu perubahan
+  apa pun pada penyajian wajib lewat `tests/penyaji.test.mjs`.
+- **Yang menilai "ini aset atau bukan" harus menormalkan path lebih dulu.**
+  `/_astro/../index.html` menyajikan halaman depan; menilainya dari prefiks
+  mentah akan menempelkan cache satu tahun pada berkas yang berubah setiap
+  rebuild.
+
 ### Antarmuka
 
 - **Setiap fungsi inti bekerja tanpa JavaScript.** Navigasi, pengalih bahasa,
@@ -212,10 +234,12 @@ aturan yang jelas-jelas manual.
   kosong itu dirender penuh.
 - **Setiap variabel env yang dibaca kode wajib ada di `.env.example`**, disertai
   penjelasan konsekuensi salah isi — bukan sekadar nama.
-- **Bun adalah runtime dan package manager repo ini** (ADR-0015). Versinya
-  dipin di TIGA tempat yang wajib bergerak bersama: `packageManager` +
+- **Bun adalah runtime dan package manager repo ini** (ADR-0015), termasuk di
+  produksi: sejak ADR-0016 keluaran build disajikan proses Bun, bukan nginx.
+  Versinya dipin di TIGA tempat yang wajib bergerak bersama: `packageManager` +
   `engines.bun` di `package.json`, `bun-version` di `.github/workflows/ci.yml`,
-  dan tag image di `Dockerfile`. Menaikkan salah satu saja membuat build lokal,
+  dan tag image di `Dockerfile` — yang kini muncul DUA kali di berkas itu, stage
+  `build` dan stage `runtime`. Menaikkan salah satu saja membuat build lokal,
   CI, dan image berbeda perilaku — diam-diam.
 - **`bun.lock` wajib merupakan pernyataan tentang repo ini**, dan wajib
   di-commit. `bun run check:lockfile` memeriksanya sebelum install: nama
@@ -254,7 +278,10 @@ aturan yang jelas-jelas manual.
 - [ ] Locale default dan locale berprefiks menghasilkan jumlah halaman yang sama.
 - [ ] Gambar baru berasio `--ratio-visual`, ekstensinya sesuai isi berkas, tanpa
       lambang instansi maupun data tiruan, dan teksnya terbaca pada lebar 360px.
-- [ ] Variabel env baru terdokumentasi di `.env.example`.
+- [ ] Perubahan pada penyajian — header, `Cache-Control`, kompresi, port —
+      dibuktikan `tests/penyaji.test.mjs`, bukan diperiksa dengan mata.
+- [ ] Variabel env baru terdokumentasi di `.env.example`, termasuk variabel
+      RUNTIME yang dibaca `server/penyaji.mjs`.
 - [ ] Dokumen yang menjelaskan perilaku yang berubah ikut diperbarui.
 
 ## Berpindah ke SSR
@@ -273,9 +300,13 @@ Rancangannya di [`docs/awcms-astro/jualanku/`](docs/awcms-astro/jualanku/README.
 
 Tiga hal yang perlu dibaca sebelum menyentuh area itu:
 
-- **Belum ada implementasinya.** Adapter, rute portal, dan `_portal-api` belum
-  ada; `astro.config.mjs` masih statis tanpa adapter. Prasyaratnya di
-  [`04-kesiapan.md`](docs/awcms-astro/jualanku/04-kesiapan.md).
+- **Belum ada implementasinya.** Rute portal dan `_portal-api` belum ada, dan
+  tidak ada satu pun rute yang menyatakan `prerender = false`. Adapternya
+  **sudah** terpasang sejak ADR-0016 — tetapi untuk MENYAJIKAN hasil build,
+  bukan untuk merender saat request; `output` tetap `static`. Jangan membaca
+  kehadirannya sebagai tanda prasyarat portal sudah lewat: prasyaratnya ada di
+  [`04-kesiapan.md`](docs/awcms-astro/jualanku/04-kesiapan.md) dan belum
+  berubah.
 - **BFF tidak memutuskan apa pun yang punya konsekuensi bisnis.** Kepemilikan,
   entitlement, dan transisi status diputuskan `awcms`. Aturan yang hanya hidup di
   repo ini adalah aturan yang tidak ada.

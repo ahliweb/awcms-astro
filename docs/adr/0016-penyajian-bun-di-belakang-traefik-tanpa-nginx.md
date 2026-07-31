@@ -36,7 +36,8 @@ melainkan nginx, meskipun repo ini menyatakan diri Bun-only.
 
 ### Apa yang sebenarnya dikerjakan nginx di sini
 
-[`ops/nginx-situs.conf`](../../ops/nginx-situs.conf) bukan boilerplate. Setiap
+`ops/nginx-situs.conf` (dihapus oleh implementasi ADR ini; isinya ada di riwayat
+git sampai commit terakhir sebelum penyaji Bun) bukan boilerplate. Setiap
 aturannya punya alasan yang tertulis, dan **semuanya berperilaku benar secara
 diam-diam ketika hilang** — tidak ada yang gagal, halamannya tetap tampil:
 
@@ -50,8 +51,7 @@ diam-diam ketika hilang** — tidak ada yang gagal, halamannya tetap tampil:
    menyatakan taruhannya: cache HTML membatalkan seluruh premis rebuild lewat
    webhook, dan situs akan terlihat "belum ter-rebuild" padahal rebuild-nya
    sukses.
-4. Tiga header keamanan dari
-   [`ops/nginx-header-keamanan.conf`](../../ops/nginx-header-keamanan.conf),
+4. Tiga header keamanan dari `ops/nginx-header-keamanan.conf`,
    di-`include` ulang di setiap `location` karena `add_header` nginx **tidak**
    menurun begitu sebuah `location` punya `add_header` sendiri. Berkas itu
    mencatat bahwa jebakan tersebut ditemukan lewat pengujian, bukan lewat
@@ -113,6 +113,37 @@ adalah penanganan koneksi, bukan kerja penyajian.
 **Coolify dan healthcheck ikut berubah.** Port, perintah start, dan
 `HEALTHCHECK` di Dockerfile berganti; [`docs/deploy-coolify.md`](../deploy-coolify.md)
 ikut diperbarui dalam PR implementasinya.
+
+## Catatan implementasi (1 Agustus 2026)
+
+Keputusan di atas sudah diimplementasikan. Tiga hal yang berbeda dari, atau
+lebih spesifik daripada, yang tertulis di atas — dicatat di sini supaya ADR ini
+tidak menjanjikan sesuatu yang tidak dikirim implementasinya:
+
+1. **Adapternya `@astrojs/node` mode `standalone`, dijalankan Bun**, dibungkus
+   [`server/penyaji.mjs`](../../server/penyaji.mjs) setebal beberapa puluh baris
+   yang hanya memasang header dan kompresi. Pencarian berkas — `..`, path
+   ter-encode, symlink, `index.html` direktori — tetap milik adapter, sesuai
+   keputusan 3.
+2. **Kompresi tidak ditulis sendiri**, dengan alasan yang sama seperti penyajian
+   berkas: negosiasi `Accept-Encoding`, pembuangan `Content-Length`, dan `Vary`
+   adalah tiga tempat yang salahnya menghasilkan respons rusak. Ia memakai
+   pustaka `compression`.
+3. **Development belum menyajikan header yang sama.** Bagian "Konsekuensi" di
+   atas menyatakan bahwa setelah perpindahan ini development ikut mengirim
+   header keamanan yang sama; itu belum benar. `bun run dev` tetap server
+   pengembangan Astro, yang tidak melewati penyaji ini sama sekali. Yang
+   dikerjakan implementasinya adalah memetakan `bun run preview` ke penyaji
+   produksi, sehingga header dan cache bisa dilihat lokal dengan satu perintah —
+   tetapi selama halaman dikerjakan lewat `bun run dev`, pelanggarannya masih
+   tidak terlihat sampai seseorang menjalankan `serve`.
+
+Keputusan 5 dipenuhi [`tests/penyaji.test.mjs`](../../tests/penyaji.test.mjs).
+Perlu diketahui bahwa gerbang itu berlapis dua dan **lapis integrasinya
+dilewati di CI repo template ini**, karena repo template tidak punya sumber
+konten sehingga tidak pernah punya hasil build; ia dijalankan di dalam
+`docker build` dan di CI sebuah situs. Lapis yang menguji aturan header dan
+cache berjalan di mana pun.
 
 ## Alternatif yang ditimbang
 

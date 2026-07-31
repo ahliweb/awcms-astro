@@ -59,9 +59,28 @@ ketiga · tanpa HTML mentah dari CMS · gambar berasio `--ratio-visual`.
 
 ## 4. Yang sengaja ditunda
 
-- **Migrasi runtime ke Bun** — ADR tersendiri, setelah portal stabil.
+Dua butir daftar ini sudah **tidak berlaku lagi**, dan keduanya dibiarkan
+tertulis di sini beserta apa yang menggantikannya — daftar penundaan yang
+diam-diam dirapikan tidak meninggalkan jejak bahwa keputusannya pernah lain:
+
+- ~~**Migrasi runtime ke Bun** — ADR tersendiri, setelah portal stabil.~~
+  Sudah terjadi, dan **mendahului** portal, bukan menyusulnya:
+  [ADR-0015](../../adr/0015-runtime-bun-menutup-divergence-keluarga.md) memindahkan
+  runtime dan package manager ke Bun, lalu
+  [ADR-0016](../../adr/0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md)
+  membuat Bun pula yang menyajikan hasil build. Adapter yang dituntut PoC di §2
+  karena itu sudah terpasang — untuk menyajikan, bukan untuk merender saat
+  request.
+- ~~**Halaman admin internal di repo ini** — tetap milik `awcms`, selamanya.~~
+  Dibalik oleh aturan pemilik 31 Juli 2026 dan
+  [ADR-0017](../../adr/0017-peran-admin-owner-internal.md): halaman admin
+  **owner/internal** justru dibangun di repo ini, sementara admin milik tenant
+  tetap di `awcms`. Layar pertamanya masih diblokir dua kontrak yang belum ada di
+  `awcms` (header tenant dan kredensial mesin).
+
+Yang masih benar-benar ditunda:
+
 - **Rendering seluruh situs on-demand** — ditolak, bukan ditunda.
-- **Halaman admin internal di repo ini** — tetap milik `awcms`, selamanya.
 - **Checkout/marketplace** — di luar MVP.
 - **Personalisasi halaman publik** — akan menghapus kemampuan cache publik; butuh
   keputusan tersendiri.

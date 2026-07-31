@@ -17,8 +17,8 @@ flowchart LR
   Awcms -->|"baris antrean, se-transaksi"| Antrean["antrean rebuild"]
   Antrean -->|"worker, di luar transaksi"| Coolify["Coolify"]
   Coolify -->|"GET /api/v1/deploy?uuid=…<br/>git pull + docker build"| Build["astro build<br/>menarik konten dari awcms"]
-  Build --> Nginx["image nginx statis"]
-  Nginx -->|"Traefik"| Pembaca["Pembaca"]
+  Build --> Image["image Bun — menyajikan dist/client"]
+  Image -->|"Traefik"| Pembaca["Pembaca"]
 ```
 
 **GitHub tidak ada di jalur konten.** Repo tidak berubah saat sebuah artikel
@@ -39,6 +39,13 @@ lebih dulu.
 Template ini `output: 'static'`. Konten dari awcms masuk ke HTML saat
 `astro build` berjalan — yaitu di dalam `docker build`. Container yang sudah
 jadi **tidak pernah menghubungi awcms lagi**; ia hanya menyajikan berkas.
+
+Sejak [ADR-0016](adr/0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md) yang
+menyajikan berkas itu adalah **proses Bun**, bukan nginx. Yang berubah bagi
+operator hanya dua hal, dan keduanya kecil: perintah start image sekarang
+`bun dist/server/penyaji.mjs`, dan variabel runtime `PORT`/`HOST` dikenali
+(bawaannya `8080`/`0.0.0.0`, dan Coolify tidak perlu mengubahnya). Port,
+healthcheck, dan seluruh konfigurasi aplikasi di Coolify tetap sama.
 
 Konsekuensinya: di Coolify, setiap variabel awcms wajib dicentang sebagai
 **Build Variable**. Tanpa centang itu ia hanya masuk ke container yang sudah
@@ -79,18 +86,25 @@ Dua aplikasi lain di server itu terpaksa mematikan `health_check_enabled`:
 awcms-micro karena image-nya tidak punya `curl`/`wget`, dan SIMFAR karena Django
 menolak probe ber-`Host: localhost` dengan `400 DisallowedHost`.
 
-Image ini tidak kena keduanya — `wget` ada di dalam alpine, dan nginx yang
-menyajikan berkas statis tidak punya padanan `ALLOWED_HOSTS`. Image juga membawa
-`HEALTHCHECK` sendiri. Biarkan menyala.
+Image ini tidak kena keduanya — `wget` ada di dalam image `oven/bun` berbasis
+alpine, dan penyaji Bun tidak punya padanan `ALLOWED_HOSTS` yang menolak probe
+ber-`Host: localhost`. Image juga membawa `HEALTHCHECK` sendiri. Biarkan
+menyala.
 
 ### Token dan riwayat image
 
 `AWCMS_API_TOKEN` masuk sebagai `ARG` yang hanya hidup di stage `build`. Stage
-akhir `FROM nginx` hanya menyalin `dist/`, jadi token tidak ikut ke image yang
-dijalankan. Ini diverifikasi, bukan diasumsikan — build uji dengan token
-`token-uji` menghasilkan image yang bersih pada ketiga pemeriksaan:
-`docker history` tidak memuatnya, tidak ada berkas dalam image yang memuatnya,
-dan container runtime tidak punya satu pun variabel `AWCMS_*`.
+akhir hanya menyalin `dist/client/` dan `dist/server/penyaji.mjs`, jadi token
+tidak ikut ke image yang dijalankan. Ini diverifikasi, bukan diasumsikan — build
+uji dengan token `token-uji` menghasilkan image yang bersih pada ketiga
+pemeriksaan: `docker history` tidak memuatnya, tidak ada berkas dalam image yang
+memuatnya, dan container runtime tidak punya satu pun variabel `AWCMS_*`.
+
+Perlu diperiksa ulang setiap kali stage runtime berubah, karena kali ini yang
+disalin bukan hanya berkas statis: `dist/server/penyaji.mjs` adalah bundel
+JavaScript, dan bundel dibuat dari sumber yang dibangun di stage `build`. Yang
+menjaganya tetap bersih adalah bahwa penyaji tidak pernah membaca satu pun
+variabel `AWCMS_*` — ia hanya membaca `PORT` dan `HOST`.
 
 Yang tetap benar: token masih terbaca di cache builder pada mesin build. Karena
 itu terbitkan token dengan role tersempit yang bisa membaca konten published
@@ -195,4 +209,13 @@ curl -sI https://<domain>/_astro/<berkas>.css | grep -i cache-control
 curl -sI https://<domain>/ | grep -i cache-control
 #   -> public, max-age=0, must-revalidate  (HTML tidak boleh di-cache lama,
 #      atau rebuild yang sukses tetap terlihat seperti belum jalan)
+curl -sI https://<domain>/ | grep -iE 'x-content-type-options|x-frame-options|referrer-policy'
+#   -> nosniff / DENY / strict-origin-when-cross-origin
+curl -sI https://<domain>/tidak-ada/ | head -1          # 404, bukan 200
 ```
+
+`curl -sI` mengirim **HEAD**, dan itu sengaja dipakai di sini: penyaji menetapkan
+`Cache-Control` sebelum berkasnya dibuka, jadi HEAD dan GET wajib menjawab hal
+yang sama. Kalau suatu saat HEAD melaporkan `max-age=0` untuk `/_astro/`
+sementara GET melaporkan `immutable`, yang rusak bukan perintah di atas
+melainkan penyajinya — `tests/penyaji.test.mjs` menjaga persis selisih itu.

@@ -97,8 +97,17 @@ enforcement managed-media di `awcms` ada untuk menutupnya.
 | `/_portal-api/**`  | `no-store`                                 | `Vary` yang benar bila ada negosiasi             |
 
 Security header (CSP, frame-ancestors, referrer-policy, permissions-policy)
-diterapkan lewat middleware/nginx snippet yang sudah ada, dan CSP portal tidak
+diterapkan di [`server/penyaji.mjs`](../../../server/penyaji.mjs) — satu-satunya
+tempat header respons ditentukan sejak
+[ADR-0016](../../adr/0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md),
+menggantikan snippet nginx yang dirujuk versi awal dokumen ini. CSP portal tidak
 boleh melonggar dibanding CSP publik.
+
+Satu hal yang perlu diselesaikan di situ saat portal dibangun: penyaji hari ini
+memasang satu set header untuk SELURUH respons, sementara tabel di atas menuntut
+`private, no-store` khusus permukaan portal. Aturan per-permukaan itu belum ada,
+dan ia bukan pekerjaan yang bisa ditumpangkan diam-diam — cache yang melayani
+pengunjung anonim tidak boleh menyentuh respons terautentikasi.
 
 ## 7. Penanganan error
 

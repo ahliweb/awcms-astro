@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 #
-# Image produksi awcms-astro — keluaran statis murni di belakang nginx.
+# Image produksi awcms-astro — keluaran statis, disajikan proses Bun.
 #
 # ## Kenapa konten ditarik saat `docker build`, bukan saat container start
 #
@@ -20,12 +20,12 @@
 # ## Token dan riwayat image
 #
 # `AWCMS_API_TOKEN` masuk sebagai `ARG` dan hanya hidup di stage `build`. Stage
-# akhir `FROM nginx` hanya menyalin `dist/`, jadi token tidak ikut ke riwayat
-# image yang dijalankan. Ia tetap terbaca di cache builder pada mesin build,
-# jadi tetap terbitkan token yang **hanya bisa membaca konten published untuk
-# satu tenant** — sesuai `.env.example`. Bila builder mendukung BuildKit
-# secrets, `RUN --mount=type=secret` lebih ketat lagi dan bisa dipakai tanpa
-# mengubah apa pun di bawah selain baris `RUN`-nya.
+# akhir hanya menyalin keluaran build, jadi token tidak ikut ke riwayat image
+# yang dijalankan. Ia tetap terbaca di cache builder pada mesin build, jadi
+# tetap terbitkan token yang **hanya bisa membaca konten published untuk satu
+# tenant** — sesuai `.env.example`. Bila builder mendukung BuildKit secrets,
+# `RUN --mount=type=secret` lebih ketat lagi dan bisa dipakai tanpa mengubah
+# apa pun di bawah selain baris `RUN`-nya.
 
 # Versi Bun dikunci di tiga tempat yang harus bergerak bersama: tag image di
 # bawah, `packageManager` + `engines.bun` di package.json, dan `bun-version` di
@@ -72,25 +72,50 @@ ENV SITE_URL=$SITE_URL \
     AWCMS_TENANT_ID=$AWCMS_TENANT_ID \
     AWCMS_DEFAULT_TENANT_CODE=$AWCMS_DEFAULT_TENANT_CODE
 
-# `bun run build` sudah mencakup gerbang lockfile dan `astro check`. Menjalankan
-# `astro build` langsung di sini akan melewatinya, dan deploy adalah tempat
-# terakhir yang pantas melewati gerbang.
+# `bun run build` sudah mencakup gerbang lockfile, `astro check`, dan
+# pembungkusan penyaji menjadi satu berkas. Menjalankan `astro build` langsung
+# di sini akan melewati ketiganya, dan deploy adalah tempat terakhir yang
+# pantas melewati gerbang.
 RUN bun run build
 
-# ---- runtime: nginx non-root, hanya berkas statis --------------------------
-# Varian unprivileged berjalan sebagai UID 101 dan mendengarkan di 8080. Tidak
-# ada alasan image yang hanya menyajikan berkas statis berjalan sebagai root.
-FROM nginxinc/nginx-unprivileged:1.29-alpine AS runtime
+# Gerbang penyajian dijalankan di sini, bukan hanya di CI: di CI repo template
+# lapis integrasinya DILEWATI karena tidak ada sumber konten, sehingga image
+# adalah tempat pertama yang benar-benar punya hasil build untuk diuji. Aturan
+# cache dan header karena itu terbukti pada artefak yang persis akan berjalan.
+RUN bun test
 
-COPY ops/nginx-situs.conf /etc/nginx/conf.d/default.conf
-COPY ops/nginx-header-keamanan.conf /etc/nginx/snippets/header-keamanan.conf
-COPY --from=build /app/dist /usr/share/nginx/html
+# ---- runtime: Bun non-root, hanya keluaran build ---------------------------
+# Sejak ADR-0016 penyajinya adalah proses Bun, bukan nginx. Traefik/Coolify
+# tetap memegang TLS dan routing; yang berubah hanya siapa yang membaca berkas
+# dari disk. Aturan cache, tiga header keamanan, dan kompresi ikut pindah ke
+# `server/penyaji.mjs` dan dijaga `tests/penyaji.test.mjs`.
+FROM oven/bun:1.3.14-alpine AS runtime
+WORKDIR /app
+
+ENV NODE_ENV=production \
+    PORT=8080 \
+    HOST=0.0.0.0
+
+# Yang disalin hanya dua: berkas statis yang disajikan, dan penyaji yang sudah
+# dibundel menjadi satu berkas. Bundel itu yang membuat image ini tidak perlu
+# `node_modules` sama sekali — pohon dependency `astro` berukuran ratusan
+# megabyte dan tidak satu pun barisnya dibutuhkan untuk menyajikan berkas.
+# `dist/server/entry.mjs` beserta `chunks/` juga tidak ikut: isinya sudah ada
+# di dalam bundel.
+COPY --from=build /app/dist/client ./dist/client
+COPY --from=build /app/dist/server/penyaji.mjs ./dist/server/penyaji.mjs
+
+# Image bun sudah membawa pengguna non-root `bun`. Tidak ada alasan proses yang
+# hanya membaca berkas berjalan sebagai root.
+USER bun
 
 EXPOSE 8080
 
 # Berbeda dari awcms-micro dan SIMFAR di server Dinkes, healthcheck bawaan
 # Coolify AMAN diaktifkan untuk image ini: busybox `wget` ada di dalam alpine,
-# dan nginx statis tidak punya padanan `ALLOWED_HOSTS` yang menolak permintaan
+# dan penyaji ini tidak punya padanan `ALLOWED_HOSTS` yang menolak permintaan
 # ber-`Host: localhost`. Lihat docs/deploy-coolify.md.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
   CMD wget -q -O /dev/null http://127.0.0.1:8080/ || exit 1
+
+CMD ["bun", "dist/server/penyaji.mjs"]
