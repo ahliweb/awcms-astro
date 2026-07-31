@@ -137,7 +137,7 @@ Kolom terakhir menunjukkan padanan yang harus dituju saat integrasi, agar kompon
 
 Setiap tombol dan setiap tautan yang dibungkus card atau area khusus mendapat satu sapuan cahaya yang bergerak **dari pojok kiri atas ke pojok kanan bawah** saat hover maupun fokus keyboard. Sapuan berjalan sekali per interaksi, tidak berulang dan tidak berdenyut.
 
-Daftar permukaan adalah kontrak, bukan kumpulan kebetulan. Ia ditulis satu kali di `src/styles/global.css` di antara penanda `kilau:permukaan:mulai` dan `kilau:permukaan:selesai`, dan `bun run audit` memeriksa daftar itu sama persis dengan tabel di bawah:
+Daftar permukaan adalah kontrak, bukan kumpulan kebetulan. Ia ditulis satu kali di `src/styles/global.css` di antara penanda `kilau:permukaan:mulai` dan `kilau:permukaan:selesai`. Di repo rujukan `bun run audit` memeriksa daftar itu sama persis dengan tabel di bawah; di `awcms-astro` pemeriksa itu **belum ada**, jadi kesesuaiannya saat ini dijaga mata pembaca kode — dan itu berarti ia akan menyimpang:
 
 <!-- kilau:permukaan:mulai -->
 | Permukaan | Dipakai untuk |
@@ -174,7 +174,7 @@ Mobile-first dari 360px. Tabel dibungkus `.table-responsive` — otomatis untuk 
 
 Teks di dalam gambar ikut menyusut bersama gambarnya. Pada kartu selebar 328px — viewport 360px — kanvas 800px tampil pada skala 0,41: teks 12px menjadi 5px. Tetapkan ambang tipografi dari lebar kartu tersempit, bukan dari tampilan di layar desktop.
 
-Isi gambar tunduk pada [ADR-0013](../adr/0013-ilustrasi-tanpa-atribut-instansi.md): tanpa lambang instansi, tanpa data tiruan, teks hanya label topik.
+Isi gambar tunduk pada ADR-0013 repo rujukan: tanpa lambang instansi, tanpa data tiruan, teks hanya label topik.
 
 ## Jalur adopsi token saat integrasi
 

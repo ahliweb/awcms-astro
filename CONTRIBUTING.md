@@ -2,7 +2,9 @@
 
 Terima kasih sudah berniat membantu. Sebelum apa pun, satu hal yang membentuk seluruh aturan di bawah:
 
-**Situs ini memuat tarif resmi, syarat dokumen, dan ancaman denda.** Kesalahan isinya ditanggung pembaca langsung di loket layanan atau di jalan. Karena itu banyak aturan di sini terasa lebih ketat daripada proyek web pada umumnya — dan memang begitu maksudnya.
+**Repo ini adalah template, bukan sebuah situs.** Yang dikirimkan bukan artikel, melainkan cetakan yang dipakai situs-situs lain. Cacat di sini tidak muncul sekali — ia ikut ke setiap situs yang lahir dari template ini, dan sebagian besar cacat yang paling mahal di sini tidak menggagalkan build apa pun: identitas satu situs yang tertanam di kode, key katalog yang tampil sebagai teks pembaca, gambar yang terpotong diam-diam, tag `og:image` yang menunjuk berkas yang tidak pernah ada. Karena itu banyak aturan di sini terasa lebih ketat daripada proyek web pada umumnya.
+
+Situs yang dibangun dari template ini menambahkan aturan kontennya sendiri — verifikasi tarif, dasar hukum, data unit layanan — dan aturan itu ditegakkan di sisi `awcms` tempat kontennya tinggal, bukan di sini.
 
 Kontributor agen AI: baca [`AGENTS.md`](AGENTS.md) lebih dulu. Ia kontrak kerja teknis yang mengikat, bukan ringkasan.
 
@@ -10,44 +12,49 @@ Kontributor agen AI: baca [`AGENTS.md`](AGENTS.md) lebih dulu. Ia kontrak kerja 
 
 | Kontribusi | Kenapa berharga |
 | --- | --- |
-| **Terjemahan bahasa daerah** | Katalog `nij`/`bjn`/`mhy`/`bkr` masih hampir kosong dan hanya boleh diisi penutur asli. Mulai dari string antarmuka: jumlahnya sedikit, tampil di setiap halaman |
-| **Koreksi tarif, syarat, alamat unit** | Ditangani lebih dulu daripada apa pun. Sertakan sumber resminya |
-| **Verifikasi data unit layanan** | Sebagian alamat dan jam layanan masih bersumber pengumuman, belum dikonfirmasi langsung ke unit |
+| **Gerbang yang belum ada** | Daftarnya di [README](README.md#yang-belum-ada-backlog-eksplisit-bukan-kelalaian): audit metadata SEO, tautan mati di `dist/`, dan pemeriksa rasio gambar. Aturannya sudah tertulis; yang belum ada penegaknya |
+| **Melepas `style=""` inline** | ±50 atribut gaya inline yang diwarisi repo rujukan memblokir situs mana pun dari template ini di belakang CSP ketat — dan kegagalannya adalah halaman tanpa tata letak, tanpa satu pun error |
+| **Terjemahan katalog antarmuka** | `src/locales/<locale>/messages.po`. Jumlah stringnya sedikit dan seluruhnya tampil di setiap halaman |
+| **Laporan dari situs nyata** | Apa yang ternyata perlu disunting di luar `src/config/site.ts` dan `.env` — setiap temuan seperti itu adalah pelanggaran janji utama template ini |
 
 ## Menyiapkan lingkungan
 
 ```bash
 bun --version         # >= 1.3.0, sesuai `engines.bun`
+cp .env.example .env  # isi AWCMS_API_URL, token, dan tenant
 bun install
 bun run dev           # http://localhost:4321
 ```
 
 | Perintah | Kegunaan |
 | --- | --- |
-| `bun run build` | Gerbang lockfile, `astro check`, lalu `astro build` |
-| `bun test` | Unit test renderer blok (`bun:test`) |
-| `bun run audit` | Aturan konten, katalog PO, gambar, SEO, kartu share, tautan `dist/` |
-| `bun run kartu-share` | Paksa bangkitkan ulang kartu share |
+| `bun run dev` | Server pengembangan Astro (HMR) |
+| `bun run check` | Gerbang lockfile lalu `astro check` |
+| `bun run check:lockfile` | Hanya gerbang lockfile — murni baca berkas, tanpa jaringan |
+| `bun test` | Renderer blok, gerbang katalog PO, dan gerbang penyajian |
+| `bun run build` | `check` → `astro build` → bundel penyaji |
+| `bun run serve` | Menjalankan penyaji produksi atas hasil build (`preview` dan `start` adalah aliasnya) |
+| `bun audit` | Kerentanan rantai dependency |
 | `bun run release <level>` | Rilis bertag (wewenang maintainer) |
 
-`bun run audit` membaca `dist/`, jadi jalankan `bun run build` lebih dulu.
+`bun run dev` **bukan** penyaji produksi: ia tidak mengirim header keamanan maupun aturan cache di [`server/penyaji.mjs`](server/penyaji.mjs). Untuk melihat persis yang dilihat pembaca, jalankan `bun run build && bun run serve`.
+
+`bun run build` menarik konten dari sebuah instans `awcms` sungguhan. Repo template ini tidak punya satu pun, jadi build penuh hanya bisa dijalankan bila Anda mengarahkannya ke instans Anda sendiri — itu juga sebabnya job `build` di CI dikondisikan pada terisinya `vars.AWCMS_API_URL`. Perubahan yang tidak menyentuh pengambilan konten tetap bisa divalidasi penuh dengan `bun run check` dan `bun test`.
 
 ## Alur kontribusi
 
 1. **Mulai dari issue** yang jelas scope-nya. Bila perubahan menyentuh standar dasar, tulis [ADR](docs/adr/README.md) lebih dulu — daftar pemicunya di [`GOVERNANCE.md`](GOVERNANCE.md#kapan-sebuah-perubahan-butuh-adr).
 2. **Buat branch dari `main` sebelum menyentuh berkas apa pun.** Jangan commit langsung ke `main`.
 3. **Satu iterasi = satu scope atomic.** Selesaikan dan validasi sebelum pindah. Jangan menumpuk beberapa perubahan tak-berkaitan di satu branch.
-4. **Ubah konten dulu, komponen belakangan.** Konten adalah produknya; komponen hanya alat render.
-5. **Verifikasi setiap klaim** biaya, denda, tenggat, alamat unit, dan rujukan hukum ke sumber resmi sebelum menuliskannya.
-6. **Perbarui `updatedDate` dan `reviewDueDate`** pada setiap perubahan substantif.
-7. **Perbarui dokumentasi** bila workflow, struktur, atau konfigurasi berubah — pada iterasi yang sama.
-8. **Tulis changeset** di [`.changesets/`](.changesets/README.md) pada iterasi yang sama, bukan dirapel di akhir.
-9. **Jalankan `bun run build`, `bun test`, dan `bun run audit`**; ketiganya harus bersih.
-10. **Buka Pull Request** dengan `Closes #<issue>`. Merge setelah review dan CI hijau, lalu hapus branch-nya.
+4. **Sebelum menulis nilai apa pun yang khas satu situs, tanyakan apa yang terjadi bila situs berikutnya memakainya.** Nama, lambang, wilayah, dan daftar tab adalah input — bukan konstanta.
+5. **Perbarui dokumentasi** bila perilaku, workflow, struktur, atau konfigurasi berubah — pada iterasi yang sama. Di repo ini dokumentasi adalah bagian dari produk.
+6. **Tulis changeset** di [`.changesets/`](.changesets/README.md) pada iterasi yang sama, bukan dirapel di akhir.
+7. **Jalankan `bun run build` dan `bun test`**; keduanya harus bersih.
+8. **Buka Pull Request** dengan `Closes #<issue>`. Merge setelah review dan CI hijau, lalu hapus branch-nya.
 
 ### Penamaan branch
 
-`feature/<issue>-<slug>`, `fix/<issue>-<slug>`, `konten/<slug>`, `terjemahan/<locale>-<slug>`, `docs/<topik>`.
+`feat/<slug>`, `fix/<slug>`, `docs/<topik>`, `chore/<slug>`, `terjemahan/<locale>-<slug>`.
 
 ### Konvensi commit
 
@@ -55,62 +62,64 @@ bun run dev           # http://localhost:4321
 
 | Type | Untuk |
 | --- | --- |
-| `feat` | Kemampuan baru yang terlihat pembaca |
+| `feat` | Kemampuan baru yang terlihat pemakai template atau pembaca situs |
 | `fix` | Perbaikan perilaku yang salah |
-| `konten` | Artikel baru, koreksi isi, pembaruan tarif atau data unit |
-| `terjemahan` | Pengisian atau penyuntingan locale |
+| `terjemahan` | Pengisian atau penyuntingan katalog locale |
 | `docs` | Dokumentasi, ADR, skill |
 | `chore` | Dependency, konfigurasi, perkakas |
 | `refactor` | Perubahan bentuk kode tanpa perubahan perilaku |
 | `style` | Tampilan dan CSS |
 
-Scope contoh: `sim`, `stnk`, `bpkb`, `pengawalan`, `gakkum`, `wilayah`, `i18n`, `seo`, `share`, `gambar`, `audit`, `rilis`.
+Scope contoh: `konten`, `i18n`, `seo`, `share`, `gambar`, `deploy`, `runtime`, `lockfile`, `rilis`.
 
 Badan commit menjelaskan **kenapa**, bukan mengulang diff.
 
-## Aturan konten yang tidak bisa ditawar
+## Aturan yang tidak bisa ditawar
 
-Rincian lengkapnya di [`AGENTS.md`](AGENTS.md). Yang paling sering dilanggar:
+Rincian lengkap dan alasan tiap butir ada di [`AGENTS.md`](AGENTS.md). Yang paling sering dilanggar tanpa disadari — semuanya karena pelanggarannya **tidak pernah gagal**:
 
-- **Setiap nominal wajib punya `biaya[].sumber` dan `dasarHukum` lengkap** — jenis aturan, nomor, tahun, judul.
-- **Denda ditulis sebagai ancaman maksimum menurut undang-undang**, bukan nominal yang pasti dibayar.
-- **Yang belum terverifikasi ditulis `TBD`** beserta sumber yang harus dicek. Jangan menebak, jangan menyalin dari situs pihak ketiga.
-- **Minimal tiga item `faq`** untuk artikel panduan.
-- **Prosedur ditulis di `langkah[]`**, bukan sebagai daftar bernomor di badan artikel.
-- Dilarang: lambang atau logo instansi negara, tautan jasa calo, pengumpulan data pribadi pembaca, konten yang membantu menghindari penindakan hukum, dan skrip pihak ketiga apa pun.
+- **Hanya `src/lib/awcms/client.ts` yang boleh menghubungi awcms.** Komponen menerima data lewat props.
+- **Tidak ada jalur HTML mentah dari CMS.** Blok konten disusun dari teks ter-escape dan tag tetap; `set:html` hanya menerima keluaran `renderContentBlocks`.
+- **Token build tidak pernah ber-prefix `PUBLIC_`.** Astro menyisipkan variabel ber-prefix itu ke keluaran klien.
+- **Identitas satu situs tidak boleh masuk kode.** Tempatnya `src/config/site.ts` dan `.env`.
+- **String antarmuka lewat katalog PO**, termasuk label yang datang dari konfigurasi. Key yang dirangkai dari konfigurasi atau data redaksi wajib dipanggil dengan argumen fallback yang layak dibaca — ujung rantai `t()` adalah NAMA KEY, dan nama key di layar bukan halaman terbaca.
+- **Setiap fungsi inti bekerja tanpa JavaScript**, dan aksesibilitas WCAG 2.1 AA adalah batas, bukan target.
+- **Jangan mengiklankan aset yang tidak diterbitkan build ini.** `og:image` dan `ImageObject` adalah klaim; klaim yang menunjuk 404 lebih buruk daripada tag yang tidak ada.
+- Dilarang: skrip pihak ketiga, pengumpulan data pribadi pembaca, lambang atau logo instansi negara (termasuk di dalam ilustrasi), dan dokumen atau antarmuka aplikasi pemerintah yang direkayasa.
 
 ## Terjemahan
 
-Bahasa Inggris terbuka untuk siapa saja.
+Katalog antarmuka ada di `src/locales/<locale>/messages.po`. Locale yang tersedia ditentukan `localeMeta` di `src/config/site.ts`; template ini membawa `id` dan `en`.
 
-**Empat bahasa daerah — Dayak Ngaju, Banjar, Ma'anyan, Bakumpai — wajib dikerjakan atau disunting penutur asli.** Keluaran terjemahan mesin tidak boleh tayang sebagai hasil akhir. Alasannya di [ADR-0004](docs/adr/0004-terjemahan-bahasa-daerah-penutur-asli.md); panduan teknisnya di [`docs/workflows/penerjemahan-bahasa-daerah.md`](docs/workflows/penerjemahan-bahasa-daerah.md).
+Dua aturan yang dijaga `tests/katalog-po.test.mjs` dan mudah dilanggar:
+
+- **Key baru masuk ke SELURUH katalog locale.** Katalog yang tertinggal tidak pernah gagal sendiri — ia jatuh ke locale default dan tampak baik-baik saja sampai seseorang membaca halamannya dalam bahasa itu.
+- **`msgstr` kosong sama dengan key yang tidak ada**, tetapi terlihat sudah diterjemahkan saat katalognya dibaca manusia.
+
+Sebuah situs boleh menetapkan syarat lebih ketat untuk bahasa tertentu — misalnya mewajibkan penutur asli untuk bahasa dengan register teknis yang tipis. Tulis syarat itu sebagai ADR di repo situsnya sejak awal, bukan setelah terjemahan mesin terlanjur tayang.
 
 Yang tidak boleh berubah saat menerjemahkan: angka, nomor peraturan, tingkat kepastian kalimat, dan peringatan resmi.
 
 ## Definition of Done
 
-Sebuah pekerjaan selesai bila **seluruhnya** terpenuhi:
+Daftar lengkap dan mengikat ada di [`AGENTS.md`](AGENTS.md#definition-of-done). Ringkasnya, sebuah pekerjaan selesai bila **seluruhnya** terpenuhi:
 
 - [ ] Scope atomic terpenuhi; tidak ada perubahan menumpang yang tak berkaitan.
-- [ ] Klaim biaya, denda, dasar hukum, dan data unit layanan sudah diverifikasi ke sumber resmi.
-- [ ] `cakupan` artikel sesuai level keberlakuan informasinya.
-- [ ] `updatedDate` dan `reviewDueDate` diperbarui pada perubahan substantif.
-- [ ] `bun run build` sukses tanpa error `astro check`.
-- [ ] `bun test` hijau.
-- [ ] `bun run audit` melaporkan **0 error**.
+- [ ] `bun run build` bersih, termasuk `astro check`.
+- [ ] `bun test` hijau — termasuk gerbang katalog PO dan gerbang penyajian.
 - [ ] `bun audit` melaporkan **0 kerentanan**.
-- [ ] Tidak ada secret yang terekspos.
-- [ ] Tampilan layak pakai dari lebar 360px sampai desktop.
-- [ ] Metadata SEO, kartu share, dan structured data tidak rusak.
-- [ ] Teks antarmuka baru masuk katalog PO, termasuk `alt`, `aria-label`, `title`, dan `placeholder`.
-- [ ] Gambar baru berasio sama dengan bingkainya, tanpa lambang instansi, dan teksnya hanya label topik.
-- [ ] Teks di dalam gambar terbaca pada lebar 360px.
-- [ ] Disclaimer independensi dan peringatan kanal resmi tetap tampil di seluruh locale.
-- [ ] Dokumentasi diperbarui bila workflow, struktur, atau konfigurasi berubah.
-- [ ] Changeset ditulis bila perubahan memengaruhi konten publik, struktur, dependency, atau deployment.
+- [ ] Halaman baru bekerja dengan JavaScript dimatikan.
+- [ ] String antarmuka baru masuk ke seluruh katalog locale; key dinamis punya fallback yang layak dibaca.
+- [ ] Locale default dan locale berprefiks menghasilkan jumlah halaman yang sama.
+- [ ] Tidak ada identitas satu situs yang tertanam di kode.
+- [ ] Variabel env baru terdokumentasi di `.env.example`, beserta konsekuensi salah isi.
+- [ ] Tampilan layak pakai dari lebar 360px sampai desktop, di kedua tema.
+- [ ] Gambar baru berasio `--ratio-visual`, ekstensinya sesuai isi berkas, tanpa lambang instansi maupun data tiruan.
+- [ ] Dokumentasi yang menjelaskan perilaku yang berubah ikut diperbarui.
+- [ ] Changeset ditulis bila perubahan memengaruhi keluaran publik, struktur, dependency, atau deployment.
 
 ## Melaporkan masalah
 
 - Kerentanan keamanan: [`SECURITY.md`](SECURITY.md) — **jangan** buka issue publik.
-- Koreksi konten, bug, pertanyaan: [`SUPPORT.md`](SUPPORT.md).
+- Bug dan pertanyaan: [`SUPPORT.md`](SUPPORT.md).
 - Perilaku kontributor: [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md).

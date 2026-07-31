@@ -6,34 +6,32 @@ Closes #
 
 ## Jenis perubahan
 
-- [ ] Konten (artikel, koreksi tarif/syarat/data unit)
-- [ ] Terjemahan
 - [ ] Fitur atau perbaikan kode
+- [ ] Terjemahan katalog antarmuka
+- [ ] Deployment, runtime, atau penyajian
 - [ ] Dokumentasi / ADR / skill
 - [ ] Dependency atau perkakas
 
-## Verifikasi konten
+## Yang tidak gagal sendiri
 
-<!-- Wajib bila menyentuh nominal, denda, syarat, dasar hukum, atau data unit layanan. -->
+<!-- Isi yang relevan. Daftar ini memuat kelas cacat yang lolos dari build hijau
+     dan ikut ke setiap situs yang lahir dari template ini. -->
 
-- [ ] Setiap nominal punya `biaya[].sumber` dan `dasarHukum` lengkap
-- [ ] PNBP pusat dan pajak daerah Kalteng dipisah lewat `biaya[].jenis`
-- [ ] `cakupan` sesuai level keberlakuan informasinya
-- [ ] Denda ditulis sebagai ancaman maksimum menurut undang-undang
-- [ ] `updatedDate` dan `reviewDueDate` diperbarui
-
-Sumber resmi yang dipakai:
-
-<!-- Tautan atau nomor peraturan. Kosongkan bila PR ini tidak menyentuh konten. -->
+- [ ] Tidak ada identitas satu situs (nama, lambang, wilayah, daftar tab) yang masuk kode
+- [ ] String antarmuka baru ada di SELURUH katalog locale; key dinamis dipanggil dengan fallback yang layak dibaca
+- [ ] Locale default dan locale berprefiks menghasilkan jumlah halaman yang sama
+- [ ] Tidak ada tag gambar/`ImageObject` yang menunjuk aset yang tidak diterbitkan build ini
+- [ ] Variabel env baru ada di `.env.example` beserta konsekuensi salah isi
+- [ ] Perubahan pada penyajian (header, `Cache-Control`, kompresi, port) dibuktikan `tests/penyaji.test.mjs`
 
 ## Definition of Done
 
 - [ ] `bun run build` sukses tanpa error `astro check`
 - [ ] `bun test` hijau
-- [ ] `bun run audit` melaporkan 0 error
 - [ ] `bun audit` melaporkan 0 kerentanan
-- [ ] Tampilan layak pakai dari 360px sampai desktop
-- [ ] Dokumentasi diperbarui bila workflow/struktur/konfigurasi berubah
+- [ ] Halaman baru bekerja dengan JavaScript dimatikan
+- [ ] Tampilan layak pakai dari 360px sampai desktop, di kedua tema
+- [ ] Dokumentasi yang menjelaskan perilaku yang berubah ikut diperbarui
 - [ ] Changeset ditulis di `.changesets/`
 - [ ] ADR ditulis bila menyentuh standar dasar
 

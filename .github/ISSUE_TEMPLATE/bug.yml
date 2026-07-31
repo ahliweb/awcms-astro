@@ -1,12 +1,13 @@
 name: Laporan bug
-description: Situs error, tampilan rusak, atau tautan mati
+description: Template error, hasil build salah, tampilan rusak, atau tautan mati
 labels: ["bug"]
 body:
   - type: input
     id: halaman
     attributes:
-      label: Halaman
-      placeholder: /nij/sim/jenis-sim/
+      label: Rute atau berkas
+      description: Rute yang bermasalah pada situs hasil build, atau berkas di repo ini.
+      placeholder: /en/panduan/<slug>/ — atau src/lib/content.ts
     validations:
       required: true
 

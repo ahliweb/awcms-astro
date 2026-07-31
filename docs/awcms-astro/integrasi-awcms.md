@@ -2,7 +2,7 @@
 
 Kontrak perpindahan dari konten markdown di repo ke **pengelolaan dinamis** lewat framework [`ahliweb/awcms`](https://github.com/ahliweb/awcms).
 
-Dokumen ini menetapkan pemetaan model data, batas tanggung jawab, dan urutan migrasi — **sebelum** adapter-nya dibangun, supaya struktur konten hari ini tidak menutup jalannya. Itu memang tujuan aslinya sejak [ADR-0001](../adr/0001-situs-statis-astro.md).
+Dokumen ini menetapkan pemetaan model data, batas tanggung jawab, dan urutan migrasi — **sebelum** adapter-nya dibangun, supaya struktur konten hari ini tidak menutup jalannya. Itu memang tujuan aslinya sejak ADR-0001 repo rujukan.
 
 > **Status: rencana yang mengikat, belum diimplementasikan.** Adapter belum ada. Yang sudah ada adalah kontrak yang membuatnya bisa dibangun tanpa membongkar komponen.
 
@@ -42,7 +42,7 @@ flowchart TB
 | `src/content.config.ts` | Diganti kontrak API + validasi sisi server |
 | `src/content/*.md` | Migrasi sekali jalan ke `awcms_blog_posts` |
 | `src/data/*.ts` | Menjadi taxonomy/term atau tetap statis — lihat di bawah |
-| `astro.config.mjs` | `output: 'static'` **tetap**; adapter server dipasang dan hanya rute privat memakai `prerender = false` ([ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md)). Runtime sudah Bun sejak [ADR-0015](../adr/0015-runtime-bun-menutup-divergence-keluarga.md) |
+| `astro.config.mjs` | `output: 'static'` **tetap**; adapter server dipasang dan hanya rute privat memakai `prerender = false` (ADR-0014 repo rujukan). Runtime sudah Bun sejak ADR-0015 repo rujukan |
 
 ## Pemetaan model data
 
@@ -119,7 +119,9 @@ Rekomendasi: **wilayah menjadi taxonomy term** (agar bisa difilter bersama artik
 
 Ini bagian terpenting dokumen ini.
 
-Hari ini, jaminan konten ditegakkan **saat build**: Zod di `content.config.ts` menolak frontmatter yang salah, dan `bun run audit` menolak pelanggaran aturan domain. Begitu konten pindah ke basis data, **build tidak lagi melihat isinya** — artikel dibuat lewat antarmuka, kapan saja, oleh siapa saja yang berwenang.
+Di repo rujukan — konten sebagai markdown, sebelum perpindahan — jaminan konten ditegakkan **saat build**: Zod di `content.config.ts` menolak frontmatter yang salah, dan `bun run audit` menolak pelanggaran aturan domain. Begitu konten pindah ke basis data, **build tidak lagi melihat isinya** — artikel dibuat lewat antarmuka, kapan saja, oleh siapa saja yang berwenang.
+
+Perpindahan itu sudah terjadi di `awcms-astro`: tidak ada `content.config.ts`, tidak ada frontmatter, dan tidak ada gerbang audit konten. Tabel di bawah karena itu bukan rencana yang menunggu — ia daftar jaminan yang **saat ini tidak ditegakkan siapa pun di sisi ini**, dan yang penegakannya harus ada di `awcms`.
 
 Tanpa penggantinya, seluruh jaminan berikut lenyap dalam senyap:
 
