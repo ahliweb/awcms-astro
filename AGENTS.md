@@ -93,9 +93,23 @@ sengaja yang belum tercatat di `awcms-family-compatibility.yaml`.
   slug ditentukan locale default, `isFallback` dihitung adapter, urutan dari
   field urutan, dan hanya `status = 'published'` yang masuk build. Masing-masing
   menjaga satu cacat spesifik tetap mustahil; alasannya ditulis di berkas itu.
-- **Diam-diam memotong data adalah kegagalan, bukan optimasi.** Kalau API
-  membatasi jumlah baris, lempar error — jangan bangun situs yang terlihat
-  berhasil sambil kehilangan artikel.
+- **Diam-diam memotong data adalah kegagalan, bukan optimasi.** Adapter
+  menyusuri SELURUH daftar dengan cursor keyset; batas halaman bukan batas
+  konten. Kalau sesuatu menghalangi kelengkapan — cursor yang tidak maju,
+  terjemahan yang tidak bisa dipasangkan — **lempar error**, jangan bangun situs
+  yang terlihat berhasil sambil kehilangan artikel.
+- **Daftar post awcms mengembalikan RINGKASAN, bukan post.** `contentJson`,
+  `excerpt`, `metaDescription`, dan `canonicalUrl` hanya ada di
+  `/api/v1/blog/posts/{id}`. Membaca salah satunya dari daftar tidak error —
+  ia `undefined`, dan karena `kategori` tinggal di dalam `contentJson`, seluruh
+  seksi situs menjadi kosong dengan build tetap hijau. Itu pernah terjadi di
+  repo ini (ADR-0018).
+- **Tenant datang dari token, dan `AWCMS_TENANT_ID` adalah assertion.**
+  Jangan mengembalikannya menjadi rantai resolusi, dan jangan mengirim header
+  tenant: awcms menurunkan tenant dari kredensial mesin dan mengabaikan header
+  yang berbeda. Yang dijaga assertion itu bukan "build menebak tenant" —
+  melainkan token tenant lain yang terpasang di situs ini, yang tampak persis
+  seperti build yang sehat.
 
 ### Keamanan
 
