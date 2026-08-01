@@ -30,6 +30,7 @@ import { existsSync } from "node:fs";
 import {
   CACHE_ASET,
   CACHE_HALAMAN,
+  CSP,
   HEADER_KEAMANAN,
   aturanCache,
   buatServer,
@@ -97,7 +98,7 @@ describe("penilaian jalur", () => {
 });
 
 describe("header pada respons sungguhan", () => {
-  test("tiga header keamanan ada di setiap respons", async () => {
+  test("empat header keamanan ada di setiap respons", async () => {
     // Di nginx ketiganya harus di-include ulang di setiap `location`, dan
     // melupakannya menghasilkan halaman tanpa satu pun header — tanpa
     // peringatan. Di sini mereka dipasang sekali, dan tes ini yang memastikan
@@ -108,6 +109,23 @@ describe("header pada respons sungguhan", () => {
         assert.equal(res.headers.get(nama.toLowerCase()), nilai, `${jalur} ${nama}`);
       }
     }
+  });
+
+  test("CSP tidak melonggarkan dirinya sendiri", async () => {
+    // Sebuah CSP yang ada tetapi memuat `'unsafe-inline'` pada script-src
+    // adalah keadaan terburuk dari keduanya: header terlihat di `curl -I`,
+    // laporan kepatuhan menyebutnya terpasang, dan justru serangan yang paling
+    // ingin dicegahnya tetap lewat. Karena itu yang diuji bukan kehadirannya
+    // (sudah dijamin tes di atas) melainkan isinya.
+    const res = await lewatServer(handlerTiruan, "/");
+    const kebijakan = res.headers.get("content-security-policy") ?? "";
+
+    assert.equal(kebijakan, CSP);
+    assert.match(kebijakan, /(^|;\s*)default-src 'self'(;|$)/);
+    assert.match(kebijakan, /(^|;\s*)script-src 'self'(;|$)/);
+    assert.match(kebijakan, /(^|;\s*)object-src 'none'(;|$)/);
+    assert.match(kebijakan, /(^|;\s*)frame-ancestors 'none'(;|$)/);
+    assert.doesNotMatch(kebijakan, /unsafe-inline|unsafe-eval/);
   });
 
   test("HTML must-revalidate, aset immutable", async () => {
@@ -200,6 +218,14 @@ describe.skipIf(!adaArtefak)("artefak produksi menyajikan hasil build", () => {
     assert.equal(beranda.status, 200);
     assert.equal(beranda.headers.get("cache-control"), CACHE_HALAMAN);
     assert.equal(beranda.headers.get("x-frame-options"), "DENY");
+    assert.equal(beranda.headers.get("content-security-policy"), CSP);
+
+    // `/tema.js` tinggal di `public/`, bukan di `/_astro/`, jadi ia sengaja
+    // TIDAK immutable: namanya tidak ber-hash, dan cache setahun berarti
+    // pengalih tema yang diperbaiki tidak pernah sampai ke pembaca lama.
+    const tema = await fetch(`http://127.0.0.1:${port}/tema.js`);
+    assert.equal(tema.status, 200);
+    assert.equal(tema.headers.get("cache-control"), CACHE_HALAMAN);
 
     // `build.format: 'directory'` — `/panduan/` adalah `/panduan/index.html`.
     // Tanpa penyelesaian ini SETIAP halaman 404, jadi ia diuji terpisah dari

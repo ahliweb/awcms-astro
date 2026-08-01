@@ -164,7 +164,8 @@ Gerbang standar ini, seluruhnya wajib hijau sebelum pekerjaan dinyatakan selesai
 | Lockfile | `bun run check:lockfile` | Lockfile milik proyek lain, dependency yang tidak dideklarasi | Ya |
 | Type check | `astro check` (di dalam `bun run build`) | Kesalahan tipe dan props | Ya |
 | Katalog PO | `bun test` | Paritas katalog antar locale, `msgstr` kosong, key yang dipakai kode tetapi tidak pernah ditulis | Ya |
-| Penyajian | `bun test` | Header keamanan, aturan cache HTML vs aset, kompresi, halaman 404 | Ya |
+| Penyajian | `bun test` | Header keamanan termasuk CSP, aturan cache HTML vs aset, kompresi, halaman 404 | Ya |
+| Keluaran CSP | `bun test` **setelah** `bun run build` | Gaya dan skrip inline di HTML, sumber lintas-origin, JS yang ikut hilang | Ya — melewati dirinya bila `dist/` belum ada |
 | Audit konten | `bun run audit` | Aturan konten, gambar, SEO, share, tautan mati, tautan antar dokumen dan sinkronisasi daftar skill | **Belum** — lihat di bawah |
 | Audit dependency | `bun audit` | Kerentanan rantai build | Ya |
 | CI | `.github/workflows/ci.yml` | Seluruhnya yang ada, pada setiap PR | Ya |

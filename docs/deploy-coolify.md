@@ -211,8 +211,23 @@ curl -sI https://<domain>/ | grep -i cache-control
 #      atau rebuild yang sukses tetap terlihat seperti belum jalan)
 curl -sI https://<domain>/ | grep -iE 'x-content-type-options|x-frame-options|referrer-policy'
 #   -> nosniff / DENY / strict-origin-when-cross-origin
+curl -sI https://<domain>/ | grep -i content-security-policy
+#   -> default-src 'self'; script-src 'self'; … (ADR-0019)
+curl -sI https://<domain>/tema.js | head -1             # 200 — pengalih tema terbit
 curl -sI https://<domain>/tidak-ada/ | head -1          # 404, bukan 200
 ```
+
+Dua butir CSP yang layak diperiksa dengan mata setelah deploy pertama sebuah
+situs, karena keduanya gagal tanpa mengubah status HTTP apa pun:
+
+- **`Content-Security-Policy` muncul sekali, bukan dua kali.** Header kedua dari
+  Traefik tidak menimpa yang pertama — browser menegakkan IRISAN keduanya, dan
+  irisan dua kebijakan yang berbeda hampir selalu lebih ketat daripada yang
+  dimaksudkan siapa pun. Kebijakan situs ini hidup di `server/penyaji.mjs`.
+- **Buka satu halaman artikel dan periksa console browser.** Pelanggaran CSP
+  tidak pernah muncul di `curl`: yang terlihat hanya tombol salin yang diam atau
+  tema yang tidak berganti. `bun test` setelah `bun run build` menangkap kelas
+  ini lebih awal lewat `tests/keluaran-csp.test.mjs`.
 
 `curl -sI` mengirim **HEAD**, dan itu sengaja dipakai di sini: penyaji menetapkan
 `Cache-Control` sebelum berkasnya dibuka, jadi HEAD dan GET wajib menjawab hal

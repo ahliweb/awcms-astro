@@ -48,9 +48,9 @@ tepat, bukan ini.
 
 Yang menyajikan berkas itu adalah **proses Bun**, bukan nginx (ADR-0016) — jadi
 "tanpa runtime" bukan klaim repo ini; klaimnya adalah tanpa basis data dan tanpa
-panggilan ke CMS saat pembaca meminta halaman. Aturan cache, tiga header
-keamanan, dan kompresi tinggal di
-[`server/penyaji.mjs`](server/penyaji.mjs) dan dijaga
+panggilan ke CMS saat pembaca meminta halaman. Aturan cache, empat header
+keamanan — termasuk `Content-Security-Policy` ketat sejak ADR-0019 — dan
+kompresi tinggal di [`server/penyaji.mjs`](server/penyaji.mjs) dan dijaga
 [`tests/penyaji.test.mjs`](tests/penyaji.test.mjs).
 
 "Build berikutnya" tidak berarti menunggu seseorang menekan tombol: awcms
@@ -83,7 +83,7 @@ satu-satunya lockfile.
 | `bun run start`          | Alias `serve` — perintah yang dijalankan image                  |
 
 `bun run dev` menjalankan server pengembangan Astro, dan server itu **bukan**
-penyaji produksi: ia tidak mengirim tiga header keamanan maupun aturan cache di
+penyaji produksi: ia tidak mengirim empat header keamanan maupun aturan cache di
 [`server/penyaji.mjs`](server/penyaji.mjs). Untuk melihat persis yang dilihat
 pembaca — header, cache, kompresi — jalankan `bun run build && bun run serve`.
 `preview` sengaja dipetakan ke penyaji yang sama supaya "sudah saya cek di
@@ -146,6 +146,18 @@ field HTML — [`src/lib/content-blocks.ts`](src/lib/content-blocks.ts) menyusun
 setiap elemen dari teks yang sudah di-escape dan tag tetap. Editor tidak bisa
 menyuntikkan markup lewat jalur mana pun, apa pun yang ia ketik.
 
+**CSP ketat yang benar-benar dikirim, bukan sekadar "siap CSP".** Penyaji
+memasang `default-src 'self'` dengan `script-src 'self'` dan `style-src 'self'`
+tanpa `'unsafe-inline'` (ADR-0019). Yang membuatnya mungkin: tidak ada satu pun
+gaya maupun skrip di dalam HTML keluaran — pengalih tema tinggal di
+[`public/tema.js`](public/tema.js), dan Astro dilarang menyisipkan bundel kecil
+ke halaman lewat `vite.build.assetsInlineLimit: 0`. Keduanya dijaga
+[`tests/keluaran-csp.test.mjs`](tests/keluaran-csp.test.mjs), yang juga
+membuktikan JS-nya tidak ikut hilang; kebijakannya sendiri dijaga
+[`tests/penyaji.test.mjs`](tests/penyaji.test.mjs). JSON-LD tetap inline dan itu
+bukan kelonggaran: blok data bertipe non-JavaScript tidak pernah dieksekusi,
+jadi `script-src` tidak berlaku atasnya.
+
 ## Struktur
 
 ```
@@ -164,8 +176,10 @@ src/
 ├── locales/<locale>/messages.po
 ├── pages/                # locale default di root, locale lain lewat [lang]/
 └── styles/global.css     # design token + standar interaksi
-server/penyaji.mjs        # penyaji produksi: header, cache, kompresi (ADR-0016)
+public/tema.js            # SATU-SATUNYA JS yang harus jalan sebelum paint (ADR-0019)
+server/penyaji.mjs        # penyaji produksi: header, CSP, cache, kompresi (ADR-0016/0019)
 tests/penyaji.test.mjs    # gerbang penyajian — aturan di atas dibuktikan, bukan diklaim
+tests/keluaran-csp.test.mjs # gerbang keluaran: nol gaya & skrip inline di HTML
 Dockerfile                # build → image Bun non-root, port 8080
 ```
 
@@ -204,13 +218,6 @@ membuatnya tidak perlu `node_modules` sama sekali.
   `nextCursor`. Yang belum ada adalah filter locale di sisi awcms, jadi build
   menarik SELURUH locale lalu memasangkannya di sini — benar, tetapi menarik
   lebih banyak daripada yang dibutuhkan situs satu-bahasa.
-- **`script-src` ketat.** Gaya inline sudah tidak ada — keluaran build bersih
-  dari atribut `style=""` maupun blok `<style>`, dan
-  [`tests/keluaran-csp.test.mjs`](tests/keluaran-csp.test.mjs) menjaganya
-  begitu. Yang belum: dua `<script is:inline>` (pengalih tema dan JSON-LD),
-  sehingga `script-src 'self'` tanpa `'unsafe-inline'` masih memblokir
-  pengalih temanya. JSON-LD bisa pindah ke berkas eksternal; pengalih tema
-  butuh keputusan tersendiri karena ia harus jalan sebelum halaman terlukis.
 
 ## Dokumentasi
 
