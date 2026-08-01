@@ -56,3 +56,23 @@ Yang **tetap** berlaku:
 
 Repo ini karena itu kembali ke kelas "publik", dan biaya yang ADR-0017 catat —
 "berhenti menjadi hanya situs statis" — dibatalkan.
+
+## Satu klaim lain yang berhenti benar
+
+Pembacaan `awcms` yang sama menemukan bahwa
+[`src/lib/article-images.ts`](../src/lib/article-images.ts) dan README masih
+menyatakan gambar artikel menunggu "endpoint resolusi media di sisi awcms".
+**Endpoint itu sudah ada**: `GET /api/v1/media/objects?ids=…` batch-resolve media
+id menjadi `{ publicUrl, altText, mimeType, width, height }`, melaporkan id yang
+tak teresolusi alih-alih membuangnya, dan digerbangi
+`media_library.media.read` — permission baca-saja yang boleh dipegang kredensial
+mesin. Docstring-nya di `awcms` menyebut berkas repo ini sebagai alasan ia
+dibuat, dan feed build sudah membawa `featuredMediaId` di setiap baris penuh.
+
+Sisa pekerjaannya berpindah ke repo ini dan berubah sifat: bukan lagi kontrak
+yang buntu, melainkan dua keputusan — di mana gambar hasil resolusi tinggal
+(`LocalizedArticle`, di-resolve sekali per build; bukan modul sinkron yang
+dipanggil komponen), dan apa yang diizinkan `img-src` (host media ber-origin
+lain, jadi CSP ADR-0019 memblokirnya sampai origin itu dinyatakan). Keduanya
+ditulis di kedua berkas itu, sehingga yang membacanya berikutnya tidak mengira
+jalurnya masih tertutup.

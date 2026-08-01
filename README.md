@@ -204,12 +204,19 @@ membuatnya tidak perlu `node_modules` sama sekali.
   dan pratinjau sosial jatuh ke kartu teks. Itu keadaan yang **didukung** —
   jangan menunjuk `SITE_SOCIAL_IMAGE` ke berkas yang belum ada, karena
   pratinjau yang rusak tidak gagal di build mana pun.
-- **Gambar artikel.** [`src/lib/article-images.ts`](src/lib/article-images.ts)
-  mengembalikan `src: undefined` dan setiap pemanggil merender blok bertoken.
-  Butuh endpoint resolusi media di sisi awcms, atau seni lokal di `src/assets/`.
-  Rasionya sudah ditetapkan: seluruh bingkai memakai `--ratio-visual` (16∶9),
-  dan sumber berasio lain akan **dipotong** — bukan diperkecil. Aturan isinya
-  ada di [`AGENTS.md`](AGENTS.md#gambar).
+- **Gambar artikel — tidak lagi diblokir awcms, tinggal dua keputusan di sini.**
+  [`src/lib/article-images.ts`](src/lib/article-images.ts) masih mengembalikan
+  `src: undefined` dan setiap pemanggil merender blok bertoken. Endpoint yang
+  dulu ditunggu **sudah ada**: `GET /api/v1/media/objects?ids=…` batch-resolve
+  media id menjadi `{ publicUrl, altText, mimeType, width, height }`, dan feed
+  build sudah membawa `featuredMediaId` di setiap baris penuh. Yang tersisa ada
+  di repo ini: (1) gambar hasil resolusi tinggal di `LocalizedArticle` —
+  di-resolve sekali per build di `content.ts` — bukan di modul sinkron yang
+  dipanggil komponen; (2) `img-src 'self'` memblokir host media, jadi origin-nya
+  harus dinyatakan di [`server/penyaji.mjs`](server/penyaji.mjs) (ADR-0019).
+  Rasionya sudah ditetapkan dan sudah punya pemeriksa: seluruh bingkai memakai
+  `--ratio-visual` (16∶9), sumber berasio lain **dipotong** — bukan diperkecil.
+  Aturan isinya di [`AGENTS.md`](AGENTS.md#gambar).
 - **Gerbang rasio gambar.** Repo rujukan memeriksa rasio setiap sumber (termasuk
   `viewBox` SVG) dan mencocokkan format berkas dengan isinya, bukan dengan
   ekstensinya. Di sini aturannya tertulis tetapi belum punya pemeriksa; ia ikut
