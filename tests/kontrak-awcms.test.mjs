@@ -17,6 +17,7 @@
  */
 import { test, describe, beforeEach, afterEach } from "bun:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 
 import { resolveTenant, TenantNotConfiguredError } from "../src/lib/awcms/tenant.ts";
 
@@ -85,6 +86,43 @@ describe("tenant diturunkan dari token", () => {
         () => resolveTenant({ AWCMS_API_TOKEN: TOKEN, [nama]: "produksi" }),
         (e) => new RegExp(`${nama}.*no longer decide`).test(e.message),
         `${nama} seharusnya ditolak`
+      );
+    }
+  });
+
+  test("tempat build TIDAK meneruskan variabel yang sudah ditolak", () => {
+    // Pasangan wajib dari tes di atas, dan kelas cacat yang berbeda.
+    //
+    // Menolak sebuah variabel hanya bermanfaat bila tidak ada yang mengirimkan
+    // variabel itu. Sepanjang `ci.yml` dan `Dockerfile` masih meneruskan
+    // `AWCMS_TENANT_CODE` dari repository/build variable — nilai yang
+    // dokumentasi versi sebelumnya justru menyuruh mengisinya — sebuah situs
+    // yang belum membersihkan konfigurasinya mendapat build yang GAGAL di CI,
+    // dengan pesan yang tidak menyebut langkah mana yang mengirimkannya. Itu
+    // bukan gerbang yang bekerja; itu gerbang yang menembak pemakainya sendiri.
+    //
+    // Arah sebaliknya ikut dijaga di sini: `AWCMS_TENANT_ID` HARUS diteruskan.
+    // Ia assertion yang menangkap token tenant lain, dan tanpa baris itu ia
+    // tidak pernah berjalan di dua tempat yang benar-benar membangun situs.
+    const berkas = [".github/workflows/ci.yml", "Dockerfile"];
+
+    for (const jalur of berkas) {
+      const isi = readFileSync(jalur, "utf8");
+
+      for (const pensiun of ["AWCMS_TENANT_CODE", "AWCMS_DEFAULT_TENANT_CODE"]) {
+        // Komentar boleh menyebut namanya — justru di sanalah alasannya
+        // ditulis. Yang dilarang adalah baris yang benar-benar meneruskannya.
+        const meneruskan = isi
+          .split("\n")
+          .filter((baris) => !baris.trim().startsWith("#"))
+          .some((baris) => baris.includes(pensiun));
+
+        assert.equal(meneruskan, false, `${jalur} masih meneruskan ${pensiun}`);
+      }
+
+      assert.ok(
+        isi.includes("AWCMS_TENANT_ID"),
+        `${jalur} tidak meneruskan AWCMS_TENANT_ID, jadi assertion tenant tidak pernah jalan di sana`
       );
     }
   });

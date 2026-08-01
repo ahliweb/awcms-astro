@@ -126,9 +126,23 @@ jobs:
           else
             echo "AWCMS_API_URL KOSONG — build penuh DILEWATI." >> "$GITHUB_STEP_SUMMARY"
             echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "Ini normal untuk repo template itu sendiri. Untuk sebuah situs, isi repository variables SITE_URL, AWCMS_API_URL, AWCMS_TENANT_CODE dan secret AWCMS_API_TOKEN — tanpa itu integrasi ke awcms tidak pernah teruji di CI." >> "$GITHUB_STEP_SUMMARY"
+            echo "Ini normal untuk repo template itu sendiri. Untuk sebuah situs, isi repository variables SITE_URL, AWCMS_API_URL, AWCMS_TENANT_ID dan secret AWCMS_API_TOKEN — tanpa itu integrasi ke awcms tidak pernah teruji di CI." >> "$GITHUB_STEP_SUMMARY"
           fi
 
+      # `AWCMS_TENANT_ID` diteruskan, `AWCMS_TENANT_CODE` dan
+      # `AWCMS_DEFAULT_TENANT_CODE` TIDAK — dan pertukaran itu bukan kerapian.
+      #
+      # Sejak ADR-0018 tenant datang dari token, dan kedua variabel lama
+      # **ditolak** alih-alih diabaikan (`refuseRetiredVariables` di
+      # `src/lib/awcms/tenant.ts`). Selama keduanya masih diteruskan dari sini,
+      # sebuah situs yang menyimpan `vars.AWCMS_TENANT_CODE` — nilai yang
+      # dokumentasi versi sebelumnya justru menyuruh mengisinya — mendapat build
+      # yang gagal di CI dengan sebab yang tidak disebut langkah ini sama sekali.
+      #
+      # Arah sebaliknya sama pentingnya: `AWCMS_TENANT_ID` adalah assertion yang
+      # menangkap token tenant lain terpasang di situs ini, dan tanpa baris di
+      # bawah assertion itu tidak pernah berjalan di CI — satu-satunya tempat
+      # sebuah situs membangun sebelum deploy.
       - name: Build
         if: vars.AWCMS_API_URL != ''
         run: bun run build
@@ -140,8 +154,7 @@ jobs:
           SITE_SOCIAL_IMAGE: ${{ vars.SITE_SOCIAL_IMAGE }}
           SITE_LOCALES: ${{ vars.SITE_LOCALES }}
           AWCMS_API_URL: ${{ vars.AWCMS_API_URL }}
-          AWCMS_TENANT_CODE: ${{ vars.AWCMS_TENANT_CODE }}
-          AWCMS_DEFAULT_TENANT_CODE: ${{ vars.AWCMS_DEFAULT_TENANT_CODE }}
+          AWCMS_TENANT_ID: ${{ vars.AWCMS_TENANT_ID }}
           AWCMS_API_TOKEN: ${{ secrets.AWCMS_API_TOKEN }}
 
       # Dijalankan LAGI di sini, setelah build, dan bukan karena lupa: lapis
