@@ -15,8 +15,9 @@
  *
  * Yang dikerjakan berkas ini hanya tiga hal yang tidak dikerjakan adapter:
  *
- *   1. empat header keamanan — tiga yang dulu ada di
- *      `ops/nginx-header-keamanan.conf`, ditambah Content-Security-Policy;
+ *   1. lima header keamanan — tiga yang dulu ada di
+ *      `ops/nginx-header-keamanan.conf`, ditambah Content-Security-Policy dan
+ *      Permissions-Policy (ADR-0019, disamakan dengan postur `awcms`);
  *   2. `Cache-Control` yang eksplisit untuk HTML dan untuk aset ber-hash;
  *   3. kompresi respons, yang dulu dilakukan `gzip on` di nginx.
  *
@@ -98,13 +99,30 @@ export const CSP = [
   "connect-src 'self'",
   "frame-src 'none'",
   "object-src 'none'",
-  "base-uri 'self'",
+  // `'none'`, bukan `'self'`: situs statis tidak pernah memakai `<base>`, dan
+  // `'self'` masih mengizinkan sebuah `<base href>` yang disuntikkan menggeser
+  // resolusi SETIAP tautan relatif di halaman. Nilai ini menyamai postur
+  // `awcms` (`BASE_CSP_DIRECTIVES` di `src/lib/security/security-headers.ts`).
+  "base-uri 'none'",
   "form-action 'self'",
   "frame-ancestors 'none'"
 ].join("; ");
 
 /**
- * Header yang dulu tinggal di `ops/nginx-header-keamanan.conf`, ditambah CSP.
+ * Kemampuan browser yang dimatikan untuk seluruh permukaan ini.
+ *
+ * Disamakan dengan header yang sudah dikirim `awcms`. Situs dari template ini
+ * tidak punya form, tidak mengumpulkan data pribadi pembaca, dan tidak memuat
+ * satu pun skrip pihak ketiga — jadi keempat kemampuan di bawah tidak dipakai
+ * siapa pun, dan menyatakannya membuat sebuah skrip yang suatu saat lolos tidak
+ * bisa meminta kamera atau lokasi pembaca hanya karena ia berhasil berjalan.
+ */
+export const PERMISSIONS_POLICY =
+  "geolocation=(), camera=(), microphone=(), payment=()";
+
+/**
+ * Header yang dulu tinggal di `ops/nginx-header-keamanan.conf`, ditambah CSP dan
+ * Permissions-Policy.
  *
  * Di nginx ketiganya harus di-`include` ulang di setiap `location`, karena
  * `add_header` dibuang seluruhnya begitu sebuah `location` punya `add_header`
@@ -115,7 +133,8 @@ export const HEADER_KEAMANAN = {
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "X-Frame-Options": "DENY",
-  "Content-Security-Policy": CSP
+  "Content-Security-Policy": CSP,
+  "Permissions-Policy": PERMISSIONS_POLICY
 };
 
 /**

@@ -32,6 +32,7 @@ import {
   CACHE_HALAMAN,
   CSP,
   HEADER_KEAMANAN,
+  PERMISSIONS_POLICY,
   aturanCache,
   buatServer,
   jalurNormal
@@ -98,7 +99,7 @@ describe("penilaian jalur", () => {
 });
 
 describe("header pada respons sungguhan", () => {
-  test("empat header keamanan ada di setiap respons", async () => {
+  test("lima header keamanan ada di setiap respons", async () => {
     // Di nginx ketiganya harus di-include ulang di setiap `location`, dan
     // melupakannya menghasilkan halaman tanpa satu pun header — tanpa
     // peringatan. Di sini mereka dipasang sekali, dan tes ini yang memastikan
@@ -126,6 +127,25 @@ describe("header pada respons sungguhan", () => {
     assert.match(kebijakan, /(^|;\s*)object-src 'none'(;|$)/);
     assert.match(kebijakan, /(^|;\s*)frame-ancestors 'none'(;|$)/);
     assert.doesNotMatch(kebijakan, /unsafe-inline|unsafe-eval/);
+
+    // `base-uri 'self'` masih mengizinkan `<base href="/apa-pun/">` yang
+    // menggeser resolusi SETIAP tautan relatif di halaman. Situs statis tidak
+    // pernah memakai `<base>`, jadi `'none'` — dan ini juga nilai yang dipakai
+    // `awcms`, sehingga kedua permukaan keluarga ini tidak berselisih.
+    assert.match(kebijakan, /(^|;\s*)base-uri 'none'(;|$)/);
+  });
+
+  test("Permissions-Policy mematikan kemampuan yang tidak dipakai siapa pun", async () => {
+    // Situs dari template ini tidak punya form, tidak mengumpulkan data pribadi
+    // pembaca, dan tidak memuat skrip pihak ketiga. Menyatakannya membuat skrip
+    // yang suatu saat lolos tetap tidak bisa meminta kamera atau lokasi.
+    const res = await lewatServer(handlerTiruan, "/");
+    const nilai = res.headers.get("permissions-policy") ?? "";
+
+    assert.equal(nilai, PERMISSIONS_POLICY);
+    for (const kemampuan of ["geolocation", "camera", "microphone", "payment"]) {
+      assert.match(nilai, new RegExp(`${kemampuan}=\\(\\)`), kemampuan);
+    }
   });
 
   test("HTML must-revalidate, aset immutable", async () => {

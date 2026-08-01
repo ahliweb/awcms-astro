@@ -10,8 +10,20 @@ Penyaji memasang header keamanan keempat (ADR-0019):
 ```
 default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self';
 font-src 'self'; connect-src 'self'; frame-src 'none'; object-src 'none';
-base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+base-uri 'none'; form-action 'self'; frame-ancestors 'none'
 ```
+
+Beserta yang kelima, `Permissions-Policy: geolocation=(), camera=(),
+microphone=(), payment=()`. Keduanya disamakan dengan postur `awcms`, yang sudah
+mengirim CSP sendiri — termasuk `base-uri 'none'`, yang lebih ketat daripada
+`'self'`: `'self'` masih mengizinkan sebuah `<base href>` yang disuntikkan
+menggeser resolusi setiap tautan relatif di halaman, dan situs statis tidak
+pernah memakai `<base>`.
+
+Satu perbedaan tersisa, arahnya menguntungkan repo ini: `awcms` harus menamai
+hash SHA-256 skrip theme-init-nya di `script-src` karena skrip itu inline dan
+harus jalan sebelum paint. Repo ini tidak butuh hash sama sekali — skrip yang
+sama pindah ke `public/tema.js`.
 
 Sebelum ini repo menyatakan keluarannya "siap CSP" tanpa satu pun pembaca yang
 pernah menerima CSP. Kesiapannya sendiri baru separuh: changeset sebelumnya

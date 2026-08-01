@@ -211,8 +211,9 @@ curl -sI https://<domain>/ | grep -i cache-control
 #      atau rebuild yang sukses tetap terlihat seperti belum jalan)
 curl -sI https://<domain>/ | grep -iE 'x-content-type-options|x-frame-options|referrer-policy'
 #   -> nosniff / DENY / strict-origin-when-cross-origin
-curl -sI https://<domain>/ | grep -i content-security-policy
-#   -> default-src 'self'; script-src 'self'; … (ADR-0019)
+curl -sI https://<domain>/ | grep -iE 'content-security-policy|permissions-policy'
+#   -> default-src 'self'; script-src 'self'; … base-uri 'none'; … (ADR-0019)
+#   -> geolocation=(), camera=(), microphone=(), payment=()
 curl -sI https://<domain>/tema.js | head -1             # 200 — pengalih tema terbit
 curl -sI https://<domain>/tidak-ada/ | head -1          # 404, bukan 200
 ```

@@ -74,8 +74,34 @@ keamanan keempat:
 ```
 default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self';
 font-src 'self'; connect-src 'self'; frame-src 'none'; object-src 'none';
-base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+base-uri 'none'; form-action 'self'; frame-ancestors 'none'
 ```
+
+**Disamakan dengan postur `awcms`**, yang sudah mengirim CSP sendiri
+(`BASE_CSP_DIRECTIVES` di `src/lib/security/security-headers.ts`). Dua nilai
+diambil dari sana alih-alih dipilih ulang di sini:
+
+- **`base-uri 'none'`, bukan `'self'`.** `'self'` masih mengizinkan sebuah
+  `<base href="/apa-pun/">` yang disuntikkan menggeser resolusi SETIAP tautan
+  relatif di halaman. Situs statis tidak pernah memakai `<base>`, jadi tidak ada
+  yang hilang dengan menutupnya.
+- **`Permissions-Policy: geolocation=(), camera=(), microphone=(), payment=()`**
+  sebagai header keamanan **kelima**. Situs dari template ini tidak punya form,
+  tidak mengumpulkan data pribadi pembaca, dan tidak memuat skrip pihak ketiga —
+  keempat kemampuan itu tidak dipakai siapa pun, dan menyatakannya membuat skrip
+  yang suatu saat lolos tetap tidak bisa meminta kamera atau lokasi pembaca.
+
+Perbedaan yang tersisa dari `awcms` ada satu, dan arahnya menguntungkan repo ini:
+`awcms` harus menamai **hash SHA-256** skrip theme-init-nya di `script-src`,
+karena skrip itu `is:inline` dan harus jalan sebelum paint. Repo ini tidak butuh
+hash sama sekali — butir 1 di atas memindahkan skrip yang sama ke berkas
+tersendiri. `script-src` di sini karena itu lebih ketat, bukan sekadar setara.
+
+Repo ini juga menyatakan `style-src`/`img-src`/`font-src`/`connect-src` secara
+eksplisit sementara `awcms` membiarkannya jatuh ke `default-src`. Efeknya
+identik; yang eksplisit dipilih supaya butir yang paling mungkin dilonggarkan
+sebuah situs (`img-src`) terlihat sebagai baris tersendiri alih-alih harus
+ditemukan lebih dulu.
 
 Kebijakan ini hidup di berkas yang sama dengan tiga header lain karena ADR-0016
 sudah memutuskan header respons ditentukan di satu tempat. Menambahkannya di

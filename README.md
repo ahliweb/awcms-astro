@@ -48,8 +48,9 @@ tepat, bukan ini.
 
 Yang menyajikan berkas itu adalah **proses Bun**, bukan nginx (ADR-0016) — jadi
 "tanpa runtime" bukan klaim repo ini; klaimnya adalah tanpa basis data dan tanpa
-panggilan ke CMS saat pembaca meminta halaman. Aturan cache, empat header
-keamanan — termasuk `Content-Security-Policy` ketat sejak ADR-0019 — dan
+panggilan ke CMS saat pembaca meminta halaman. Aturan cache, lima header
+keamanan — termasuk `Content-Security-Policy` ketat dan `Permissions-Policy`
+sejak ADR-0019, disamakan dengan postur `awcms` — dan
 kompresi tinggal di [`server/penyaji.mjs`](server/penyaji.mjs) dan dijaga
 [`tests/penyaji.test.mjs`](tests/penyaji.test.mjs).
 
@@ -83,7 +84,7 @@ satu-satunya lockfile.
 | `bun run start`          | Alias `serve` — perintah yang dijalankan image                  |
 
 `bun run dev` menjalankan server pengembangan Astro, dan server itu **bukan**
-penyaji produksi: ia tidak mengirim empat header keamanan maupun aturan cache di
+penyaji produksi: ia tidak mengirim lima header keamanan maupun aturan cache di
 [`server/penyaji.mjs`](server/penyaji.mjs). Untuk melihat persis yang dilihat
 pembaca — header, cache, kompresi — jalankan `bun run build && bun run serve`.
 `preview` sengaja dipetakan ke penyaji yang sama supaya "sudah saya cek di

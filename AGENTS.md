@@ -145,8 +145,9 @@ sengaja yang belum tercatat di `awcms-family-compatibility.yaml`.
 ### Penyajian
 
 - **`server/penyaji.mjs` adalah satu-satunya tempat header respons ditentukan**
-  (ADR-0016). Empat header keamanan — termasuk `Content-Security-Policy` sejak
-  ADR-0019 — dua aturan `Cache-Control`, dan kompresi
+  (ADR-0016). Lima header keamanan — termasuk `Content-Security-Policy` dan
+  `Permissions-Policy` sejak ADR-0019, keduanya disamakan dengan postur `awcms`
+  — dua aturan `Cache-Control`, dan kompresi
   tinggal di sana dan tidak boleh tersebar ke tempat lain — di nginx aturan
   serupa harus di-`include` ulang di setiap `location`, dan melupakannya
   menghasilkan halaman tanpa satu pun header keamanan tanpa ada yang gagal.
