@@ -126,6 +126,35 @@ Untuk situs 500 artikel itu 500-an permintaan baca per rebuild, dan rebuild
 dipicu setiap publish. Ini alasan tambahan build feed layak dikerjakan di sisi
 sana, dan alasan `HYDRATION_CONCURRENCY` dibatasi 8.
 
+## Catatan implementasi (1 Agustus 2026, sore)
+
+Keputusan 2 di atas menyebut build feed sebagai "perbaikan sebenarnya" yang
+ditunda. Ia **tidak jadi ditunda** — ia mendarat di `awcms` pada hari yang sama
+([PR build feed](https://github.com/ahliweb/awcms/pulls)), jadi bagian
+"N+1 permintaan per build" dari ADR ini hanya sempat berlaku beberapa jam.
+
+Yang berubah dari yang tertulis di atas:
+
+- **`GET /api/v1/blog/posts?view=full&order=created_at`** mengembalikan baris
+  penuh dengan cursor keyset yang sama. Adapter menyusuri satu traversal; tidak
+  ada lagi permintaan per-post. `tests/kontrak-awcms.test.mjs` menegaskan
+  permintaan per-id itu **tidak** kembali — kalau ia kembali, ia kembali
+  diam-diam.
+- **`translationGroupId` kini dikembalikan** oleh `view=full` maupun endpoint
+  detail. Gerbang di Keputusan 3 karena itu tidak lagi menggagalkan situs
+  multi-locale; ia tetap ada dan tetap menjaga keadaannya, persis karena ia
+  ditulis sebagai assertion atas data alih-alih pemeriksaan versi.
+- **Ukuran halaman turun ke 50**, batas yang awcms terapkan untuk `view=full`
+  karena barisnya membawa `contentJson`.
+
+Akar masalahnya juga tercatat di sisi sana, dan layak diulang di sini: kontrak
+OpenAPI `awcms` menyatakan endpoint ini mengembalikan `BlogPost`, sementara
+implementasinya mengembalikan ringkasan. Adapter repo ini ditulis dari dokumen
+itu — komentar tipenya menyebut `openapi/awcms-public-api.openapi.yaml` — jadi
+cacat "situs kosong yang build hijau" lahir dari dokumen yang menjanjikan lebih
+daripada yang dikirim kode. Bentuk ringkasannya kini punya skemanya sendiri
+(`BlogPostSummary`).
+
 ## Alternatif yang ditimbang
 
 **Membaca `contentText` dari daftar dan berhenti di situ.** Tidak mungkin:

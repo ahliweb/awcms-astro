@@ -24,29 +24,28 @@
  *    posts must not leak into a static output, where they would stay published
  *    until the next build regardless of what the CMS later says.
  *
- * ## How it reads awcms, and what that costs
+ * ## How it reads awcms
  *
- * `GET /api/v1/blog/posts` is awcms's ADMIN list endpoint. It has no locale or
- * category filter, caps `limit` at 100, and — the part that decides the shape
- * of everything below — returns SUMMARIES, not posts. So the traversal is:
+ * One traversal: `GET /api/v1/blog/posts?view=full&order=created_at`, followed
+ * page by page through `nextCursor` until it is null. That endpoint is awcms's
+ * admin list; `view=full` is the build feed mode, and it returns whole posts
+ * rather than the summaries the default returns.
  *
- *   1. page the whole list with a keyset cursor (`order=created_at`), which is
- *      the only ordering awcms will paginate over soundly;
- *   2. drop everything that is not published + public;
- *   3. fetch each survivor in full from `/api/v1/blog/posts/{id}`.
+ * It used to take two round trips per post — walk the list, then fetch each
+ * post again by id — because the list carried no `contentJson`. That was N+1
+ * requests per build against an admin endpoint on every publish, and it is gone
+ * now that awcms ships the feed. ADR-0018 records the decision and what it
+ * replaced.
  *
- * Step 3 is N+1 requests per build, stated rather than hidden. The real fix is
- * a build feed on the awcms side that returns full rows, keyset-paginated and
- * locale-aware; until it exists, correct-and-slow beats fast-and-empty. The
- * decision and its alternatives are in ADR-0018.
+ * ## The gate that stays
  *
- * ## The contract gap this file refuses to paper over
- *
- * Rule 1 pairs locales through `translationGroupId`, and **no awcms read
- * endpoint returns that field**. A site with translations therefore cannot be
- * built correctly today, and `assertTranslationsArePairable` below fails the
- * build instead of publishing every language in the source language with a
- * "not translated" notice. A single-locale site is unaffected.
+ * Rule 1 pairs locales through `translationGroupId`, which awcms now returns.
+ * `assertTranslationsArePairable` below still refuses to build a site whose
+ * translations cannot be paired — it asserts over the DATA, not over an awcms
+ * version, so it passes silently when the field is there and fails loudly if a
+ * deployment ever serves posts without it. Publishing every language in the
+ * source language with a "not translated" notice is dropping content, not
+ * degrading gracefully.
  */
 import { awcmsGet } from "./awcms/client";
 import { renderContentBlocks } from "./content-blocks";
@@ -148,8 +147,12 @@ export interface LocalizedArticle {
   isFallback: boolean;
 }
 
-/** awcms caps `limit` at 100 (`MAX_LIST_LIMIT`); asking for more is silently bounded. */
-const PAGE_SIZE = 100;
+/**
+ * awcms bounds `view=full` at 50 rows per page (`MAX_FULL_LIST_LIMIT`) because
+ * those rows carry `contentJson`. Asking for more is silently bounded there, so
+ * the number is stated here rather than discovered.
+ */
+const PAGE_SIZE = 50;
 
 /**
  * A runaway-loop backstop, not a content limit. It sits far above any plausible
@@ -157,10 +160,7 @@ const PAGE_SIZE = 100;
  * the one thing this file must never do is return a short list that looks
  * complete.
  */
-const MAX_PAGES = 200;
-
-/** Hydration is one request per post; this keeps a large site from opening hundreds at once. */
-const HYDRATION_CONCURRENCY = 8;
+const MAX_PAGES = 400;
 
 let postsCache: Promise<AwcmsBlogPost[]> | undefined;
 
@@ -169,71 +169,71 @@ let postsCache: Promise<AwcmsBlogPost[]> | undefined;
  *
  * Astro calls `getStaticPaths` for every route, so without memoisation a
  * six-locale, three-tab site would repeat this whole traversal dozens of times.
- *
- * ## Why two round trips per post
- *
- * The list endpoint returns summaries (see `AwcmsBlogPostSummary`), and this
- * adapter needs the body, the excerpt, the meta description, and the section —
- * all of which live on the detail endpoint. Fetching N+1 times is a real cost
- * and it is stated rather than hidden: the fix is a build feed on the awcms
- * side that returns full rows, keyset-paginated and locale-aware. Until that
- * exists, correct-and-slow beats fast-and-empty.
  */
 async function fetchPublishedPosts(): Promise<AwcmsBlogPost[]> {
   postsCache ??= (async () => {
-    const summaries = await listPublishedSummaries();
+    const posts = await listPublishedPosts();
 
     // Rule 4, enforced here rather than trusted from the query: a `status`
     // filter is a request, and this is the last place that can tell the
     // difference between "the API honoured it" and "the API ignored it".
-    // Filtering BEFORE hydration also means drafts never cost a request.
-    const visible = summaries.filter(
+    const visible = posts.filter(
       (post) => post.status === "published" && post.visibility === "public"
     );
 
-    const posts = await hydrate(visible);
-    assertTranslationsArePairable(posts);
-    return posts;
+    assertFeedReturnedFullRows(visible);
+    assertTranslationsArePairable(visible);
+    return visible;
   })();
 
   return postsCache;
 }
 
 /**
- * Walks the whole list with a keyset cursor.
+ * Walks the whole build feed with a keyset cursor.
  *
- * `order=created_at` is not a preference. awcms refuses `cursor` on any other
- * ordering, and says why: the default `updated_at` moves whenever a post is
- * edited, so a row can cross a page boundary between two requests and be
- * skipped or returned twice — which would surface months later as "a few
- * articles are missing from the site", with nothing able to detect it.
+ * Two query parameters carry the weight here, and both are refusals on the
+ * awcms side rather than preferences on this one:
+ *
+ *   - `view=full` asks for whole posts. Without it the list returns SUMMARIES,
+ *     and this adapter would read `contentJson` as `undefined` — a site that
+ *     builds green with every article body empty and, because the section an
+ *     article belongs to also lives in `contentJson`, every section empty too.
+ *     That is not hypothetical: it is what this file did until awcms shipped
+ *     this parameter.
+ *   - `order=created_at` is the only ordering awcms will paginate over, and
+ *     `view=full` requires it. The default `updated_at` moves whenever a post
+ *     is edited, so a row can cross a page boundary between two requests and be
+ *     skipped or returned twice — surfacing months later as "a few articles are
+ *     missing", with nothing able to detect it.
  */
-async function listPublishedSummaries(): Promise<AwcmsBlogPostSummary[]> {
-  const summaries: AwcmsBlogPostSummary[] = [];
+async function listPublishedPosts(): Promise<AwcmsBlogPost[]> {
+  const posts: AwcmsBlogPost[] = [];
   let cursor: string | undefined;
 
   for (let page = 1; ; page += 1) {
     const response = await awcmsGet<{
-      posts: AwcmsBlogPostSummary[];
+      posts: AwcmsBlogPost[];
       nextCursor: string | null;
     }>("/api/v1/blog/posts", {
       status: "published",
       order: "created_at",
+      view: "full",
       limit: PAGE_SIZE,
       cursor
     });
 
-    summaries.push(...response.posts);
+    posts.push(...response.posts);
 
-    if (!response.nextCursor) return summaries;
+    if (!response.nextCursor) return posts;
 
     if (page >= MAX_PAGES) {
       throw new Error(
-        `Stopped after ${MAX_PAGES} pages (${summaries.length} posts) and ` +
-          `awcms still returned a cursor. Either this site is far larger than ` +
-          `this backstop assumes, or the cursor is not advancing. Both are ` +
-          `worth looking at before publishing; neither is worth shipping a ` +
-          `site that is missing articles nobody counted.`
+        `Stopped after ${MAX_PAGES} pages (${posts.length} posts) and awcms ` +
+          `still returned a cursor. Either this site is far larger than this ` +
+          `backstop assumes, or the cursor is not advancing. Both are worth ` +
+          `looking at before publishing; neither is worth shipping a site that ` +
+          `is missing articles nobody counted.`
       );
     }
 
@@ -241,38 +241,40 @@ async function listPublishedSummaries(): Promise<AwcmsBlogPostSummary[]> {
   }
 }
 
-/** Fetches full rows for `summaries`, bounded concurrency, order preserved. */
-async function hydrate(
-  summaries: AwcmsBlogPostSummary[]
-): Promise<AwcmsBlogPost[]> {
-  const posts = new Array<AwcmsBlogPost>(summaries.length);
-  let next = 0;
+/**
+ * Refuses to build from a response that is not actually the full feed.
+ *
+ * `view=full` is a request, and an awcms that predates it does not reject the
+ * parameter — it ignores it and answers with summaries. Every field this
+ * adapter needs then reads `undefined`, and the result is the exact failure the
+ * traversal above was rewritten to end: a green build publishing empty articles
+ * in empty sections, with no error anywhere.
+ *
+ * `contentJson` is the discriminator because awcms declares it non-nullable on
+ * a full row: present means full, absent means the request was ignored.
+ */
+function assertFeedReturnedFullRows(posts: AwcmsBlogPost[]): void {
+  const ringkasan = posts.filter((post) => post.contentJson === undefined);
 
-  async function worker(): Promise<void> {
-    for (let index = next++; index < summaries.length; index = next++) {
-      const summary = summaries[index]!;
-      posts[index] = await awcmsGet<AwcmsBlogPost>(
-        `/api/v1/blog/posts/${summary.id}`
-      );
-    }
-  }
+  if (ringkasan.length === 0) return;
 
-  await Promise.all(
-    Array.from(
-      { length: Math.min(HYDRATION_CONCURRENCY, summaries.length) },
-      worker
-    )
+  throw new Error(
+    `awcms answered ${ringkasan.length} of ${posts.length} posts without ` +
+      `contentJson, which means it ignored ?view=full and returned summaries. ` +
+      `That is an awcms older than the build feed. Building anyway would ` +
+      `publish every article with an empty body and — because a post's section ` +
+      `is stored inside contentJson — every section empty too, with nothing ` +
+      `failing anywhere. Upgrade awcms.`
   );
-
-  return posts;
 }
 
 /**
  * Refuses to build a site whose translations cannot be paired.
  *
- * Rule 1 pairs locales through `translationGroupId`. awcms accepts that field
- * on write but returns it from no read endpoint, so for any site that actually
- * has translations this adapter sees a set of unrelated posts.
+ * Rule 1 pairs locales through `translationGroupId`. awcms returns it now, so
+ * this gate is quiet on a healthy deployment — it fires when a post in another
+ * locale arrives without one, which is either an editorial mistake or an awcms
+ * that predates the field being readable at all.
  *
  * The consequence of continuing would not look like a failure. Every non-default
  * locale would fall back to the source language, each page carrying the "not
@@ -280,9 +282,9 @@ async function hydrate(
  * as untranslated pages. That is silently dropping content, and this repo
  * treats that as a failure rather than a degradation.
  *
- * This is written as an assertion over the DATA, not a version check against
- * awcms: a single-locale site builds today, and the day awcms returns the field
- * this gate passes on its own with nothing here to change.
+ * It is written as an assertion over the DATA, not a version check against
+ * awcms — which is why nothing here changed when awcms started returning the
+ * field, and why nothing here needs to change if a deployment stops.
  */
 function assertTranslationsArePairable(posts: AwcmsBlogPost[]): void {
   const unpairable = posts.filter(
@@ -300,8 +302,8 @@ function assertTranslationsArePairable(posts: AwcmsBlogPost[]): void {
     `${unpairable.length} published post(s) are in a locale other than ` +
       `"${defaultLocale}" but carry no translationGroupId, so this build ` +
       `cannot tell which source article they translate (e.g. ${contoh}). ` +
-      `awcms accepts translationGroupId on write and returns it from no read ` +
-      `endpoint — the gap is on that side, not in the data. Building anyway ` +
+      `Either the translation was never grouped with its source in awcms, or ` +
+      `this awcms predates the field being returned at all. Building anyway ` +
       `would publish every one of these pages in ${defaultLocale} with a ` +
       `"not translated" notice, which looks like a site whose translations ` +
       `were never written rather than one whose translations were dropped.`

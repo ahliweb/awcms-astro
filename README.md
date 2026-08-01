@@ -199,18 +199,11 @@ membuatnya tidak perlu `node_modules` sama sekali.
   `viewBox` SVG) dan mencocokkan format berkas dengan isinya, bukan dengan
   ekstensinya. Di sini aturannya tertulis tetapi belum punya pemeriksa; ia ikut
   menunggu gerbang audit di butir pertama.
-- **Build feed di sisi awcms.** Paginasinya sendiri sudah selesai: adapter
-  menyusuri seluruh daftar dengan cursor keyset. Yang tersisa adalah bentuk
-  responsnya — daftar awcms mengembalikan RINGKASAN, sehingga setiap post harus
-  diambil sekali lagi lewat `/api/v1/blog/posts/{id}` (N+1 per build). Feed yang
-  mengembalikan baris penuh, ber-paginasi keyset dan sadar locale, menutup itu.
-  Alasan dan biayanya di
-  [ADR-0018](docs/adr/0018-kontrak-build-token-mesin-dan-traversal-konten.md).
-- **`translationGroupId` tidak dikembalikan endpoint baca mana pun di awcms.**
-  Field itulah yang memasangkan locale, jadi situs BERBAHASA BANYAK belum bisa
-  dibangun benar — dan adapter **menggagalkan build** alih-alih menerbitkan
-  setiap bahasa dalam bahasa sumber dengan penanda "belum diterjemahkan". Situs
-  satu-locale tidak terpengaruh.
+- **Filter locale di feed awcms.** Traversal kontennya sendiri sudah selesai:
+  satu `GET /api/v1/blog/posts?view=full&order=created_at`, disusuri lewat
+  `nextCursor`. Yang belum ada adalah filter locale di sisi awcms, jadi build
+  menarik SELURUH locale lalu memasangkannya di sini — benar, tetapi menarik
+  lebih banyak daripada yang dibutuhkan situs satu-bahasa.
 - **`script-src` ketat.** Gaya inline sudah tidak ada — keluaran build bersih
   dari atribut `style=""` maupun blok `<style>`, dan
   [`tests/keluaran-csp.test.mjs`](tests/keluaran-csp.test.mjs) menjaganya
