@@ -50,10 +50,13 @@ export function isLocale(value: string): value is Locale {
 /**
  * Top-level sections, in a FIXED order.
  *
- * A tab is a taxonomy category in awcms (`awcms_blog_terms`, taxonomy
- * `category`) — `slug` here must match the term slug there, because that is
- * what `src/lib/content.ts` queries on. Renaming a tab without renaming the
- * term produces an empty section rather than an error, so keep the two in step.
+ * A tab names a SECTION, and `slug` here must match the `kategori` value stored
+ * in each post's `contentJson.awcmsAstro` — that is what `src/lib/content.ts`
+ * actually filters on. It is NOT read from awcms's taxonomy terms today, even
+ * though a tab maps conceptually onto one (`awcms_blog_terms`, taxonomy
+ * `category`); the detail endpoint returns `termIds` but nothing here resolves
+ * them yet. Renaming a tab without renaming the stored `kategori` produces an
+ * empty section rather than an error, so keep the two in step.
  *
  * `label` is a LAST-RESORT label, not the one readers normally see. Every
  * surface renders `t(locale, 'home.tab.<slug>.title', tab.label)`, so the PO

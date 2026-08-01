@@ -23,11 +23,7 @@
  * token in a static bundle is a token published to every reader.
  */
 import { envSource, readEnv } from "../env";
-import {
-  resolveTenantSelector,
-  tenantHeaders,
-  type TenantSelector
-} from "./tenant";
+import { resolveTenant, type TenantResolution } from "./tenant";
 
 export class AwcmsApiError extends Error {
   constructor(
@@ -45,11 +41,11 @@ type Envelope<T> =
   | { success: true; data: T; meta?: Record<string, unknown> }
   | { success: false; error: { code: string; message: string } };
 
-let cachedSelector: TenantSelector | undefined;
+let cachedTenant: TenantResolution | undefined;
 
-function selector(): TenantSelector {
-  cachedSelector ??= resolveTenantSelector(envSource());
-  return cachedSelector;
+function tenant(): TenantResolution {
+  cachedTenant ??= resolveTenant(envSource());
+  return cachedTenant;
 }
 
 function baseUrl(): string {
@@ -89,15 +85,18 @@ export async function awcmsGet<T>(
     }
   }
 
+  // Resolving the tenant is what validates the token's shape and checks it
+  // against `AWCMS_TENANT_ID`. It runs before the first request rather than
+  // after a confusing 401, and its result is memoised.
+  tenant();
+
+  // No tenant header. awcms derives the tenant from the machine credential and
+  // discards any header that disagrees (ADR-0049 §4) — sending one would be a
+  // value that looks like it decides something and does not.
   const headers: Record<string, string> = {
     accept: "application/json",
-    ...tenantHeaders(selector())
+    authorization: `Bearer ${readEnv("AWCMS_API_TOKEN")}`
   };
-
-  const token = readEnv("AWCMS_API_TOKEN");
-  if (token) {
-    headers.authorization = `Bearer ${token}`;
-  }
 
   const response = await fetch(url, { headers });
 
@@ -128,6 +127,8 @@ export async function awcmsGet<T>(
 
 /** Exposed for diagnostics — `bun`/`node` scripts print which tenant a build resolved. */
 export function describeTenantResolution(): string {
-  const resolved = selector();
-  return `${resolved.kind}=${resolved.value} (from ${resolved.source})`;
+  const resolved = tenant();
+  return resolved.asserted
+    ? `${resolved.tenantId} (dari AWCMS_API_TOKEN, cocok dengan AWCMS_TENANT_ID)`
+    : `${resolved.tenantId} (dari AWCMS_API_TOKEN, tanpa AWCMS_TENANT_ID untuk verifikasi silang)`;
 }

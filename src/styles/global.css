@@ -954,6 +954,56 @@ footer {
 .text-center { text-align: center; }
 
 /* ==========================================================================
+   POLA LINTAS KOMPONEN
+   Empat pola di bawah dipakai lebih dari satu komponen, jadi ia tinggal di
+   sini alih-alih di `<style>` masing-masing — bukan karena lebih rapi, tetapi
+   karena tiga salinan scoped dari aturan yang sama akan menyimpang satu per
+   satu tanpa ada yang menyadarinya.
+
+   Semuanya lahir dari atribut `style=""` inline yang dulu tertanam di markup.
+   Nilainya dipertahankan persis: perpindahannya ke kelas adalah prasyarat CSP
+   (`style-src 'self'` memblokir setiap atribut gaya), bukan kesempatan untuk
+   diam-diam mendesain ulang.
+   ========================================================================== */
+
+/* Judul seksi yang membawa ikon di depannya (FAQ, biaya, prosedur). */
+.judul-ikon {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Kotak berbingkai untuk seksi yang berdiri sendiri di dalam artikel. */
+.panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+}
+
+.panel--besar {
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+}
+
+/* Baris judul + lencana di kepala sebuah kartu. */
+.kartu-baris-atas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.kartu-baris-atas--puncak {
+  align-items: flex-start;
+}
+
+.teks-aksen {
+  color: var(--accent-primary);
+}
+
+/* ==========================================================================
    SKALA JUDUL DI LAYAR SEMPIT
    Target dukungan terkecil 360px. Pada ukuran itu h1 2.25rem memakan empat
    baris dan mendorong isi artikel jauh ke bawah lipatan. Hanya ukuran teks
@@ -1127,6 +1177,19 @@ footer {
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
+
+/* Warna merek per kanal berbagi.
+ *
+ * Nilainya dulu datang dari `style="--share-color: …"` yang dipasang
+ * ShareButtons.astro per tombol. Atribut gaya inline diblokir CSP
+ * (`style-src 'self'`), dan daftar kanalnya toh tetap — tiap kanal sudah punya
+ * kelasnya sendiri, jadi warnanya tinggal di sini bersama seluruh aturan yang
+ * memakainya. Menambah kanal berarti menambah satu baris di sini; tanpa itu
+ * tombolnya jatuh ke `--accent-primary`, bukan ke keadaan tanpa warna. */
+.share-whatsapp { --share-color: #25d366; }
+.share-facebook { --share-color: #1877f2; }
+.share-x { --share-color: #000000; }
+.share-telegram { --share-color: #26a5e4; }
 
 .share-btn:hover,
 .share-btn:focus-visible {

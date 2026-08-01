@@ -99,24 +99,30 @@ Di CI dan di dalam image, install selalu `bun install --frozen-lockfile` —
 tanpanya install boleh MEMPERBARUI `bun.lock` diam-diam, dan yang dibangun
 berhenti sama dengan yang di-review.
 
-## Tenant: apa yang terjadi kalau tidak disebut
+## Tenant: satu variabel, dan satu pernyataan yang diverifikasi
 
 Satu instans awcms melayani banyak tenant; satu situs `awcms-astro` adalah satu
-tenant. Rantainya dicoba berurutan:
+tenant. Sejak awcms ADR-0049, **tenant datang dari tokennya**: kredensial build
+adalah kredensial mesin berbentuk `awcmsm_<32 hex tenant>_<rahasia>`, dan awcms
+menurunkan tenant dari sana sebelum melihat header apa pun.
 
-1. `AWCMS_TENANT_CODE` — kode tenant eksplisit. **Utamakan ini.**
-2. `AWCMS_TENANT_ID` — UUID tenant eksplisit.
-3. `AWCMS_DEFAULT_TENANT_CODE` — **tenant default**, jawaban untuk "situs ini
-   tidak menyebut tenant sama sekali".
+Jadi konfigurasinya satu variabel:
 
-Kalau tidak satu pun terisi, **build gagal**. Itu keputusan, bukan kelalaian:
-menebak tenant berarti berisiko menerbitkan konten satu tenant di domain tenant
-lain — kegagalan terburuk yang bisa dialami CMS multi-tenant. Rinciannya di
-[`src/lib/awcms/tenant.ts`](src/lib/awcms/tenant.ts).
+| Variabel | Peran |
+| --- | --- |
+| `AWCMS_API_TOKEN` | Kredensial **dan** tenant. Wajib kredensial mesin ber-scope `blog_content.posts.read` |
+| `AWCMS_TENANT_ID` | **Opsional, dianjurkan.** Bukan pemilih — pernyataan yang diverifikasi. Build gagal bila berbeda dari tenant token |
 
-Ini mencerminkan rantai yang sudah dijalankan awcms sendiri untuk rute publik
-host-resolved-nya (`PUBLIC_DEFAULT_TENANT_ID` → `PUBLIC_DEFAULT_TENANT_CODE` →
-`awcms_setup_state.tenant_id`).
+`AWCMS_TENANT_CODE` dan `AWCMS_DEFAULT_TENANT_CODE` sudah tidak ada, dan
+**ditolak** alih-alih diabaikan.
+
+Kenapa penjagaannya berpindah, bukan hilang: rantai lama menjaga "build menebak
+tenant", keadaan yang kini tidak mungkin. Yang mungkin, dan tak terlihat oleh
+apa pun sebelumnya, adalah **token tenant lain terpasang di situs ini** — build
+hijau, situs penuh, isinya milik orang lain. Rantai tidak bisa melihat itu;
+pernyataan yang diverifikasi bisa. Rinciannya di
+[`src/lib/awcms/tenant.ts`](src/lib/awcms/tenant.ts) dan
+[ADR-0018](docs/adr/0018-kontrak-build-token-mesin-dan-traversal-konten.md).
 
 ## Yang membuat template ini berbeda
 
@@ -149,7 +155,7 @@ src/
 ├── layouts/              # BaseLayout (SEO, hreflang, share), ArtikelLayout
 ├── lib/
 │   ├── awcms/client.ts   # SATU-SATUNYA berkas yang bicara ke awcms
-│   ├── awcms/tenant.ts   # rantai resolusi tenant
+│   ├── awcms/tenant.ts   # tenant dari token + assertion silang
 │   ├── content.ts        # adapter: API → LocalizedArticle (kontrak komponen)
 │   ├── content-blocks.ts # blok terstruktur → HTML, tanpa jalur HTML mentah
 │   ├── po.ts             # katalog string antarmuka
@@ -193,16 +199,25 @@ membuatnya tidak perlu `node_modules` sama sekali.
   `viewBox` SVG) dan mencocokkan format berkas dengan isinya, bukan dengan
   ekstensinya. Di sini aturannya tertulis tetapi belum punya pemeriksa; ia ikut
   menunggu gerbang audit di butir pertama.
-- **Paginasi konten.** `GET /api/v1/blog/posts` membatasi 100 baris per
-  permintaan; adapter **melempar** saat menyentuh batas itu alih-alih diam-diam
-  memotong. Perbaikan sebenarnya adalah build feed berpaginasi di sisi awcms.
-- **Atribut `style=""` inline.** Keluaran masih memuat ±50 atribut gaya inline
-  yang diwarisi dari repo rujukan. Di hosting statis biasa ini tidak
-  bermasalah, tetapi di belakang CSP ketat (`style-src 'self'` tanpa
-  `'unsafe-inline'` — postur yang dipakai `awcms` sendiri) **semuanya diblokir
-  browser** dan halaman kehilangan tata letaknya tanpa satu pun error di build.
-  Memindahkannya ke kelas adalah prasyarat sebelum situs apa pun dari template
-  ini disajikan di belakang CSP semacam itu.
+- **Build feed di sisi awcms.** Paginasinya sendiri sudah selesai: adapter
+  menyusuri seluruh daftar dengan cursor keyset. Yang tersisa adalah bentuk
+  responsnya — daftar awcms mengembalikan RINGKASAN, sehingga setiap post harus
+  diambil sekali lagi lewat `/api/v1/blog/posts/{id}` (N+1 per build). Feed yang
+  mengembalikan baris penuh, ber-paginasi keyset dan sadar locale, menutup itu.
+  Alasan dan biayanya di
+  [ADR-0018](docs/adr/0018-kontrak-build-token-mesin-dan-traversal-konten.md).
+- **`translationGroupId` tidak dikembalikan endpoint baca mana pun di awcms.**
+  Field itulah yang memasangkan locale, jadi situs BERBAHASA BANYAK belum bisa
+  dibangun benar — dan adapter **menggagalkan build** alih-alih menerbitkan
+  setiap bahasa dalam bahasa sumber dengan penanda "belum diterjemahkan". Situs
+  satu-locale tidak terpengaruh.
+- **`script-src` ketat.** Gaya inline sudah tidak ada — keluaran build bersih
+  dari atribut `style=""` maupun blok `<style>`, dan
+  [`tests/keluaran-csp.test.mjs`](tests/keluaran-csp.test.mjs) menjaganya
+  begitu. Yang belum: dua `<script is:inline>` (pengalih tema dan JSON-LD),
+  sehingga `script-src 'self'` tanpa `'unsafe-inline'` masih memblokir
+  pengalih temanya. JSON-LD bisa pindah ke berkas eksternal; pengalih tema
+  butuh keputusan tersendiri karena ia harus jalan sebelum halaman terlukis.
 
 ## Dokumentasi
 

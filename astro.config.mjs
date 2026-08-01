@@ -79,6 +79,26 @@ export default defineConfig({
    */
   compressHTML: true,
 
+  build: {
+    /**
+     * Never inline a stylesheet into a `<style>` tag.
+     *
+     * Astro's default (`'auto'`) inlines any stylesheet under ~4 kB. That is a
+     * size-dependent behaviour, and it decides whether this site can be served
+     * behind a strict CSP: `style-src 'self'` without `'unsafe-inline'` blocks
+     * an inline `<style>` exactly as it blocks a `style=""` attribute, and the
+     * page loses its layout with nothing failing in the build.
+     *
+     * Today's output happens to be above the threshold, so it is already
+     * external — which is precisely the problem with leaving it to the default:
+     * it would silently start inlining the day the CSS got smaller, or the day
+     * a component shipped its own small stylesheet. `tests/keluaran-csp.test.mjs`
+     * checks the built output; this line is what makes that check pass by
+     * construction rather than by luck.
+     */
+    inlineStylesheets: "never"
+  },
+
   integrations: [
     sitemap({
       filter: (page) => !page.includes("robots.txt") && !page.includes("/404"),

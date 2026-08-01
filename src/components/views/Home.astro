@@ -30,7 +30,7 @@ const schema = collectionSchema(
 >
   <section class="hero-banner-grid">
     <div class="hero-banner-content">
-      <span class="badge" style="background: var(--emerald-primary); color: #ffffff; margin-bottom: 1rem;">
+      <span class="badge badge--emerald mb-4">
         {t(locale, 'home.badge')}
       </span>
       <h1>
@@ -39,11 +39,11 @@ const schema = collectionSchema(
       <p>
         {t(locale, 'home.lead')}
       </p>
-      <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+      <div class="baris-aksi">
         {/* Panah dan pin adalah hiasan: dipisahkan dari teks katalog supaya
             penerjemah tidak perlu ikut memindahkannya, dan supaya pembaca
             layar tidak melafalkan "round pushpin" di ujung kalimat. */}
-        <a href="#kanal-layanan" class="chip" style="background: var(--emerald-primary); color: #ffffff; border: none; padding: 0.6rem 1.25rem; font-size: 0.95rem;">
+        <a href="#kanal-layanan" class="chip chip--ajakan">
           {t(locale, 'home.ctaKanal')}
           <span aria-hidden="true">↓</span>
         </a>
@@ -56,25 +56,25 @@ const schema = collectionSchema(
 
   <section class="my-6" id="kanal-layanan">
     <h2>{t(locale, 'home.sectionTitle')}</h2>
-    <p style="color: var(--text-muted);">
+    <p class="seksi-lead">
       {t(locale, 'home.sectionLead')}
     </p>
 
     <div class="grid-cards">
       {siteConfig.tabs.map((tab) => (
-        <a href={localePath(locale, `/${tab.slug}/`)} class="card" style="text-decoration: none;">
+        <a href={localePath(locale, `/${tab.slug}/`)} class="card kartu-tanpa-garis">
           <div class="card-img-wrapper">
             <div class="visual-placeholder" role="img" aria-label={t(locale, tabTitleKey(tab.slug), tab.label)}></div>
           </div>
           <div class="card-content">
-            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.5rem;">
-              <h3 class="card-title" style="margin: 0;">{t(locale, tabTitleKey(tab.slug), tab.label)}</h3>
-              <span class="badge" style="background: var(--accent-subtle); color: var(--accent-primary);">
+            <div class="kartu-baris-atas kartu-baris-atas--puncak">
+              <h3 class="card-title kartu-judul-rapat">{t(locale, tabTitleKey(tab.slug), tab.label)}</h3>
+              <span class="badge badge--aksen">
                 {counts[tab.slug]} {t(locale, 'home.articleCount')}
               </span>
             </div>
             <p class="card-desc">{t(locale, `home.tab.${tab.slug}.desc`, '')}</p>
-            <div class="card-meta" style="color: var(--accent-primary);">
+            <div class="card-meta teks-aksen">
               {/* Dulu `{t('home.cta')} {tab.name}` — "Mulai dari panduan"
                   disambung nama tab HURUF BESAR, jadi kartu Panduan berbunyi
                   "Mulai dari panduan PANDUAN". Sekarang satu ajakan, satu
@@ -88,9 +88,9 @@ const schema = collectionSchema(
     </div>
   </section>
 
-  <section class="my-6" style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.75rem;">
+  <section class="my-6 panel panel--besar">
     <h2>{t(locale, 'home.principles.title')}</h2>
-    <ul style="padding-left: 1.25rem; color: var(--text-secondary); line-height: 1.8;">
+    <ul class="daftar-prinsip">
       <li><strong>{t(locale, 'home.principles.1.label')}</strong> {t(locale, 'home.principles.1.body')}</li>
       <li><strong>{t(locale, 'home.principles.2.label')}</strong> {t(locale, 'home.principles.2.body')}</li>
       <li><strong>{t(locale, 'home.principles.3.label')}</strong> {t(locale, 'home.principles.3.body')}</li>
@@ -99,3 +99,47 @@ const schema = collectionSchema(
 
   <DisclaimerNote variant="general" />
 </BaseLayout>
+
+<style>
+  .badge--emerald {
+    background: var(--emerald-primary);
+    color: #ffffff;
+  }
+
+  .badge--aksen {
+    background: var(--accent-subtle);
+    color: var(--accent-primary);
+  }
+
+  .baris-aksi {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .chip--ajakan {
+    background: var(--emerald-primary);
+    color: #ffffff;
+    border: none;
+    padding: 0.6rem 1.25rem;
+    font-size: 0.95rem;
+  }
+
+  .seksi-lead {
+    color: var(--text-muted);
+  }
+
+  .kartu-tanpa-garis {
+    text-decoration: none;
+  }
+
+  .kartu-judul-rapat {
+    margin: 0;
+  }
+
+  .daftar-prinsip {
+    padding-left: 1.25rem;
+    color: var(--text-secondary);
+    line-height: 1.8;
+  }
+</style>

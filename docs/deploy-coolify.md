@@ -75,8 +75,8 @@ Variabel (semua **Build Variable**, kecuali yang ditandai):
 | `SITE_NAME`, `SITE_DESCRIPTION` | Identitas situs |
 | `SITE_LOCALES` | Prefix locale selain locale default, dipisah koma |
 | `AWCMS_API_URL` | Origin instans awcms |
-| `AWCMS_API_TOKEN` | **Secret.** Token baca-saja, build-time |
-| `AWCMS_TENANT_CODE` | Tenant situs ini. Utamakan ini daripada mengandalkan default |
+| `AWCMS_API_TOKEN` | **Secret.** Kredensial mesin (`awcmsm_…`), scope `blog_content.posts.read`. Ia juga yang menentukan tenant |
+| `AWCMS_TENANT_ID` | Opsional, dianjurkan. Bukan pemilih tenant — pernyataan yang diverifikasi terhadap token; build gagal bila berbeda |
 
 Seluruhnya dijelaskan di [`.env.example`](../.env.example).
 

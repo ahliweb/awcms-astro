@@ -15,6 +15,7 @@ Prinsip AWCMS diadaptasi ke konteks situs statis publik. Yang berbeda ditandai.
 5. **Mobile-first.** Kebalikan dari back-office AWCMS yang desktop-first. Layout dirancang dari 360px ke atas.
 6. **Tidak menyamar resmi.** Tidak memakai lambang, logo, atau atribut instansi negara. Batas ini adalah **aturan desain**, bukan sekadar kepatuhan.
 7. **Konsisten.** Seluruh halaman memakai token dan komponen yang sama; tidak ada gaya sekali pakai.
+8. **Tidak ada gaya di dalam HTML.** Tanpa atribut `style=""`, tanpa blok `<style>` tersisip. Gaya lintas komponen tinggal di `src/styles/global.css`, gaya khas satu komponen di `<style>` scoped miliknya — yang Astro terbitkan sebagai berkas CSS terpisah karena `build.inlineStylesheets` disetel `"never"`. Ini bukan selera: CSP `style-src 'self'` memblokir keduanya, dan halaman kehilangan tata letaknya tanpa satu pun error di build. Dijaga `tests/keluaran-csp.test.mjs`.
 
 ## Design token
 

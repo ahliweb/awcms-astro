@@ -83,7 +83,7 @@ const schema = articleSchema({
 
     {isFallback && <TranslationNotice />}
 
-    <header style="margin: 1.5rem 0; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
+    <header class="artikel-kepala">
       <div class="article-hero-frame">
         <div class="visual-placeholder visual-hero" role="img" aria-label={articleVisual.alt}></div>
       </div>
@@ -101,14 +101,14 @@ const schema = articleSchema({
           `LocalizedArticle`. Keduanya selalu bernilai `undefined`, jadi tidak
           pernah tampil, dan `entry: any` membuat typecheck tidak bisa
           mengatakannya. */}
-      <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; font-size: 0.85rem; color: var(--text-muted); margin-top: 1rem;">
+      <div class="artikel-meta">
         <div>📅 {t(locale, 'artikel.updated')} <strong>{updatedDateStr}</strong></div>
         {reviewDueDateStr && <div>🔍 {t(locale, 'artikel.review')} <strong>{reviewDueDateStr}</strong></div>}
         {data.estimasiWaktu && <div>⏱️ {t(locale, 'artikel.estimasi')} <strong>{data.estimasiWaktu}</strong></div>}
       </div>
     </header>
 
-    <div class="content-body" style="font-size: 1.05rem; line-height: 1.7; color: var(--text-primary);">
+    <div class="content-body artikel-isi">
       <slot />
     </div>
 
@@ -123,3 +123,26 @@ const schema = articleSchema({
     <DisclaimerNote variant="general" />
   </article>
 </BaseLayout>
+
+<style>
+  .artikel-kepala {
+    margin: 1.5rem 0;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .artikel-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 1rem;
+  }
+
+  .artikel-isi {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: var(--text-primary);
+  }
+</style>

@@ -93,9 +93,23 @@ sengaja yang belum tercatat di `awcms-family-compatibility.yaml`.
   slug ditentukan locale default, `isFallback` dihitung adapter, urutan dari
   field urutan, dan hanya `status = 'published'` yang masuk build. Masing-masing
   menjaga satu cacat spesifik tetap mustahil; alasannya ditulis di berkas itu.
-- **Diam-diam memotong data adalah kegagalan, bukan optimasi.** Kalau API
-  membatasi jumlah baris, lempar error — jangan bangun situs yang terlihat
-  berhasil sambil kehilangan artikel.
+- **Diam-diam memotong data adalah kegagalan, bukan optimasi.** Adapter
+  menyusuri SELURUH daftar dengan cursor keyset; batas halaman bukan batas
+  konten. Kalau sesuatu menghalangi kelengkapan — cursor yang tidak maju,
+  terjemahan yang tidak bisa dipasangkan — **lempar error**, jangan bangun situs
+  yang terlihat berhasil sambil kehilangan artikel.
+- **Daftar post awcms mengembalikan RINGKASAN, bukan post.** `contentJson`,
+  `excerpt`, `metaDescription`, dan `canonicalUrl` hanya ada di
+  `/api/v1/blog/posts/{id}`. Membaca salah satunya dari daftar tidak error —
+  ia `undefined`, dan karena `kategori` tinggal di dalam `contentJson`, seluruh
+  seksi situs menjadi kosong dengan build tetap hijau. Itu pernah terjadi di
+  repo ini (ADR-0018).
+- **Tenant datang dari token, dan `AWCMS_TENANT_ID` adalah assertion.**
+  Jangan mengembalikannya menjadi rantai resolusi, dan jangan mengirim header
+  tenant: awcms menurunkan tenant dari kredensial mesin dan mengabaikan header
+  yang berbeda. Yang dijaga assertion itu bukan "build menebak tenant" —
+  melainkan token tenant lain yang terpasang di situs ini, yang tampak persis
+  seperti build yang sehat.
 
 ### Keamanan
 
@@ -178,6 +192,15 @@ sengaja yang belum tercatat di `awcms-family-compatibility.yaml`.
   ia tidak bisa melihat key dinamis, dan di sanalah aturan ini bekerja.
 - **Token desain, bukan nilai lepas.** Tidak ada gaya sekali pakai; komponen
   baru memakai token yang sudah ada di `src/styles/global.css`.
+- **Tidak ada atribut `style=""`, dan tidak ada blok `<style>` di dalam HTML.**
+  Gaya tinggal di `src/styles/global.css` (bila dipakai lebih dari satu
+  komponen) atau di `<style>` scoped milik komponen — yang Astro terbitkan
+  sebagai berkas CSS terpisah, bukan disisipkan ke halaman. Keduanya diblokir
+  CSP `style-src 'self'`, dan kegagalannya adalah halaman tanpa tata letak
+  tanpa satu pun error di build. `build.inlineStylesheets: "never"` yang
+  menjaga jalur kedua; `tests/keluaran-csp.test.mjs` memeriksa keluarannya.
+  Nilai dinamis yang dulu dikirim lewat `style="--var: …"` ditulis sebagai
+  kelas — lihat warna kanal berbagi di `global.css`.
 
 ### Gambar
 
