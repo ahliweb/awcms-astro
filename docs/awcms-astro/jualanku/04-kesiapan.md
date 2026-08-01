@@ -71,12 +71,14 @@ diam-diam dirapikan tidak meninggalkan jejak bahwa keputusannya pernah lain:
   membuat Bun pula yang menyajikan hasil build. Adapter yang dituntut PoC di §2
   karena itu sudah terpasang — untuk menyajikan, bukan untuk merender saat
   request.
-- ~~**Halaman admin internal di repo ini** — tetap milik `awcms`, selamanya.~~
-  Dibalik oleh aturan pemilik 31 Juli 2026 dan
-  [ADR-0017](../../adr/0017-peran-admin-owner-internal.md): halaman admin
-  **owner/internal** justru dibangun di repo ini, sementara admin milik tenant
-  tetap di `awcms`. Layar pertamanya masih diblokir dua kontrak yang belum ada di
-  `awcms` (header tenant dan kredensial mesin).
+- **Halaman admin internal di repo ini** — tetap milik `awcms`. Pernyataan ini
+  sempat dibalik oleh [ADR-0017](../../adr/0017-peran-admin-owner-internal.md)
+  (31 Juli 2026) dan **dikembalikan** oleh
+  [ADR-0020](../../adr/0020-layar-admin-kembali-ke-awcms.md) (2 Agustus 2026),
+  selaras `awcms` ADR-0051 yang memusatkan seluruh layar admin di sana. Yang
+  membatalkan pembalikan itu bukan hambatan teknis — dua kontrak yang dulu
+  memblokirnya justru sudah mendarat — melainkan kesimpulan bahwa memindahkan
+  layar tidak memindahkan izinnya, sehingga tidak memindahkan risikonya.
 
 Yang masih benar-benar ditunda:
 

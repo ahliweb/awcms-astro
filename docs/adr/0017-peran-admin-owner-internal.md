@@ -1,6 +1,10 @@
 # ADR-0017 — Repo ini memikul halaman admin OWNER/INTERNAL, di samping situs publiknya
 
-- **Status:** Accepted
+- **Status:** Superseded by [ADR-0020](0020-layar-admin-kembali-ke-awcms.md)
+  — `awcms` [ADR-0051](https://github.com/ahliweb/awcms/blob/main/docs/adr/0051-admin-screens-consolidated-in-awcms.md)
+  memusatkan SELURUH layar admin di `awcms` dan men-supersede ADR-0048, pasangan
+  ADR ini. Empat aturan di §Keputusan tetap mengikat permukaan BFF Jualanku dan
+  dipindahkan ke `AGENTS.md`; yang gugur hanya penempatan layarnya.
 - **Tanggal:** 31 Juli 2026
 - **Aturan pemilik:** 31 Juli 2026 — "kerjakan semua langsung di `awcms-astro` sesuai peran frontend halaman admin owner/internal, dan `awcms` sesuai peran frontend publik / admin publik."
 - **Pasangan di `awcms`:** [ADR-0048](https://github.com/ahliweb/awcms/blob/main/docs/adr/0048-frontend-role-split-awcms-astro-internal-admin.md) — sisi lain dari keputusan yang sama, dicatat di repo yang memiliki datanya.

@@ -15,9 +15,29 @@
  *   1. **Local art** — drop images under `src/assets/` and resolve them here
  *      with `import.meta.glob`, exactly as the reference did. Best quality,
  *      because `astro:assets` can then crop and re-encode at build time.
- *   2. **awcms media** — resolve `featuredMediaId` to a public R2 URL. This
- *      needs a media-resolution endpoint on the awcms side that does not exist
- *      yet; until it does, `src` stays `undefined`.
+ *   2. **awcms media** — resolve `featuredMediaId` to a public R2 URL. The
+ *      endpoint this needed NOW EXISTS: `GET /api/v1/media/objects?ids=…`
+ *      batch-resolves media ids to `{ publicUrl, altText, mimeType, width,
+ *      height }`, reports unresolved ids rather than dropping them, and is
+ *      gated on `media_library.media.read` — a read-only permission a machine
+ *      credential may hold. Its own docstring in awcms names THIS file as the
+ *      reason it was built. The build feed already carries `featuredMediaId`
+ *      on every full row, so nothing upstream is missing any more.
+ *
+ *      What is still missing is on this side, and it is two decisions rather
+ *      than a blocked contract:
+ *
+ *      - **Where the resolved image lands.** Not here: this module is
+ *        synchronous and components must not fetch (see `AGENTS.md`). It
+ *        belongs on `LocalizedArticle`, resolved once per build in
+ *        `content.ts`, exactly like every other field.
+ *      - **What `img-src` allows.** The public URL sits on the media host's
+ *        origin, not this site's, so the strict CSP in `server/penyaji.mjs`
+ *        (ADR-0019) blocks it until that origin is named. ADR-0019 §Menyesuaikan
+ *        says to widen it in that file rather than through an env var — read
+ *        the reasoning there before choosing otherwise.
+ *
+ *      Until both are decided, `src` stays `undefined`.
  *
  * `src: undefined` is a supported, styled state, not a broken one — every call
  * site renders a token-coloured block instead (`.visual-placeholder`). A
