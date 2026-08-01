@@ -122,19 +122,44 @@ function ringkas(post) {
 }
 
 /**
- * `fetch` tiruan yang meniru kontrak awcms: daftar memberi RINGKASAN plus
- * `nextCursor`, detail memberi baris penuh. `jejak` mencatat setiap path yang
- * diminta supaya tes bisa membuktikan draft tidak pernah dihidrasi.
+ * `fetch` tiruan yang meniru kontrak awcms.
+ *
+ * Dua hal ditiru dengan sengaja, karena keduanya adalah PENOLAKAN di sisi awcms
+ * dan diam-diam berperilaku salah bila ditiru longgar:
+ *
+ *   - tanpa `view=full`, daftar memberi RINGKASAN — tanpa `contentJson`,
+ *     tanpa `metaDescription`, tanpa `translationGroupId`. Adapter yang lupa
+ *     memintanya akan membangun situs kosong tanpa satu pun error, jadi tiruan
+ *     ini menolak memberi baris penuh kecuali diminta;
+ *   - `view=full` tanpa `order=created_at` dijawab 400.
+ *
+ * `jejak` mencatat setiap permintaan supaya tes bisa membuktikan tidak ada
+ * lagi satu permintaan per post (N+1 yang dulu ada).
  */
 function pasangFetchTiruan(posts, { ukuranHalaman = 100, jejak = [] } = {}) {
   globalThis.fetch = async (input) => {
     const url = new URL(String(input));
-    jejak.push(url.pathname);
+    jejak.push(url.pathname + url.search);
 
     const detail = url.pathname.match(/^\/api\/v1\/blog\/posts\/(.+)$/);
     if (detail) {
       const post = posts.find((p) => p.id === detail[1]);
       return Response.json({ success: true, data: { ...post, termIds: [] } });
+    }
+
+    const view = url.searchParams.get("view") ?? "summary";
+
+    if (view === "full" && url.searchParams.get("order") !== "created_at") {
+      return Response.json(
+        {
+          success: false,
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "view=full requires order=created_at"
+          }
+        },
+        { status: 400 }
+      );
     }
 
     const cursor = url.searchParams.get("cursor");
@@ -147,14 +172,17 @@ function pasangFetchTiruan(posts, { ukuranHalaman = 100, jejak = [] } = {}) {
 
     return Response.json({
       success: true,
-      data: { posts: irisan.map(ringkas), nextCursor }
+      data: {
+        posts: view === "full" ? irisan : irisan.map(ringkas),
+        nextCursor
+      }
     });
   };
 
   return jejak;
 }
 
-describe("traversal daftar dan hidrasi", () => {
+describe("traversal build feed", () => {
   let getArticles;
   let resetContentCacheForTests;
 
@@ -182,24 +210,49 @@ describe("traversal daftar dan hidrasi", () => {
     assert.equal(artikel.length, 250);
   });
 
-  test("draft dan post non-publik tidak pernah dihidrasi", async () => {
+  test("draft dan post non-publik tidak pernah terbit", async () => {
     const posts = [
       buatPost(0),
       buatPost(1, { status: "draft" }),
       buatPost(2, { visibility: "private" })
     ];
-    const jejak = pasangFetchTiruan(posts);
+    pasangFetchTiruan(posts);
 
     const artikel = await getArticles("panduan", "id");
     assert.equal(artikel.length, 1);
-
-    const dihidrasi = jejak.filter((p) => p.startsWith("/api/v1/blog/posts/"));
-    assert.deepEqual(dihidrasi, [`/api/v1/blog/posts/${posts[0].id}`]);
   });
 
-  test("isi artikel benar-benar datang dari endpoint detail", async () => {
+  test("satu traversal, bukan satu permintaan per post", async () => {
+    // Adapter ini pernah menyusuri daftar lalu mengambil ULANG setiap post
+    // lewat /posts/{id} — N+1 permintaan ke endpoint admin pada setiap publish.
+    // Sejak awcms punya `view=full`, permintaan per-id itu tidak boleh muncul
+    // lagi; kalau ia kembali, ia kembali diam-diam.
+    const posts = Array.from({ length: 5 }, (_, i) => buatPost(i));
+    const jejak = pasangFetchTiruan(posts);
+
+    await getArticles("panduan", "id");
+
+    const perId = jejak.filter((j) => /\/api\/v1\/blog\/posts\/[^?]/.test(j));
+    assert.deepEqual(perId, [], "tidak boleh ada permintaan per post");
+    assert.equal(jejak.length, 1, "satu halaman = satu permintaan");
+  });
+
+  test("adapter meminta view=full atas urutan yang stabil", async () => {
+    // Dua parameter ini yang membedakan "situs terbit" dari "situs kosong":
+    // tanpa view=full daftar tidak memuat contentJson sama sekali, dan awcms
+    // menolak view=full di atas urutan mutable.
+    const jejak = pasangFetchTiruan([buatPost(0)]);
+
+    await getArticles("panduan", "id");
+
+    assert.match(jejak[0], /view=full/);
+    assert.match(jejak[0], /order=created_at/);
+    assert.match(jejak[0], /status=published/);
+  });
+
+  test("isi artikel benar-benar sampai ke kontrak komponen", async () => {
     // Regresi yang dibayar mahal: adapter ini pernah membaca `contentJson` dari
-    // DAFTAR, yang tidak pernah memuatnya. Hasilnya build hijau dengan seluruh
+    // respons yang tidak pernah memuatnya. Hasilnya build hijau dengan seluruh
     // seksi kosong — `kategori` juga tinggal di dalam `contentJson`.
     const posts = [buatPost(7)];
     pasangFetchTiruan(posts);
