@@ -3,7 +3,7 @@
 - **Status:** Accepted
 - **Tanggal:** 1 Agustus 2026
 - **Menindaklanjuti:** `awcms` [ADR-0049](https://github.com/ahliweb/awcms/blob/main/docs/adr/0049-machine-credentials-and-session-introspection.md) (kredensial mesin + introspeksi sesi), yang menutup dua kontrak yang ADR-0047 catat sebagai penahan repo ini
-- **Terkait:** [ADR-0014](0014-rendering-campuran-dan-bff-portal.md) (BFF), [ADR-0017](0017-peran-admin-owner-internal.md) (permukaan admin internal)
+- **Terkait:** [ADR-0014](0014-rendering-campuran-dan-bff-portal.md) (BFF), [ADR-0017](0017-peran-admin-owner-internal.md) (permukaan admin internal — di-supersede [ADR-0020](0020-layar-admin-kembali-ke-awcms.md); kredensial mesin di bawah tidak terpengaruh, ia dipakai token BUILD)
 
 ## Konteks
 

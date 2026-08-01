@@ -10,41 +10,47 @@ yang terlihat pembaca.
 Template keluarga AWCMS di Astro dengan
 [`ahliweb/awcms`](https://github.com/ahliweb/awcms) sebagai backend konten dan
 system of record. Situs publiknya **statis**: konten ditarik saat **build**,
-bukan saat request. Sejak 31 Juli 2026 repo ini juga memikul **halaman admin
-owner/internal** (§Peran repo ini) — permukaan terautentikasi yang berjalan
-on-demand, bukan bagian dari build statis itu.
+bukan saat request. Repo ini **bukan** rumah layar admin — seluruhnya tinggal di
+`awcms` (§Peran repo ini). Satu-satunya permukaan terautentikasi yang
+direncanakan di sini adalah BFF portal Jualanku (ADR-0014), dan ia belum ada.
 
-## Peran repo ini (berlaku 31 Juli 2026)
+## Peran repo ini (berlaku 2 Agustus 2026 — ADR-0020)
 
-Repo ini memikul **dua** permukaan, dan keduanya dipisahkan tegas:
+**Repo ini tidak memikul layar admin.** Kalau kamu ke sini untuk membangun
+layar operator platform atau layar internal, kamu berada di repo yang salah:
+`awcms` ADR-0051 memusatkan **seluruh** layar admin — tenant maupun
+owner/internal/platform — di `awcms`, di bawah satu shell `/admin/*`.
 
-| Permukaan | Audiens | Sifat |
-| --- | --- | --- |
-| Situs publik | pengunjung anonim | statis, di-build, boleh di-cache agresif |
-| **Admin OWNER/INTERNAL** | operator platform, staf internal | on-demand, terautentikasi, **tidak pernah di-cache bersama** |
+| Repo          | Peran frontend                             | Audiens                                     |
+| ------------- | ------------------------------------------ | ------------------------------------------- |
+| `awcms`       | frontend publik + **SELURUH** admin        | pengunjung, admin tenant, operator platform |
+| `awcms-astro` | situs publik statis + experience layer/BFF | pembaca anonim, pengguna Jualanku           |
 
-`awcms` memegang peran sebaliknya: frontend publik + admin milik **tenant**.
-Layar yang mengurus PLATFORM (master data global, aktivasi/rollback dataset,
-alat operator) dibangun **di sini**; layar yang dipakai tenant atas datanya
-sendiri tetap di `awcms`.
+Aturan sebelumnya (ADR-0017, 31 Juli 2026) menaruh layar owner/internal di sini.
+Ia **di-supersede** — bukan karena jalurnya buntu, melainkan karena memindahkan
+layar tidak pernah menjadi kontrol keamanan yang diklaimkan: izin tidak ikut
+pindah, jadi risikonya juga tidak. Alasan lengkapnya di
+[ADR-0020](docs/adr/0020-layar-admin-kembali-ke-awcms.md).
 
-Empat aturan yang mengikat, ditulis karena mudah dilanggar tanpa terlihat:
+Satu permukaan terautentikasi tetap direncanakan di sini, dan ia bukan admin:
+**BFF portal Jualanku** (ADR-0014, `awcms` ADR-0045). Empat aturan berikut
+mengikatnya — dipindahkan utuh dari ADR-0017 karena keempatnya menyangkut
+permukaan terautentikasi apa pun, bukan khusus layar admin:
 
-1. **`awcms` tetap system of record.** Repo ini tanpa basis data; data admin
-   datang dari `/api/v1/*` lewat BFF (ADR-0014). Browser internal tidak pernah
-   memanggil `awcms` langsung dan tidak pernah memegang kredensialnya.
+1. **`awcms` tetap system of record.** Repo ini tanpa basis data; datanya datang
+   dari `/api/v1/*` lewat BFF. Browser tidak pernah memanggil `awcms` langsung
+   dan tidak pernah memegang kredensialnya.
 2. **Izin tidak pindah bersama layar** — RBAC/ABAC default-deny milik `awcms`
-   tetap yang memutuskan. Layar di sini bukan jalur kedua yang lebih longgar.
-3. **Tidak ada cache bersama** antara permukaan publik dan permukaan admin.
-4. Setiap penambahan di permukaan admin dinilai sebagai **permukaan keamanan**,
-   bukan sekadar halaman.
+   tetap yang memutuskan. Permukaan di sini bukan jalur kedua yang lebih longgar.
+3. **Tidak ada cache bersama** antara permukaan publik dan permukaan
+   terautentikasi.
+4. Setiap penambahan di permukaan terautentikasi dinilai sebagai **permukaan
+   keamanan**, bukan sekadar halaman.
 
-**Blocker yang harus diketahui sebelum memulai layar internal pertama:** dua
-kontrak yang dibutuhkan belum ada di `awcms` — header tenant tidak cocok
-(`x-awcms-tenant-id` vs `X-Tenant-Code`) dan belum ada kredensial mesin yang bisa
-dipegang BFF. Keduanya dicatat di `awcms` ADR-0047. Alasan dan aturan lengkap:
-[ADR-0017](docs/adr/0017-peran-admin-owner-internal.md); pasangannya di `awcms`
-adalah ADR-0048.
+Dua kontrak yang dulu memblokir permukaan itu — header tenant dan kredensial
+mesin yang bisa dipegang BFF — **sudah mendarat** di `awcms` (ADR-0049 dan
+ADR-0050, 1 Agustus 2026). Yang belum: implementasinya di sini, dengan
+prasyarat di [`04-kesiapan.md`](docs/awcms-astro/jualanku/04-kesiapan.md).
 
 ## Di mana pekerjaan boleh mendarat (berlaku 31 Juli 2026)
 
