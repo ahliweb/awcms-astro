@@ -54,9 +54,12 @@ ARG SITE_SOCIAL_IMAGE
 ARG SITE_LOCALES
 ARG AWCMS_API_URL
 ARG AWCMS_API_TOKEN
-ARG AWCMS_TENANT_CODE
+# Hanya AWCMS_TENANT_ID. Dua variabel rantai lama sengaja TIDAK ada di sini:
+# sejak ADR-0018 keduanya DITOLAK build, bukan diabaikan, jadi meneruskannya
+# dari platform build hanya memindahkan kegagalan ke tempat yang tidak
+# menyebutkan sebabnya. Coolify yang masih menyimpannya sebagai build variable
+# harus menghapusnya. Dijaga `tests/kontrak-awcms.test.mjs`.
 ARG AWCMS_TENANT_ID
-ARG AWCMS_DEFAULT_TENANT_CODE
 
 # `src/lib/env.ts` membaca `process.env` sebagai sumber otoritatif saat build,
 # jadi ARG perlu dinaikkan ke ENV agar terbaca `astro build`.
@@ -68,9 +71,7 @@ ENV SITE_URL=$SITE_URL \
     SITE_LOCALES=$SITE_LOCALES \
     AWCMS_API_URL=$AWCMS_API_URL \
     AWCMS_API_TOKEN=$AWCMS_API_TOKEN \
-    AWCMS_TENANT_CODE=$AWCMS_TENANT_CODE \
-    AWCMS_TENANT_ID=$AWCMS_TENANT_ID \
-    AWCMS_DEFAULT_TENANT_CODE=$AWCMS_DEFAULT_TENANT_CODE
+    AWCMS_TENANT_ID=$AWCMS_TENANT_ID
 
 # `bun run build` sudah mencakup gerbang lockfile, `astro check`, dan
 # pembungkusan penyaji menjadi satu berkas. Menjalankan `astro build` langsung
