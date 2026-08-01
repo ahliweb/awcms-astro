@@ -35,14 +35,23 @@ flowchart LR
   Admin --> DB[("PostgreSQL")]
   DB --> API["/api/v1/blog/posts"]
   API -->|"saat build"| Astro["awcms-astro"]
-  Astro --> Dist["dist/ — berkas statis"]
-  Dist --> Pembaca["Pembaca"]
+  Astro --> Dist["dist/client — berkas statis"]
+  Dist --> Bun["proses Bun — dist/server/penyaji.mjs"]
+  Bun -->|"Traefik"| Pembaca["Pembaca"]
 ```
 
 Konten ditarik **saat build**, bukan saat request. Konsekuensinya lugas dan
-memang disengaja: situs tetap tayang saat awcms mati, tidak ada permukaan
-serangan runtime, dan konten baru tayang setelah build berikutnya — bukan
-seketika. Kalau butuh seketika, `awcms-micro` template yang tepat, bukan ini.
+memang disengaja: situs tetap tayang saat awcms mati, tidak ada basis data dan
+tidak ada panggilan ke awcms saat request, dan konten baru tayang setelah build
+berikutnya — bukan seketika. Kalau butuh seketika, `awcms-micro` template yang
+tepat, bukan ini.
+
+Yang menyajikan berkas itu adalah **proses Bun**, bukan nginx (ADR-0016) — jadi
+"tanpa runtime" bukan klaim repo ini; klaimnya adalah tanpa basis data dan tanpa
+panggilan ke CMS saat pembaca meminta halaman. Aturan cache, tiga header
+keamanan, dan kompresi tinggal di
+[`server/penyaji.mjs`](server/penyaji.mjs) dan dijaga
+[`tests/penyaji.test.mjs`](tests/penyaji.test.mjs).
 
 "Build berikutnya" tidak berarti menunggu seseorang menekan tombol: awcms
 memicu rebuild lewat webhook begitu sebuah post terbit, jadi jeda antara redaksi
@@ -61,14 +70,24 @@ Repo ini **Bun-only** (ADR-0015): Bun adalah runtime sekaligus package manager,
 versinya dipin di `packageManager`/`engines.bun`, dan `bun.lock` adalah
 satu-satunya lockfile.
 
-| Perintah                 | Kegunaan                                             |
-| ------------------------ | ---------------------------------------------------- |
-| `bun run dev`            | Server pengembangan                                  |
-| `bun run check`          | Gerbang lockfile lalu `astro check`                  |
-| `bun run check:lockfile` | Hanya gerbang lockfile — murni baca berkas           |
-| `bun test`               | Unit test renderer blok + gerbang katalog PO         |
-| `bun run build`          | `bun run check` lalu `astro build` → `dist/`         |
-| `bun run preview`        | Menyajikan hasil build                               |
+| Perintah                 | Kegunaan                                                        |
+| ------------------------ | --------------------------------------------------------------- |
+| `bun run dev`            | Server pengembangan Astro (HMR), `http://localhost:4321`        |
+| `bun run check`          | Gerbang lockfile lalu `astro check`                             |
+| `bun run check:lockfile` | Hanya gerbang lockfile — murni baca berkas                      |
+| `bun test`               | Renderer blok, gerbang katalog PO, dan gerbang penyajian        |
+| `bun run build`          | `check` → `astro build` → bundel penyaji                        |
+| `bun run build:penyaji`  | Hanya membundel penyaji ke `dist/server/penyaji.mjs`            |
+| `bun run serve`          | Menjalankan penyaji produksi atas hasil build (port 8080)       |
+| `bun run preview`        | Alias `serve` — pratinjau memakai penyaji yang sama dengan prod |
+| `bun run start`          | Alias `serve` — perintah yang dijalankan image                  |
+
+`bun run dev` menjalankan server pengembangan Astro, dan server itu **bukan**
+penyaji produksi: ia tidak mengirim tiga header keamanan maupun aturan cache di
+[`server/penyaji.mjs`](server/penyaji.mjs). Untuk melihat persis yang dilihat
+pembaca — header, cache, kompresi — jalankan `bun run build && bun run serve`.
+`preview` sengaja dipetakan ke penyaji yang sama supaya "sudah saya cek di
+preview" berarti sesuatu.
 
 Setelah mengubah dependency, regenerasi lockfile penuh:
 
@@ -139,9 +158,15 @@ src/
 ├── locales/<locale>/messages.po
 ├── pages/                # locale default di root, locale lain lewat [lang]/
 └── styles/global.css     # design token + standar interaksi
-Dockerfile                # build statis → image nginx non-root, port 8080
-ops/nginx-situs.conf      # penyajian keluaran statis di dalam image
+server/penyaji.mjs        # penyaji produksi: header, cache, kompresi (ADR-0016)
+tests/penyaji.test.mjs    # gerbang penyajian — aturan di atas dibuktikan, bukan diklaim
+Dockerfile                # build → image Bun non-root, port 8080
 ```
+
+Hasil build punya dua bagian: `dist/client/` adalah situsnya, `dist/server/`
+adalah entrypoint adapter beserta penyaji yang sudah dibundel. Image produksi
+hanya membawa `dist/client/` dan `dist/server/penyaji.mjs` — bundel itu yang
+membuatnya tidak perlu `node_modules` sama sekali.
 
 ## Yang belum ada (backlog eksplisit, bukan kelalaian)
 

@@ -1,12 +1,16 @@
 # awcms-astro
 
-Standar keluarga AWCMS untuk **situs statis Astro**: situs informasi publik yang kontennya dikelola lewat repo, tanpa basis data dan tanpa runtime server, dengan jalur perpindahan terdokumentasi ke pengelolaan dinamis `awcms`.
+Standar keluarga AWCMS untuk **situs statis Astro**: situs informasi publik yang seluruh halamannya dibangun saat build, tanpa basis data dan tanpa satu pun panggilan ke CMS saat pembaca meminta halaman.
+
+"Tanpa runtime server" bukan bagian dari klaim itu, dan pernah keliru ditulis begitu di sini: sejak [ADR-0016](../adr/0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md) keluaran build disajikan sebuah proses Bun. Yang tidak ada tetap tidak ada — basis data, dan ketergantungan pada CMS yang hidup saat request.
 
 Repo `ahliweb/awcms-astro` adalah implementasi rujukan standar ini. Standarnya sendiri tidak lahir di atas kertas: ia diekstraksi dari `web-lalulintasmelayani.com`, situs enam bahasa yang sudah berjalan di produksi, tempat setiap aturan di bawah lebih dulu dibuktikan.
 
 > **Satu perbedaan yang harus dibaca lebih dulu.** Repo rujukan itu menyimpan kontennya sebagai markdown di dalam repo. Template ini menariknya dari `awcms` saat build. Aturan tentang KONTEN karena itu berpindah tempat penegakannya — dari Zod dan gerbang audit di repo, ke validasi API dan quality checklist di CMS. Lihat [`integrasi-awcms.md`](integrasi-awcms.md) §"Yang paling berisiko hilang saat migrasi".
 
-Positioning ini ditetapkan [ADR-0012](../adr/0012-repo-sebagai-standar-awcms-astro.md).
+Positioning ini ditetapkan ADR-0012 repo rujukan.
+
+> **Nomor ADR di dokumen ini.** ADR-0001 sampai ADR-0013 adalah keputusan repo rujukan dan **tidak ada di repo ini** — nomornya disebut tanpa tautan karena berkasnya memang tidak di sini. ADR repo ini dimulai dari [ADR-0014](../adr/README.md) dan seluruhnya bertautan.
 
 ## Posisi di keluarga AWCMS
 
@@ -51,18 +55,18 @@ Ragu? Mulai dari `awcms-astro`. Perpindahan ke `awcms` terdokumentasi; perjalana
 
 ## Divergence yang disengaja dari keluarga
 
-Keluarga AWCMS bersifat **Bun-only** dan **PostgreSQL + RLS wajib**. Sejak [ADR-0015](../adr/0015-runtime-bun-menutup-divergence-keluarga.md) repo ini **tidak lagi menyimpang soal runtime** — ia Bun-only seperti sibling-nya. Yang tersisa adalah divergence yang lahir dari tidak adanya basis data, dan itu disengaja:
+Keluarga AWCMS bersifat **Bun-only** dan **PostgreSQL + RLS wajib**. Sejak ADR-0015 repo rujukan repo ini **tidak lagi menyimpang soal runtime** — ia Bun-only seperti sibling-nya. Yang tersisa adalah divergence yang lahir dari tidak adanya basis data, dan itu disengaja:
 
 | Aspek | Keluarga | awcms-astro | Alasan |
 | --- | --- | --- | --- |
-| ~~Runtime~~ | Bun | **Bun** — divergence DITUTUP oleh [ADR-0015](../adr/0015-runtime-bun-menutup-divergence-keluarga.md) | Repo ini kini Bun-only seperti seluruh keluarga: `bun.lock`, `bun test`, `oven/bun` di image, `package-ecosystem: bun` di Dependabot |
+| ~~Runtime~~ | Bun | **Bun** — divergence DITUTUP oleh ADR-0015 repo rujukan | Repo ini kini Bun-only seperti seluruh keluarga: `bun.lock`, `bun test`, `oven/bun` di image, `package-ecosystem: bun` di Dependabot |
 | Basis data | PostgreSQL + RLS | **Tidak ada** | Tidak ada data tenant-scoped. Kontrol akses ditegakkan review repo, bukan RLS |
 | Kontrak API | OpenAPI/AsyncAPI wajib | **Tidak berlaku** | Tidak ada API. Kontraknya adalah frontmatter (`content.config.ts`) |
 | Idempotency, audit trail, outbox | Wajib pada mutation | **Tidak berlaku** | Tidak ada mutation runtime |
 
 Divergence yang tersisa berlaku **selama repo tetap tanpa basis data**. Saat sebuah situs di atas template ini mulai menyimpan data tenant-scoped sendiri, seluruh kontrol keluarga kembali berlaku penuh.
 
-[ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md) (Jualanku.info) memberi batas yang presisi untuk kasus pertama yang benar-benar butuh sesi: `output` **tetap** `static`, adapter dipasang, dan hanya rute portal yang menjadi on-demand. Datanya tetap milik `awcms` — kontrol keluarga (idempotency, audit, otorisasi, RLS) dijalankan di sana, **bukan** dipindahkan ke repo ini.
+ADR-0014 repo rujukan (Jualanku.info) memberi batas yang presisi untuk kasus pertama yang benar-benar butuh sesi: `output` **tetap** `static`, adapter dipasang, dan hanya rute portal yang menjadi on-demand. Datanya tetap milik `awcms` — kontrol keluarga (idempotency, audit, otorisasi, RLS) dijalankan di sana, **bukan** dipindahkan ke repo ini.
 
 Yang **tidak** menyimpang dan wajib diikuti: `AGENTS.md` sebagai kontrak kerja, `docs/adr/`, Conventional Commits, changeset, Definition of Done, larangan secret di repo, dan gerbang CI.
 
@@ -74,14 +78,14 @@ Yang **tidak** menyimpang dan wajib diikuti: `AGENTS.md` sebagai kontrak kerja, 
 | [`ui-ux-design-system.md`](ui-ux-design-system.md) | Design token, komponen, aksesibilitas, dan pemetaannya ke kosakata AWCMS |
 | [`integrasi-awcms.md`](integrasi-awcms.md) | Kontrak perpindahan ke pengelolaan dinamis: content model, adapter, batas tanggung jawab |
 | [`checklist-repo-baru.md`](checklist-repo-baru.md) | Langkah memulai situs baru di atas standar ini |
-| [`jualanku/`](jualanku/README.md) | **Blueprint** experience layer Jualanku.info: rendering campuran, BFF, peta rute/UI, kesiapan ([ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md)) — rencana, belum diimplementasikan |
+| [`jualanku/`](jualanku/README.md) | **Blueprint** experience layer Jualanku.info: rendering campuran, BFF, peta rute/UI, kesiapan (ADR-0014 repo rujukan) — rencana, belum diimplementasikan |
 
 ## Apa yang membuat standar ini berbeda
 
 Tiga hal yang tidak lazim, dan justru menjadi intinya:
 
-1. **Aturan konten punya penegak.** Kepatuhan yang hanya tertulis akan dilanggar — itu terbukti di repo rujukan. `bun run audit` memeriksa kelengkapan sumber, konsistensi antar locale, keunikan gambar, metadata SEO, dan tautan mati, lalu menggagalkan rilis. Lihat [ADR-0008](../adr/0008-audit-konten-sebagai-gerbang-rilis.md).
+1. **Aturan punya penegak.** Kepatuhan yang hanya tertulis akan dilanggar — itu terbukti di repo rujukan, tempat `bun run audit` memeriksa kelengkapan sumber, konsistensi antar locale, keunikan gambar, metadata SEO, dan tautan mati, lalu menggagalkan rilis (ADR-0008 repo rujukan). Di `awcms-astro` gerbang itu **baru sebagian**: paritas katalog PO dan aturan penyajian sudah dijaga `bun test`, sisanya masih menunggu — daftarnya di [README repo ini](../../README.md#yang-belum-ada-backlog-eksplisit-bukan-kelalaian).
 
-2. **Multi-locale tanpa halaman pincang.** Kumpulan slug ditentukan satu locale sumber; sisanya jatuh ke sana dengan penanda yang jujur. Tidak pernah ada 404 antar bahasa dan tidak pernah ada nama key mentah yang tampil. Lihat [ADR-0003](../adr/0003-enam-locale-dengan-fallback.md).
+2. **Multi-locale tanpa halaman pincang.** Kumpulan slug ditentukan satu locale sumber; sisanya jatuh ke sana dengan penanda yang jujur. Tidak pernah ada 404 antar bahasa dan tidak pernah ada nama key mentah yang tampil. Lihat ADR-0003 repo rujukan.
 
 3. **Batas etis ditulis sebagai aturan teknis, bukan imbauan.** Larangan skrip pihak ketiga, larangan mengumpulkan data pribadi, dan kewajiban penutur asli untuk bahasa daerah diikat di `AGENTS.md` dan diperiksa gerbang — sehingga agen AI yang bekerja di repo menolak melanggarnya, bukan menemukannya terlambat.

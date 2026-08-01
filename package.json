@@ -16,18 +16,22 @@
   },
   "scripts": {
     "dev": "bun --bun astro dev",
-    "start": "bun --bun astro dev",
-    "build": "bun run check && bun --bun astro build",
+    "build": "bun run check && bun --bun astro build && bun run build:penyaji",
+    "build:penyaji": "bun build server/penyaji.mjs --target=bun --outfile dist/server/penyaji.mjs",
     "check": "bun run check:lockfile && bun --bun astro check",
     "check:lockfile": "bun scripts/cek-lockfile.mjs",
     "test": "bun test",
-    "preview": "bun --bun astro preview",
+    "serve": "bun dist/server/penyaji.mjs",
+    "start": "bun run serve",
+    "preview": "bun run serve",
     "release": "bun scripts/rilis.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.10",
+    "@astrojs/node": "^11.0.3",
     "@astrojs/sitemap": "^3.7.3",
     "astro": "^7.1.4",
+    "compression": "^1.8.1",
     "typescript": "^6.0.3"
   },
   "devDependencies": {

@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Kerentanan keamanan
-    url: https://github.com/ahliweb/web-lalulintasmelayani.com/security/advisories/new
+    url: https://github.com/ahliweb/awcms-astro/security/advisories/new
     about: JANGAN buka issue publik. Laporkan lewat jalur privat ini.
-  - name: Urusan layanan riil (SIM, STNK, tilang)
-    url: https://github.com/ahliweb/web-lalulintasmelayani.com/blob/main/SUPPORT.md
-    about: Repo ini bukan kanal layanan. Datangi kantor unit resmi atau kanal daring pemerintah.
+  - name: Konten sebuah situs yang dibangun dari template ini
+    url: https://github.com/ahliweb/awcms-astro/blob/main/SUPPORT.md
+    about: Repo ini template, bukan situs. Kontennya tinggal di instans awcms milik situs itu — hubungi pengelolanya.

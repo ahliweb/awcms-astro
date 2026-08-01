@@ -26,7 +26,7 @@ Pertanyaan yang menentukan bentuk skema: **kesalahan apa yang paling merugikan p
 - [ ] Tetapkan locale default dan daftar locale lain di `localeMeta`.
 - [ ] Isi `src/locales/<default>/messages.po`. Katalog default adalah acuan; key yang tidak ada di sini akan tampil sebagai nama key mentah.
 - [ ] Buat katalog locale lain, boleh hampir kosong — fallback menanganinya.
-- [ ] Bila ada bahasa dengan penutur terbatas dan register teknis yang tipis, **tulis batasnya sebagai ADR sejak awal**, bukan setelah terjemahan mesin terlanjur tayang. Contoh: [ADR-0004](../adr/0004-terjemahan-bahasa-daerah-penutur-asli.md).
+- [ ] Bila ada bahasa dengan penutur terbatas dan register teknis yang tipis, **tulis batasnya sebagai ADR sejak awal**, bukan setelah terjemahan mesin terlanjur tayang. Contoh: ADR-0004 repo rujukan.
 
 ## 4. Konten dan aset
 
@@ -88,12 +88,14 @@ Tampilan dikerjakan terakhir karena ia satu-satunya lapisan yang murah diubah.
 
 ```bash
 bun install
-bun run build
-bun test               # harus hijau
-bun run audit          # harus 0 error
+bun run build          # gerbang lockfile + astro check + astro build + bundel penyaji
+bun test               # harus hijau; setelah build, lapis penyajian ikut jalan
+bun run serve          # periksa header dan cache seperti yang dilihat pembaca
 bun audit              # harus 0 kerentanan
 bun run release minor --apply
 ```
+
+`bun run audit` sengaja tidak ada di daftar ini: gerbang audit konten belum ada di `awcms-astro` (lihat §5). Bila repo baru Anda menulisnya, `scripts/rilis.mjs` menjalankannya sendiri begitu script bernama `audit` muncul di `package.json` — tidak ada yang perlu disunting di skrip rilis.
 
 ## Kesalahan yang paling sering terjadi
 

@@ -40,6 +40,15 @@ docs/{adr,workflows,awcms-astro}/
 .claude/skills/
 ```
 
+**Di `awcms-astro` sendiri empat entri di atas tidak ada, dan itu disengaja:**
+`content/`, `content.config.ts`, `data/`, dan `assets/images/` adalah bentuk
+konten-di-repo. Repo ini menariknya dari `awcms` saat build, jadi kontrak
+frontmatter digantikan `src/lib/content.ts` (adapter API → `LocalizedArticle`)
+dan data referensi tinggal di CMS. Sebagai gantinya ada dua entri yang tidak ada
+di daftar standar: `server/penyaji.mjs` (penyaji produksi sejak
+[ADR-0016](../adr/0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md)) dan
+`tests/` (gerbang yang berjalan lewat `bun test`).
+
 Aturan arahnya satu arah: **konten tidak tahu tentang komponen, komponen tidak mengambil datanya sendiri.**
 
 - Komponen menerima data lewat props. Dilarang memanggil `getCollection` di dalam komponen presentasi.
@@ -99,7 +108,7 @@ Aturan penulisan yang mengikat:
 | Sumber di-commit apa adanya, tidak dikompresi manual | Ya |
 | `public/` hanya untuk berkas yang butuh URL tetap | Ya |
 
-Empat aturan bertanda tebal lahir dari cacat nyata dan bukan kehati-hatian teoretis; rinciannya di [ADR-0013](../adr/0013-ilustrasi-tanpa-atribut-instansi.md).
+Empat aturan bertanda tebal lahir dari cacat nyata dan bukan kehati-hatian teoretis; rinciannya di ADR-0013 repo rujukan.
 
 **Rasio adalah yang paling mudah terlewat.** Bingkai memakai `object-fit: cover`, jadi sumber berasio lain tidak diperkecil — ia dipotong, diam-diam, di setiap ukuran layar. Sumber 1∶1 pada bingkai 16∶9 kehilangan 22% teratas, dan judul gambar hampir selalu ada di sana.
 
@@ -148,22 +157,27 @@ Target WCAG 2.1 AA. Yang mengikat:
 
 ## Gerbang mutu
 
-Empat gerbang, seluruhnya wajib hijau sebelum pekerjaan dinyatakan selesai:
+Gerbang standar ini, seluruhnya wajib hijau sebelum pekerjaan dinyatakan selesai:
 
-| Gerbang | Perintah | Menangkap |
-| --- | --- | --- |
-| Type check | `astro check` (di dalam `bun run build`) | Kesalahan tipe dan props |
-| Audit konten | `bun run audit` | Aturan konten, katalog PO, gambar, SEO, share, tautan mati, tautan antar dokumen dan sinkronisasi daftar skill, **key mentah yang bocor ke halaman, serta manifes paket dan versi lock** |
-| Audit dependency | `bun audit` | Kerentanan rantai build |
-| CI | `.github/workflows/ci.yml` | Ketiganya, pada setiap PR |
+| Gerbang | Perintah | Menangkap | Ada di `awcms-astro`? |
+| --- | --- | --- | --- |
+| Lockfile | `bun run check:lockfile` | Lockfile milik proyek lain, dependency yang tidak dideklarasi | Ya |
+| Type check | `astro check` (di dalam `bun run build`) | Kesalahan tipe dan props | Ya |
+| Katalog PO | `bun test` | Paritas katalog antar locale, `msgstr` kosong, key yang dipakai kode tetapi tidak pernah ditulis | Ya |
+| Penyajian | `bun test` | Header keamanan, aturan cache HTML vs aset, kompresi, halaman 404 | Ya |
+| Audit konten | `bun run audit` | Aturan konten, gambar, SEO, share, tautan mati, tautan antar dokumen dan sinkronisasi daftar skill | **Belum** — lihat di bawah |
+| Audit dependency | `bun audit` | Kerentanan rantai build | Ya |
+| CI | `.github/workflows/ci.yml` | Seluruhnya yang ada, pada setiap PR | Ya |
 
-**Aturan baru wajib membawa pemeriksanya.** Aturan yang hanya tertulis di dokumentasi akan dilanggar cepat atau lambat — itu sebabnya gerbang audit ada ([ADR-0008](../adr/0008-audit-konten-sebagai-gerbang-rilis.md)).
+**Gerbang audit konten belum ada di `awcms-astro`.** Ia tinggal di repo rujukan, terikat pada aturan domainnya, dan versi generiknya belum ditulis — daftar yang tersisa ada di [README repo ini](../../README.md#yang-belum-ada-backlog-eksplisit-bukan-kelalaian). Sebagian isinya sudah pindah ke `bun test` (katalog PO). Menyebutnya sebagai gerbang yang berjalan padahal tidak lebih berbahaya daripada tidak menyebutnya sama sekali: aturan yang tampak terjaga tidak diperiksa siapa pun.
+
+**Aturan baru wajib membawa pemeriksanya.** Aturan yang hanya tertulis di dokumentasi akan dilanggar cepat atau lambat — itu sebabnya gerbang audit ada (ADR-0008 repo rujukan).
 
 Melonggarkan pemeriksa agar gerbang hijau adalah pelanggaran, bukan perbaikan. Bila sebuah aturan memang salah, ubah aturannya secara sadar beserta alasannya di dokumentasi.
 
 ## Versioning
 
-`MAJOR.MINOR.PATCH`, tag git `vX.Y.Z` anotatif. Arti tiap tingkat untuk situs informasi didefinisikan di [ADR-0009](../adr/0009-versioning-semver-dan-changeset.md) — semver dirancang untuk library ber-API, jadi artinya perlu ditetapkan ulang.
+`MAJOR.MINOR.PATCH`, tag git `vX.Y.Z` anotatif. Arti tiap tingkat untuk situs informasi didefinisikan di ADR-0009 repo rujukan — semver dirancang untuk library ber-API, jadi artinya perlu ditetapkan ulang.
 
 Setiap perubahan yang memengaruhi konten publik, struktur, dependency, atau deployment ditulis sebagai changeset **pada iterasi yang sama**, dilipat ke `CHANGELOG.md` saat rilis.
 

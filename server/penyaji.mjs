@@ -1,0 +1,186 @@
+#!/usr/bin/env bun
+/**
+ * Penyaji produksi: proses Bun yang menyajikan keluaran build, di belakang
+ * Traefik/Coolify (ADR-0016).
+ *
+ * ## Kenapa berkas ini ada, dan kenapa isinya sesedikit ini
+ *
+ * ADR-0016 melepas nginx dari stack dan menyerahkan penyajian ke Bun. Yang
+ * TIDAK ikut berpindah adalah cara berkas dicari: penerjemahan URL menjadi
+ * path berkas tetap dikerjakan adapter `@astrojs/node` (lewat `send`), bukan
+ * oleh kode di sini. Alasannya keamanan, bukan kenyamanan — setiap baris yang
+ * memetakan URL ke berkas adalah baris yang bisa keliru menjadi pembacaan
+ * berkas arbitrer: `..`, path ter-encode ganda, dan symlink adalah kelas cacat
+ * yang sudah selesai bertahun-tahun lalu di pustaka yang dipakai adapter.
+ *
+ * Yang dikerjakan berkas ini hanya tiga hal yang tidak dikerjakan adapter:
+ *
+ *   1. tiga header keamanan yang dulu ada di `ops/nginx-header-keamanan.conf`;
+ *   2. `Cache-Control` yang eksplisit untuk HTML dan untuk aset ber-hash;
+ *   3. kompresi respons, yang dulu dilakukan `gzip on` di nginx.
+ *
+ * ## Kenapa `Cache-Control` aset ditulis ulang di sini padahal adapter punya
+ *
+ * Adapter memasang `immutable` untuk `/_astro/` dari event `stream` milik
+ * `send` — dan event itu **tidak pernah terjadi pada permintaan HEAD**, karena
+ * `send` menjawab HEAD sebelum membuka berkasnya. Akibatnya `curl -I` (HEAD)
+ * melaporkan `public, max-age=0` sementara GET yang sama melaporkan
+ * `immutable`. Itu bukan sekadar aneh: perintah verifikasi setelah deploy di
+ * `docs/deploy-coolify.md` memakai `curl -sI`, jadi header yang benar akan
+ * terbaca salah oleh orang yang memeriksanya. Menetapkannya lebih dulu di sini
+ * membuat GET dan HEAD menjawab hal yang sama; nilai yang dipasang adapter
+ * kemudian identik, jadi keduanya tidak bisa berselisih.
+ *
+ * ## Kenapa HTML tidak boleh di-cache lama
+ *
+ * Seluruh premis rebuild lewat webhook adalah konten baru tayang cepat. Cache
+ * HTML satu jam membatalkannya tanpa ada yang menyadarinya — situs terlihat
+ * "belum ter-rebuild" padahal rebuild-nya sukses. Sebaliknya aset `/_astro/`
+ * ber-hash pada namanya, jadi ia aman di-cache selamanya dan itulah
+ * satu-satunya cara rebuild tidak memaksa pembaca mengunduh ulang seluruh CSS.
+ */
+import http from "node:http";
+import { posix } from "node:path";
+
+import compression from "compression";
+
+/** Prefiks aset ber-hash Astro (`build.assets`, baku `_astro`). */
+const PREFIKS_ASET = "/_astro/";
+
+export const CACHE_ASET = "public, max-age=31536000, immutable";
+export const CACHE_HALAMAN = "public, max-age=0, must-revalidate";
+
+/**
+ * Header yang dulu tinggal di `ops/nginx-header-keamanan.conf`.
+ *
+ * Di nginx ketiganya harus di-`include` ulang di setiap `location`, karena
+ * `add_header` dibuang seluruhnya begitu sebuah `location` punya `add_header`
+ * sendiri. Di sini jebakan itu tidak ada: header dipasang sekali, sebelum
+ * handler apa pun menyentuh respons.
+ */
+export const HEADER_KEAMANAN = {
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "X-Frame-Options": "DENY"
+};
+
+/**
+ * Path permintaan, dinormalkan persis seperti adapter menormalkannya sebelum
+ * menyerahkannya ke `send`.
+ *
+ * Ini bukan kerapian: tanpa normalisasi, `/_astro/../index.html` terbaca
+ * sebagai aset dan halaman depan akan dikirim dengan `immutable` — satu tahun
+ * di cache pembaca dan di cache perantara, untuk berkas yang berubah setiap
+ * rebuild. Yang menyajikan berkasnya tetap adapter; yang disamakan di sini
+ * hanya penilaian "ini aset atau bukan".
+ *
+ * @param {string} url `req.url` apa adanya.
+ * @returns {string}
+ */
+export function jalurNormal(url) {
+  const tanpaFragmen = url.includes("#") ? url.slice(0, url.indexOf("#")) : url;
+  const [path] = tanpaFragmen.split("?");
+
+  let dekode = path;
+  try {
+    dekode = decodeURI(path);
+  } catch {
+    // URL yang tidak bisa di-decode dijawab 400 oleh adapter; di sini cukup
+    // diperlakukan sebagai bukan-aset.
+  }
+
+  return posix.normalize(dekode.startsWith("/") ? dekode : `/${dekode}`);
+}
+
+/** @param {string} url @returns {string} */
+export function aturanCache(url) {
+  return jalurNormal(url).startsWith(PREFIKS_ASET) ? CACHE_ASET : CACHE_HALAMAN;
+}
+
+/**
+ * Memasang header pada respons SEBELUM handler menyentuhnya.
+ *
+ * Urutannya penting dan mudah terbalik: `send` hanya memasang
+ * `Cache-Control`-nya sendiri bila belum ada, jadi nilai yang ditetapkan di
+ * sini menang. Jalur SSR (404) memakai `res.writeHead(status, headers)`, yang
+ * menggabungkan — bukan membuang — header yang sudah dipasang `setHeader`.
+ *
+ * @param {import("node:http").IncomingMessage} req
+ * @param {import("node:http").ServerResponse} res
+ */
+export function pasangHeader(req, res) {
+  for (const [nama, nilai] of Object.entries(HEADER_KEAMANAN)) {
+    res.setHeader(nama, nilai);
+  }
+  res.setHeader("Cache-Control", aturanCache(req.url ?? "/"));
+}
+
+/**
+ * Server HTTP yang membungkus sebuah handler.
+ *
+ * `handler` diinjeksikan agar perilaku header dan kompresi di berkas ini bisa
+ * diuji tanpa `dist/` — repo template ini tidak punya sumber konten, jadi
+ * `bun test` di CI-nya berjalan tanpa hasil build. Lihat `tests/penyaji.test.mjs`.
+ *
+ * @param {(req: import("node:http").IncomingMessage, res: import("node:http").ServerResponse) => unknown} handlerAplikasi
+ */
+export function buatServer(handlerAplikasi) {
+  // Kompresi dulu dikerjakan `gzip on` di nginx. Ia dipakai dari pustaka yang
+  // sudah matang, bukan ditulis ulang: negosiasi `Accept-Encoding`, pembuangan
+  // `Content-Length`, dan `Vary` adalah tiga tempat yang salahnya menghasilkan
+  // respons rusak, bukan respons besar.
+  const kompresi = compression();
+
+  return http.createServer((req, res) => {
+    pasangHeader(req, res);
+    kompresi(req, res, () => handlerAplikasi(req, res));
+  });
+}
+
+/**
+ * `HOST` baku `0.0.0.0` karena tempat berkas ini dijalankan adalah container di
+ * belakang Traefik: proses yang hanya mendengarkan `localhost` di dalam
+ * container tidak bisa dihubungi siapa pun, dan kegagalannya terbaca sebagai
+ * healthcheck yang gagal tanpa sebab. Port 8080 dipertahankan dari image nginx
+ * sebelumnya supaya konfigurasi Coolify yang sudah ada tidak perlu berubah.
+ */
+export async function jalankan() {
+  /**
+   * Autostart adapter dimatikan SEBELUM entry-nya dievaluasi.
+   *
+   * `dist/server/entry.mjs` menyalakan servernya sendiri saat diimpor kecuali
+   * variabel ini terisi. Server itu menyajikan berkas yang sama tetapi tanpa
+   * satu pun header di berkas ini — dan karena ia memakai `PORT` yang sama,
+   * keadaan itu tidak menyamar sebagai sukses: `listen` di bawah gagal
+   * EADDRINUSE.
+   *
+   * Impornya sengaja di dalam fungsi, bukan di puncak berkas: `dist/` adalah
+   * hasil build, dan repo template ini tidak punya sumber konten sehingga
+   * `bun test` di CI-nya berjalan tanpa hasil build sama sekali. Impor puncak
+   * akan membuat seluruh berkas ini — termasuk aturan header yang justru
+   * paling perlu diuji — tidak bisa diimpor tes mana pun.
+   */
+  process.env.ASTRO_NODE_AUTOSTART = "disabled";
+  const { handler } = await import("../dist/server/entry.mjs");
+
+  const port = Number(process.env.PORT ?? 8080);
+  const host = process.env.HOST ?? "0.0.0.0";
+  const server = buatServer(handler);
+
+  server.listen(port, host, () => {
+    console.log(`awcms-astro disajikan Bun di http://${host}:${port}`);
+  });
+
+  // Container dihentikan dengan SIGTERM. Tanpa penanganan ini prosesnya
+  // dibunuh paksa setelah tenggang Docker habis, dan setiap deploy membayar
+  // jeda itu.
+  for (const sinyal of ["SIGTERM", "SIGINT"]) {
+    process.on(sinyal, () => {
+      server.close(() => process.exit(0));
+    });
+  }
+
+  return server;
+}
+
+if (import.meta.main) jalankan();

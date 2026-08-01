@@ -1,4 +1,5 @@
 import { defineConfig } from "astro/config";
+import node from "@astrojs/node";
 import sitemap from "@astrojs/sitemap";
 
 /**
@@ -45,6 +46,31 @@ export default defineConfig({
    * variant was considered and rejected there.
    */
   output: "static",
+
+  /**
+   * The adapter is here to SERVE the build, not to render pages on demand.
+   *
+   * ADR-0016 replaced the nginx runtime stage with a Bun process, and the file
+   * lookup it needs — URL to path, directory index, traversal, symlinks — comes
+   * from this adapter rather than from a hand-written static server. `output`
+   * above stays `"static"`: every page is still prerendered at build time, no
+   * route declares `prerender = false`, and the container still never talks to
+   * awcms. What changed is only WHO reads the files off disk.
+   *
+   * Two consequences worth knowing before touching this line:
+   *
+   *   - The build output moves. With an adapter, `astro build` writes
+   *     `dist/client/` (the site) and `dist/server/` (the entrypoint) instead
+   *     of a flat `dist/`. Anything that copies or deploys `dist/` must know
+   *     that — see the Dockerfile and docs/deploy-coolify.md.
+   *   - Removing the adapter does NOT just undo a config line. The production
+   *     image runs `dist/server/penyaji.mjs`, which is built from that
+   *     entrypoint; without it the image has nothing to serve.
+   *
+   * Response headers and caching are NOT set here. They live in
+   * `server/penyaji.mjs` and are proven by `tests/penyaji.test.mjs`.
+   */
+  adapter: node({ mode: "standalone" }),
 
   /**
    * Astro compresses HTML with JSX whitespace rules by default, which drops

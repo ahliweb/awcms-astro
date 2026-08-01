@@ -12,15 +12,15 @@ Bila Anda menerima pesan mengatasnamakan situs ini yang meminta pembayaran atau 
 
 | Kebutuhan | Jalur |
 | --- | --- |
-| Informasi di situs keliru atau sudah tidak berlaku | Buka issue dengan templat **Koreksi konten**, sertakan sumber resminya |
-| Alamat, jam layanan, atau jadwal unit berubah | Buka issue dengan templat **Koreksi konten** |
-| Situs error, tampilan rusak, tautan mati | Buka issue dengan templat **Laporan bug** |
-| Ingin membantu menerjemahkan bahasa daerah | Buka issue dengan templat **Terjemahan bahasa daerah** — lihat juga [panduannya](docs/workflows/penerjemahan-bahasa-daerah.md) |
+| Template error, tampilan rusak, tautan mati, hasil build salah | Buka issue dengan templat **Laporan bug** |
+| Sesuatu ternyata harus disunting di luar `src/config/site.ts` dan `.env` | Buka issue — itu pelanggaran janji utama template ini, dan kami memperlakukannya sebagai bug |
+| Ingin membantu menerjemahkan katalog antarmuka | Buka issue, lalu lihat [`CONTRIBUTING.md`](CONTRIBUTING.md#terjemahan) |
+| Pertanyaan integrasi dengan `awcms` | Buka issue; kontraknya di [`docs/awcms-astro/integrasi-awcms.md`](docs/awcms-astro/integrasi-awcms.md) |
 | Ingin memakai repo ini sebagai titik awal situs lain | Baca [`docs/awcms-astro/`](docs/awcms-astro/README.md) |
 | Menemukan kerentanan keamanan | **Jangan buka issue publik.** Ikuti [`SECURITY.md`](SECURITY.md) |
 
 ## Prioritas
 
-Koreksi yang menyangkut **nominal biaya, denda, syarat dokumen, atau alamat unit** ditangani lebih dulu daripada apa pun. Informasi yang salah pada bagian itu membuat pembaca menanggung akibatnya langsung di loket layanan atau di jalan.
+Ditangani lebih dulu daripada apa pun: cacat yang **tidak menggagalkan build**. Situs yang terlihat berhasil tetapi kehilangan artikel, halaman yang menampilkan nama key sebagai teks pembaca, gambar yang terpotong diam-diam, tag `og:image` yang menunjuk berkas yang tidak ada, dan header cache yang membuat rebuild sukses tidak pernah terlihat pembaca — seluruhnya lolos dari CI hijau, dan seluruhnya ikut ke setiap situs yang lahir dari template ini.
 
-Sertakan sumber resminya bila ada. Koreksi tanpa sumber tetap kami terima sebagai petunjuk untuk diverifikasi, tetapi tidak akan langsung tayang.
+Koreksi konten sebuah situs bukan urusan repo ini: kontennya tinggal di instans `awcms` milik situs tersebut, dan repo ini tidak bisa mengubah apa pun yang tayang di sana.
