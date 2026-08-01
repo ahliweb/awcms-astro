@@ -12,14 +12,29 @@ const locale = getLocaleFromPath(Astro.url.pathname);
 
 {steps.length > 0 && (
   <div class="my-6">
-    <h3 style="display: flex; align-items: center; gap: 0.5rem;">
+    <h3 class="judul-ikon">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
       {t(locale, 'procedure.title')}
     </h3>
-    <ol style="padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; color: var(--text-secondary);">
+    <ol class="langkah-daftar">
       {steps.map((step) => (
-        <li style="line-height: 1.5; padding-left: 0.25rem;">{step}</li>
+        <li>{step}</li>
       ))}
     </ol>
   </div>
 )}
+
+<style>
+  .langkah-daftar {
+    padding-left: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    color: var(--text-secondary);
+  }
+
+  .langkah-daftar li {
+    line-height: 1.5;
+    padding-left: 0.25rem;
+  }
+</style>

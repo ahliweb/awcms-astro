@@ -70,14 +70,14 @@ const schema = collectionSchema(
             <div class="visual-placeholder" role="img" aria-label={imgInfo.alt}></div>
           </div>
           <div class="card-content">
-            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.5rem;">
-              <span style="font-size: 0.8rem; color: var(--text-muted);">
+            <div class="kartu-baris-atas">
+              <span class="kartu-nomor">
                 {t(locale, 'tab.articleNo')}{entry.data.urutan}
               </span>
             </div>
             <h3 class="card-title">{entry.data.title}</h3>
             <p class="card-desc">{entry.data.description}</p>
-            <div class="card-meta" style="color: var(--accent-primary);">
+            <div class="card-meta teks-aksen">
               <span>{t(locale, 'tab.readMoreCta')}</span>
             </div>
           </div>
@@ -88,3 +88,10 @@ const schema = collectionSchema(
 
   <DisclaimerNote variant="general" />
 </BaseLayout>
+
+<style>
+  .kartu-nomor {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+</style>

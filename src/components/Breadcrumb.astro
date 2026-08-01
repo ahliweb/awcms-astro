@@ -32,14 +32,14 @@ const breadcrumbSchema = {
 ---
 
 <nav aria-label={t(locale, 'breadcrumb.aria')} class="my-4">
-  <ol style="display: flex; flex-wrap: wrap; gap: 0.5rem; list-style: none; font-size: 0.875rem; color: var(--text-muted);">
+  <ol class="remah-daftar">
     {fullItems.map((item, idx) => (
-      <li style="display: flex; align-items: center; gap: 0.5rem;">
-        {idx > 0 && <span aria-hidden="true" style="color: var(--text-muted);">›</span>}
+      <li>
+        {idx > 0 && <span aria-hidden="true" class="remah-pemisah">›</span>}
         {idx === fullItems.length - 1 ? (
-          <span style="color: var(--text-primary); font-weight: 600;" aria-current="page">{item.name}</span>
+          <span class="remah-aktif" aria-current="page">{item.name}</span>
         ) : (
-          <a href={item.url} style="color: var(--text-secondary); text-decoration: none;">{item.name}</a>
+          <a href={item.url} class="remah-tautan">{item.name}</a>
         )}
       </li>
     ))}
@@ -47,3 +47,36 @@ const breadcrumbSchema = {
 </nav>
 
 <script is:inline type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+
+<style>
+  /* `padding-left` sengaja TIDAK di-reset: aturan inline sebelumnya juga tidak,
+     jadi indentasi bawaan <ol> adalah tampilan yang sudah berjalan. */
+  .remah-daftar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+  }
+
+  .remah-daftar li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .remah-pemisah {
+    color: var(--text-muted);
+  }
+
+  .remah-aktif {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  .remah-tautan {
+    color: var(--text-secondary);
+    text-decoration: none;
+  }
+</style>

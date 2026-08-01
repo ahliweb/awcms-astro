@@ -29,11 +29,11 @@ const breadcrumbItems = [
     <h1>{t(locale, 'sitemap.h1')}</h1>
   </section>
 
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin: 2rem 0;">
+  <div class="peta-grid">
     {sections.map((section) => (
       <div>
         <h3>{section.title}</h3>
-        <ul style="padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.4rem;">
+        <ul class="peta-daftar">
           {section.links.map((link) => (
             <li><a href={link.href}>{link.label}</a></li>
           ))}
@@ -42,3 +42,19 @@ const breadcrumbItems = [
     ))}
   </div>
 </BaseLayout>
+
+<style>
+  .peta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin: 2rem 0;
+  }
+
+  .peta-daftar {
+    padding-left: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+</style>

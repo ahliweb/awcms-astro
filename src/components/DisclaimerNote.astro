@@ -21,11 +21,11 @@ const locale = getLocaleFromPath(Astro.url.pathname);
 ---
 
 {variant === 'footer' && (
-  <div style="font-size: 0.825rem; color: var(--text-muted); line-height: 1.5;">
-    <p style="margin-bottom: 0.5rem;">
+  <div class="disclaimer-footer">
+    <p class="disclaimer-footer-p1">
       <strong>{t(locale, 'disclaimer.footer.label')}</strong> {t(locale, 'disclaimer.footer.p1')}
     </p>
-    <p style="margin: 0;">
+    <p class="disclaimer-footer-p2">
       {t(locale, 'disclaimer.footer.p2')}
     </p>
   </div>
@@ -36,3 +36,19 @@ const locale = getLocaleFromPath(Astro.url.pathname);
     <strong>⚠️ {t(locale, 'disclaimer.general.label')}</strong> {t(locale, 'disclaimer.general.body')}
   </aside>
 )}
+
+<style>
+  .disclaimer-footer {
+    font-size: 0.825rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .disclaimer-footer-p1 {
+    margin-bottom: 0.5rem;
+  }
+
+  .disclaimer-footer-p2 {
+    margin: 0;
+  }
+</style>

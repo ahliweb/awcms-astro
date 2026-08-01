@@ -192,6 +192,15 @@ sengaja yang belum tercatat di `awcms-family-compatibility.yaml`.
   ia tidak bisa melihat key dinamis, dan di sanalah aturan ini bekerja.
 - **Token desain, bukan nilai lepas.** Tidak ada gaya sekali pakai; komponen
   baru memakai token yang sudah ada di `src/styles/global.css`.
+- **Tidak ada atribut `style=""`, dan tidak ada blok `<style>` di dalam HTML.**
+  Gaya tinggal di `src/styles/global.css` (bila dipakai lebih dari satu
+  komponen) atau di `<style>` scoped milik komponen — yang Astro terbitkan
+  sebagai berkas CSS terpisah, bukan disisipkan ke halaman. Keduanya diblokir
+  CSP `style-src 'self'`, dan kegagalannya adalah halaman tanpa tata letak
+  tanpa satu pun error di build. `build.inlineStylesheets: "never"` yang
+  menjaga jalur kedua; `tests/keluaran-csp.test.mjs` memeriksa keluarannya.
+  Nilai dinamis yang dulu dikirim lewat `style="--var: …"` ditulis sebagai
+  kelas — lihat warna kanal berbagi di `global.css`.
 
 ### Gambar
 

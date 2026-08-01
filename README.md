@@ -211,13 +211,13 @@ membuatnya tidak perlu `node_modules` sama sekali.
   dibangun benar — dan adapter **menggagalkan build** alih-alih menerbitkan
   setiap bahasa dalam bahasa sumber dengan penanda "belum diterjemahkan". Situs
   satu-locale tidak terpengaruh.
-- **Atribut `style=""` inline.** Keluaran masih memuat ±50 atribut gaya inline
-  yang diwarisi dari repo rujukan. Di hosting statis biasa ini tidak
-  bermasalah, tetapi di belakang CSP ketat (`style-src 'self'` tanpa
-  `'unsafe-inline'` — postur yang dipakai `awcms` sendiri) **semuanya diblokir
-  browser** dan halaman kehilangan tata letaknya tanpa satu pun error di build.
-  Memindahkannya ke kelas adalah prasyarat sebelum situs apa pun dari template
-  ini disajikan di belakang CSP semacam itu.
+- **`script-src` ketat.** Gaya inline sudah tidak ada — keluaran build bersih
+  dari atribut `style=""` maupun blok `<style>`, dan
+  [`tests/keluaran-csp.test.mjs`](tests/keluaran-csp.test.mjs) menjaganya
+  begitu. Yang belum: dua `<script is:inline>` (pengalih tema dan JSON-LD),
+  sehingga `script-src 'self'` tanpa `'unsafe-inline'` masih memblokir
+  pengalih temanya. JSON-LD bisa pindah ke berkas eksternal; pengalih tema
+  butuh keputusan tersendiri karena ia harus jalan sebelum halaman terlukis.
 
 ## Dokumentasi
 

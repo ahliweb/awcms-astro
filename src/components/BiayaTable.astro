@@ -47,7 +47,7 @@ function getBadgeClass(jenis: string) {
 
 {(biaya.length > 0 || dasarHukum.length > 0) && (
   <div class="my-6">
-    <h3 style="display: flex; align-items: center; gap: 0.5rem;">
+    <h3 class="judul-ikon">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
       {t(locale, 'biaya.title')}
     </h3>
@@ -66,14 +66,14 @@ function getBadgeClass(jenis: string) {
           <tbody>
             {biaya.map((b) => (
               <tr>
-                <td style="font-weight: 600;">{b.item}</td>
+                <td class="sel-item">{b.item}</td>
                 <td>
                   <span class={getBadgeClass(b.jenis)}>
                     {namaJenis(b.jenis)}
                   </span>
                 </td>
-                <td style="font-family: monospace; font-weight: 600; color: var(--text-primary);">{b.nominal}</td>
-                <td style="font-size: 0.85rem; color: var(--text-muted);">{b.sumber}</td>
+                <td class="sel-nominal">{b.nominal}</td>
+                <td class="sel-sumber">{b.sumber}</td>
               </tr>
             ))}
           </tbody>
@@ -82,9 +82,9 @@ function getBadgeClass(jenis: string) {
     )}
 
     {dasarHukum.length > 0 && (
-      <div style="background: var(--bg-subtle); padding: 1rem; border-radius: var(--radius-md); font-size: 0.875rem; margin-top: 1rem;">
-        <strong style="color: var(--text-primary); display: block; margin-bottom: 0.5rem;">{t(locale, 'biaya.dasarHukum')}</strong>
-        <ul style="padding-left: 1.25rem; color: var(--text-secondary); margin: 0;">
+      <div class="kotak-dasar-hukum">
+        <strong class="kotak-dasar-hukum-judul">{t(locale, 'biaya.dasarHukum')}</strong>
+        <ul class="daftar-dasar-hukum">
           {dasarHukum.map((dh) => (
             <li>{dh}</li>
           ))}
@@ -93,3 +93,40 @@ function getBadgeClass(jenis: string) {
     )}
   </div>
 )}
+
+<style>
+  .sel-item {
+    font-weight: 600;
+  }
+
+  .sel-nominal {
+    font-family: monospace;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .sel-sumber {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .kotak-dasar-hukum {
+    background: var(--bg-subtle);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    margin-top: 1rem;
+  }
+
+  .kotak-dasar-hukum-judul {
+    color: var(--text-primary);
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .daftar-dasar-hukum {
+    padding-left: 1.25rem;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+</style>

@@ -250,14 +250,14 @@ const jsonLd = {
       <div class="container">
         <div class="footer-grid">
           <div>
-            <h4 style="font-size: 1.1rem; margin-bottom: 0.75rem; color: var(--text-primary);">{t(locale, 'footer.about.title')}</h4>
-            <p style="font-size: 0.875rem; color: var(--text-muted);">
+            <h4 class="footer-judul footer-judul--utama">{t(locale, 'footer.about.title')}</h4>
+            <p class="footer-teks">
               {t(locale, 'footer.about.body')}
             </p>
           </div>
           <div>
-            <h4 style="font-size: 1rem; margin-bottom: 0.75rem; color: var(--text-primary);">{t(locale, 'footer.kanal.title')}</h4>
-            <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+            <h4 class="footer-judul">{t(locale, 'footer.kanal.title')}</h4>
+            <ul class="footer-daftar">
               {siteConfig.tabs.map((tab) => (
                 <li>
                   <a href={localePath(locale, `/${tab.slug}/`)}>{t(locale, tabTitleKey(tab.slug), tab.label)}</a>
@@ -266,8 +266,8 @@ const jsonLd = {
             </ul>
           </div>
           <div>
-            <h4 style="font-size: 1rem; margin-bottom: 0.75rem; color: var(--text-primary);">{t(locale, 'footer.more.title')}</h4>
-            <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.4rem;">
+            <h4 class="footer-judul">{t(locale, 'footer.more.title')}</h4>
+            <ul class="footer-daftar">
               <li><a href={localePath(locale, '/sitemap/')}>{t(locale, 'footer.sitemap')}</a></li>
             </ul>
           </div>
@@ -275,7 +275,7 @@ const jsonLd = {
 
         <DisclaimerNote variant="footer" />
 
-        <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border-color); text-align: center; font-size: 0.8rem; color: var(--text-muted);">
+        <div class="footer-bawah">
           {/* Tahun mulai tidak ditulis di sini: `2023` adalah tahun repo
               rujukan berdiri, dan situs mana pun yang lahir dari template ini
               akan mengklaim tahun itu sebagai tahunnya sendiri. Tahunnya
@@ -305,3 +305,37 @@ const jsonLd = {
     </script>
   </body>
 </html>
+
+<style>
+  .footer-judul {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-primary);
+  }
+
+  .footer-judul--utama {
+    font-size: 1.1rem;
+  }
+
+  .footer-teks {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+  }
+
+  .footer-daftar {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .footer-bawah {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+</style>
