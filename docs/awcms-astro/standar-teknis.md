@@ -164,13 +164,16 @@ Gerbang standar ini, seluruhnya wajib hijau sebelum pekerjaan dinyatakan selesai
 | Lockfile | `bun run check:lockfile` | Lockfile milik proyek lain, dependency yang tidak dideklarasi | Ya |
 | Type check | `astro check` (di dalam `bun run build`) | Kesalahan tipe dan props | Ya |
 | Katalog PO | `bun test` | Paritas katalog antar locale, `msgstr` kosong, key yang dipakai kode tetapi tidak pernah ditulis | Ya |
-| Penyajian | `bun test` | Header keamanan termasuk CSP, aturan cache HTML vs aset, kompresi, halaman 404 | Ya |
+| Penyajian | `bun test` | Header keamanan termasuk CSP dan Permissions-Policy, aturan cache HTML vs aset, kompresi, halaman 404 | Ya |
 | Keluaran CSP | `bun test` **setelah** `bun run build` | Gaya dan skrip inline di HTML, sumber lintas-origin, JS yang ikut hilang | Ya — melewati dirinya bila `dist/` belum ada |
-| Audit konten | `bun run audit` | Aturan konten, gambar, SEO, share, tautan mati, tautan antar dokumen dan sinkronisasi daftar skill | **Belum** — lihat di bawah |
+| Audit konten — gambar | `bun run audit:konten` | Rasio terhadap `--ratio-visual`, format dibaca dari isi berkas, XML SVG, ukuran teks terkecil di SVG | Ya |
+| Audit konten — keluaran | `bun run audit:konten` **setelah** `bun run build` | Judul/deskripsi/canonical, hreflang pincang, aset yang dijanjikan metadata tetapi tidak diterbitkan, tautan mati, sitemap, nama key yang bocor ke layar | Ya — melewati dirinya bila `dist/` belum ada |
 | Audit dependency | `bun audit` | Kerentanan rantai build | Ya |
 | CI | `.github/workflows/ci.yml` | Seluruhnya yang ada, pada setiap PR | Ya |
 
-**Gerbang audit konten belum ada di `awcms-astro`.** Ia tinggal di repo rujukan, terikat pada aturan domainnya, dan versi generiknya belum ditulis — daftar yang tersisa ada di [README repo ini](../../README.md#yang-belum-ada-backlog-eksplisit-bukan-kelalaian). Sebagian isinya sudah pindah ke `bun test` (katalog PO). Menyebutnya sebagai gerbang yang berjalan padahal tidak lebih berbahaya daripada tidak menyebutnya sama sekali: aturan yang tampak terjaga tidak diperiksa siapa pun.
+**Dua aturan gambar tetap manual, dan itu disebut terus terang.** Teks di dalam gambar hanya boleh label topik, dan tidak boleh ada lambang atau atribut instansi negara — termasuk di dalam ilustrasi. Tidak ada pemeriksa yang bisa menilai keduanya. Aturan yang tampak terjaga padahal tidak lebih berbahaya daripada aturan yang jelas-jelas manual.
+
+**Yang masih di repo rujukan** dan belum di-port: aturan konten khas domain (tautan antar dokumen, sinkronisasi daftar skill). Sisa backlog ada di [README repo ini](../../README.md#yang-belum-ada-backlog-eksplisit-bukan-kelalaian).
 
 **Aturan baru wajib membawa pemeriksanya.** Aturan yang hanya tertulis di dokumentasi akan dilanggar cepat atau lambat — itu sebabnya gerbang audit ada (ADR-0008 repo rujukan).
 

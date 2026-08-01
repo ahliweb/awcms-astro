@@ -53,10 +53,14 @@
  * renders, only its meaning goes missing.
  *
  * That is not hypothetical. The reference implementation shipped eleven banners
- * that way and nobody noticed until someone tried to read them. It now enforces
- * the ratio in its content-audit gate, including the `viewBox` of SVGs. This
- * template has no audit gate yet, so the rule lives here and in
- * `docs/awcms-astro/standar-teknis.md` — read it before generating art.
+ * that way and nobody noticed until someone tried to read them.
+ *
+ * The rule is now enforced rather than merely written down:
+ * `scripts/audit-konten.mjs` checks the ratio of every source under
+ * `src/assets/` — including the `viewBox` of SVGs — reads each file's format
+ * from its CONTENT rather than its extension, and fails on a format whose
+ * dimensions it cannot read rather than passing it silently. Run it with
+ * `bun run audit:konten`; CI and the production image both do.
  *
  * Two further rules bind the CONTENT of whatever you add, and no checker can
  * verify them:

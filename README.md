@@ -77,6 +77,7 @@ satu-satunya lockfile.
 | `bun run check`          | Gerbang lockfile lalu `astro check`                             |
 | `bun run check:lockfile` | Hanya gerbang lockfile — murni baca berkas                      |
 | `bun test`               | Renderer blok, gerbang katalog PO, dan gerbang penyajian        |
+| `bun run audit:konten`   | Gerbang audit: sumber gambar, dan keluaran build bila sudah ada |
 | `bun run build`          | `check` → `astro build` → bundel penyaji                        |
 | `bun run build:penyaji`  | Hanya membundel penyaji ke `dist/server/penyaji.mjs`            |
 | `bun run serve`          | Menjalankan penyaji produksi atas hasil build (port 8080)       |
@@ -159,6 +160,18 @@ membuktikan JS-nya tidak ikut hilang; kebijakannya sendiri dijaga
 bukan kelonggaran: blok data bertipe non-JavaScript tidak pernah dieksekusi,
 jadi `script-src` tidak berlaku atasnya.
 
+**Gerbang atas yang TERBIT, bukan atas yang tertulis.**
+[`scripts/audit-konten.mjs`](scripts/audit-konten.mjs) membaca `dist/client/`
+dan menolak enam kelas cacat yang seluruhnya lolos dari build hijau: halaman
+tanpa judul atau deskripsi, kelompok hreflang yang pincang, `og:image` yang
+menunjuk berkas yang tidak pernah diterbitkan build ini, tautan internal yang
+mati, sitemap yang mendaftarkan halaman yang tidak dibangun, dan nama key
+mentah yang tampil sebagai teks kepada pembaca. Yang terakhir bukan hipotesis —
+template ini pernah menerbitkan `translation.notice.label` di kedua bahasa,
+dengan `astro check` bersih. Skrip yang sama memeriksa sumber gambar: rasio
+terhadap `--ratio-visual`, format dibaca dari isi berkas alih-alih ekstensinya,
+XML SVG, dan ukuran teks terkecil di dalamnya.
+
 ## Struktur
 
 ```
@@ -191,13 +204,6 @@ membuatnya tidak perlu `node_modules` sama sekali.
 
 ## Yang belum ada (backlog eksplisit, bukan kelalaian)
 
-- **Gerbang audit konten.** Repo rujukan memilikinya dan itulah yang membuat
-  standar ini punya gigi. Aturannya di sana khas domain, dan versi generiknya
-  belum lengkap di sini. Satu bagiannya sudah ada:
-  [`tests/katalog-po.test.mjs`](tests/katalog-po.test.mjs) menjaga paritas
-  katalog dan menolak key yang dipakai kode tetapi tidak pernah ditulis — kelas
-  cacat yang menerbitkan nama key mentah ke layar pembaca. Metadata SEO dan
-  tautan mati di `dist/` masih menunggu.
 - **Kartu share per halaman.** Generatornya di repo rujukan terikat pada seni
   dan data domainnya. Yang ada di sini hanya SATU kartu opsional lewat
   `SITE_SOCIAL_IMAGE`; tanpa itu halaman tidak memasang tag gambar sama sekali
@@ -217,10 +223,6 @@ membuatnya tidak perlu `node_modules` sama sekali.
   Rasionya sudah ditetapkan dan sudah punya pemeriksa: seluruh bingkai memakai
   `--ratio-visual` (16∶9), sumber berasio lain **dipotong** — bukan diperkecil.
   Aturan isinya di [`AGENTS.md`](AGENTS.md#gambar).
-- **Gerbang rasio gambar.** Repo rujukan memeriksa rasio setiap sumber (termasuk
-  `viewBox` SVG) dan mencocokkan format berkas dengan isinya, bukan dengan
-  ekstensinya. Di sini aturannya tertulis tetapi belum punya pemeriksa; ia ikut
-  menunggu gerbang audit di butir pertama.
 - **Filter locale di feed awcms.** Traversal kontennya sendiri sudah selesai:
   satu `GET /api/v1/blog/posts?view=full&order=created_at`, disusuri lewat
   `nextCursor`. Yang belum ada adalah filter locale di sisi awcms, jadi build

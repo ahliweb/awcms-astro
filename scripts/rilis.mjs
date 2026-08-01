@@ -78,13 +78,17 @@ if (!apply) {
 // ── Verifikasi sebelum menulis apa pun ───────────────────────────────────────
 console.log('\nMenjalankan bun run build ...');
 execSync('bun run build', { stdio: 'inherit' });
-// Gerbang audit konten belum ada di template ini (lihat README, "Yang belum
-// ada"). Memanggilnya tanpa syarat membuat setiap rilis gagal di langkah yang
-// tidak ada isinya; menjalankannya begitu ia ditulis adalah yang diinginkan.
-if (pkg.scripts?.audit) {
-  console.log('Menjalankan bun run audit ...');
-  execSync('bun run audit', { stdio: 'inherit' });
-}
+// Setelah build, bukan sebelum: gerbang keluaran audit konten membaca
+// `dist/client`, dan tanpa hasil build ia melewati dirinya sendiri. Menjalankan
+// keduanya dalam urutan ini adalah satu-satunya cara rilis benar-benar
+// memeriksa apa yang akan terbit, bukan hanya sumber gambarnya.
+//
+// Tanpa syarat, tidak lagi `if (pkg.scripts?.audit)`: penjagaan itu ada saat
+// gerbangnya belum ditulis, dan sebuah pemeriksaan bersyarat atas keberadaan
+// dirinya sendiri adalah pemeriksaan yang hilang begitu seseorang menamai
+// ulang script-nya.
+console.log('Menjalankan bun run audit:konten ...');
+execSync('bun run audit:konten', { stdio: 'inherit' });
 
 // ── Lipat changeset ke CHANGELOG.md ──────────────────────────────────────────
 // Tanggal lokal, bukan UTC: merilis malam hari WIB akan tercatat mundur sehari
