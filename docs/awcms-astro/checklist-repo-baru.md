@@ -95,12 +95,15 @@ Tampilan dikerjakan terakhir karena ia satu-satunya lapisan yang murah diubah.
 bun install
 bun run build          # gerbang lockfile + astro check + astro build + bundel penyaji
 bun test               # harus hijau; setelah build, lapis penyajian ikut jalan
+bun run audit:konten   # setelah build, agar gerbang keluarannya ikut jalan
 bun run serve          # periksa header dan cache seperti yang dilihat pembaca
 bun audit              # harus 0 kerentanan
 bun run release minor --apply
 ```
 
-`bun run audit` sengaja tidak ada di daftar ini: gerbang audit konten belum ada di `awcms-astro` (lihat §5). Bila repo baru Anda menulisnya, `scripts/rilis.mjs` menjalankannya sendiri begitu script bernama `audit` muncul di `package.json` — tidak ada yang perlu disunting di skrip rilis.
+Urutannya bukan selera: `bun run audit:konten` membaca `dist/client`, dan tanpa hasil build ia melewati gerbang keluarannya sendiri sambil mengatakannya. `scripts/rilis.mjs` menjalankan keduanya dalam urutan yang sama, tanpa syarat.
+
+`bun audit` (kerentanan dependency) dan `bun run audit:konten` (isi situs) adalah dua hal yang berbeda; namanya sengaja tidak dibuat mirip.
 
 ## Kesalahan yang paling sering terjadi
 
