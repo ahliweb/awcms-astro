@@ -20,6 +20,7 @@
     "build:penyaji": "bun build server/penyaji.mjs --target=bun --outfile dist/server/penyaji.mjs",
     "check": "bun run check:lockfile && bun --bun astro check",
     "check:lockfile": "bun scripts/cek-lockfile.mjs",
+    "audit:konten": "bun scripts/audit-konten.mjs",
     "test": "bun test",
     "serve": "bun dist/server/penyaji.mjs",
     "start": "bun run serve",

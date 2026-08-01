@@ -206,6 +206,9 @@ sengaja yang belum tercatat di `awcms-family-compatibility.yaml`.
   dengan `astro check` bersih dan build hijau. `tests/katalog-po.test.mjs`
   sekarang menolak key literal tanpa fallback yang tidak ada di katalog — tetapi
   ia tidak bisa melihat key dinamis, dan di sanalah aturan ini bekerja.
+  Lapis terakhirnya ada di keluaran: `scripts/audit-konten.mjs` menandai teks
+  layar yang berbentuk key dari namespace katalog situs ini. Di `dist/` sebuah
+  key dinamis tidak lagi dinamis — ia teks biasa, dan bisa dilihat.
 - **Token desain, bukan nilai lepas.** Tidak ada gaya sekali pakai; komponen
   baru memakai token yang sudah ada di `src/styles/global.css`.
 - **Tidak ada atribut `style=""`, dan tidak ada blok `<style>` di dalam HTML.**
@@ -269,6 +272,14 @@ aturan di bawah berlaku sejak gambar pertama dimasukkan situs yang memakainya.
   `.visual-placeholder`. Ilustrasi yang hilang tidak boleh menjadi halaman yang
   hilang — maupun bingkai setinggi nol.
 
+Empat aturan di atas kini **diperiksa** `scripts/audit-konten.mjs` atas seluruh
+sumber di `src/assets/`: rasio (termasuk `viewBox` SVG), format dibaca dari isi
+berkas, `&` telanjang di SVG, dan ukuran teks terkecil. Format yang dimensinya
+belum bisa dibaca gerbang itu **dilaporkan sebagai pelanggaran**, bukan
+dilewati — gerbang yang melewati apa yang tidak dikenalinya bisa dilewati
+dengan mengganti format. Berkas di `public/` sengaja tidak diperiksa rasionya:
+favicon wajib bujur sangkar dan kartu share punya ukuran bakunya sendiri.
+
 Dua aturan isi di atas — teks gambar dan lambang instansi — **tidak bisa
 diperiksa mesin**. Katakan itu terus terang alih-alih membiarkannya tampak
 terjaga; aturan yang tampak terjaga padahal tidak lebih berbahaya daripada
@@ -324,6 +335,9 @@ aturan yang jelas-jelas manual.
 
 - [ ] `bun run build` bersih (termasuk `astro check`).
 - [ ] `bun test` hijau — termasuk gerbang katalog `tests/katalog-po.test.mjs`.
+- [ ] `bun run audit:konten` hijau **setelah** build. Sebelum build ia hanya
+      memeriksa sumber gambar dan mengatakan bahwa gerbang keluarannya
+      dilewati; membaca keluaran itu adalah bagian dari menjalankannya.
 - [ ] Halaman baru bekerja dengan JavaScript dimatikan.
 - [ ] String antarmuka baru masuk ke SELURUH katalog locale.
 - [ ] Key yang dirangkai dari konfigurasi atau data redaksi dipanggil dengan

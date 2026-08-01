@@ -1,0 +1,759 @@
+#!/usr/bin/env bun
+/**
+ * Gerbang audit konten — memeriksa apa yang benar-benar TERBIT, bukan apa yang
+ * tertulis di `src/`.
+ *
+ * ## Kenapa berkas ini ada
+ *
+ * README repo ini mendaftarkan gerbang audit sebagai butir backlog pertama, dan
+ * menyebutnya sebagai "yang membuat standar ini punya gigi". Alasannya bukan
+ * kelengkapan: setiap kelas cacat di bawah **tidak menggagalkan apa pun** saat
+ * terjadi. `astro check` bersih, `bun test` hijau, build sukses, situs terbit —
+ * dan pembaca mendapat halaman dengan judul kosong, tautan yang mati, pratinjau
+ * sosial yang menunjuk 404, atau nama key mentah sebagai teks.
+ *
+ * Yang berikut ini benar-benar pernah terjadi di template ini, semuanya dengan
+ * build hijau: `og:image` menunjuk `/social/<slug>.png` yang tidak pernah
+ * dibangkitkan siapa pun, dan `translation.notice.label` beserta
+ * `biaya.jenis.pnbp` tampil sebagai teks yang dibaca pembaca di kedua bahasa.
+ *
+ * ## Yang diperiksa, dan atas apa
+ *
+ * Dua keluarga, dengan sumber yang berbeda:
+ *
+ *   1. **Keluaran build** (`dist/client/**`) — metadata SEO, resiprositas
+ *      hreflang, aset yang dijanjikan metadata, tautan mati, sitemap, dan nama
+ *      key yang bocor ke layar. Butuh hasil build; tanpa itu keluarga ini
+ *      DILEWATI dan mengatakannya.
+ *   2. **Sumber gambar** (`src/assets/**`, `public/**`) — rasio, format dibaca
+ *      dari isi berkas alih-alih ekstensinya, XML SVG, dan ukuran teks
+ *      terkecil di dalam SVG. Tidak butuh build, jadi selalu jalan.
+ *
+ * ## Yang TIDAK bisa diperiksa berkas ini, dan disebut supaya tidak dikira
+ * ## terjaga
+ *
+ * Dua aturan gambar di `AGENTS.md` — teks di dalam gambar hanya label topik,
+ * dan tanpa lambang instansi negara — **tidak bisa diperiksa mesin**. Keduanya
+ * tetap manual. Aturan yang tampak terjaga padahal tidak lebih berbahaya
+ * daripada aturan yang jelas-jelas manual.
+ *
+ * HTML di sini dibaca dengan ekspresi reguler, bukan parser DOM. Itu keputusan
+ * sadar: keluarannya dibangkitkan Astro dan bentuknya stabil, sementara sebuah
+ * parser menambah dependency pada gerbang yang justru harus bisa dipercaya
+ * tanpa syarat. Konsekuensinya, pemeriksaan di bawah ditulis untuk menerima
+ * bentuk yang wajar dan MELAPOR saat ia tidak yakin — tidak ada satu pun yang
+ * diam-diam melewati sesuatu yang tidak dikenalinya.
+ *
+ * Jalankan: `bun run audit:konten` (setelah `bun run build` agar keluarga
+ * pertama ikut jalan).
+ */
+import { existsSync, readFileSync } from "node:fs";
+import { posix } from "node:path";
+
+const KELUARAN = "dist/client";
+
+/** @type {Array<{ gerbang: string, berkas: string, pesan: string }>} */
+const temuan = [];
+/** Yang dicetak apa pun hasilnya — gerbang yang diam saat tidak jalan tidak ada. */
+const catatan = [];
+
+/**
+ * @param {string} gerbang
+ * @param {string} berkas
+ * @param {string} pesan
+ */
+function langgar(gerbang, berkas, pesan) {
+  temuan.push({ gerbang, berkas, pesan });
+}
+
+// ---------------------------------------------------------------------------
+// Pembacaan berkas sumber yang dipakai beberapa gerbang
+// ---------------------------------------------------------------------------
+
+/** Locale default, dibaca dari konfigurasi alih-alih ditebak. */
+function bacaLocaleDefault() {
+  const isi = readFileSync("src/config/site.ts", "utf8");
+  return isi.match(/export const defaultLocale\s*=\s*["']([^"']+)["']/)?.[1] ?? "id";
+}
+
+/**
+ * Daftar locale berprefiks, dibaca dari `localeMeta` di konfigurasi.
+ *
+ * Dipakai untuk memisahkan halaman per locale saat memeriksa judul kembar:
+ * `/panduan/` dan `/en/panduan/` BOLEH berjudul sama — artikel yang belum
+ * diterjemahkan memang tampil dalam bahasa sumbernya. Dua halaman berbeda di
+ * locale yang SAMA tidak boleh.
+ */
+function bacaLocale() {
+  const isi = readFileSync("src/config/site.ts", "utf8");
+  const blok = isi.match(/localeMeta\s*=\s*\{([\s\S]*?)\n\}/)?.[1] ?? "";
+  return [...blok.matchAll(/^\s{2}(\w+):\s*\{/gm)].map((m) => m[1]);
+}
+
+/**
+ * Namespace key katalog PO — segmen pertama setiap `msgid`.
+ *
+ * Inilah yang membuat pemeriksaan "nama key bocor ke layar" presisi alih-alih
+ * menebak. Tanpa daftar ini, sebuah teks `example.com` atau `index.html` di
+ * dalam kalimat akan terbaca sebagai key; dengan daftar ini, hanya teks yang
+ * benar-benar berbentuk key dari namespace yang dipakai situs ini yang ditandai.
+ */
+function bacaNamespaceKey(localeDefault) {
+  const jalur = `src/locales/${localeDefault}/messages.po`;
+  if (!existsSync(jalur)) return new Set();
+
+  const namespaces = new Set();
+  for (const [, key] of readFileSync(jalur, "utf8").matchAll(/^msgid\s+"([^"]+)"/gm)) {
+    const segmen = key.split(".");
+    if (segmen.length > 1) namespaces.add(segmen[0]);
+  }
+  return namespaces;
+}
+
+/** `--ratio-visual` dari `global.css`, sebagai angka. */
+function bacaRasioVisual() {
+  const isi = readFileSync("src/styles/global.css", "utf8");
+  const cocok = isi.match(/--ratio-visual:\s*([\d.]+)\s*\/\s*([\d.]+)/);
+
+  if (!cocok) {
+    throw new Error(
+      "--ratio-visual tidak ditemukan di src/styles/global.css. Gerbang rasio " +
+        "gambar membaca nilainya dari sana, bukan dari angka yang ditulis ulang " +
+        "di skrip ini — dua sumber untuk satu rasio adalah cara termudah " +
+        "membuat keduanya berbeda tanpa ada yang menyadarinya."
+    );
+  }
+
+  return { teks: `${cocok[1]}∶${cocok[2]}`, nilai: Number(cocok[1]) / Number(cocok[2]) };
+}
+
+// ---------------------------------------------------------------------------
+// Keluarga 1 — keluaran build
+// ---------------------------------------------------------------------------
+
+/** Semua halaman HTML hasil build. */
+function bacaHalaman() {
+  return [...new Bun.Glob("**/*.html").scanSync(KELUARAN)].map((nama) => ({
+    nama,
+    isi: readFileSync(`${KELUARAN}/${nama}`, "utf8")
+  }));
+}
+
+/**
+ * URL yang dilayani sebuah berkas hasil build.
+ *
+ * `build.format: 'directory'`, jadi `panduan/index.html` dilayani `/panduan/`.
+ * `404.html` adalah kekecualian yang dilayani host apa adanya.
+ */
+function urlDari(nama) {
+  if (nama === "404.html") return "/404.html";
+  return `/${nama.replace(/index\.html$/, "")}`;
+}
+
+/**
+ * Menyelesaikan sebuah path situs menjadi berkas di `dist/client`.
+ *
+ * Mengembalikan `undefined` bila tidak ada berkas yang akan dilayani. Tiga
+ * bentuk diterima karena ketiganya benar-benar dipakai: direktori berakhiran
+ * `/`, berkas dengan ekstensi, dan path tanpa keduanya.
+ *
+ * @param {string} path
+ * @returns {string | undefined}
+ */
+function berkasUntuk(path) {
+  const bersih = posix.normalize(decodeURI(path.split("#")[0].split("?")[0]));
+  if (!bersih.startsWith("/")) return undefined;
+
+  const kandidat = bersih.endsWith("/")
+    ? [`${bersih}index.html`]
+    : [bersih, `${bersih}.html`, `${bersih}/index.html`];
+
+  return kandidat
+    .map((k) => `${KELUARAN}${k}`)
+    .find((jalur) => existsSync(jalur) && !jalur.endsWith("/"));
+}
+
+/** Setiap atribut `href`/`src` pada sebuah halaman, apa adanya. */
+function tautanDi(isi) {
+  return [...isi.matchAll(/\s(?:href|src)=["']([^"']*)["']/gi)].map((m) => m[1]);
+}
+
+/** Isi setiap blok JSON-LD, sudah di-parse; blok yang tidak valid dilaporkan. */
+function jsonLdDi(nama, isi) {
+  const hasil = [];
+
+  for (const [, mentah] of isi.matchAll(
+    /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi
+  )) {
+    try {
+      hasil.push(JSON.parse(mentah));
+    } catch (error) {
+      // JSON-LD yang rusak tidak menggagalkan apa pun: crawler mengabaikannya
+      // diam-diam, dan seluruh data terstruktur halaman itu hilang tanpa jejak.
+      langgar("json-ld", nama, `blok JSON-LD tidak bisa di-parse: ${error.message}`);
+    }
+  }
+
+  return hasil;
+}
+
+/** Setiap nilai `image`/`url` di dalam struktur JSON-LD, sedalam apa pun. */
+function gambarDiJsonLd(simpul, keluaran = []) {
+  if (Array.isArray(simpul)) {
+    for (const anak of simpul) gambarDiJsonLd(anak, keluaran);
+    return keluaran;
+  }
+
+  if (!simpul || typeof simpul !== "object") return keluaran;
+
+  for (const [kunci, nilai] of Object.entries(simpul)) {
+    if (kunci === "image" && typeof nilai === "string") keluaran.push(nilai);
+    if (simpul["@type"] === "ImageObject" && kunci === "url" && typeof nilai === "string") {
+      keluaran.push(nilai);
+    }
+    gambarDiJsonLd(nilai, keluaran);
+  }
+
+  return keluaran;
+}
+
+/**
+ * Teks yang benar-benar dibaca pembaca — tanpa markup, tanpa skrip, tanpa gaya.
+ *
+ * Blok JSON-LD sengaja dibuang lebih dulu: isinya penuh nilai bertitik yang
+ * bukan teks layar sama sekali, dan membiarkannya masuk akan membuat gerbang
+ * nama key menemukan "pelanggaran" di setiap halaman.
+ */
+function teksLayar(isi) {
+  return isi
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]*>/g, "\n")
+    .split("\n")
+    .map((baris) => baris.trim())
+    .filter(Boolean);
+}
+
+function auditKeluaran(halaman, { localeDefault, locales, namespaceKey }) {
+  const asal = halaman
+    .map(({ isi }) => isi.match(/<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)["']/i)?.[1])
+    .filter(Boolean)
+    .map((url) => {
+      try {
+        return new URL(url).origin;
+      } catch {
+        return undefined;
+      }
+    })
+    .find(Boolean);
+
+  if (!asal) {
+    langgar(
+      "seo",
+      KELUARAN,
+      "tidak ada satu pun canonical absolut di seluruh keluaran — " +
+        "tanpa itu gerbang ini tidak bisa membedakan tautan internal dari eksternal"
+    );
+    return;
+  }
+
+  catatan.push(`origin situs terbaca dari canonical: ${asal}`);
+
+  /** `true` bila URL menunjuk situs ini sendiri. */
+  const internal = (url) =>
+    url.startsWith("/") ? !url.startsWith("//") : url.startsWith(`${asal}/`) || url === asal;
+
+  /** Bentuk path dari URL internal apa pun. */
+  const pathDari = (url) => (url.startsWith("/") ? url : new URL(url).pathname);
+
+  const judulPerLocale = new Map();
+  const alternatePerUrl = new Map();
+
+  for (const { nama, isi } of halaman) {
+    const url = urlDari(nama);
+    const noindex = /<meta[^>]+name=["']robots["'][^>]+content=["'][^"']*noindex/i.test(isi);
+
+    // -- metadata SEO --------------------------------------------------------
+    const judul = isi.match(/<title>([\s\S]*?)<\/title>/i)?.[1]?.trim();
+    if (!judul) {
+      langgar("seo", nama, "tanpa <title> atau judulnya kosong");
+    }
+
+    const deskripsi = isi
+      .match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["']/i)?.[1]
+      ?.trim();
+    if (!deskripsi) {
+      // Deskripsi kosong tidak merusak halaman; ia merusak setiap tempat
+      // halaman itu muncul di luar dirinya sendiri — hasil pencarian dan
+      // pratinjau tautan, yang keduanya tidak pernah dilihat penulisnya.
+      langgar("seo", nama, "tanpa meta description atau isinya kosong");
+    }
+
+    const canonical = isi.match(
+      /<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)["']/i
+    )?.[1];
+
+    if (!canonical && !noindex) {
+      langgar("seo", nama, "tanpa canonical, dan tidak dinyatakan noindex");
+    }
+
+    if (canonical && noindex) {
+      langgar("seo", nama, "noindex tetapi memasang canonical — dua sinyal yang bertabrakan");
+    }
+
+    if (judul) {
+      const locale =
+        locales.find((kode) => kode !== localeDefault && url.startsWith(`/${kode}/`)) ??
+        localeDefault;
+      const dipakai = judulPerLocale.get(locale) ?? new Map();
+      const sebelumnya = dipakai.get(judul);
+
+      if (sebelumnya) {
+        // Judul kembar di dalam SATU locale berarti dua halaman berbeda
+        // bersaing untuk kata kunci yang sama, dan mesin pencari memilih salah
+        // satunya sendiri. Antar locale itu justru wajar — artikel yang belum
+        // diterjemahkan tampil dalam bahasa sumbernya.
+        langgar("seo", nama, `judul kembar dengan ${sebelumnya} di locale "${locale}": ${judul}`);
+      } else {
+        dipakai.set(judul, nama);
+        judulPerLocale.set(locale, dipakai);
+      }
+    }
+
+    // -- aset yang dijanjikan metadata ---------------------------------------
+    //
+    // Aturan AGENTS.md: jangan pernah mengiklankan aset yang tidak diterbitkan
+    // build ini. Pratinjau tanpa gambar jatuh ke kartu teks yang rapi;
+    // pratinjau dengan gambar rusak tidak jatuh ke mana pun.
+    const dijanjikan = [
+      ...[...isi.matchAll(/<meta[^>]+property=["']og:image[^"']*["'][^>]+content=["']([^"']+)["']/gi)],
+      ...[...isi.matchAll(/<meta[^>]+name=["']twitter:image[^"']*["'][^>]+content=["']([^"']+)["']/gi)]
+    ]
+      .map((m) => m[1])
+      .concat(jsonLdDi(nama, isi).flatMap((blok) => gambarDiJsonLd(blok)));
+
+    for (const aset of new Set(dijanjikan)) {
+      if (!internal(aset)) continue;
+      if (!berkasUntuk(pathDari(aset))) {
+        langgar("aset-dijanjikan", nama, `metadata menunjuk ${aset} yang tidak ada di keluaran`);
+      }
+    }
+
+    // -- tautan mati ---------------------------------------------------------
+    for (const tautan of new Set(tautanDi(isi))) {
+      if (!tautan || tautan.startsWith("#")) continue;
+      if (/^(mailto:|tel:|data:|javascript:)/i.test(tautan)) continue;
+      if (!internal(tautan)) continue;
+      if (!berkasUntuk(pathDari(tautan))) {
+        langgar("tautan-mati", nama, `menunjuk ${tautan} yang tidak ada di keluaran`);
+      }
+    }
+
+    // -- nama key yang bocor ke layar ----------------------------------------
+    //
+    // `tests/katalog-po.test.mjs` menolak key LITERAL yang tidak ada di
+    // katalog. Yang tidak bisa dilihatnya adalah key yang dirangkai saat build
+    // — dari slug tab, dari kategori biaya, dari apa pun yang ditentukan
+    // konfigurasi atau redaksi. Di keluaran, key seperti itu tidak lagi
+    // dinamis: ia teks biasa, dan bisa dilihat.
+    const kandidat = [
+      ...teksLayar(isi),
+      ...[...isi.matchAll(/\s(?:alt|title|aria-label)=["']([^"']*)["']/gi)].map((m) => m[1].trim())
+    ];
+
+    for (const teks of new Set(kandidat)) {
+      const cocok = /^([a-z][a-zA-Z0-9]*)((?:\.[a-zA-Z0-9]+)+)$/.exec(teks);
+      if (cocok && namespaceKey.has(cocok[1])) {
+        langgar("key-bocor", nama, `nama key tampil sebagai teks: ${teks}`);
+      }
+    }
+
+    // -- hreflang ------------------------------------------------------------
+    const alternate = [
+      ...isi.matchAll(
+        /<link[^>]+rel=["']alternate["'][^>]+hreflang=["']([^"']+)["'][^>]+href=["']([^"']+)["']/gi
+      )
+    ].map(([, hreflang, href]) => ({ hreflang, href }));
+
+    if (!noindex) {
+      if (alternate.length === 0) {
+        langgar("hreflang", nama, "tanpa satu pun link alternate");
+      }
+
+      if (!alternate.some(({ hreflang }) => hreflang === "x-default")) {
+        langgar("hreflang", nama, "tanpa x-default");
+      }
+
+      for (const { hreflang, href } of alternate) {
+        if (!internal(href)) {
+          langgar("hreflang", nama, `alternate ${hreflang} menunjuk luar situs: ${href}`);
+          continue;
+        }
+        if (!berkasUntuk(pathDari(href))) {
+          langgar("hreflang", nama, `alternate ${hreflang} menunjuk ${href} yang tidak ada`);
+        }
+      }
+
+      if (canonical) alternatePerUrl.set(pathDari(canonical), alternate);
+    }
+  }
+
+  // -- resiprositas hreflang, setelah seluruh halaman terbaca ----------------
+  //
+  // Alternate satu arah adalah kelas cacat yang paling sulit dilihat dengan
+  // mata: setiap halaman tampak benar sendirian, dan yang salah hanya
+  // hubungannya. Mesin pencari mengabaikan kelompok hreflang yang tidak saling
+  // menunjuk — jadi seluruh sinyal multi-bahasa situs itu hilang tanpa satu pun
+  // halaman yang terlihat rusak.
+  for (const [path, alternate] of alternatePerUrl) {
+    for (const { hreflang, href } of alternate) {
+      if (hreflang === "x-default") continue;
+
+      const tujuan = pathDari(href);
+      if (tujuan === path) continue;
+
+      const balik = alternatePerUrl.get(tujuan);
+      if (!balik) continue; // halaman tujuan noindex atau di luar daftar; sudah dilaporkan di atas
+
+      if (!balik.some((alt) => pathDari(alt.href) === path)) {
+        langgar("hreflang", path, `alternate ke ${tujuan} tidak dibalas — kelompok hreflang pincang`);
+      }
+    }
+  }
+
+  catatan.push(`${halaman.length} halaman diperiksa (SEO, hreflang, aset, tautan, nama key)`);
+
+  // -- sitemap ---------------------------------------------------------------
+  const sitemap = [...new Bun.Glob("sitemap*.xml").scanSync(KELUARAN)];
+
+  if (sitemap.length === 0) {
+    catatan.push("sitemap: tidak ada berkas sitemap di keluaran — dilewati");
+  } else {
+    let jumlahLoc = 0;
+
+    for (const nama of sitemap) {
+      const isi = readFileSync(`${KELUARAN}/${nama}`, "utf8");
+      for (const [, loc] of isi.matchAll(/<loc>([^<]+)<\/loc>/g)) {
+        if (loc.endsWith(".xml")) continue; // indeks menunjuk sitemap lain
+        jumlahLoc += 1;
+        if (internal(loc) && !berkasUntuk(pathDari(loc))) {
+          langgar("sitemap", nama, `mendaftarkan ${loc} yang tidak ada di keluaran`);
+        }
+      }
+    }
+
+    catatan.push(`${jumlahLoc} URL sitemap diperiksa di ${sitemap.length} berkas`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Keluarga 2 — sumber gambar
+// ---------------------------------------------------------------------------
+
+const EKSTENSI_GAMBAR = ["png", "jpg", "jpeg", "gif", "webp", "avif", "svg"];
+
+/**
+ * Format sebenarnya sebuah berkas, dibaca dari ISINYA.
+ *
+ * Ekstensi adalah klaim penulisnya, bukan fakta. Sebelas berkas di repo rujukan
+ * ber-ekstensi `.png` padahal isinya JPEG — dan itu tidak menggagalkan apa pun,
+ * hanya membuat setiap perkakas yang mempercayai ekstensinya salah menebak.
+ *
+ * @param {Buffer} buf
+ * @returns {string | undefined}
+ */
+function formatDariIsi(buf) {
+  if (buf.length >= 8 && buf.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) {
+    return "png";
+  }
+  if (buf.length >= 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return "jpeg";
+  if (buf.subarray(0, 4).toString("latin1") === "GIF8") return "gif";
+  if (buf.subarray(0, 4).toString("latin1") === "RIFF" && buf.subarray(8, 12).toString("latin1") === "WEBP") {
+    return "webp";
+  }
+  if (buf.subarray(4, 8).toString("latin1") === "ftyp") {
+    const merek = buf.subarray(8, 12).toString("latin1");
+    if (merek.startsWith("avif") || merek.startsWith("avis") || merek.startsWith("mif1")) return "avif";
+  }
+
+  const awal = buf.subarray(0, 512).toString("utf8").trimStart();
+  if (awal.startsWith("<?xml") || awal.startsWith("<svg") || awal.startsWith("<!--")) {
+    if (/<svg[\s>]/i.test(buf.subarray(0, 4096).toString("utf8"))) return "svg";
+  }
+
+  return undefined;
+}
+
+/** Ekstensi dinormalkan ke nama format, supaya `.jpg` dan `.jpeg` sama. */
+function formatDariEkstensi(nama) {
+  const ext = nama.split(".").pop().toLowerCase();
+  return ext === "jpg" ? "jpeg" : ext;
+}
+
+/**
+ * Dimensi piksel, atau `undefined` bila format ini belum bisa dibaca.
+ *
+ * `undefined` DIPERLAKUKAN SEBAGAI PELANGGARAN oleh pemanggilnya, bukan sebagai
+ * lulus. Sebuah gerbang yang melewati format yang tidak dikenalnya adalah
+ * gerbang yang bisa dilewati dengan mengganti format.
+ *
+ * @param {Buffer} buf
+ * @param {string} format
+ */
+function dimensi(buf, format) {
+  if (format === "png") {
+    return { lebar: buf.readUInt32BE(16), tinggi: buf.readUInt32BE(20) };
+  }
+
+  if (format === "gif") {
+    return { lebar: buf.readUInt16LE(6), tinggi: buf.readUInt16LE(8) };
+  }
+
+  if (format === "jpeg") {
+    // Menyusuri marker sampai menemukan SOF. Tidak semua SOF adalah SOFn yang
+    // membawa dimensi: DHT/DAC/RST punya nomor di rentang yang sama.
+    let i = 2;
+    while (i + 9 < buf.length) {
+      if (buf[i] !== 0xff) {
+        i += 1;
+        continue;
+      }
+      const marker = buf[i + 1];
+      const panjang = buf.readUInt16BE(i + 2);
+      const sof = marker >= 0xc0 && marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marker);
+      if (sof) return { tinggi: buf.readUInt16BE(i + 5), lebar: buf.readUInt16BE(i + 7) };
+      i += 2 + panjang;
+    }
+    return undefined;
+  }
+
+  if (format === "webp") {
+    const jenis = buf.subarray(12, 16).toString("latin1");
+    if (jenis === "VP8 ") {
+      return { lebar: buf.readUInt16LE(26) & 0x3fff, tinggi: buf.readUInt16LE(28) & 0x3fff };
+    }
+    if (jenis === "VP8L") {
+      const bits = buf.readUInt32LE(21);
+      return { lebar: (bits & 0x3fff) + 1, tinggi: ((bits >> 14) & 0x3fff) + 1 };
+    }
+    if (jenis === "VP8X") {
+      const baca24 = (offset) => buf[offset] | (buf[offset + 1] << 8) | (buf[offset + 2] << 16);
+      return { lebar: baca24(24) + 1, tinggi: baca24(27) + 1 };
+    }
+    return undefined;
+  }
+
+  return undefined;
+}
+
+/**
+ * Memeriksa satu SVG: XML yang sah, `viewBox`, dan ukuran teks terkecil.
+ *
+ * Satu `&` telanjang membuat browser diam-diam gagal merender gambarnya, tanpa
+ * satu pun pesan error di mana pun. Itu bukan XML yang "agak longgar" — itu
+ * gambar yang hilang.
+ */
+function auditSvg(jalur, isi, rasio, { periksaRasio }) {
+  const tanpaKomentar = isi.replace(/<!--[\s\S]*?-->/g, "");
+  const ampersandTelanjang = [
+    ...tanpaKomentar.matchAll(/&(?!(?:[a-zA-Z][a-zA-Z0-9]*|#\d+|#x[0-9a-fA-F]+);)/g)
+  ];
+
+  if (ampersandTelanjang.length > 0) {
+    langgar(
+      "gambar",
+      jalur,
+      `${ampersandTelanjang.length} "&" telanjang — browser gagal merender SVG ini tanpa satu pun pesan error`
+    );
+  }
+
+  const viewBox = isi.match(/viewBox=["']\s*[-\d.]+\s+[-\d.]+\s+([\d.]+)\s+([\d.]+)\s*["']/i);
+
+  if (!viewBox) {
+    langgar("gambar", jalur, "tanpa viewBox — rasionya tidak bisa dinyatakan maupun diperiksa");
+    return;
+  }
+
+  const lebar = Number(viewBox[1]);
+  const tinggi = Number(viewBox[2]);
+
+  if (periksaRasio) bandingkanRasio(jalur, lebar, tinggi, rasio);
+
+  // Teks terkecil: ambang 22px berlaku pada kanvas 800px, jadi ia diskalakan
+  // terhadap lebar viewBox. Pada kartu selebar 328px — viewport 360px — kanvas
+  // 800px tampil pada skala 0,41; di bawah ambang itu teksnya tampil di bawah
+  // 9px dan praktis tidak terbaca.
+  const ambang = 22 * (lebar / 800);
+  const ukuran = [...isi.matchAll(/font-size\s*[:=]\s*["']?\s*([\d.]+)/gi)].map((m) => Number(m[1]));
+
+  if (/<text[\s>]/i.test(isi) && ukuran.length === 0) {
+    langgar("gambar", jalur, "memuat <text> tanpa satu pun font-size eksplisit — ukurannya tidak bisa diperiksa");
+  }
+
+  const terkecil = Math.min(...ukuran);
+  if (ukuran.length > 0 && terkecil < ambang) {
+    langgar(
+      "gambar",
+      jalur,
+      `teks terkecil ${terkecil} di bawah ambang ${ambang.toFixed(1)} ` +
+        `(setara 22px pada kanvas 800px; viewBox ini ${lebar})`
+    );
+  }
+}
+
+function bandingkanRasio(jalur, lebar, tinggi, rasio) {
+  if (!tinggi) {
+    langgar("gambar", jalur, "tinggi nol — rasionya tidak bisa dihitung");
+    return;
+  }
+
+  const nilai = lebar / tinggi;
+  const selisih = Math.abs(nilai - rasio.nilai) / rasio.nilai;
+
+  if (selisih > 0.01) {
+    langgar(
+      "gambar",
+      jalur,
+      `rasio ${lebar}∶${tinggi} (${nilai.toFixed(3)}) bukan ${rasio.teks} — ` +
+        "bingkai memakai object-fit: cover, jadi sumber ini DIPOTONG di setiap ukuran layar, bukan diperkecil"
+    );
+  }
+}
+
+function auditGambar(rasio) {
+  const pola = `**/*.{${EKSTENSI_GAMBAR.join(",")}}`;
+
+  /**
+   * Dua akar dengan aturan yang berbeda, dan perbedaannya disebut terus terang.
+   *
+   * `src/assets/` adalah tempat ILUSTRASI tinggal — seluruh isinya masuk
+   * bingkai ber-`--ratio-visual`, jadi rasionya diperiksa. `public/` adalah
+   * perkakas situs: favicon wajib bujur sangkar, kartu share punya ukuran
+   * bakunya sendiri (1200×630). Memaksa rasio tunggal di sana akan menolak
+   * berkas yang justru benar, jadi yang diperiksa hanya format, XML, dan
+   * ukuran teks.
+   */
+  const akar = [
+    { dir: "src/assets", periksaRasio: true },
+    { dir: "public", periksaRasio: false }
+  ];
+
+  let jumlah = 0;
+
+  for (const { dir, periksaRasio } of akar) {
+    if (!existsSync(dir)) {
+      catatan.push(`gambar: ${dir}/ belum ada — dilewati`);
+      continue;
+    }
+
+    const berkas = [...new Bun.Glob(pola).scanSync(dir)];
+    jumlah += berkas.length;
+    catatan.push(
+      `gambar: ${berkas.length} berkas di ${dir}/ ` +
+        `(rasio ${periksaRasio ? "diperiksa" : "TIDAK diperiksa — perkakas situs, bukan ilustrasi"})`
+    );
+
+    for (const nama of berkas) {
+      const jalur = `${dir}/${nama}`;
+      const buf = readFileSync(jalur);
+      const diklaim = formatDariEkstensi(nama);
+      const sebenarnya = formatDariIsi(buf);
+
+      if (!sebenarnya) {
+        langgar("gambar", jalur, "isinya bukan format gambar yang dikenali gerbang ini");
+        continue;
+      }
+
+      if (sebenarnya !== diklaim) {
+        langgar(
+          "gambar",
+          jalur,
+          `ekstensinya .${diklaim} tetapi isinya ${sebenarnya} — ekstensi adalah klaim, bukan fakta`
+        );
+      }
+
+      if (sebenarnya === "svg") {
+        auditSvg(jalur, buf.toString("utf8"), rasio, { periksaRasio });
+        continue;
+      }
+
+      if (!periksaRasio) continue;
+
+      const ukuran = dimensi(buf, sebenarnya);
+
+      if (!ukuran) {
+        // Bukan "lewat": format yang tidak bisa dibaca berarti rasionya tidak
+        // diperiksa siapa pun, dan itu keadaan yang harus terlihat.
+        langgar(
+          "gambar",
+          jalur,
+          `dimensi ${sebenarnya} belum bisa dibaca gerbang ini, jadi rasionya tidak terperiksa — ` +
+            "tambahkan pembacanya di scripts/audit-konten.mjs atau pakai format yang sudah didukung"
+        );
+        continue;
+      }
+
+      bandingkanRasio(jalur, ukuran.lebar, ukuran.tinggi, rasio);
+    }
+  }
+
+  if (jumlah === 0) {
+    catatan.push(
+      "gambar: template ini belum membawa satu pun ilustrasi — gerbangnya jalan, " +
+        "yang diperiksanya nol. Aturannya berlaku sejak gambar pertama masuk."
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Jalankan
+// ---------------------------------------------------------------------------
+
+const localeDefault = bacaLocaleDefault();
+const locales = bacaLocale();
+const rasio = bacaRasioVisual();
+
+catatan.push(`locale default "${localeDefault}", locale terdaftar: ${locales.join(", ") || "—"}`);
+catatan.push(`--ratio-visual dibaca dari global.css: ${rasio.teks}`);
+
+auditGambar(rasio);
+
+if (existsSync(KELUARAN)) {
+  auditKeluaran(bacaHalaman(), {
+    localeDefault,
+    locales,
+    namespaceKey: bacaNamespaceKey(localeDefault)
+  });
+} else {
+  catatan.push(
+    `keluaran: ${KELUARAN} belum ada — SELURUH gerbang keluaran DILEWATI ` +
+      "(SEO, hreflang, aset dijanjikan, tautan mati, sitemap, nama key bocor)."
+  );
+  catatan.push(
+    "  Ia lahir dari `bun run build`, yang butuh sumber konten awcms. Di repo " +
+      "template ini itu normal; di sebuah SITUS, jalankan audit ini lagi setelah build."
+  );
+}
+
+console.log("── audit konten ──");
+for (const baris of catatan) console.log(`  ${baris}`);
+
+if (temuan.length === 0) {
+  console.log("\n✓ Tidak ada pelanggaran.");
+  process.exit(0);
+}
+
+console.log(`\n✗ ${temuan.length} pelanggaran:\n`);
+
+const perGerbang = new Map();
+for (const t of temuan) {
+  perGerbang.set(t.gerbang, [...(perGerbang.get(t.gerbang) ?? []), t]);
+}
+
+for (const [gerbang, daftar] of perGerbang) {
+  console.log(`  [${gerbang}] ${daftar.length}`);
+  for (const { berkas, pesan } of daftar) console.log(`    ${berkas}: ${pesan}`);
+  console.log("");
+}
+
+process.exit(1);

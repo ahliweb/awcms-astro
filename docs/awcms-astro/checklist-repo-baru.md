@@ -47,19 +47,24 @@ Bila ilustrasi dibangkitkan sendiri, **jangan biarkan konfigurasinya menyisipkan
 
 ## 5. Gerbang audit
 
-**`scripts/audit-konten.mjs` belum ada di `awcms-astro`** — ia tinggal di repo
-rujukan bersama aturan domainnya, dan README mendaftarkannya di "Yang belum
-ada". Yang sudah ada dan wajib tetap hijau:
+Wajib tetap hijau:
 
+- [ ] `bun run check` — gerbang lockfile lalu `astro check`.
 - [ ] `bun test` — renderer blok (`tests/content-blocks.test.mjs`) dan gerbang
       katalog PO (`tests/katalog-po.test.mjs`). Yang kedua menolak key yang
       dipakai kode tetapi tidak ada di katalog, katalog locale yang tertinggal,
       `msgstr` kosong, dan key tab yang belum ditulis untuk locale mana pun.
-- [ ] `bun run check` — gerbang lockfile lalu `astro check`.
+- [ ] `bun run audit:konten` — gerbang gambar (rasio, format dari isi berkas,
+      XML SVG, ukuran teks).
+- [ ] `bun run build && bun run audit:konten` — **jalankan lagi setelah build.**
+      Gerbang keluaran (judul, deskripsi, canonical, hreflang, aset yang
+      dijanjikan metadata, tautan mati, sitemap, nama key yang bocor ke layar)
+      melewati dirinya bila `dist/` belum ada, dan mengatakannya. Di repo
+      template itu normal; di SITUS ini, itu berarti gerbangnya tidak berjalan.
 
-Bila situs ini menulis gerbang audit sendiri, yang belum tercakup dan paling
-berharga: rasio setiap sumber gambar (termasuk `viewBox` SVG), format berkas
-dibaca dari isinya alih-alih ekstensinya, dan tautan mati di `dist/`.
+Dua aturan gambar tidak punya pemeriksa dan tidak akan pernah punya: **teks di
+dalam gambar hanya label topik**, dan **tanpa lambang atau atribut instansi
+negara**. Keduanya dinilai manusia, setiap kali seni baru masuk.
 
 **Setiap aturan baru di dokumentasi wajib membawa pemeriksanya ke sini.** Ini bagian yang paling sering dilewati, dan konsekuensinya paling lambat terasa.
 

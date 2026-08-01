@@ -85,6 +85,13 @@ RUN bun run build
 # cache dan header karena itu terbukti pada artefak yang persis akan berjalan.
 RUN bun test
 
+# Alasan yang sama, kelas cacat yang berbeda: gerbang keluaran audit konten
+# (SEO, hreflang, aset yang dijanjikan metadata, tautan mati, sitemap, nama key
+# yang bocor ke layar) butuh `dist/client`, dan di CI repo template `dist/`
+# tidak pernah ada. Di sini ia ada, dan yang diperiksa adalah berkas yang persis
+# akan disajikan.
+RUN bun run audit:konten
+
 # ---- runtime: Bun non-root, hanya keluaran build ---------------------------
 # Sejak ADR-0016 penyajinya adalah proses Bun, bukan nginx. Traefik/Coolify
 # tetap memegang TLS dan routing; yang berubah hanya siapa yang membaca berkas

@@ -67,6 +67,17 @@ jobs:
       - name: Unit tests
         run: bun test
 
+      # Tanpa `dist/`, yang jalan di sini hanya gerbang gambar — rasio, format
+      # dibaca dari isi berkas, XML SVG. Gerbang keluaran (SEO, hreflang, aset
+      # yang dijanjikan, tautan mati, sitemap, nama key bocor) DILEWATI dan
+      # skripnya mengatakannya di keluarannya. Ia dijalankan lagi setelah build
+      # di job berikutnya, di mana keenamnya benar-benar punya sesuatu untuk
+      # diperiksa.
+      - name: Audit konten (sumber gambar)
+        run: bun run audit:konten
+
+      # `bun audit` (dependency) dan `bun run audit:konten` adalah dua hal yang
+      # berbeda dan namanya sengaja tidak dibuat mirip.
       - name: Audit dependency
         run: bun audit --audit-level=low
 
@@ -166,6 +177,15 @@ jobs:
       - name: Gerbang penyajian atas hasil build
         if: vars.AWCMS_API_URL != ''
         run: bun test
+
+      # Di sini gerbang keluaran benar-benar punya `dist/client` untuk dibaca.
+      # Enam kelas cacat yang diperiksanya sama-sama tidak menggagalkan build:
+      # halaman tanpa judul, hreflang pincang, `og:image` yang menunjuk 404,
+      # tautan mati, sitemap yang mendaftarkan halaman yang tidak dibangun, dan
+      # nama key mentah yang tampil sebagai teks kepada pembaca.
+      - name: Audit konten atas hasil build
+        if: vars.AWCMS_API_URL != ''
+        run: bun run audit:konten
 
       - name: Simpan hasil build
         if: vars.AWCMS_API_URL != ''
