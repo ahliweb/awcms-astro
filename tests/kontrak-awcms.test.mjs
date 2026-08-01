@@ -262,6 +262,23 @@ describe("traversal build feed", () => {
     assert.equal(artikel.entry.data.description, "Meta 7");
   });
 
+  test("awcms yang MENGABAIKAN view=full menggagalkan build", async () => {
+    // awcms lama tidak menolak parameter yang tidak dikenalnya — ia
+    // mengabaikannya dan menjawab ringkasan. Tanpa gerbang ini, situs terbit
+    // dengan setiap badan artikel kosong dan setiap seksi kosong, hijau.
+    const posts = [buatPost(0), buatPost(1)];
+    globalThis.fetch = async () =>
+      Response.json({
+        success: true,
+        data: { posts: posts.map(ringkas), nextCursor: null }
+      });
+
+    await assert.rejects(
+      () => getArticles("panduan", "id"),
+      (e) => /ignored \?view=full/.test(e.message)
+    );
+  });
+
   test("terjemahan yang tidak bisa dipasangkan menggagalkan build", async () => {
     const posts = [buatPost(0), buatPost(1, { locale: "en" })];
     pasangFetchTiruan(posts);

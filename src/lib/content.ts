@@ -181,6 +181,7 @@ async function fetchPublishedPosts(): Promise<AwcmsBlogPost[]> {
       (post) => post.status === "published" && post.visibility === "public"
     );
 
+    assertFeedReturnedFullRows(visible);
     assertTranslationsArePairable(visible);
     return visible;
   })();
@@ -238,6 +239,33 @@ async function listPublishedPosts(): Promise<AwcmsBlogPost[]> {
 
     cursor = response.nextCursor;
   }
+}
+
+/**
+ * Refuses to build from a response that is not actually the full feed.
+ *
+ * `view=full` is a request, and an awcms that predates it does not reject the
+ * parameter — it ignores it and answers with summaries. Every field this
+ * adapter needs then reads `undefined`, and the result is the exact failure the
+ * traversal above was rewritten to end: a green build publishing empty articles
+ * in empty sections, with no error anywhere.
+ *
+ * `contentJson` is the discriminator because awcms declares it non-nullable on
+ * a full row: present means full, absent means the request was ignored.
+ */
+function assertFeedReturnedFullRows(posts: AwcmsBlogPost[]): void {
+  const ringkasan = posts.filter((post) => post.contentJson === undefined);
+
+  if (ringkasan.length === 0) return;
+
+  throw new Error(
+    `awcms answered ${ringkasan.length} of ${posts.length} posts without ` +
+      `contentJson, which means it ignored ?view=full and returned summaries. ` +
+      `That is an awcms older than the build feed. Building anyway would ` +
+      `publish every article with an empty body and — because a post's section ` +
+      `is stored inside contentJson — every section empty too, with nothing ` +
+      `failing anywhere. Upgrade awcms.`
+  );
 }
 
 /**
