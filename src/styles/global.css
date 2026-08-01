@@ -1268,3 +1268,78 @@ footer {
   --kilau-warna: rgba(255, 255, 255, 0.18);
   --kilau-puncak: rgba(255, 255, 255, 0.42);
 }
+
+/* ---------------------------------------------------------------------------
+ * Blok konten dari awcms (`src/lib/content-blocks.ts`).
+ *
+ * Kelas-kelas ini lahir bersama renderer blok di PR #6 tetapi sengaja dibiarkan
+ * tanpa gaya sampai standar rasio (#4) mendarat — menebak rasionya lebih dulu
+ * berarti memotong gambar di setiap ukuran layar, diam-diam.
+ *
+ * Semuanya memakai token yang sudah ada. Tidak ada nilai lepas di sini.
+ * ------------------------------------------------------------------------- */
+
+.galeri {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+/* Mobile-first: satu kolom sampai ada ruang untuk dua tanpa memaksa gambar
+   menyusut di bawah lebar yang masih terbaca judulnya. */
+@media (min-width: 40rem) {
+  .galeri {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.galeri-item {
+  margin: 0;
+}
+
+/* Rasio situs, bukan rasio sumber — sama seperti setiap bingkai lain di berkas
+   ini. Sumber berasio lain dipotong, bukan diperkecil; itulah sebabnya rasionya
+   satu untuk seluruh situs (lihat --ratio-visual). */
+.galeri-item img {
+  display: block;
+  width: 100%;
+  aspect-ratio: var(--ratio-visual);
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  background: var(--bg-subtle);
+}
+
+.galeri-item figcaption,
+.video-berita figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.video-berita {
+  margin: 1.5rem 0;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+}
+
+/*
+ * Blok yang tidak bisa dirender build ini — gambar yang butuh resolusi media,
+ * atau tipe blok yang belum dikenali renderer.
+ *
+ * Sengaja TERLIHAT, bukan disamarkan. Ia menandai lubang di halaman supaya
+ * ketahuan saat review, bukan saat dibaca pembaca. Kalau suatu hari ia terasa
+ * mengganggu, jawabannya adalah menutup lubangnya — bukan memudarkan
+ * penandanya.
+ */
+.blok-tak-tersedia {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  border-left: 3px solid var(--accent-primary);
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
