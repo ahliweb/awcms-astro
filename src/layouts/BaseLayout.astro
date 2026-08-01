@@ -179,26 +179,22 @@ const jsonLd = {
       </>
     )}
 
+    {/* JSON-LD adalah BLOK DATA, bukan skrip. Browser tidak pernah
+        mengeksekusinya — tipe yang bukan MIME JavaScript membuat elemennya
+        berhenti di "prepare the script element" sebelum langkah mana pun yang
+        menjalankan kode — sehingga `script-src 'self'` tidak memblokir apa pun
+        di sini. Ia sengaja TIDAK dipindah ke berkas eksternal: mesin pencari
+        membaca JSON-LD dari halamannya, dan berkas terpisah adalah data yang
+        tidak dibaca siapa pun. `tests/keluaran-csp.test.mjs` mengizinkan tepat
+        tipe ini dan menolak skrip inline lainnya. */}
     <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
-    <!-- Tema dipasang sebelum paint pertama agar tidak ada kedip (FOUC).
-         Tanpa JavaScript atribut ini tidak terpasang, dan tema mengikuti
-         prefers-color-scheme lewat media query di global.css. -->
-    <script is:inline>
-      (function () {
-        var root = document.documentElement;
-        root.classList.add('has-js');
-        try {
-          var stored = localStorage.getItem('theme');
-          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-          root.dataset.theme = stored === 'light' || stored === 'dark'
-            ? stored
-            : (prefersDark ? 'dark' : 'light');
-        } catch (e) {
-          root.dataset.theme = 'light';
-        }
-      })();
-    </script>
+    {/* Tema dipasang sebelum paint pertama agar tidak ada kedip (FOUC), jadi
+        skrip ini klasik dan tidak ditunda — lihat `public/tema.js` untuk alasan
+        ia berkas tersendiri alih-alih blok inline. Tanpa JavaScript atributnya
+        tidak terpasang dan tema mengikuti prefers-color-scheme lewat media
+        query di global.css. */}
+    <script is:inline src="/tema.js"></script>
   </head>
   <body>
     <a class="skip-link" href="#main-content">{t(locale, 'ui.skipToMain')}</a>
@@ -287,22 +283,6 @@ const jsonLd = {
       </div>
     </footer>
 
-    <script is:inline>
-      (function () {
-        var root = document.documentElement;
-        document.querySelectorAll('[data-theme-toggle]').forEach(function (button) {
-          button.addEventListener('click', function () {
-            var next = root.dataset.theme === 'dark' ? 'light' : 'dark';
-            root.dataset.theme = next;
-            try {
-              localStorage.setItem('theme', next);
-            } catch (e) {
-              /* localStorage diblokir: tema tetap berganti untuk sesi ini */
-            }
-          });
-        });
-      })();
-    </script>
   </body>
 </html>
 

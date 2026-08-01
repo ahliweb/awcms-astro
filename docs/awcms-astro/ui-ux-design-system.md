@@ -16,6 +16,7 @@ Prinsip AWCMS diadaptasi ke konteks situs statis publik. Yang berbeda ditandai.
 6. **Tidak menyamar resmi.** Tidak memakai lambang, logo, atau atribut instansi negara. Batas ini adalah **aturan desain**, bukan sekadar kepatuhan.
 7. **Konsisten.** Seluruh halaman memakai token dan komponen yang sama; tidak ada gaya sekali pakai.
 8. **Tidak ada gaya di dalam HTML.** Tanpa atribut `style=""`, tanpa blok `<style>` tersisip. Gaya lintas komponen tinggal di `src/styles/global.css`, gaya khas satu komponen di `<style>` scoped miliknya — yang Astro terbitkan sebagai berkas CSS terpisah karena `build.inlineStylesheets` disetel `"never"`. Ini bukan selera: CSP `style-src 'self'` memblokir keduanya, dan halaman kehilangan tata letaknya tanpa satu pun error di build. Dijaga `tests/keluaran-csp.test.mjs`.
+9. **Tidak ada skrip di dalam HTML.** Aturan yang sama, konsekuensi yang berbeda: `script-src 'self'` memblokir setiap `<script>` inline, dan yang hilang bukan tata letak melainkan fungsi — tombol salin yang diam, tema yang tidak berganti. Skrip komponen ditulis sebagai `<script>` biasa (dibundel Astro, diterbitkan sebagai berkas karena `vite.build.assetsInlineLimit` disetel `0`); yang harus jalan sebelum paint pertama tinggal di `public/tema.js`. Kebijakannya dikirim penyaji sejak ADR-0019, jadi pelanggaran di sini gagal di produksi, bukan hanya di review.
 
 ## Design token
 

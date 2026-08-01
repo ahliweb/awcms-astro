@@ -15,7 +15,9 @@
  *
  * Yang dikerjakan berkas ini hanya tiga hal yang tidak dikerjakan adapter:
  *
- *   1. tiga header keamanan yang dulu ada di `ops/nginx-header-keamanan.conf`;
+ *   1. lima header keamanan — tiga yang dulu ada di
+ *      `ops/nginx-header-keamanan.conf`, ditambah Content-Security-Policy dan
+ *      Permissions-Policy (ADR-0019, disamakan dengan postur `awcms`);
  *   2. `Cache-Control` yang eksplisit untuk HTML dan untuk aset ber-hash;
  *   3. kompresi respons, yang dulu dilakukan `gzip on` di nginx.
  *
@@ -51,7 +53,76 @@ export const CACHE_ASET = "public, max-age=31536000, immutable";
 export const CACHE_HALAMAN = "public, max-age=0, must-revalidate";
 
 /**
- * Header yang dulu tinggal di `ops/nginx-header-keamanan.conf`.
+ * Content-Security-Policy situs publik.
+ *
+ * ## Kenapa ia baru bisa ada sekarang
+ *
+ * Kebijakan ini bukan setelan yang bisa dipasang lebih awal: `script-src
+ * 'self'` memblokir setiap `<script>` inline, dan sampai keluaran build masih
+ * membawa pengalih tema serta skrip tombol salin di dalam HTML-nya, memasang
+ * header ini berarti mematikan keduanya. Yang membuka jalannya ada dua:
+ * `public/tema.js` menjadi berkas tersendiri, dan
+ * `vite.build.assetsInlineLimit: 0` menghentikan Astro menyisipkan bundel kecil
+ * ke dalam halaman. `tests/keluaran-csp.test.mjs` menjaga keduanya tetap
+ * begitu — tanpa gerbang itu, kebijakan di sini akan merusak halaman pada
+ * perubahan komponen yang tampak tidak berbahaya.
+ *
+ * ## Yang TIDAK diblokirnya, supaya tidak dikira lebih dari yang ia lakukan
+ *
+ * JSON-LD (`<script type="application/ld+json">`) tetap inline di setiap
+ * halaman dan itu bukan celah: tipe yang bukan MIME JavaScript membuat browser
+ * berhenti sebelum langkah mana pun yang mengeksekusi, sehingga blok itu adalah
+ * data, bukan skrip. Isinya tetap dirangkai `JSON.stringify` dari nilai yang
+ * sudah tertutup kontrak — CSP bukan yang menjaganya.
+ *
+ * ## Menyesuaikannya di sebuah situs
+ *
+ * `img-src 'self'` adalah butir yang paling mungkin perlu dilonggarkan: situs
+ * yang menyajikan gambar artikel dari host media awcms harus menambahkan origin
+ * itu di sini. Lakukan di berkas ini — bukan lewat env dan bukan lewat header
+ * kedua di Traefik — lalu perbarui `tests/penyaji.test.mjs`. Dua sumber
+ * kebijakan yang saling menimpa adalah cara paling sunyi untuk berakhir tanpa
+ * kebijakan sama sekali.
+ *
+ * `frame-ancestors 'none'` sengaja tumpang tindih dengan `X-Frame-Options`:
+ * yang pertama yang dipatuhi browser modern, yang kedua masih dibaca perantara
+ * lama. `upgrade-insecure-requests` TIDAK dipasang — TLS diterminasi Traefik,
+ * dan direktif itu hanya akan menyulitkan `bun run serve` di localhost tanpa
+ * menambah apa pun di produksi.
+ */
+export const CSP = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self'",
+  "img-src 'self'",
+  "font-src 'self'",
+  "connect-src 'self'",
+  "frame-src 'none'",
+  "object-src 'none'",
+  // `'none'`, bukan `'self'`: situs statis tidak pernah memakai `<base>`, dan
+  // `'self'` masih mengizinkan sebuah `<base href>` yang disuntikkan menggeser
+  // resolusi SETIAP tautan relatif di halaman. Nilai ini menyamai postur
+  // `awcms` (`BASE_CSP_DIRECTIVES` di `src/lib/security/security-headers.ts`).
+  "base-uri 'none'",
+  "form-action 'self'",
+  "frame-ancestors 'none'"
+].join("; ");
+
+/**
+ * Kemampuan browser yang dimatikan untuk seluruh permukaan ini.
+ *
+ * Disamakan dengan header yang sudah dikirim `awcms`. Situs dari template ini
+ * tidak punya form, tidak mengumpulkan data pribadi pembaca, dan tidak memuat
+ * satu pun skrip pihak ketiga — jadi keempat kemampuan di bawah tidak dipakai
+ * siapa pun, dan menyatakannya membuat sebuah skrip yang suatu saat lolos tidak
+ * bisa meminta kamera atau lokasi pembaca hanya karena ia berhasil berjalan.
+ */
+export const PERMISSIONS_POLICY =
+  "geolocation=(), camera=(), microphone=(), payment=()";
+
+/**
+ * Header yang dulu tinggal di `ops/nginx-header-keamanan.conf`, ditambah CSP dan
+ * Permissions-Policy.
  *
  * Di nginx ketiganya harus di-`include` ulang di setiap `location`, karena
  * `add_header` dibuang seluruhnya begitu sebuah `location` punya `add_header`
@@ -61,7 +132,9 @@ export const CACHE_HALAMAN = "public, max-age=0, must-revalidate";
 export const HEADER_KEAMANAN = {
   "X-Content-Type-Options": "nosniff",
   "Referrer-Policy": "strict-origin-when-cross-origin",
-  "X-Frame-Options": "DENY"
+  "X-Frame-Options": "DENY",
+  "Content-Security-Policy": CSP,
+  "Permissions-Policy": PERMISSIONS_POLICY
 };
 
 /**

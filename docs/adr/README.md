@@ -35,3 +35,4 @@ akan menunjuk dokumen yang salah.
 | [0016](0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md) | Penyajian oleh Bun di belakang Traefik/Coolify; nginx dilepas dari stack     | Accepted (diimplementasikan 1 Agustus 2026) |
 | [0017](0017-peran-admin-owner-internal.md)                  | Repo ini memikul halaman admin owner/internal, di samping situs publiknya      | Accepted (kontrak `awcms` sudah mendarat lewat ADR-0049/0050) |
 | [0018](0018-kontrak-build-token-mesin-dan-traversal-konten.md) | Kontrak build terhadap awcms: tenant dari token mesin, traversal cursor + hidrasi, gerbang terjemahan | Accepted |
+| [0019](0019-csp-ketat-dikirim-penyaji.md)                   | CSP ketat dikirim penyaji; skrip tidak lagi tinggal di dalam HTML             | Accepted |

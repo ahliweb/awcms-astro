@@ -88,8 +88,10 @@ RUN bun test
 # ---- runtime: Bun non-root, hanya keluaran build ---------------------------
 # Sejak ADR-0016 penyajinya adalah proses Bun, bukan nginx. Traefik/Coolify
 # tetap memegang TLS dan routing; yang berubah hanya siapa yang membaca berkas
-# dari disk. Aturan cache, tiga header keamanan, dan kompresi ikut pindah ke
-# `server/penyaji.mjs` dan dijaga `tests/penyaji.test.mjs`.
+# dari disk. Aturan cache, lima header keamanan — termasuk CSP ketat dan
+# Permissions-Policy sejak ADR-0019 — dan kompresi ikut pindah ke
+# `server/penyaji.mjs` dan dijaga
+# `tests/penyaji.test.mjs`.
 FROM oven/bun:1.3.14-alpine AS runtime
 WORKDIR /app
 

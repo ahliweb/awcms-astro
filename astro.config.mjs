@@ -99,6 +99,33 @@ export default defineConfig({
     inlineStylesheets: "never"
   },
 
+  /**
+   * Never inline a bundled script into the page either.
+   *
+   * `build.inlineStylesheets: 'never'` above only covers CSS. Astro applies the
+   * SAME size-dependent trick to hoisted `<script>` blocks: a bundled chunk with
+   * no imports and no dynamic imports is written straight into the HTML as
+   * `<script type="module">…</script>` when it is smaller than Vite's
+   * `assetsInlineLimit` (4 kB by default). That is how `ShareButtons.astro` —
+   * a component whose source contains no inline script at all — used to ship an
+   * inline script on every page.
+   *
+   * The failure mode is the same one that made the stylesheet rule necessary,
+   * only louder: `script-src 'self'` without `'unsafe-inline'` blocks the block
+   * outright, the copy-link button stops working, and nothing fails in the
+   * build. And it is size-dependent, so a site can be compliant until the day
+   * someone deletes three lines from a component.
+   *
+   * Zero also stops small images and fonts from being emitted as `data:` URIs,
+   * which is what keeps `img-src 'self'` and `font-src 'self'` honest — see the
+   * policy in `server/penyaji.mjs`.
+   */
+  vite: {
+    build: {
+      assetsInlineLimit: 0
+    }
+  },
+
   integrations: [
     sitemap({
       filter: (page) => !page.includes("robots.txt") && !page.includes("/404"),

@@ -145,7 +145,9 @@ sengaja yang belum tercatat di `awcms-family-compatibility.yaml`.
 ### Penyajian
 
 - **`server/penyaji.mjs` adalah satu-satunya tempat header respons ditentukan**
-  (ADR-0016). Tiga header keamanan, dua aturan `Cache-Control`, dan kompresi
+  (ADR-0016). Lima header keamanan — termasuk `Content-Security-Policy` dan
+  `Permissions-Policy` sejak ADR-0019, keduanya disamakan dengan postur `awcms`
+  — dua aturan `Cache-Control`, dan kompresi
   tinggal di sana dan tidak boleh tersebar ke tempat lain — di nginx aturan
   serupa harus di-`include` ulang di setiap `location`, dan melupakannya
   menghasilkan halaman tanpa satu pun header keamanan tanpa ada yang gagal.
@@ -163,6 +165,12 @@ sengaja yang belum tercatat di `awcms-family-compatibility.yaml`.
   `/_astro/../index.html` menyajikan halaman depan; menilainya dari prefiks
   mentah akan menempelkan cache satu tahun pada berkas yang berubah setiap
   rebuild.
+- **CSP dilonggarkan di `server/penyaji.mjs`, dan tidak di tempat kedua mana
+  pun.** Bukan lewat variabel env, bukan lewat header tambahan di Traefik, bukan
+  lewat `<meta http-equiv>`. Yang paling mungkin perlu dilonggarkan sebuah situs
+  adalah `img-src` (gambar artikel dari host media awcms) — lakukan di sana,
+  lalu perbarui `tests/penyaji.test.mjs`. Dua sumber kebijakan yang saling
+  menimpa adalah cara paling sunyi untuk berakhir tanpa kebijakan sama sekali.
 
 ### Antarmuka
 
@@ -203,6 +211,24 @@ sengaja yang belum tercatat di `awcms-family-compatibility.yaml`.
   menjaga jalur kedua; `tests/keluaran-csp.test.mjs` memeriksa keluarannya.
   Nilai dinamis yang dulu dikirim lewat `style="--var: …"` ditulis sebagai
   kelas — lihat warna kanal berbagi di `global.css`.
+- **Tidak ada JavaScript di dalam HTML** (ADR-0019). Sejak penyaji mengirim
+  `script-src 'self'` tanpa `'unsafe-inline'`, skrip inline bukan "kurang rapi"
+  — ia mati di browser pembaca. Dua jalur memasukkannya, dan yang kedua tidak
+  terlihat di `src/` sama sekali:
+  1. `<script is:inline>` berisi kode. Skrip yang harus jalan sebelum paint
+     pertama menjadi berkas di `public/` yang dimuat `<script src>` klasik —
+     lihat `public/tema.js`. Bundel Astro selalu `type="module"` dan modul
+     selalu ditunda, jadi ia bukan pengganti untuk kasus itu.
+  2. `<script>` biasa di komponen, yang Astro bundel lalu **sisipkan kembali**
+     ke HTML bila chunk-nya lebih kecil dari `assetsInlineLimit`.
+     `vite.build.assetsInlineLimit: 0` di `astro.config.mjs` yang menutupnya,
+     dan tanpa setelan itu sebuah komponen berhenti patuh hanya karena kodenya
+     mengecil — persis pola yang membuat `inlineStylesheets: "never"` perlu.
+
+  Dikecualikan tepat satu: `<script type="application/ld+json">`. Ia blok data,
+  bukan skrip — browser tidak pernah mengeksekusinya sehingga `script-src` tidak
+  berlaku atasnya, dan memindahkannya ke berkas eksternal hanya membuat mesin
+  pencari berhenti membacanya.
 
 ### Gambar
 
@@ -303,8 +329,12 @@ aturan yang jelas-jelas manual.
 - [ ] Locale default dan locale berprefiks menghasilkan jumlah halaman yang sama.
 - [ ] Gambar baru berasio `--ratio-visual`, ekstensinya sesuai isi berkas, tanpa
       lambang instansi maupun data tiruan, dan teksnya terbaca pada lebar 360px.
-- [ ] Perubahan pada penyajian — header, `Cache-Control`, kompresi, port —
+- [ ] Perubahan pada penyajian — header, CSP, `Cache-Control`, kompresi, port —
       dibuktikan `tests/penyaji.test.mjs`, bukan diperiksa dengan mata.
+- [ ] Keluaran build tidak membawa gaya maupun skrip di dalam HTML-nya.
+      `bun test` setelah `bun run build` menjalankan `tests/keluaran-csp.test.mjs`
+      atas `dist/client/` — tanpa hasil build, gerbang itu MELEWATI dirinya dan
+      mengatakannya. Melihat "59 pass" tanpa membaca barisnya bukan pembuktian.
 - [ ] Variabel env baru terdokumentasi di `.env.example`, termasuk variabel
       RUNTIME yang dibaca `server/penyaji.mjs`.
 - [ ] Dokumen yang menjelaskan perilaku yang berubah ikut diperbarui.
