@@ -1,41 +1,24 @@
-# Architecture Decision Records — `awcms-astro`
+# Architecture Decision Records
 
-Satu keputusan arsitektural = satu berkas `NNNN-judul-kebab.md`. ADR tidak pernah
-dihapus; keputusan yang diganti ditandai `Status: Superseded by ADR-XXXX` dan ADR
-penggantinya merujuk balik. Status yang sah: `Proposed`, `Accepted`, `Deprecated`,
-`Superseded`.
+Catatan keputusan beserta alasannya. Ditulis supaya usulan yang sama tidak
+muncul lagi enam bulan kemudian tanpa ada yang ingat kenapa ia ditolak dulu.
 
-Perubahan pada standar yang mengikat (lihat [`GOVERNANCE.md`](../../GOVERNANCE.md)
-dan [`AGENTS.md`](../../AGENTS.md)) **wajib** lewat ADR — termasuk, secara
-eksplisit, perpindahan dari `output: 'static'`.
+Sebuah perubahan butuh ADR bila ia:
 
-## Catatan penting tentang penomoran
+- mengubah bentuk keluaran (statis ↔ server, struktur route);
+- mengubah postur keamanan (CSP, header, origin yang diizinkan);
+- menambah dependency runtime atau layanan pihak ketiga;
+- mengubah dari mana konten atau aset berasal;
+- membalik salah satu keputusan di bawah.
 
-Dokumen di repo ini merujuk ADR-0003, ADR-0004, ADR-0008, ADR-0009, ADR-0012, dan
-ADR-0013 (mis. [`docs/awcms-astro/README.md`](../awcms-astro/README.md),
-[`standar-teknis.md`](../awcms-astro/standar-teknis.md),
-[`standar-teknis.md`](../awcms-astro/standar-teknis.md)). **Berkas-berkas itu
-tidak pernah ikut dibawa** saat standar ini diekstraksi dari repo rujukan
-`web-lalulintasmelayani.com`. Rujukannya karena itu ditulis sebagai nomor tanpa
-tautan — sebelumnya berupa tautan relatif yang menggantung ke berkas yang tidak
-pernah ada di sini, yang terbaca sebagai dokumen yang bisa dibuka.
+Yang **tidak** butuh ADR: menyunting salinan halaman, menambah seksi,
+menyesuaikan gaya, menambah tes.
 
-Konsekuensinya untuk penomoran baru: nomor **0001–0013 dianggap terpakai** oleh
-keputusan warisan itu, dan ADR baru di repo ini dimulai dari **0014**. Menulis
-ulang keputusan warisan (atau memindahkan berkasnya ke sini) adalah pekerjaan
-tersendiri; jangan diam-diam memakai ulang nomornya, karena tautan yang sudah ada
-akan menunjuk dokumen yang salah.
-
-## Indeks
-
-| ADR                                                            | Judul                                                                                                           | Status                                      |
-| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
-| [0014](0014-rendering-campuran-dan-bff-portal.md)              | Rendering campuran (static-by-default + rute on-demand) dan BFF portal Jualanku                                 | Accepted (butir 3 diganti ADR-0015)         |
-| [0015](0015-runtime-bun-menutup-divergence-keluarga.md)        | Runtime Bun: menutup divergence runtime dari keluarga AWCMS                                                     | Accepted (§7 diamandemen ADR-0016)          |
-| [0016](0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md)  | Penyajian oleh Bun di belakang Traefik/Coolify; nginx dilepas dari stack                                        | Accepted (diimplementasikan 1 Agustus 2026) |
-| [0017](0017-peran-admin-owner-internal.md)                     | Repo ini memikul halaman admin owner/internal, di samping situs publiknya                                       | **Superseded by ADR-0020**                  |
-| [0018](0018-kontrak-build-token-mesin-dan-traversal-konten.md) | Kontrak build terhadap awcms: tenant dari token mesin, traversal cursor + hidrasi, gerbang terjemahan           | Accepted                                    |
-| [0019](0019-csp-ketat-dikirim-penyaji.md)                      | CSP ketat dikirim penyaji; skrip tidak lagi tinggal di dalam HTML                                               | Accepted                                    |
-| [0020](0020-layar-admin-kembali-ke-awcms.md)                   | Layar admin kembali ke `awcms`; repo ini kembali murni publik + BFF (selaras `awcms` ADR-0051)                  | Accepted                                    |
-| [0021](0021-tahan-pengembangan-menunggu-fondasi-awcms.md)      | Pengembangan repo ini ditahan sampai fondasi `awcms` selesai                                                    | **Accepted — berlaku sekarang**             |
-| [0022](0022-situs-menerbitkan-tenant-default-awcms.md)         | Situs ini menerbitkan tenant DEFAULT (owner) `awcms`; uuid-nya dibaca dari badge `platform` di `/admin/tenants` | Accepted                                    |
+| # | Keputusan | Status |
+| --- | --- | --- |
+| [0001](0001-statis-di-atas-awcms-astro.md) | Statis di atas template `awcms-astro`, bukan WordPress | Diterima |
+| [0002](0002-tanpa-mesin-i18n.md) | Satu bahasa, tanpa mesin i18n | Diterima |
+| [0003](0003-konten-verbatim-di-satu-berkas.md) | Konten verbatim di satu berkas data | Diterima |
+| [0004](0004-aset-di-r2-bukan-astro-assets.md) | Aset di Cloudflare R2, bukan `astro:assets` | Diterima |
+| [0005](0005-mode-konstruksi-variabel-build.md) | Mode konstruksi sebagai variabel build | Diterima |
+| [0006](0006-animasi-dekoratif-dengan-keadaan-diam.md) | Animasi dekoratif dengan keadaan diam yang lengkap | Diterima |
