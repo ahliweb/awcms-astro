@@ -10,10 +10,19 @@ menunggu basis data, dan CMS tidak pernah menghadap internet publik.
 
 | Template          | Mode                   | Basis data | Dipakai untuk                                            | Status                |
 | ----------------- | ---------------------- | ---------- | -------------------------------------------------------- | --------------------- |
-| **`awcms-astro`** | Statis (SSG)           | Tidak ada  | Situs informasi publik, profil, dokumentasi, portal       | **Dikembangkan**      |
+| **`awcms-astro`** | Statis (SSG)           | Tidak ada  | Situs informasi publik, profil, dokumentasi, portal       | **Ditahan** (ADR-0021) |
 | `awcms`           | Online-first, superset | PostgreSQL | Back-office, ERP, multi-tenant — **backend repo ini**     | **Dikembangkan**      |
 | `awcms-micro`     | Online penuh, ramping  | PostgreSQL | Website/e-commerce yang dinamis sejak awal                | Referensi (dibekukan) |
 | `awcms-mini`      | Hybrid offline-first   | PostgreSQL | Operasional lapangan dengan koneksi tak dapat diandalkan  | Referensi (dibekukan) |
+
+Sejak **2 Agustus 2026** pengembangan repo ini **ditahan** sampai pengembangan
+dasar `awcms` selesai ([ADR-0021](docs/adr/0021-tahan-pengembangan-menunggu-fondasi-awcms.md)).
+Yang tetap mendarat selama penahanan hanya patch keamanan, bump dependency, dan
+koreksi dokumen yang berhenti benar karena `awcms` berubah. Alasannya bukan
+kekurangan pekerjaan: seluruh sisa backlog di bawah menunggu `awcms` bergerak
+lebih dulu, dan membangun di atas kontrak yang belum stabil berarti menulisnya
+dua kali — repo ini sudah membayarnya sekali (ADR-0018). Apa yang menunggu, dan
+apa yang menandai penahanan ini bisa dicabut, ada di ADR-0021.
 
 Sejak **31 Juli 2026** hanya dua repo yang dikembangkan: repo ini dan `awcms`.
 `awcms-micro` dan `awcms-mini` dibekukan sebagai referensi — boleh dibaca dan

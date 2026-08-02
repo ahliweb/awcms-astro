@@ -6,14 +6,22 @@ Terima kasih sudah berniat membantu. Sebelum apa pun, satu hal yang membentuk se
 
 Situs yang dibangun dari template ini menambahkan aturan kontennya sendiri — verifikasi tarif, dasar hukum, data unit layanan — dan aturan itu ditegakkan di sisi `awcms` tempat kontennya tinggal, bukan di sini.
 
+> **Pengembangan repo ini sedang DITAHAN** sampai pengembangan dasar
+> [`ahliweb/awcms`](https://github.com/ahliweb/awcms) selesai
+> ([ADR-0021](docs/adr/0021-tahan-pengembangan-menunggu-fondasi-awcms.md)).
+> Selama itu berlaku, yang mendarat hanya patch keamanan, bump dependency, dan
+> koreksi dokumen yang berhenti benar karena `awcms` berubah. Issue dan diskusi
+> tetap diterima — dan tetap berguna: ia yang menentukan urutan pekerjaan saat
+> penahanan dicabut.
+
 Kontributor agen AI: baca [`AGENTS.md`](AGENTS.md) lebih dulu. Ia kontrak kerja teknis yang mengikat, bukan ringkasan.
 
 ## Yang paling dibutuhkan
 
 | Kontribusi | Kenapa berharga |
 | --- | --- |
-| **Gerbang yang belum ada** | Daftarnya di [README](README.md#yang-belum-ada-backlog-eksplisit-bukan-kelalaian): audit metadata SEO, tautan mati di `dist/`, dan pemeriksa rasio gambar. Aturannya sudah tertulis; yang belum ada penegaknya |
-| **Melepas `style=""` inline** | ±50 atribut gaya inline yang diwarisi repo rujukan memblokir situs mana pun dari template ini di belakang CSP ketat — dan kegagalannya adalah halaman tanpa tata letak, tanpa satu pun error |
+| **Laporan dari gerbang yang sudah ada** | Ketiga gerbang yang dulu didaftar di sini — audit metadata SEO, tautan mati di `dist/`, pemeriksa rasio gambar — kini ada di [`scripts/audit-konten.mjs`](scripts/audit-konten.mjs). Yang berharga sekarang kebalikannya: **positif palsu** yang ia laporkan di situs nyata, dan kelas cacat yang ia lewatkan |
+| **Menjaga keluaran bersih dari gaya dan skrip inline** | Sudah selesai (ADR-0018/0019) dan dijaga [`tests/keluaran-csp.test.mjs`](tests/keluaran-csp.test.mjs); penyaji kini benar-benar mengirim CSP ketat. Yang berharga: komponen baru yang diam-diam mengembalikannya — Astro menyisipkan bundel kecil ke HTML berdasarkan UKURAN, jadi kepatuhan bisa hilang tanpa ada aturan yang diubah |
 | **Terjemahan katalog antarmuka** | `src/locales/<locale>/messages.po`. Jumlah stringnya sedikit dan seluruhnya tampil di setiap halaman |
 | **Laporan dari situs nyata** | Apa yang ternyata perlu disunting di luar `src/config/site.ts` dan `.env` — setiap temuan seperti itu adalah pelanggaran janji utama template ini |
 

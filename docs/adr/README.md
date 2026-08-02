@@ -37,3 +37,4 @@ akan menunjuk dokumen yang salah.
 | [0018](0018-kontrak-build-token-mesin-dan-traversal-konten.md) | Kontrak build terhadap awcms: tenant dari token mesin, traversal cursor + hidrasi, gerbang terjemahan | Accepted |
 | [0019](0019-csp-ketat-dikirim-penyaji.md)                   | CSP ketat dikirim penyaji; skrip tidak lagi tinggal di dalam HTML             | Accepted |
 | [0020](0020-layar-admin-kembali-ke-awcms.md)                | Layar admin kembali ke `awcms`; repo ini kembali murni publik + BFF (selaras `awcms` ADR-0051) | Accepted |
+| [0021](0021-tahan-pengembangan-menunggu-fondasi-awcms.md)   | Pengembangan repo ini ditahan sampai fondasi `awcms` selesai                   | **Accepted — berlaku sekarang** |
