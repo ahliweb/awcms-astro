@@ -28,6 +28,21 @@
  * A chain cannot catch that. An assertion can: state which tenant this site is
  * supposed to publish, and let the build fail when the token disagrees.
  *
+ * ## WHICH tenant it is supposed to publish (ADR-0022)
+ *
+ * awcms's DEFAULT (owner) tenant — the one awcms resolves as its PLATFORM
+ * tenant. Until awcms ADR-0054 that was not a choice: `setup/initialize` claims
+ * a singleton, so a deployment could only ever have one tenant. A second tenant
+ * is now possible, which is what turns "which tenant" into a real question.
+ *
+ * This file does not — and should not — ask awcms to confirm it. awcms
+ * `GET /api/v1/auth/session` refuses machine credentials with the same 401 an
+ * unknown token gets (ADR-0049, anti-oracle), and an endpoint built to answer
+ * it would mean widening this token beyond `["blog_content.posts.read"]`. A
+ * leaked build token must not be able to read the platform's posture. The
+ * uuid comes from a human reading awcms's `/admin/tenants` screen, where the
+ * platform tenant carries a `platform` badge.
+ *
  * ## What this is NOT
  *
  * This is not authorization. awcms enforces row-level security and evaluates
@@ -70,7 +85,7 @@ function toUuid(hex: string): string {
     hex.slice(8, 12),
     hex.slice(12, 16),
     hex.slice(16, 20),
-    hex.slice(20)
+    hex.slice(20),
   ].join("-");
 }
 
@@ -83,7 +98,7 @@ function toUuid(hex: string): string {
  * failure mode somebody will hit exactly once, at the worst moment.
  */
 export function resolveTenant(
-  env: Record<string, string | undefined>
+  env: Record<string, string | undefined>,
 ): TenantResolution {
   const token = env.AWCMS_API_TOKEN?.trim();
 
@@ -93,7 +108,7 @@ export function resolveTenant(
         "carries BOTH the credential and the tenant, so a build has nothing to " +
         "read and no tenant to read it for. Issue one with " +
         "POST /api/v1/access/machine-credentials, scoped to " +
-        "blog_content.posts.read and nothing else."
+        "blog_content.posts.read and nothing else.",
     );
   }
 
@@ -104,7 +119,7 @@ export function resolveTenant(
         "token: sessions expire, a password reset revokes every session of " +
         "that identity, and an MFA step-up rotates the token — each of which " +
         "would kill this build at a moment nobody can predict. Issue a machine " +
-        "credential with POST /api/v1/access/machine-credentials instead."
+        "credential with POST /api/v1/access/machine-credentials instead.",
     );
   }
 
@@ -115,7 +130,7 @@ export function resolveTenant(
       "AWCMS_API_TOKEN looks like a machine credential but is malformed. The " +
         "shape is awcmsm_<32 hex tenant id>_<43 char secret>; a truncated " +
         "copy-paste is the usual cause. It is never repairable by hand — the " +
-        "plaintext is shown once at issuance, so issue a new one."
+        "plaintext is shown once at issuance, so issue a new one.",
     );
   }
 
@@ -134,7 +149,7 @@ export function resolveTenant(
       `AWCMS_TENANT_ID is not a uuid: ${JSON.stringify(declared)}. It is an ` +
         "assertion about which tenant this site publishes, and an assertion " +
         "that cannot be evaluated is worse than none — it reads as a check " +
-        "that passed."
+        "that passed.",
     );
   }
 
@@ -146,7 +161,7 @@ export function resolveTenant(
         "this site's domain. That is the worst failure a multi-tenant CMS " +
         "has, and it does not look like a failure — the build stays green and " +
         "the site fills up with somebody else's articles. Fix whichever of " +
-        "the two is wrong; do not delete the assertion to make this pass."
+        "the two is wrong; do not delete the assertion to make this pass.",
     );
   }
 
@@ -163,7 +178,7 @@ export function resolveTenant(
  */
 function refuseRetiredVariables(env: Record<string, string | undefined>): void {
   const retired = ["AWCMS_TENANT_CODE", "AWCMS_DEFAULT_TENANT_CODE"].filter(
-    (name) => Boolean(env[name]?.trim())
+    (name) => Boolean(env[name]?.trim()),
   );
 
   if (retired.length === 0) return;
@@ -174,6 +189,6 @@ function refuseRetiredVariables(env: Record<string, string | undefined>): void {
       "AWCMS_API_TOKEN, and awcms never accepted the X-Tenant-Code header " +
       "this repo used to send. Remove them. To keep stating which tenant this " +
       "site publishes — recommended — set AWCMS_TENANT_ID to the tenant's " +
-      "uuid instead; the build then verifies it against the token."
+      "uuid instead; the build then verifies it against the token.",
   );
 }

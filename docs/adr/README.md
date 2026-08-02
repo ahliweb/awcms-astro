@@ -28,13 +28,14 @@ akan menunjuk dokumen yang salah.
 
 ## Indeks
 
-| ADR                                                        | Judul                                                                          | Status   |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------ | -------- |
-| [0014](0014-rendering-campuran-dan-bff-portal.md)          | Rendering campuran (static-by-default + rute on-demand) dan BFF portal Jualanku | Accepted (butir 3 diganti ADR-0015) |
-| [0015](0015-runtime-bun-menutup-divergence-keluarga.md)    | Runtime Bun: menutup divergence runtime dari keluarga AWCMS                     | Accepted (§7 diamandemen ADR-0016) |
-| [0016](0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md) | Penyajian oleh Bun di belakang Traefik/Coolify; nginx dilepas dari stack     | Accepted (diimplementasikan 1 Agustus 2026) |
-| [0017](0017-peran-admin-owner-internal.md)                  | Repo ini memikul halaman admin owner/internal, di samping situs publiknya      | **Superseded by ADR-0020** |
-| [0018](0018-kontrak-build-token-mesin-dan-traversal-konten.md) | Kontrak build terhadap awcms: tenant dari token mesin, traversal cursor + hidrasi, gerbang terjemahan | Accepted |
-| [0019](0019-csp-ketat-dikirim-penyaji.md)                   | CSP ketat dikirim penyaji; skrip tidak lagi tinggal di dalam HTML             | Accepted |
-| [0020](0020-layar-admin-kembali-ke-awcms.md)                | Layar admin kembali ke `awcms`; repo ini kembali murni publik + BFF (selaras `awcms` ADR-0051) | Accepted |
-| [0021](0021-tahan-pengembangan-menunggu-fondasi-awcms.md)   | Pengembangan repo ini ditahan sampai fondasi `awcms` selesai                   | **Accepted — berlaku sekarang** |
+| ADR                                                            | Judul                                                                                                           | Status                                      |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| [0014](0014-rendering-campuran-dan-bff-portal.md)              | Rendering campuran (static-by-default + rute on-demand) dan BFF portal Jualanku                                 | Accepted (butir 3 diganti ADR-0015)         |
+| [0015](0015-runtime-bun-menutup-divergence-keluarga.md)        | Runtime Bun: menutup divergence runtime dari keluarga AWCMS                                                     | Accepted (§7 diamandemen ADR-0016)          |
+| [0016](0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md)  | Penyajian oleh Bun di belakang Traefik/Coolify; nginx dilepas dari stack                                        | Accepted (diimplementasikan 1 Agustus 2026) |
+| [0017](0017-peran-admin-owner-internal.md)                     | Repo ini memikul halaman admin owner/internal, di samping situs publiknya                                       | **Superseded by ADR-0020**                  |
+| [0018](0018-kontrak-build-token-mesin-dan-traversal-konten.md) | Kontrak build terhadap awcms: tenant dari token mesin, traversal cursor + hidrasi, gerbang terjemahan           | Accepted                                    |
+| [0019](0019-csp-ketat-dikirim-penyaji.md)                      | CSP ketat dikirim penyaji; skrip tidak lagi tinggal di dalam HTML                                               | Accepted                                    |
+| [0020](0020-layar-admin-kembali-ke-awcms.md)                   | Layar admin kembali ke `awcms`; repo ini kembali murni publik + BFF (selaras `awcms` ADR-0051)                  | Accepted                                    |
+| [0021](0021-tahan-pengembangan-menunggu-fondasi-awcms.md)      | Pengembangan repo ini ditahan sampai fondasi `awcms` selesai                                                    | **Accepted — berlaku sekarang**             |
+| [0022](0022-situs-menerbitkan-tenant-default-awcms.md)         | Situs ini menerbitkan tenant DEFAULT (owner) `awcms`; uuid-nya dibaca dari badge `platform` di `/admin/tenants` | Accepted                                    |
