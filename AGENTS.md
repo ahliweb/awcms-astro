@@ -52,6 +52,31 @@ mesin yang bisa dipegang BFF — **sudah mendarat** di `awcms` (ADR-0049 dan
 ADR-0050, 1 Agustus 2026). Yang belum: implementasinya di sini, dengan
 prasyarat di [`04-kesiapan.md`](docs/awcms-astro/jualanku/04-kesiapan.md).
 
+## PENAHANAN — baca sebelum memulai apa pun (berlaku 2 Agustus 2026)
+
+**Pengembangan repo ini DITAHAN sampai pengembangan dasar `awcms` selesai**
+([ADR-0021](docs/adr/0021-tahan-pengembangan-menunggu-fondasi-awcms.md)). Kalau
+kamu ke sini untuk menambah fitur, gerbang, atau dokumen — berhenti dan periksa
+dulu apakah penahanan ini masih berlaku.
+
+| Boleh mendarat | Ditahan |
+| --- | --- |
+| Patch keamanan | Fitur baru |
+| Bump dependency (Dependabot tetap jalan) | Refactor |
+| **Koreksi** dokumen yang berhenti benar karena `awcms` berubah | Penambahan gerbang, penambahan dokumen |
+
+Alasannya bukan kekurangan pekerjaan: seluruh sisa backlog menunggu `awcms`
+bergerak lebih dulu, dan membangun di atas kontrak yang belum stabil berarti
+menulisnya dua kali. Repo ini sudah membayarnya sekali — adapter kontennya
+ditulis untuk daftar ringkasan, lalu ditulis ulang saat `awcms` mengirimkan build
+feed (ADR-0018), dan versi pertamanya menerbitkan situs yang setiap artikelnya
+kosong dengan build hijau.
+
+Yang **tetap** wajib dijaga selama penahanan: dokumen yang menyesatkan adalah
+cacat, bukan pekerjaan baru. Kalau `awcms` mengubah sebuah kontrak dan berkas ini
+menjadi salah, koreksinya mendarat. Titik lanjut lengkap — apa yang menunggu dan
+kenapa — ada di ADR-0021 §Titik lanjut.
+
 ## Di mana pekerjaan boleh mendarat (berlaku 31 Juli 2026)
 
 `ahliweb/awcms-mini` dan `ahliweb/awcms-micro` **dibekukan sebagai REFERENSI**.
