@@ -232,11 +232,26 @@ membuatnya tidak perlu `node_modules` sama sekali.
   Rasionya sudah ditetapkan dan sudah punya pemeriksa: seluruh bingkai memakai
   `--ratio-visual` (16∶9), sumber berasio lain **dipotong** — bukan diperkecil.
   Aturan isinya di [`AGENTS.md`](AGENTS.md#gambar).
-- **Filter locale di feed awcms.** Traversal kontennya sendiri sudah selesai:
-  satu `GET /api/v1/blog/posts?view=full&order=created_at`, disusuri lewat
-  `nextCursor`. Yang belum ada adalah filter locale di sisi awcms, jadi build
-  menarik SELURUH locale lalu memasangkannya di sini — benar, tetapi menarik
-  lebih banyak daripada yang dibutuhkan situs satu-bahasa.
+- **Filter locale di feed awcms — sudah ADA di awcms, dan justru TIDAK boleh
+  dipakai template ini.** Traversal kontennya sendiri sudah selesai: satu
+  `GET /api/v1/blog/posts?view=full&order=created_at`, disusuri lewat
+  `nextCursor`, tanpa `?locale=` — jadi build menarik SELURUH locale lalu
+  memasangkannya di sini. awcms menutup sisinya pada 2 Agustus 2026
+  ([#346](https://github.com/ahliweb/awcms/pull/346)): `?locale=` cocok-persis
+  (`en` tidak menyapu `en-GB`), absen berarti seluruh locale, dan nilai kosong
+  dibalas 400.
+
+  Yang berubah karena itu bukan "tinggal dipasang", melainkan **arah butirnya**.
+  Template ini menyajikan dua locale (`id` + `en`) dan memasangkannya lewat
+  `translationGroupId`; `?locale=id` akan membuang setiap baris `en`, dan
+  `assertTranslationsArePairable` **tidak akan merah** — yang hilang bukan
+  terjemahan tanpa pasangan, melainkan terjemahan yang tidak pernah ikut
+  terbawa. Situs tetap terbangun hijau, setiap halaman `/en/**` jatuh ke bahasa
+  Indonesia dengan penanda "belum diterjemahkan", dan itu persis pemotongan
+  konten diam-diam yang [`content.ts`](src/lib/content.ts) nyatakan sebagai
+  kegagalan, bukan degradasi. Filternya bernilai hanya untuk deployment yang
+  benar-benar satu locale — dan karena ia menerima satu nilai, dua locale
+  berarti dua traversal, bukan satu yang lebih ramping.
 
 ## Dokumentasi
 
