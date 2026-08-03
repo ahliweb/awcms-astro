@@ -190,6 +190,9 @@ export const PERMISSIONS_POLICY =
  * `add_header` dibuang seluruhnya begitu sebuah `location` punya `add_header`
  * sendiri. Di sini jebakan itu tidak ada: header dipasang sekali, sebelum
  * handler apa pun menyentuh respons.
+ *
+ * Kelimanya dikirim di SETIAP lingkungan. Yang keenam — HSTS — tidak; lihat di
+ * bawah.
  */
 export const HEADER_KEAMANAN = {
   "X-Content-Type-Options": "nosniff",
@@ -198,6 +201,70 @@ export const HEADER_KEAMANAN = {
   "Content-Security-Policy": CSP,
   "Permissions-Policy": PERMISSIONS_POLICY
 };
+
+/**
+ * `Strict-Transport-Security` — header keenam, dan satu-satunya yang bersyarat
+ * (ADR-0029).
+ *
+ * ## Kenapa ia sempat tidak ada sama sekali
+ *
+ * Alasan yang terbaca masuk akal selama dua bulan: TLS diterminasi Traefik,
+ * jadi HSTS "urusan lapisan di depan". Alasan itu tidak bertahan diperiksa —
+ * Traefik tidak memasang HSTS tanpa middleware yang dinyatakan, jadi yang
+ * terjadi bukan "dipasang di tempat lain" melainkan **tidak dipasang di mana
+ * pun**. Dan ADR-0016 sudah melarang penyelesaiannya ditaruh di Traefik: header
+ * respons ditentukan di berkas ini, bukan di dua tempat.
+ *
+ * ## Kenapa ia DIGERBANGI produksi, dan kenapa gerbang itu bukan kerapian
+ *
+ * HSTS tidak bisa dibatalkan dari sisi situs. Sekali sebuah browser
+ * menerimanya, ia menolak berbicara HTTP ke host itu selama `max-age` — dan
+ * pada `localhost` itu berarti setiap proyek lain yang dikembangkan pemilik
+ * mesin di `http://localhost:<port>` ikut terkunci, selama setahun, tanpa cara
+ * mencabutnya selain menyunting internal browser. `bun run serve` dan
+ * `bun run preview` menjalankan berkas ini, jadi tanpa gerbang ini sebuah
+ * pratinjau lokal akan merusak mesin yang menjalankannya.
+ *
+ * `NODE_ENV` dipakai karena `Dockerfile` stage runtime sudah menyetelnya
+ * `production` dan tidak ada tempat kedua yang perlu diingat. Yang menjadikan
+ * ini aman: kesalahan ke arah "lupa" hanya kehilangan HSTS, sementara kesalahan
+ * ke arah "terlalu awal" mengunci mesin pengembang — jadi bawaannya mati.
+ *
+ * ## Kenapa TANPA `includeSubDomains`, berbeda dari `awcms`
+ *
+ * `awcms` mengirim `max-age=31536000; includeSubDomains`, dan itu benar untuk
+ * `awcms`: ia SATU deployment yang operatornya tahu persis apa saja
+ * subdomainnya. Berkas ini adalah TEMPLATE — ia berjalan di domain yang belum
+ * ada saat baris ini ditulis, milik organisasi yang hampir pasti punya layanan
+ * lain di subdomain lain. `includeSubDomains` dari `contoh.go.id` memaksa
+ * `mail.contoh.go.id` dan setiap subdomain lainnya menjadi HTTPS-saja selama
+ * setahun, di browser setiap orang yang pernah membuka situsnya, dan yang
+ * mematikannya bukan situs ini melainkan layanan-layanan itu.
+ *
+ * Divergence ini disengaja dan sempit. Sebuah situs yang subdomainnya memang
+ * seluruhnya HTTPS **boleh** menambahkannya di sini — di berkas ini, lalu
+ * perbarui `tests/penyaji.test.mjs`, sama seperti melebarkan `img-src`.
+ * `preload` sengaja tidak disebut sama sekali: ia menuntut `includeSubDomains`,
+ * dan pendaftarannya ke daftar preload browser praktis tidak bisa ditarik.
+ */
+export const HSTS = "max-age=31536000";
+
+/** Nilai yang sudah dirangkai, supaya tidak ada alokasi per permintaan. */
+const HEADER_PRODUKSI = { ...HEADER_KEAMANAN, "Strict-Transport-Security": HSTS };
+
+/**
+ * Header yang dikirim pada lingkungan ini — lima, atau enam di produksi.
+ *
+ * `produksi` adalah parameter, bukan pembacaan langsung, supaya KEDUA keadaan
+ * bisa diuji tanpa menyalakan proses dengan env berbeda. Yang membuat gerbang
+ * itu berarti bukan asersi bahwa HSTS ADA di produksi, melainkan asersi bahwa
+ * ia TIDAK ADA di luar produksi.
+ *
+ * @param {boolean} [produksi]
+ */
+export function headerKeamanan(produksi = process.env.NODE_ENV === "production") {
+  return produksi ? HEADER_PRODUKSI : HEADER_KEAMANAN;
+}
 
 /**
  * Path permintaan, dinormalkan persis seperti adapter menormalkannya sebelum
@@ -244,10 +311,19 @@ export function aturanCache(url) {
  * @param {import("node:http").ServerResponse} res
  */
 export function pasangHeader(req, res) {
-  for (const [nama, nilai] of Object.entries(HEADER_KEAMANAN)) {
+  for (const [nama, nilai] of Object.entries(headerKeamanan())) {
     res.setHeader(nama, nilai);
   }
   res.setHeader("Cache-Control", aturanCache(req.url ?? "/"));
+
+  // Node tidak mengirim `Server` dan tidak pernah mengirim `X-Powered-By`
+  // (yang terakhir milik Express, yang tidak dipakai di sini). Keduanya
+  // dihapus lagi di sini karena "tidak dikirim hari ini" dan "tidak akan
+  // dikirim" adalah dua hal berbeda: sebuah middleware yang ditambahkan kelak
+  // bisa memasangnya, dan ASVS V14.4 menuntut keduanya tidak membocorkan versi.
+  // `removeHeader` atas header yang tidak ada adalah no-op.
+  res.removeHeader("Server");
+  res.removeHeader("X-Powered-By");
 }
 
 /**

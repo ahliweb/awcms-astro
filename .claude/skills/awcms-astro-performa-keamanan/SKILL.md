@@ -37,7 +37,8 @@ tidak berjalan** — jalankan `bun run build` lebih dulu, lalu `bun test` dan
 ## Header — periksa jumlahnya, bukan hanya nilainya
 
 `server/penyaji.mjs` adalah **satu-satunya** tempat header respons ditentukan
-(ADR-0016). Lima yang dikirim, dan kelimanya bernilai sama dengan `awcms`:
+(ADR-0016). Lima dikirim di setiap lingkungan, dan kelimanya bernilai sama
+dengan `awcms`:
 
 ```
 Content-Security-Policy    default-src 'self'; script-src 'self'; style-src 'self'; …
@@ -47,14 +48,28 @@ Referrer-Policy            strict-origin-when-cross-origin
 Permissions-Policy         geolocation=(), camera=(), microphone=(), payment=()
 ```
 
-**`awcms` mengirim ENAM di produksi.** Yang keenam
-`Strict-Transport-Security: max-age=31536000; includeSubDomains`, digerbangi
-`isProduction`. Repo ini tidak mengirimkannya di lingkungan mana pun.
+Yang keenam **hanya di produksi** (ADR-0029):
 
-Jangan menerima "TLS diterminasi Traefik" sebagai jawaban: Traefik tidak
-memasang HSTS tanpa middleware yang dinyatakan, jadi yang terjadi bukan
-"dipasang di tempat lain" melainkan **tidak dipasang di mana pun**. Dan
-`AGENTS.md` sudah melarang penyelesaiannya ditaruh di Traefik untuk repo ini.
+```
+Strict-Transport-Security  max-age=31536000        ← NODE_ENV=production saja
+```
+
+Dua hal yang paling sering salah dipahami tentang baris itu:
+
+- **Gerbang produksinya bukan kerapian.** HSTS tidak bisa dibatalkan dari sisi
+  situs dan berlaku untuk HOST, bukan untuk situs. `bun run serve` menjalankan
+  berkas yang sama dengan produksi — sekali ia mengirim HSTS di `localhost`,
+  SETIAP proyek lain di `http://localhost:<port>` ikut terkunci selama setahun,
+  tanpa cara mencabutnya selain menyunting internal browser. Asersi yang
+  menjaganya karena itu **terbalik arah**: yang diuji adalah HSTS TIDAK dikirim
+  di luar produksi.
+- **`includeSubDomains` sengaja tidak ada, berbeda dari `awcms`.** `awcms` satu
+  deployment yang operatornya tahu subdomainnya; template ini berjalan di domain
+  milik organisasi yang hampir pasti punya layanan lain di subdomain lain.
+  Menambahkannya adalah keputusan sebuah SITUS yang subdomainnya memang
+  seluruhnya HTTPS — di penyaji, lalu perbarui `tests/penyaji.test.mjs`.
+
+`Server` dan `X-Powered-By` dihapus `pasangHeader`, dan ketiadaannya diasersi.
 
 Melonggarkan atau menambah header **wajib** lewat `tests/penyaji.test.mjs`, dan
 bila ia mengubah postur keamanan, lewat ADR lebih dulu.
@@ -69,25 +84,32 @@ Core Web Vitals pada **p75 kunjungan nyata**:
 | INP | ≤ 200 milidetik | JS yang menyelinap masuk. Situs ini nyaris tanpa JS, jadi INP buruk **adalah sinyal**, bukan sekadar angka |
 | CLS | ≤ 0,1 | Webfont yang ditambahkan tanpa `font-display`, atau bingkai gambar yang kehilangan `aspect-ratio` |
 
-**Belum satu pun diukur** (celah 8). Jangan menulis "memenuhi Core Web Vitals"
-di mana pun sampai ada yang mengukurnya.
+**Belum satu pun diukur** (celah 8 — masih terbuka). Jangan menulis "memenuhi
+Core Web Vitals" di mana pun sampai ada yang mengukurnya. Celah 2 dan 3 menutup
+dua PENYEBAB LCP buruk; keduanya bukan pengukurannya.
 
-Anggaran: **beranda ≤ 250 KB gambar, halaman konten ≤ 100 KB.** Ia dibawa dari
-repo rujukan dan **belum pernah diukur satu kali pun di sini** (celah 3).
+Anggaran: **beranda ≤ 250 KB gambar, halaman konten ≤ 100 KB.** Sejak 4 Agustus
+2026 ia **diukur** `bun run audit:konten` atas `dist/client`, per halaman — yang
+ditimbang hanya gambar yang benar-benar diterbitkan build ini, karena media
+`awcms` tidak ada di sana.
 
-## Sembilan celah — hafal tiga yang teratas
+## Sembilan celah — lima tertutup, empat terbuka
 
-Daftar lengkap beserta pemeriksa yang harus ikut mendarat ada di dokumen
-standar. Tiga yang paling sering ditanyakan:
+Daftar lengkap di dokumen standar. Yang masih **TERBUKA**, dan karena itu yang
+harus dijawab jujur saat ditanya:
 
-1. **HSTS tidak dikirim** — butuh ADR, karena ia mengubah postur keamanan.
-   Pemeriksanya wajib mencakup asersi bahwa ia **tidak** dikirim di luar
-   produksi: HSTS di localhost mengunci `bun run serve` di browser pengembang
-   selama setahun.
-2. **`fetchpriority="high"` tidak ada** pada gambar di atas lipatan, padahal
-   `standar-teknis.md` mewajibkannya.
-3. **Anggaran gambar tanpa pemeriksa** — dan `scripts/audit-konten.mjs` sudah
-   membaca `dist/client`, jadi datanya sudah di tangannya.
+| # | Terbuka | Kenapa belum ditutup |
+| --- | --- | --- |
+| 6 | Action GitHub & image dasar dipin ke tag, bukan SHA/digest | Keputusan tooling rantai pasok yang lebih baik diambil sekali untuk kedua repo keluarga |
+| 7 | Tidak ada analisis statik (`awcms` punya CodeQL) | Permukaan di sini jauh lebih kecil — tetapi "lebih kecil" bukan "nol" |
+| 8 | Core Web Vitals tidak diukur | Butuh Chrome di CI dan hanya berjalan pada situs yang punya sumber konten; **tidak bisa dibuktikan di repo template** |
+| 9 | Tidak ada SBOM pada rilis | SSDF PS.2 |
+
+Lima yang tertutup (1 HSTS, 2 `fetchpriority`, 3 anggaran gambar, 4 batas waktu
+`awcmsGet`, 5 header pembocor) **tetap tercatat di tabel dokumen standar**.
+Jangan hapus barisnya: dihapus, celahnya akan diusulkan lagi sebagai temuan baru
+enam bulan kemudian, dan pemeriksanya akan dilonggarkan oleh orang yang tidak
+tahu kenapa ia ada.
 
 ## Lima kontrol yang DITOLAK — jangan usulkan lagi tanpa membaca alasannya
 

@@ -34,10 +34,12 @@ import {
   CACHE_HALAMAN,
   CSP,
   HEADER_KEAMANAN,
+  HSTS,
   PERMISSIONS_POLICY,
   asalMediaTerkonfigurasi,
   aturanCache,
   buatServer,
+  headerKeamanan,
   jalurNormal
 } from "../server/penyaji.mjs";
 
@@ -148,6 +150,68 @@ describe("header pada respons sungguhan", () => {
     assert.equal(nilai, PERMISSIONS_POLICY);
     for (const kemampuan of ["geolocation", "camera", "microphone", "payment"]) {
       assert.match(nilai, new RegExp(`${kemampuan}=\\(\\)`), kemampuan);
+    }
+  });
+
+  test("HSTS TIDAK dikirim di luar produksi", async () => {
+    // Ini asersi yang benar-benar menjaga sesuatu, dan arahnya sengaja
+    // terbalik dari yang orang harapkan dari sebuah gerbang keamanan.
+    //
+    // HSTS tidak bisa dibatalkan dari sisi situs: sekali browser menerimanya,
+    // ia menolak berbicara HTTP ke host itu selama `max-age`. Pada `localhost`
+    // yang terkunci bukan hanya situs ini — melainkan SETIAP proyek lain yang
+    // dikembangkan pemilik mesin di `http://localhost:<port>`, selama setahun,
+    // tanpa cara mencabutnya selain menyunting internal browser.
+    //
+    // `bun run serve` dan `bun run preview` menjalankan berkas yang sama dengan
+    // produksi. Tanpa gerbang ini, satu pratinjau lokal merusak mesin yang
+    // menjalankannya, dan tidak ada satu pun yang gagal saat itu terjadi.
+    assert.equal(process.env.NODE_ENV === "production", false, "tes ini mengasumsikan bukan produksi");
+
+    const res = await lewatServer(handlerTiruan, "/");
+    assert.equal(res.headers.get("strict-transport-security"), null);
+    assert.equal(headerKeamanan(false)["Strict-Transport-Security"], undefined);
+  });
+
+  test("HSTS dikirim di produksi, dan tanpa includeSubDomains", async () => {
+    // Kehadirannya diuji lewat fungsi murni, bukan dengan menyetel NODE_ENV di
+    // dalam proses tes: menyetelnya di sini akan bocor ke berkas tes lain yang
+    // berjalan di proses yang sama, dan kegagalannya akan muncul di tempat yang
+    // tidak ada hubungannya dengan penyebabnya.
+    const produksi = headerKeamanan(true);
+
+    assert.equal(produksi["Strict-Transport-Security"], HSTS);
+    assert.match(HSTS, /^max-age=31536000$/);
+
+    // Lima yang lain tidak boleh hilang saat yang keenam ditambahkan.
+    for (const [nama, nilai] of Object.entries(HEADER_KEAMANAN)) {
+      assert.equal(produksi[nama], nilai, nama);
+    }
+
+    // `includeSubDomains` DENGAN SENGAJA tidak ada, berbeda dari `awcms`
+    // (ADR-0029). Berkas ini template: ia berjalan di domain milik organisasi
+    // yang hampir pasti punya layanan lain di subdomain lain, dan direktif itu
+    // memaksa SELURUH subdomain menjadi HTTPS-saja selama setahun di browser
+    // setiap pengunjung. Sebuah situs boleh menambahkannya — di penyaji, lalu
+    // baris ini ikut diperbarui. Yang tidak boleh: menambahkannya tanpa
+    // memeriksa apakah subdomainnya memang seluruhnya HTTPS.
+    assert.doesNotMatch(HSTS, /includeSubDomains/i);
+
+    // `preload` menuntut `includeSubDomains` dan pendaftarannya praktis tidak
+    // bisa ditarik. Ia tidak boleh masuk lewat pintu belakang.
+    assert.doesNotMatch(HSTS, /preload/i);
+  });
+
+  test("tidak ada header yang membocorkan teknologi penyaji", async () => {
+    // ASVS V14.4. Keduanya memang tidak dikirim Node hari ini — tetapi "tidak
+    // dikirim hari ini" dan "tidak akan dikirim" adalah dua hal berbeda, dan
+    // yang membedakannya cuma asersi ini. Sebuah middleware yang ditambahkan
+    // kelak (kompresi, proxy, logging) bisa memasangnya tanpa siapa pun
+    // memutuskannya.
+    for (const jalur of ["/", "/_astro/x.css", "/tidak-ada/"]) {
+      const res = await lewatServer(handlerTiruan, jalur);
+      assert.equal(res.headers.get("server"), null, jalur);
+      assert.equal(res.headers.get("x-powered-by"), null, jalur);
     }
   });
 

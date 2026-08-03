@@ -342,6 +342,63 @@ describe("traversal build feed", () => {
     );
   });
 
+  test("awcms yang menerima koneksi lalu DIAM menggagalkan build", async () => {
+    // Kelas cacat yang berbeda dari setiap gerbang lain di berkas ini, dan
+    // satu-satunya yang tidak menghasilkan keluaran salah: ia tidak
+    // menghasilkan keluaran sama sekali.
+    //
+    // Sebuah awcms yang menerima koneksi lalu tidak pernah menjawab bukan
+    // keadaan hipotetis — ia bentuk kegagalan paling umum dari basis data yang
+    // kehabisan koneksi, dan `fetch` tidak punya batas waktu bawaan. Tanpa
+    // deadline, build menggantung sampai batas job CI membunuhnya (15 menit,
+    // dengan pesan yang menyebut nama job alih-alih awcms) atau, di mesin
+    // lokal, selamanya.
+    process.env.AWCMS_API_TIMEOUT_MS = "80";
+
+    // Tiruan yang meniru `fetch` sungguhan: ia menghormati sinyal dan menolak
+    // dengan `TimeoutError`. Tiruan yang langsung menolak akan menghijaukan
+    // kode yang tidak pernah memasang sinyalnya sama sekali.
+    globalThis.fetch = (_url, init) =>
+      new Promise((_resolve, reject) => {
+        init?.signal?.addEventListener("abort", () =>
+          reject(init.signal.reason ?? new Error("aborted"))
+        );
+      });
+
+    try {
+      await assert.rejects(
+        () => getArticles("panduan", "id"),
+        (e) => e.code === "TIMEOUT" && /within 80 ms/.test(e.message)
+      );
+    } finally {
+      delete process.env.AWCMS_API_TIMEOUT_MS;
+    }
+  });
+
+  test("batas waktu yang tidak bisa dibaca DITOLAK, bukan diabaikan", async () => {
+    // Nilai yang terbaca seperti konfigurasi dan tidak memutuskan apa pun
+    // adalah kelas cacat yang repo ini paling sering menulis aturan
+    // terhadapnya. `0` disebut khusus karena ia terlihat seperti "tanpa batas"
+    // dan justru mengembalikan keadaan yang gerbang di atas ada untuk mencegah.
+    for (const nilai of ["nanti", "0", "-1"]) {
+      process.env.AWCMS_API_TIMEOUT_MS = nilai;
+      resetContentCacheForTests();
+      globalThis.fetch = async () => {
+        throw new Error("tidak boleh sampai ke jaringan");
+      };
+
+      try {
+        await assert.rejects(
+          () => getArticles("panduan", "id"),
+          (e) => e.code === "CONFIG_INVALID",
+          nilai
+        );
+      } finally {
+        delete process.env.AWCMS_API_TIMEOUT_MS;
+      }
+    }
+  });
+
   test("terjemahan yang membawa grup dipasangkan, bukan ditolak", async () => {
     // Gerbang di atas adalah assertion atas DATA, bukan pemeriksaan versi
     // awcms: begitu field-nya benar-benar dikembalikan, jalur ini lewat tanpa

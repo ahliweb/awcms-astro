@@ -65,6 +65,57 @@ function baseUrl(): string {
 }
 
 /**
+ * How long one request may take before the build gives up.
+ *
+ * Generous on purpose. `view=full` pages carry whole posts including
+ * `contentJson`, and a large tenant on a cold database can legitimately take
+ * many seconds — a timeout tuned for a healthy request path would turn a slow
+ * build into a failed one, which is the opposite of what this file is for.
+ *
+ * What it exists to catch is not slowness but SILENCE: a connection that is
+ * accepted and never answered. Without a deadline that state hangs the build
+ * until the CI job's own limit kills it (15 minutes, with a message that names
+ * the job rather than awcms) or, on a workstation, forever.
+ *
+ * Overridable because the right value is a property of the deployment, not of
+ * this template — and a site whose awcms sits behind a slow link should raise
+ * it rather than discover this constant by hitting it.
+ */
+const BATAS_WAKTU_BAKU_MS = 30_000;
+
+/**
+ * Read per call, not once at module load — the same shape `baseUrl()` already
+ * uses. A module-level constant would freeze whatever the environment happened
+ * to hold at import time, which is both wrong under `astro dev` and untestable.
+ *
+ * A malformed value THROWS rather than falling back to the default. A timeout
+ * that silently ignores what an operator wrote is a value that reads like
+ * configuration and decides nothing — the failure this repo keeps writing rules
+ * against.
+ */
+function batasWaktuMs(): number {
+  const raw = readEnv("AWCMS_API_TIMEOUT_MS");
+  if (raw === undefined) return BATAS_WAKTU_BAKU_MS;
+
+  const parsed = Number(raw);
+
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    throw new AwcmsApiError(
+      `AWCMS_API_TIMEOUT_MS is not a positive number of milliseconds: ` +
+        `${JSON.stringify(raw)}. Remove it to use the ${BATAS_WAKTU_BAKU_MS} ms ` +
+        `default; do not set it to 0 to mean "no limit" — a build with no ` +
+        `deadline hangs forever on an awcms that accepts the connection and ` +
+        `never answers.`,
+      0,
+      "CONFIG_INVALID",
+      ""
+    );
+  }
+
+  return parsed;
+}
+
+/**
  * One GET against awcms, unwrapped.
  *
  * Deliberately has no retry loop. A static build is not a request path: if
@@ -72,6 +123,11 @@ function baseUrl(): string {
  * a slow build that ships a site with some sections silently empty. Partial
  * content is the failure mode worth preventing here — it looks like a
  * successful deploy.
+ *
+ * It does have a DEADLINE, and the two are not in tension: no-retry decides
+ * what happens when awcms answers badly, the deadline decides what happens
+ * when it never answers at all. Both end the same way — a failed build that
+ * ships nothing.
  */
 export async function awcmsGet<T>(
   path: string,
@@ -98,7 +154,36 @@ export async function awcmsGet<T>(
     authorization: `Bearer ${readEnv("AWCMS_API_TOKEN")}`
   };
 
-  const response = await fetch(url, { headers });
+  const batas = batasWaktuMs();
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      headers,
+      signal: AbortSignal.timeout(batas)
+    });
+  } catch (cause) {
+    if (cause instanceof AwcmsApiError) throw cause;
+
+    // A timeout and a refused connection both land here, and the message has
+    // to name which — "fetch failed" in the middle of a build tells nobody
+    // whether awcms is down, unreachable, or merely silent.
+    const habis = cause instanceof Error && cause.name === "TimeoutError";
+
+    throw new AwcmsApiError(
+      habis
+        ? `awcms did not answer ${path} within ${batas} ms. The ` +
+          `connection was open the whole time, which is why nothing failed ` +
+          `until now. Raise AWCMS_API_TIMEOUT_MS if this deployment is ` +
+          `legitimately this slow; otherwise awcms is wedged, not slow.`
+        : `awcms could not be reached at ${baseUrl()} (${
+            cause instanceof Error ? cause.message : String(cause)
+          }). Check AWCMS_API_URL and that the instance is up.`,
+      0,
+      habis ? "TIMEOUT" : "UNREACHABLE",
+      path
+    );
+  }
 
   let payload: Envelope<T>;
   try {

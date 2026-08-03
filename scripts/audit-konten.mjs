@@ -47,7 +47,7 @@
  * Jalankan: `bun run audit:konten` (setelah `bun run build` agar keluarga
  * pertama ikut jalan).
  */
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { posix } from "node:path";
 
 const KELUARAN = "dist/client";
@@ -444,6 +444,126 @@ function auditKeluaran(halaman, { localeDefault, locales, namespaceKey }) {
 
     catatan.push(`${jumlahLoc} URL sitemap diperiksa di ${sitemap.length} berkas`);
   }
+
+  auditPrioritasGambar(halaman);
+  auditAnggaranGambar(halaman, { internal, pathDari });
+}
+
+/**
+ * Gambar `eager` wajib membawa `fetchpriority="high"` (ADR-0028 celah 2).
+ *
+ * `standar-teknis.md` sudah mewajibkannya sejak dokumen itu ditulis, sementara
+ * `Ilustrasi.astro` hanya memasang `loading="eager"` — aturan yang tertulis
+ * selama berbulan-bulan tanpa pemeriksa, lalu dilanggar tanpa satu pun yang
+ * merah. Ini pemeriksanya.
+ *
+ * Kenapa keduanya perlu, dan kenapa selisihnya tidak terlihat dari kode:
+ * `loading="eager"` hanya berarti "jangan tunda". Prioritas bawaan sebuah
+ * `<img>` di Chromium tetap **Low** sampai layout membuktikan ia di viewport —
+ * jadi elemen LCP mengantre di belakang setiap gambar lain yang ditemukan lebih
+ * dulu, dan halamannya tetap terbit dengan benar. Yang berubah hanya angka LCP,
+ * yang tidak dilihat siapa pun di dalam build.
+ *
+ * Diperiksa di KELUARAN, bukan di komponen: sebuah situs turunan boleh menulis
+ * `<img>`-nya sendiri, dan gerbang yang hanya membaca `Ilustrasi.astro` akan
+ * hijau untuk halaman yang tidak pernah melewatinya.
+ */
+function auditPrioritasGambar(halaman) {
+  let eager = 0;
+
+  for (const { nama, isi } of halaman) {
+    for (const [tag] of isi.matchAll(/<img\b[^>]*>/gi)) {
+      if (!/\bloading=["']eager["']/i.test(tag)) continue;
+
+      eager += 1;
+      if (/\bfetchpriority=["']high["']/i.test(tag)) continue;
+
+      const src = tag.match(/\bsrc=["']([^"']*)["']/i)?.[1] ?? "(tanpa src)";
+      langgar(
+        "performa",
+        nama,
+        `gambar eager tanpa fetchpriority="high": ${src} — ia hampir pasti ` +
+          `elemen LCP halaman ini, dan prioritas bawaannya Low sampai layout selesai`
+      );
+    }
+  }
+
+  catatan.push(`performa: ${eager} gambar eager diperiksa prioritasnya`);
+}
+
+/**
+ * Anggaran berat gambar per halaman (ADR-0028 celah 3).
+ *
+ * Angkanya sudah tertulis di `standar-teknis.md` sejak dibawa dari repo
+ * rujukan — beranda ≤ 250 KB, halaman konten ≤ 100 KB — dan **tidak pernah
+ * diukur satu kali pun**. Datanya selama ini sudah ada di tangan gerbang ini:
+ * ia sudah membaca setiap halaman dan sudah bisa menyelesaikan path menjadi
+ * berkas.
+ *
+ * Tiga batas yang disengaja, dan disebut supaya tidak dikira lebih luas:
+ *
+ *   - **Hanya gambar yang benar-benar DITERBITKAN build ini** yang dihitung.
+ *     Gambar dari host media `awcms` tidak ada di `dist/client`, jadi ia tidak
+ *     bisa ditimbang di sini — anggaran ini karena itu memeriksa seni lokal,
+ *     bukan seluruh berat halaman.
+ *   - **Byte di disk, bukan byte di kabel.** Penyaji mengompresi respons, tetapi
+ *     format gambar sudah terkompresi sehingga selisihnya kecil; angka ini
+ *     konservatif ke arah yang benar.
+ *   - **Hanya `<img src>` dan `srcset` pertama.** CSS `background-image` tidak
+ *     ikut, karena gerbang ini tidak mengurai CSS.
+ */
+const ANGGARAN_BERANDA = 250 * 1024;
+const ANGGARAN_HALAMAN = 100 * 1024;
+
+function auditAnggaranGambar(halaman, { internal, pathDari }) {
+  let terberat = 0;
+  let namaTerberat = "";
+
+  for (const { nama, isi } of halaman) {
+    const url = urlDari(nama);
+    // Beranda locale default DAN beranda tiap locale berprefiks: keduanya
+    // halaman depan bagi pembacanya masing-masing.
+    const beranda = /^\/([a-z]{2}(-[A-Za-z]+)?\/)?$/.test(url);
+    const anggaran = beranda ? ANGGARAN_BERANDA : ANGGARAN_HALAMAN;
+
+    let byte = 0;
+    const dihitung = new Set();
+
+    for (const [tag] of isi.matchAll(/<img\b[^>]*>/gi)) {
+      const src = tag.match(/\bsrc=["']([^"']*)["']/i)?.[1];
+      if (!src || !internal(src)) continue;
+
+      const path = pathDari(src);
+      if (dihitung.has(path)) continue; // satu berkas dua kali tetap satu unduhan
+      dihitung.add(path);
+
+      const berkas = berkasUntuk(path);
+      if (berkas) byte += statSync(berkas).size;
+    }
+
+    if (byte > terberat) {
+      terberat = byte;
+      namaTerberat = nama;
+    }
+
+    if (byte > anggaran) {
+      langgar(
+        "performa",
+        nama,
+        `gambar terbitan halaman ini ${(byte / 1024).toFixed(0)} KB, ` +
+          `melampaui anggaran ${(anggaran / 1024).toFixed(0)} KB ` +
+          `(${beranda ? "beranda" : "halaman konten"}). Pembacanya di jaringan ` +
+          `yang tidak dapat diandalkan, dan ADR-0024 berarti tidak ada srcset ` +
+          `yang menolongnya di layar kecil`
+      );
+    }
+  }
+
+  catatan.push(
+    terberat > 0
+      ? `performa: halaman terberat ${namaTerberat} — ${(terberat / 1024).toFixed(0)} KB gambar terbitan`
+      : "performa: tidak ada gambar terbitan yang bisa ditimbang (media awcms tidak ada di dist/)"
+  );
 }
 
 // ---------------------------------------------------------------------------

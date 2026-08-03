@@ -192,16 +192,18 @@ sengaja yang belum tercatat di `awcms-family-compatibility.yaml`.
   serupa harus di-`include` ulang di setiap `location`, dan melupakannya
   menghasilkan halaman tanpa satu pun header keamanan tanpa ada yang gagal.
 
-  **Kelimanya bernilai sama dengan `awcms`; jumlahnya TIDAK sama.** `awcms`
-  mengirim enam di produksi — yang keenam `Strict-Transport-Security`,
-  digerbangi `isProduction`. Repo ini belum mengirimkannya di lingkungan mana
-  pun, dan "TLS diterminasi Traefik" bukan jawabannya: Traefik tidak memasang
-  HSTS tanpa middleware yang dinyatakan, jadi yang terjadi bukan "dipasang di
-  tempat lain" melainkan tidak dipasang di mana pun. Selisih ini dicatat sebagai
-  celah nomor 1 di
-  [`docs/awcms-astro/standar-performa-dan-keamanan.md`](docs/awcms-astro/standar-performa-dan-keamanan.md),
-  dan menutupnya butuh ADR karena ia mengubah postur keamanan. Jangan menulis
-  ulang klaim "disamakan dengan postur `awcms`" tanpa memeriksa jumlahnya.
+  **Yang keenam, `Strict-Transport-Security`, dikirim HANYA di produksi**
+  (ADR-0029) dan gerbangnya bukan kerapian: HSTS tidak bisa dibatalkan dari sisi
+  situs dan berlaku untuk HOST, jadi satu pratinjau `bun run serve` yang
+  mengirimkannya mengunci setiap proyek lain di `http://localhost:<port>` selama
+  setahun. Asersi yang menjaganya karena itu **terbalik arah** — yang diuji
+  adalah ia TIDAK dikirim di luar produksi. `includeSubDomains` sengaja tidak
+  ikut, berbeda dari `awcms`; alasannya di ADR-0029, dan menambahkannya adalah
+  keputusan sebuah SITUS, bukan template.
+
+  `Server` dan `X-Powered-By` dihapus di jalur yang sama. Keduanya memang tidak
+  dikirim Node hari ini — tetapi "tidak dikirim hari ini" dan "tidak akan
+  dikirim" adalah dua hal berbeda.
 - **Jangan menulis penyaji berkas sendiri.** Penerjemahan URL menjadi path
   berkas tetap milik adapter `@astrojs/node`. Setiap baris yang melakukannya
   sendiri adalah baris yang bisa keliru menjadi pembacaan berkas arbitrer —
@@ -408,9 +410,12 @@ performa:
   masih menyebut FID sudah basi, bukan sedang memakai alternatif. **Belum satu
   pun dari ketiganya diukur di repo ini**, dan itu ditulis apa adanya alih-alih
   dibiarkan tampak terjaga.
-- **Sembilan celah terbuka, dan tiap satunya menyebut pemeriksa yang harus ikut
-  mendarat.** Menutup sebuah celah tanpa pemeriksanya berarti memindahkannya
-  dari "diketahui terbuka" ke "dikira tertutup", dan yang kedua lebih buruk.
+- **Lima dari sembilan celah ditutup 4 Agustus 2026, empat masih terbuka.**
+  Tiap satunya menyebut pemeriksanya, dan baris yang tertutup TETAP di tabel:
+  dihapus, ia akan diusulkan lagi sebagai temuan baru, dan pemeriksanya akan
+  dilonggarkan oleh orang yang tidak tahu kenapa ia ada. Menutup sebuah celah
+  tanpa pemeriksanya berarti memindahkannya dari "diketahui terbuka" ke "dikira
+  tertutup", dan yang kedua lebih buruk.
 
 ## Definition of Done
 
