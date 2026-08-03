@@ -366,11 +366,25 @@ aturan yang jelas-jelas manual.
   penjelasan konsekuensi salah isi — bukan sekadar nama.
 - **Bun adalah runtime dan package manager repo ini** (ADR-0015), termasuk di
   produksi: sejak ADR-0016 keluaran build disajikan proses Bun, bukan nginx.
-  Versinya dipin di TIGA tempat yang wajib bergerak bersama: `packageManager` +
-  `engines.bun` di `package.json`, `bun-version` di `.github/workflows/ci.yml`,
-  dan tag image di `Dockerfile` — yang kini muncul DUA kali di berkas itu, stage
-  `build` dan stage `runtime`. Menaikkan salah satu saja membuat build lokal,
-  CI, dan image berbeda perilaku — diam-diam.
+  Versinya dipin di tiga BERKAS dan **lima NILAI** yang wajib bergerak bersama:
+  `packageManager` + `engines.bun` di `package.json`, `bun-version` di DUA job
+  `.github/workflows/ci.yml`, dan tag image di DUA stage `Dockerfile`.
+  Menaikkan salah satu saja membuat build lokal, CI, dan image berbeda perilaku
+  — diam-diam.
+
+  Sejak ADR-0030 aturan ini punya pemeriksa: `tests/versi-toolchain.test.mjs`.
+  Sebelum itu ia aturan tertulis tanpa gerbang, dan `grep` atas `tests/` maupun
+  `scripts/` mengembalikan nol baris — persis bentuk "aturan yang tampak terjaga
+  padahal tidak" yang dokumen ini larang di tempat lain.
+
+  **Image dasar juga dipin ke digest**, dan tag tetap ditulis di depannya. Saat
+  keduanya ada, digest yang dipatuhi Docker dan tag hanya menjadi komentar —
+  jadi menaikkan tag tanpa digest membangun versi lama sambil berbunyi versi
+  baru. Gerbang di atas memeriksanya secara khusus.
+
+- **Action GitHub dipin ke SHA commit, bukan ke tag**, dengan komentar
+  `# vX.Y.Z` yang Dependabot baca. Tag bisa dipindahkan, dan action berjalan
+  dengan akses ke token workflow serta seluruh isi checkout (ADR-0030).
 - **`bun.lock` wajib merupakan pernyataan tentang repo ini**, dan wajib
   di-commit. `bun run check:lockfile` memeriksanya sebelum install: nama
   workspace harus milik repo ini (lockfile hasil salinan repo lain persis

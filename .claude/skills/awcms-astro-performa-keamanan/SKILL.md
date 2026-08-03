@@ -26,6 +26,12 @@ bun run audit:dokumen  # tautan, indeks ADR, permukaan kilau, jalur yang disebut
 bun audit --audit-level=low   # kerentanan rantai dependency — WAJIB nol sebelum rilis
 ```
 
+`bun run release <tingkat> --apply` menjalankan **kelimanya**, dalam urutan yang
+berarti — `bun test` dan `bun run audit:konten` SESUDAH build, karena tiga
+lapisnya melewati diri tanpa `dist/`. Sampai 4 Agustus 2026 perilis melewatkan
+`bun test` dan `bun audit` sepenuhnya, sementara empat dokumen menuntut
+keduanya ([ADR-0030](../../../docs/adr/0030-aturan-tertulis-mendapat-pemeriksanya.md)).
+
 `bun audit` (kerentanan dependency) dan `bun run audit:konten` (isi situs) adalah
 dua hal berbeda; namanya sengaja tidak dibuat mirip.
 
@@ -100,13 +106,13 @@ harus dijawab jujur saat ditanya:
 
 | # | Terbuka | Kenapa belum ditutup |
 | --- | --- | --- |
-| 6 | Action GitHub & image dasar dipin ke tag, bukan SHA/digest | Keputusan tooling rantai pasok yang lebih baik diambil sekali untuk kedua repo keluarga |
-| 7 | Tidak ada analisis statik (`awcms` punya CodeQL) | Permukaan di sini jauh lebih kecil — tetapi "lebih kecil" bukan "nol" |
+| 7 | Tidak ada analisis statik (`awcms` punya CodeQL) | **CodeQL tidak mengurai `.astro`** — ia hanya akan mencakup `src/lib/**.ts`, `scripts/**.mjs`, `server/**.mjs`. Menyalakannya lalu menyebut repo ini "dianalisis statik" adalah upacara yang terlihat seperti cakupan |
 | 8 | Core Web Vitals tidak diukur | Butuh Chrome di CI dan hanya berjalan pada situs yang punya sumber konten; **tidak bisa dibuktikan di repo template** |
 | 9 | Tidak ada SBOM pada rilis | SSDF PS.2 |
 
-Lima yang tertutup (1 HSTS, 2 `fetchpriority`, 3 anggaran gambar, 4 batas waktu
-`awcmsGet`, 5 header pembocor) **tetap tercatat di tabel dokumen standar**.
+Enam yang tertutup (1 HSTS, 2 `fetchpriority`, 3 anggaran gambar, 4 batas waktu
+`awcmsGet`, 5 header pembocor, 6 pin SHA/digest) **tetap tercatat di tabel
+dokumen standar**.
 Jangan hapus barisnya: dihapus, celahnya akan diusulkan lagi sebagai temuan baru
 enam bulan kemudian, dan pemeriksanya akan dilonggarkan oleh orang yang tidak
 tahu kenapa ia ada.

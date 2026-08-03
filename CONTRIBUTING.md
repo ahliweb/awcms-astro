@@ -117,8 +117,14 @@ Daftar lengkap dan mengikat ada di [`AGENTS.md`](AGENTS.md#definition-of-done). 
 
 - [ ] Scope atomic terpenuhi; tidak ada perubahan menumpang yang tak berkaitan.
 - [ ] `bun run build` bersih, termasuk `astro check`.
-- [ ] `bun test` hijau — termasuk gerbang katalog PO dan gerbang penyajian.
+- [ ] `bun test` hijau — termasuk gerbang katalog PO, penyajian, permukaan
+      `awcms`, dan versi toolchain.
+- [ ] `bun run audit:konten` dan `bun run audit:dokumen` hijau.
 - [ ] `bun audit` melaporkan **0 kerentanan**.
+
+`bun run release <tingkat> --apply` menjalankan kelimanya dalam urutan yang
+berarti; ia bukan pengganti menjalankannya saat mengerjakan PR, tetapi ia yang
+memastikan tidak ada rilis yang melewatkannya.
 - [ ] Halaman baru bekerja dengan JavaScript dimatikan.
 - [ ] String antarmuka baru masuk ke seluruh katalog locale; key dinamis punya fallback yang layak dibaca.
 - [ ] Locale default dan locale berprefiks menghasilkan jumlah halaman yang sama.

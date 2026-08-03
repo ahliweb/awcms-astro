@@ -20,7 +20,7 @@ bun run audit:dokumen   # markdown repo ini         — tanpa build, tanpa jarin
 | Gerbang | Kelas cacat |
 | --- | --- |
 | `check` | Tipe, props, impor putus, lockfile milik proyek lain |
-| `bun test` | Paritas katalog PO, kontrak `awcms` (traversal, media, kartu), header + cache penyaji, CSP atas keluaran |
+| `bun test` | Paritas katalog PO, kontrak `awcms` (traversal, media, kartu), **permukaan yang dipanggil build**, header + cache penyaji, CSP atas keluaran, **versi toolchain** |
 | `audit:konten` | Rasio gambar terhadap `--ratio-visual`, format dibaca dari ISI berkas, judul/canonical/hreflang, aset yang dijanjikan metadata, tautan mati, sitemap, nama key bocor ke layar |
 | `audit:dokumen` | Tautan markdown mati, indeks ADR lengkap dua arah, status ADR setuju dengan berkasnya, daftar permukaan kilau, jalur berkas yang disebut dokumen |
 
@@ -46,6 +46,7 @@ bun run audit:dokumen   # markdown repo ini         — tanpa build, tanpa jarin
 - **Kolom "Keadaan" di `docs/awcms-astro/standar-performa-dan-keamanan.md`.**
   Sebuah baris bisa berbunyi "Terpenuhi" setelah kontrolnya dicabut, dan tidak
   ada yang akan merah. Itu biaya yang ADR-0028 nyatakan menerimanya.
+- **Prosa di dalam skill maupun docs.** Sama seperti di atas: gerbang membaca struktur.
 - **Kutipan ADR.** `ADR-0042` di sebuah berkas tidak diperiksa resolve ke
   `docs/adr/0042-*.md` — aturan 2 `awcms`
   [ADR-0062](https://github.com/ahliweb/awcms/blob/main/docs/adr/0062-skills-are-gated-against-the-code-they-describe.md),
@@ -89,6 +90,27 @@ Enam berikutnya ditemukan 4 Agustus 2026, seluruhnya dalam satu pembacaan
 Empat kelas kini digerbangi `audit:dokumen`. Sisanya prosa, dan prosa tidak bisa
 digerbangi. **Menulis aturan tanpa pemeriksanya adalah menambah calon nomor dua
 belas.**
+
+### Empat aturan yang tertulis TANPA pemeriksa — ditemukan 4 Agustus 2026
+
+Bentuk yang berbeda dari sebelas di atas, dan lebih sunyi: bukan dokumen yang
+menyatakan sesuatu yang tidak ada, melainkan **aturan yang benar dan tidak
+pernah diperiksa siapa pun**. Keempatnya kini digerbangi
+([ADR-0030](../../../docs/adr/0030-aturan-tertulis-mendapat-pemeriksanya.md)):
+
+| Aturan, dan sejak kapan tertulis | Yang menemukannya | Pemeriksanya sekarang |
+| --- | --- | --- |
+| Versi Bun sama di **lima** nilai (`AGENTS.md` menghitung tiga BERKAS) | `grep -rln "packageManager\|bun-version" tests/ scripts/` → nol | `tests/versi-toolchain.test.mjs` |
+| `bun test` + `bun audit` wajib sebelum rilis (**empat** dokumen menuntutnya) | Membaca `scripts/rilis.mjs` sampai habis | Perilis menjalankan keduanya, **sesudah** build |
+| Daftar permukaan `awcms` yang dipanggil build | `awcms` mencatat enam, kode memanggil tiga | `tests/kontrak-awcms.test.mjs`, dua arah terhadap tabel bertanda di skill integrasi |
+| Pin rantai pasok ke SHA/digest (celah 6 ADR-0028) | Sudah tercatat, belum dikerjakan | Pin + gerbang versi yang menjaganya |
+
+**Pelajarannya bukan "tulis lebih banyak gerbang".** Ketiga yang pertama sudah
+punya kalimat yang tegas, sebagian dengan kata **wajib**, dan ketegasan itulah
+yang membuat semua orang mengira ada yang memeriksanya. Saat menambah aturan,
+pertanyaan yang menentukan bukan "apakah ini benar" melainkan **"perintah apa
+yang berubah merah bila ini dilanggar?"** Bila jawabannya tidak ada, aturan itu
+belum mendarat — ia baru ditulis.
 
 ### Yang membuat nomor 7–11 mungkin, dan cara menghindarinya
 

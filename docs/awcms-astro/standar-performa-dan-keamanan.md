@@ -29,9 +29,15 @@ yang tidak bisa diverifikasi ditulis `belum diukur`, bukan `terpenuhi`.
 | OWASP Secure Headers Project | berjalan | Header respons HTTP | [`server/penyaji.mjs`](../../server/penyaji.mjs) |
 | ISO/IEC 27001 | 2022, Annex A | Kontrol yang menyentuh kode | Matriks di bawah |
 | NIST SSDF | SP 800-218 v1.1 | Praktik rantai pasok perangkat lunak | `.github/`, `bun.lock`, `Dockerfile` |
+| OWASP API Security Top 10 | 2023 | Risiko khas API | **Tidak berlaku** — repo ini tidak MENYAJIKAN API. Disebut supaya paritas dengan `awcms` bisa dibaca, bukan ditebak |
+| ISO/IEC 25010 | 2023 | Model mutu produk (performa, kompatibilitas, keandalan) | Kompatibilitas/interoperabilitas: gerbang permukaan di §Hubungan dengan `awcms` |
 | Core Web Vitals | LCP · INP · CLS | Performa yang dirasakan pembaca | §Performa |
-| RFC 9111 | HTTP Caching | Semantik `Cache-Control` | [`tests/penyaji.test.mjs`](../../tests/penyaji.test.mjs) |
+| RFC 9111 (+ RFC 5861) | HTTP Caching, `stale-while-revalidate` | Semantik `Cache-Control` | [`tests/penyaji.test.mjs`](../../tests/penyaji.test.mjs) |
 | WCAG | 2.1 AA (2.2 AA untuk permukaan Jualanku) | Aksesibilitas | [`standar-teknis.md`](standar-teknis.md#aksesibilitas) |
+
+**Daftar ini sengaja disamakan dengan penilaian `ahliweb/awcms` 4 Agustus 2026** (`docs/awcms/repo-assessment-2026-08-04.md`), yang mengukur dirinya terhadap ISO/IEC 25010, RFC 9111/5861, Core Web Vitals, OWASP Top 10 2021, OWASP API Security Top 10 2023, ASVS 4.0, dan ISO/IEC 27001:2022 Annex A. Dua di antaranya tidak ada di daftar sini sampai hari ini, dan satu (API Security Top 10) tidak berlaku di sini — ia tetap dicatat, karena baris "tidak berlaku, dan ini alasannya" adalah yang membuat dua matriks keluarga bisa dijumlahkan.
+
+**RFC 5861 (`stale-while-revalidate`) sengaja TIDAK dipakai.** Ia bernilai bagi cache BERSAMA; situs ini disajikan satu proses Bun di belakang Traefik tanpa cache bersama, sehingga direktif itu hanya akan menambah satu janji yang tak ada yang menepati. Sebuah situs yang menaruh CDN di depannya punya alasan berbeda — dan itu keputusan situs, bukan template.
 
 **Edisi OWASP Top 10 dan ASVS sengaja disamakan dengan `ahliweb/awcms`**, yang
 memetakan kontrolnya ke Top 10 2021 dan ASVS 4.0.x di skill
@@ -208,8 +214,8 @@ yang tidak tahu kenapa ia ada.
 | 3 | Anggaran gambar tidak punya pemeriksa | **DITUTUP** — 250 KB beranda, 100 KB halaman konten, diukur untuk pertama kalinya sejak angka itu ditulis | Gerbang `performa`: menjumlahkan byte gambar yang benar-benar DITERBITKAN build ini, per halaman. Media `awcms` tidak ada di `dist/client` sehingga tidak ikut tertimbang — batas yang disengaja, dan disebut di skripnya |
 | 4 | `awcmsGet` tanpa batas waktu | **DITUTUP** — `AbortSignal.timeout`, bawaan 30 detik, diubah lewat `AWCMS_API_TIMEOUT_MS` | Dua asersi di `tests/kontrak-awcms.test.mjs`, **mutation-proven**: tiruan yang menerima koneksi lalu tidak pernah menjawab (melepas sinyalnya membuat tes itu menggantung, persis cacat aslinya), dan nilai batas cacat yang DITOLAK alih-alih diam-diam jatuh ke bawaan |
 | 5 | Header pembocor teknologi tidak diverifikasi | **DITUTUP** — `Server` dan `X-Powered-By` dihapus `pasangHeader`, bukan sekadar diasersi: "tidak dikirim hari ini" dan "tidak akan dikirim" adalah dua hal berbeda | Asersi negatif atas tiga kelas respons di `tests/penyaji.test.mjs`, **mutation-proven** |
-| 6 | Action GitHub dipin ke tag, image dasar dipin ke tag | **TERBUKA** — tag bisa dipindahkan; SSDF PS.2 dan OpenSSF Scorecard menuntut pin ke SHA commit / digest | Dependabot sudah mengelola keduanya bila dipin ke SHA; gerbang tambahan tidak perlu |
-| 7 | Tidak ada analisis statik | **TERBUKA** — `awcms` menjalankan CodeQL dan punya skill triase-nya. Permukaan di sini jauh lebih kecil, tetapi "lebih kecil" bukan "nol" | Workflow CodeQL terjadwal, bukan per-PR |
+| 6 | Action GitHub dipin ke tag, image dasar dipin ke tag | **DITUTUP** — [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md): empat action dipin ke SHA commit dengan komentar `# vX.Y.Z` yang Dependabot baca, image dasar dipin ke digest | `tests/versi-toolchain.test.mjs`, **mutation-proven**. Ia menutup kelas cacat yang justru DITAMBAHKAN pin digest: saat tag dan digest sama-sama ada, digest yang dipatuhi Docker dan tag hanya jadi komentar |
+| 7 | Tidak ada analisis statik | **TERBUKA, dan alasannya lebih tajam daripada "permukaannya kecil"** — CodeQL tidak mengurai `.astro`, jadi ia hanya akan mencakup `src/lib/**.ts`, `scripts/**.mjs`, dan `server/**.mjs`. Menyalakannya lalu menyebut repo ini "dianalisis statik" adalah upacara yang terlihat seperti cakupan — pola yang kedua repo keluarga sudah tolak | Workflow CodeQL terjadwal, dengan cakupannya DINYATAKAN di ringkasan run |
 | 8 | Core Web Vitals tidak diukur | **TERBUKA** — target di §Performa masih klaim tanpa bukti. Celah 2 dan 3 menutup dua PENYEBAB LCP buruk; keduanya bukan pengukurannya | Lighthouse CI atas `dist/client` di job `build`, hanya berjalan bila situs punya sumber konten |
 | 9 | Tidak ada SBOM pada rilis | **TERBUKA** — konsumen hilir tidak bisa menjawab "apakah rilis ini terdampak advisory X" tanpa membangun ulang | Langkah di `scripts/rilis.mjs` |
 
@@ -247,6 +253,23 @@ temuan baru.
   Menaruhnya di sini berarti dua tempat yang memutuskan hal yang sama.
 
 ## Hubungannya dengan `ahliweb/awcms`
+
+> **Dua repo, dua angka — dan yang satu menyusun rencana di atas angka yang
+> lain.** Penilaian `awcms` 4 Agustus 2026 (`docs/awcms/repo-assessment-2026-08-04.md`
+> §4) mencatat repo ini memanggil **enam** permukaannya, lalu merekomendasikan
+> snapshot kontrak konsumen atas keenamnya. Repo ini memanggil **tiga**;
+> `GET /api/v1/blog/posts/{id}` dihapus [ADR-0018](../adr/0018-kontrak-build-token-mesin-dan-traversal-konten.md),
+> `GET /api/v1/auth/session` milik BFF yang belum ada, dan
+> `POST /api/v1/access/machine-credentials` adalah cara MANUSIA menerbitkan
+> token — bukan panggilan build.
+>
+> Selisihnya bukan sekadar angka: kontrak yang membekukan tiga permukaan yang
+> tidak dikonsumsi mengikat repo sana pada bentuk yang repo sini tidak pernah
+> butuh, sambil membuat "kontraknya terjaga" terasa lebih lengkap daripada
+> kenyataannya. Sejak [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md)
+> daftar di sisi sini **diekstrak dari kode dan digerbangi dua arah**, jadi ia
+> bisa dipercaya sebagai sumber — dan permukaan keempat tidak bisa mendarat
+> diam-diam.
 
 Repo ini **mengonsumsi** `awcms` dan tidak menyajikan API apa pun, jadi sebagian
 besar kontrol keluarga — RLS, ABAC default-deny, idempotency, audit trail, HMAC

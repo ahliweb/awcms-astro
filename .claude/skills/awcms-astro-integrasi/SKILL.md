@@ -22,15 +22,25 @@ satu-satunya tempat komponen menyentuh hasilnya.
 ## Permukaan — TIGA yang dipanggil, dua yang tidak
 
 Bedanya penting, dan pernah salah ditulis di berkas ini sebagai "lima permukaan
-yang dipakai". Verifikasi ulangnya satu perintah:
-`grep -rn "awcmsGet<" src/`.
+yang dipakai". **`ahliweb/awcms` masih mencatat ENAM** di
+`docs/awcms/repo-assessment-2026-08-04.md`, dan menyusun rencana snapshot
+kontrak konsumen di atas angka itu — tiga di antaranya tidak pernah dipanggil
+build ini.
+
+Daftar di bawah karena itu **digerbangi**, bukan ditulis tangan:
+`tests/kontrak-awcms.test.mjs` mengekstrak jalur `/api/v1/…` dari kode sumber
+`src/` dan menolak bila daftar ini menyimpang darinya, dua arah. Ia yang membuat
+permukaan keempat tidak bisa mendarat tanpa berkas ini ikut berubah.
+
+<!-- permukaan:dipanggil:mulai -->
+| Permukaan yang benar-benar dipanggil build | Dipanggil dari |
+| --- | --- |
+| `/api/v1/blog/posts` | `src/lib/content.ts` — traversal build feed, `view=full` + `order=created_at` + cursor |
+| `/api/v1/media/objects` | `src/lib/awcms/media.ts` — resolusi media, maks 100 id per permintaan |
+| `/api/v1/media/public-origin` | `src/lib/awcms/media.ts` — asal media untuk `img-src` |
+<!-- permukaan:dipanggil:selesai -->
 
 ```
-DIPANGGIL HARI INI (3)
-GET /api/v1/blog/posts?view=full&order=created_at&status=published   traversal build feed → src/lib/content.ts
-GET /api/v1/media/objects?ids=…                                      resolusi media, maks 100 id → src/lib/awcms/media.ts
-GET /api/v1/media/public-origin                                      asal media untuk img-src → src/lib/awcms/media.ts
-
 TIDAK DIPANGGIL (2)
 GET /api/v1/blog/posts/{id}    hidrasi satu post — DIHAPUS oleh ADR-0018.
                                Ia dulu N+1: satu permintaan per post, per build,

@@ -28,6 +28,8 @@ Closes #
 
 - [ ] `bun run build` sukses tanpa error `astro check`
 - [ ] `bun test` hijau
+- [ ] `bun run audit:konten` hijau — **setelah** build, agar enam gerbang keluarannya benar-benar berjalan
+- [ ] `bun run audit:dokumen` hijau — tautan mati, indeks ADR dua arah, jalur berkas yang disebut dokumen (termasuk di `.claude/skills/`)
 - [ ] `bun audit` melaporkan 0 kerentanan
 - [ ] Halaman baru bekerja dengan JavaScript dimatikan
 - [ ] Tampilan layak pakai dari 360px sampai desktop, di kedua tema
