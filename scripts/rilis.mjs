@@ -98,6 +98,34 @@ execSync('bun run audit:konten', { stdio: 'inherit' });
 console.log('Menjalankan bun run audit:dokumen ...');
 execSync('bun run audit:dokumen', { stdio: 'inherit' });
 
+// SESUDAH build, dan itu satu-satunya urutan yang berarti: dua lapis `bun test`
+// — gerbang penyajian (`tests/penyaji.test.mjs`) dan gerbang keluaran CSP
+// (`tests/keluaran-csp.test.mjs`) — MELEWATI DIRINYA tanpa `dist/`, dan
+// mengatakannya. Menjalankannya sebelum build berarti merilis tanpa satu pun
+// dari keduanya pernah berjalan.
+//
+// Ia tidak ada di sini sampai 4 Agustus 2026, dan ketiadaannya persis kelas
+// cacat yang repo ini bangun empat gerbang untuk menangkap: `AGENTS.md`
+// §Definition of Done, `CONTRIBUTING.md`, templat PR, dan checklist repo baru
+// KEEMPATNYA menuntut `bun test` hijau sebelum rilis, sementara skrip yang
+// benar-benar merilis tidak pernah menjalankannya. Aturan yang tampak terjaga
+// padahal tidak.
+console.log('Menjalankan bun test (setelah build, sehingga lapis penyaji ikut jalan) ...');
+execSync('bun test', { stdio: 'inherit' });
+
+// `bun audit` (kerentanan dependency) dan `bun run audit:konten` (isi situs)
+// adalah dua hal berbeda; namanya sengaja tidak dibuat mirip.
+//
+// `standar-teknis.md` §Keamanan menyatakan "`bun audit` wajib nol sebelum
+// rilis" — sebuah kalimat yang, sampai baris ini ada, tidak dijalankan oleh apa
+// pun yang merilis.
+//
+// `--audit-level=low` menyamai CI. Ambang yang lebih longgar di sini akan
+// membuat rilis meloloskan advisory yang PR-nya sendiri tolak, dan selisih itu
+// hanya terlihat oleh orang yang membandingkan dua berkas.
+console.log('Menjalankan bun audit ...');
+execSync('bun audit --audit-level=low', { stdio: 'inherit' });
+
 // ── Lipat changeset ke CHANGELOG.md ──────────────────────────────────────────
 // Tanggal lokal, bukan UTC: merilis malam hari WIB akan tercatat mundur sehari
 // bila memakai toISOString().

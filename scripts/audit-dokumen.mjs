@@ -422,6 +422,10 @@ const JALUR_DIKECUALIKAN = new Map([
   ["docs/PROJECT_STATE.md", "milik `awcms` (indikator pencabutan ADR-0021 dibaca di sana) DAN bentuk standar keluarga yang repo ini sengaja tidak bawa — `standar-teknis.md` §Dokumentasi menyebut siapa yang memikul perannya di sini"],
   ["tests/admin-navigation-registry.test.ts", "milik `awcms` — gerbang yang menegakkan kriteria 1"],
   ["docs/awcms/14_ui_ux_design_system.md", "milik `awcms` — sumber standar UI keluarga"],
+  [
+    "docs/awcms/repo-assessment-2026-08-04.md",
+    "milik `awcms` — penilaian empat sumbunya 4 Agustus 2026, yang §4-nya mencatat repo INI memanggil enam permukaan sementara kodenya memanggil tiga; selisih itu dikoreksi di ADR-0030 dan harus tetap bisa dirujuk"
+  ],
   ["src/lib/security/security-headers.ts", "milik `awcms` — asal `BASE_CSP_DIRECTIVES` yang ADR-0019 selaraskan"],
   ["scripts/kartu-share.mjs", "milik repo rujukan — disebut PERSIS karena tidak ada di sini"],
   ["src/content.config.ts", "bentuk konten-di-repo yang repo ini gantikan — disebut untuk menjelaskan penggantinya"],

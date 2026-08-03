@@ -205,7 +205,9 @@ Gerbang standar ini, seluruhnya wajib hijau sebelum pekerjaan dinyatakan selesai
 | Audit konten — gambar | `bun run audit:konten` | Rasio terhadap `--ratio-visual`, format dibaca dari isi berkas, XML SVG, ukuran teks terkecil di SVG | Ya |
 | Audit konten — keluaran | `bun run audit:konten` **setelah** `bun run build` | Judul/deskripsi/canonical, hreflang pincang, aset yang dijanjikan metadata tetapi tidak diterbitkan, tautan mati, sitemap, nama key yang bocor ke layar | Ya — melewati dirinya bila `dist/` belum ada |
 | Audit dokumen | `bun run audit:dokumen` | Tautan markdown ke berkas yang tidak ada (diselesaikan dari letak berkasnya, sehingga aturan tautan `.changesets/` ikut terjaga), indeks ADR yang tidak lengkap dua arah, kolom Status yang tidak setuju dengan ADR-nya, daftar permukaan kilau yang menyimpang dari `global.css` | Ya |
-| Audit dependency | `bun audit` | Kerentanan rantai build | Ya |
+| Versi toolchain | `bun test` | Lima nilai versi Bun (`packageManager`, `engines.bun`, dua `bun-version` CI, dua tag `Dockerfile`) yang wajib sepakat, plus digest image yang menempel pada tag yang benar | Ya — sejak [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md) |
+| Permukaan `awcms` | `bun test` | Jalur `/api/v1/…` yang benar-benar dipanggil `src/`, dibandingkan dua arah dengan tabel bertanda di skill integrasi | Ya — sejak ADR-0030 |
+| Audit dependency | `bun audit --audit-level=low` | Kerentanan rantai build. Dijalankan CI **dan** perilis | Ya |
 | CI | `.github/workflows/ci.yml` | Seluruhnya yang ada, pada setiap PR | Ya |
 
 **Dua aturan gambar tetap manual, dan itu disebut terus terang.** Teks di dalam gambar hanya boleh label topik, dan tidak boleh ada lambang atau atribut instansi negara — termasuk di dalam ilustrasi. Tidak ada pemeriksa yang bisa menilai keduanya. Aturan yang tampak terjaga padahal tidak lebih berbahaya daripada aturan yang jelas-jelas manual.

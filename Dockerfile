@@ -27,12 +27,27 @@
 # `RUN --mount=type=secret` lebih ketat lagi dan bisa dipakai tanpa mengubah
 # apa pun di bawah selain baris `RUN`-nya.
 
-# Versi Bun dikunci di tiga tempat yang harus bergerak bersama: tag image di
-# bawah, `packageManager` + `engines.bun` di package.json, dan `bun-version` di
-# .github/workflows/ci.yml. Menaikkan salah satu saja adalah cara paling sunyi
-# untuk membuat build lokal, build CI, dan build image berbeda perilaku
-# (ADR-0015).
-FROM oven/bun:1.3.14-alpine AS build
+# Versi Bun dikunci di tiga BERKAS yang harus bergerak bersama: tag image di
+# bawah (dua kali), `packageManager` + `engines.bun` di package.json, dan
+# `bun-version` di .github/workflows/ci.yml (dua kali). Menaikkan salah satu
+# saja adalah cara paling sunyi untuk membuat build lokal, build CI, dan build
+# image berbeda perilaku (ADR-0015).
+#
+# Sejak 4 Agustus 2026 aturan itu punya pemeriksa: `tests/versi-toolchain.test.mjs`
+# membandingkan kelima nilainya. Sebelum itu ia aturan tertulis tanpa gerbang —
+# selama sembilan bulan.
+#
+# ## Kenapa ada digest di belakang tag
+#
+# Tag bisa dipindahkan; digest tidak (SSDF PS.2). Tetapi saat KEDUANYA ada,
+# **digest yang dipatuhi Docker dan tag hanya menjadi komentar** — sehingga
+# menaikkan tag tanpa menaikkan digest menghasilkan berkas yang berbunyi 1.3.15
+# sambil membangun 1.3.14, tanpa satu pun kegagalan. Gerbang di atas yang
+# menutup itu, dan karena itu pin digest tidak boleh mendarat tanpanya.
+#
+# Menaikkan versi Bun berarti menaikkan tag DAN digest bersama. Digest baru:
+#   docker manifest inspect oven/bun:<versi>-alpine   (atau registry API)
+FROM oven/bun:1.3.14-alpine@sha256:5acc90a93e91ff07bf72aa90a7c9f0fa189765aec90b47bdbf2152d2196383c0 AS build
 WORKDIR /app
 
 # Lapisan dependency dipisah dari lapisan sumber supaya perubahan konten atau
@@ -99,7 +114,7 @@ RUN bun run audit:konten
 # Permissions-Policy sejak ADR-0019 — dan kompresi ikut pindah ke
 # `server/penyaji.mjs` dan dijaga
 # `tests/penyaji.test.mjs`.
-FROM oven/bun:1.3.14-alpine AS runtime
+FROM oven/bun:1.3.14-alpine@sha256:5acc90a93e91ff07bf72aa90a7c9f0fa189765aec90b47bdbf2152d2196383c0 AS runtime
 WORKDIR /app
 
 ENV NODE_ENV=production \

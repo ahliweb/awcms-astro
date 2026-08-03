@@ -235,6 +235,96 @@ function pasangFetchTiruan(posts, { ukuranHalaman = 100, jejak = [], media = new
   return jejak;
 }
 
+/**
+ * Permukaan `awcms` yang benar-benar dipanggil build ini — diekstrak dari KODE,
+ * bukan dipercaya dari dokumen.
+ *
+ * ## Kenapa gerbang ini ada, dan kenapa ia lintas-repo
+ *
+ * `ahliweb/awcms` menilai kesiapannya sebagian dari daftar permukaan yang
+ * dikonsumsi repo ini. Pada 4 Agustus 2026 penilaian itu
+ * (`docs/awcms/repo-assessment-2026-08-04.md`) mencatat **enam**, dan menyusun
+ * rencana snapshot kontrak konsumen di atas angka tersebut. Tiga di antaranya
+ * tidak pernah dipanggil build ini:
+ *
+ *   - `GET /api/v1/blog/posts/{id}` — DIHAPUS ADR-0018 (dulu N+1 per build);
+ *   - `GET /api/v1/auth/session` — milik BFF portal yang belum ada;
+ *   - `POST /api/v1/access/machine-credentials` — cara MANUSIA menerbitkan
+ *     token, bukan panggilan build.
+ *
+ * Selisih itu bukan sekadar angka: sebuah kontrak konsumen yang membekukan tiga
+ * permukaan yang tidak dikonsumsi akan mengikat repo SANA pada bentuk yang repo
+ * SINI tidak pernah butuh, sambil membuat "kontraknya terjaga" terasa lebih
+ * lengkap daripada kenyataannya.
+ *
+ * Yang bisa dilakukan repo ini adalah membuat daftarnya **tidak bisa salah**:
+ * diekstrak dari sumber, dibandingkan dua arah dengan tabel di skill, dan merah
+ * saat keduanya menyimpang. Permukaan keempat karena itu tidak bisa mendarat
+ * diam-diam.
+ */
+describe("permukaan awcms yang dipanggil build", () => {
+  const SKILL = ".claude/skills/awcms-astro-integrasi/SKILL.md";
+
+  /** Jalur `/api/v1/…` di dalam string literal `src/`, tanpa komentar. */
+  function permukaanDiSumber() {
+    const ditemukan = new Set();
+
+    for (const nama of new Bun.Glob("**/*.{ts,astro}").scanSync("src")) {
+      const isi = readFileSync(`src/${nama}`, "utf8")
+        // Komentar dibuang lebih dulu: berkas di sini MEMERIKAN permukaan yang
+        // tidak dipanggil jauh lebih sering daripada memanggilnya, dan sebuah
+        // gerbang yang menghitung docblock akan melaporkan permukaan yang justru
+        // sudah dihapus.
+        .replace(/\/\*[\s\S]*?\*\//g, "")
+        .replace(/^\s*\/\/.*$/gm, "");
+
+      for (const [, jalur] of isi.matchAll(/["'`](\/api\/v1\/[^"'`\s?]*)["'`]/g)) {
+        ditemukan.add(jalur);
+      }
+    }
+
+    return ditemukan;
+  }
+
+  /** Jalur di kolom pertama tabel bertanda di skill. */
+  function permukaanDiSkill() {
+    const isi = readFileSync(SKILL, "utf8");
+    const blok = isi.split("<!-- permukaan:dipanggil:mulai -->")[1]?.split(
+      "<!-- permukaan:dipanggil:selesai -->"
+    )[0];
+
+    assert.ok(blok, `penanda permukaan tidak ditemukan di ${SKILL}`);
+
+    return new Set(
+      [...blok.matchAll(/^\|\s*`(\/api\/v1\/[^`]+)`\s*\|/gm)].map((m) => m[1])
+    );
+  }
+
+  test("kode sumber memanggil tepat tiga permukaan", () => {
+    // Angkanya ditulis eksplisit supaya permukaan KEEMPAT memerahkan gerbang ini
+    // meskipun penulisnya ingat memperbarui skill — dua pemeriksaan yang bisa
+    // salah bersama bukan dua pemeriksaan.
+    const sumber = permukaanDiSumber();
+
+    assert.deepEqual(
+      [...sumber].sort(),
+      ["/api/v1/blog/posts", "/api/v1/media/objects", "/api/v1/media/public-origin"],
+      "permukaan awcms yang dipanggil src/ berubah — bila ini disengaja, " +
+        "perbarui tabel bertanda di skill integrasi DAN beri tahu `awcms`: " +
+        "repo itu menyusun kontrak konsumennya dari daftar ini"
+    );
+  });
+
+  test("tabel di skill sama persis dengan kode, dua arah", () => {
+    // Dua arah, bukan satu: sebuah baris yang TERTINGGAL di skill setelah
+    // permukaannya dihapus adalah cacat yang sama dengan permukaan baru yang
+    // tidak dicatat — dan yang pertama justru yang sudah pernah terjadi di sini
+    // (`/posts/{id}` bertahan di dokumen berbulan-bulan setelah ADR-0018
+    // menghapus panggilannya).
+    assert.deepEqual([...permukaanDiSkill()].sort(), [...permukaanDiSumber()].sort());
+  });
+});
+
 describe("traversal build feed", () => {
   let getArticles;
   let resetContentCacheForTests;

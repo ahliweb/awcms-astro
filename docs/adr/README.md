@@ -32,6 +32,7 @@ menyesuaikan gaya, menambah tes.
 | [0027](0027-penahanan-adr-0021-selesai.md) | Penahanan ADR-0021 selesai: kedua indikatornya terpenuhi | Diterima |
 | [0028](0028-jangkar-standar-performa-dan-keamanan.md) | Postur performa dan keamanan diikat ke standar yang disebut namanya (OWASP, ISO 27001, SSDF, Core Web Vitals) | Diterima |
 | [0029](0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md) | HSTS dikirim penyaji, digerbangi produksi, tanpa `includeSubDomains` | Diterima |
+| [0030](0030-aturan-tertulis-mendapat-pemeriksanya.md) | Empat aturan yang sudah tertulis mendapat pemeriksanya; rantai pasok dipin ke SHA dan digest | Diterima |
 
 > **Kenapa penomoran mulai dari 0014.** ADR di repo ini melanjutkan urutan repo
 > rujukan yang identitasnya dilepas di [#11](https://github.com/ahliweb/awcms-astro/pull/11);
