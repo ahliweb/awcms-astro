@@ -25,6 +25,7 @@ menyesuaikan gaya, menambah tes.
 | [0020](0020-layar-admin-kembali-ke-awcms.md) | Layar admin kembali ke `awcms`; repo ini murni publik + BFF | Diterima |
 | [0021](0021-tahan-pengembangan-menunggu-fondasi-awcms.md) | Pengembangan repo ini ditahan sampai fondasi `awcms` selesai | Diterima |
 | [0022](0022-situs-menerbitkan-tenant-default-awcms.md) | Situs ini menerbitkan tenant DEFAULT (owner) `awcms` | Diterima |
+| [0023](0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md) | Penahanan ADR-0021 dipersempit: pekerjaan yang tidak membutuhkan `awcms` boleh mendarat | Diterima |
 
 > **Kenapa penomoran mulai dari 0014.** ADR di repo ini melanjutkan urutan repo
 > rujukan yang identitasnya dilepas di [#11](https://github.com/ahliweb/awcms-astro/pull/11);
@@ -39,7 +40,13 @@ menyesuaikan gaya, menambah tes.
 > locale lewat katalog PO. Indeks yang salah lebih buruk daripada tidak ada
 > indeks, karena ia dibaca sebagai daftar keputusan yang berlaku.
 >
-> Tidak ada gerbang yang memeriksa tabel ini — `bun run audit:konten` memeriksa
-> tautan pada **keluaran build**, dan berkas markdown tidak ikut dibangun.
-> Menambah gerbangnya ditahan [ADR-0021](0021-tahan-pengembangan-menunggu-fondasi-awcms.md);
-> ia layak jadi butir pertama saat penahanan dicabut.
+> **Tabel ini kini DIJAGA.** `bun run audit:dokumen` menuntutnya lengkap dua
+> arah — tiap ADR di direktori ini tercatat, tiap baris menunjuk berkas yang
+> ada — dan menuntut kolom Status setuju dengan `- **Status:**` di berkasnya.
+> Ia berjalan di job `check` CI, tanpa build dan tanpa jaringan.
+>
+> Sebelumnya tidak ada yang memeriksanya: `bun run audit:konten` membaca tautan
+> pada **keluaran build**, dan markdown tidak ikut dibangun. Gerbangnya sempat
+> ditahan [ADR-0021](0021-tahan-pengembangan-menunggu-fondasi-awcms.md), lalu
+> mendarat begitu [ADR-0023](0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md)
+> menyempitkan penahanan itu ke pekerjaan yang benar-benar membutuhkan `awcms`.

@@ -61,6 +61,11 @@ Wajib tetap hijau:
       dijanjikan metadata, tautan mati, sitemap, nama key yang bocor ke layar)
       melewati dirinya bila `dist/` belum ada, dan mengatakannya. Di repo
       template itu normal; di SITUS ini, itu berarti gerbangnya tidak berjalan.
+- [ ] `bun run audit:dokumen` — tautan markdown mati dan indeks ADR. Tidak butuh
+      build maupun jaringan. Situs yang menghapus `docs/adr/` mendapat gerbang
+      indeks yang **melewati dirinya dan mengatakannya**; yang mempertahankannya
+      terikat aturan yang sama dengan template: tiap ADR tercatat, tiap baris
+      menunjuk berkas yang ada, dan kolom Status setuju dengan ADR-nya.
 
 Dua aturan gambar tidak punya pemeriksa dan tidak akan pernah punya: **teks di
 dalam gambar hanya label topik**, dan **tanpa lambang atau atribut instansi
@@ -96,6 +101,7 @@ bun install
 bun run build          # gerbang lockfile + astro check + astro build + bundel penyaji
 bun test               # harus hijau; setelah build, lapis penyajian ikut jalan
 bun run audit:konten   # setelah build, agar gerbang keluarannya ikut jalan
+bun run audit:dokumen  # tautan markdown & indeks ADR; tidak butuh build
 bun run serve          # periksa header dan cache seperti yang dilihat pembaca
 bun audit              # harus 0 kerentanan
 bun run release minor --apply

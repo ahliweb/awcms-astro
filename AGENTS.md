@@ -363,6 +363,11 @@ aturan yang jelas-jelas manual.
 - [ ] `bun run audit:konten` hijau **setelah** build. Sebelum build ia hanya
       memeriksa sumber gambar dan mengatakan bahwa gerbang keluarannya
       dilewati; membaca keluaran itu adalah bagian dari menjalankannya.
+- [ ] `bun run audit:dokumen` hijau. Ia tidak butuh build: tautan markdown mati
+      dan indeks ADR yang tidak lengkap dua arah. **Menambah ADR berarti
+      menambah barisnya di `docs/adr/README.md`** — indeks itu pernah
+      mendaftarkan enam keputusan yang tak pernah ada di repo ini sambil
+      melewatkan sembilan yang ada, dan bertahan sembilan ADR tanpa terlihat.
 - [ ] Halaman baru bekerja dengan JavaScript dimatikan.
 - [ ] String antarmuka baru masuk ke SELURUH katalog locale.
 - [ ] Key yang dirangkai dari konfigurasi atau data redaksi dipanggil dengan
