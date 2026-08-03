@@ -71,12 +71,28 @@ mendekati dan bisa diperiksa hari ini ada dua, keduanya di
 [`docs/PROJECT_STATE.md`](https://github.com/ahliweb/awcms/blob/main/docs/PROJECT_STATE.md)
 milik `awcms`:
 
-- **Setiap modul punya layar.** Tabel §Layar admin mencatat "**7 dari 21 modul**
-  masih tanpa layar" (turun dari 13 saat ADR-0051 ditulis). Nol adalah
+- **Setiap modul punya layar.** ~~Tabel §Layar admin mencatat "**7 dari 21
+  modul** masih tanpa layar" (turun dari 13 saat ADR-0051 ditulis).~~ Nol adalah
   penandanya, dan `tests/admin-navigation-registry.test.ts` di sana yang
   menegakkannya.
+
+  **Indikator ini SUDAH TERPENUHI, 3 Agustus 2026.** `grep -L 'navigation:'
+  src/modules/*/module.ts` di `awcms` mengembalikan **nol** baris — diperiksa ke
+  kode, bukan ke tabelnya, karena tabel itu sendiri pernah basi tanpa ada yang
+  merah. Tujuh yang tersisa ditutup lewat `/admin/reporting`, `/admin/approvals`,
+  `/admin/domain-events`, `/admin/sync`, `/admin/blog`, `/admin/media`
+  (ADR-0056), dan `/admin/idn-regions`; `/admin/blog-pages` (ADR-0057) menyusul
+  di atasnya.
+
 - **§4 "yang belum" habis** — seam yang menunggu penyedia, rute publik
   host-resolved, dan sisa penyerapan `awcms-micro`.
+
+  **BELUM, per 3 Agustus 2026.** Ketiganya masih terbuka di §4: business-scope
+  resolver base tetap NO-OP fail-closed, rute konten host-based `/blog/{slug}`
+  masih follow-up, dan `newsletter` + `social-publishing` + pustaka komponen
+  Wave 0 + trajektori Wave 3 belum diserap. Satu dari dua indikator terpenuhi
+  bukan pencabutan — dan yang mencabut tetap pernyataan pemilik, bukan skor
+  indikator.
 
 Kriteria itu **indikator, bukan gerbang otomatis**: yang mencabut penahanan
 tetap pernyataan pemilik. Ditulis di sini supaya "sudah selesai belum?" punya
@@ -95,9 +111,31 @@ berbulan-bulan kemudian dari `git log` selalu kehilangan alasannya.
    diizinkan `img-src` (host media ber-origin lain, jadi CSP ADR-0019
    memblokirnya sampai origin itu dinyatakan). Rinciannya di
    [`src/lib/article-images.ts`](../../src/lib/article-images.ts).
-2. **Filter locale di feed `awcms`.** Masih belum ada — diperiksa langsung di
+2. **Filter locale di feed `awcms`.** ~~Masih belum ada — diperiksa langsung di
    `blog-post-list-query.ts` pada 2 Agustus 2026. Build menarik SELURUH locale
-   lalu memasangkannya di sini; benar, tetapi berlebih untuk situs satu bahasa.
+   lalu memasangkannya di sini; benar, tetapi berlebih untuk situs satu bahasa.~~
+
+   **Koreksi, 3 Agustus 2026 — butir ini berhenti benar dalam hitungan jam.**
+   `awcms` [#346](https://github.com/ahliweb/awcms/pull/346) mendarat pada hari
+   yang sama dan menyebut butir ini di badan commit-nya: `?locale=` kini ada di
+   ketiga cabang daftar (`view=full` termasuk), cocok-persis, absen berarti
+   seluruh locale, kosong dibalas 400.
+
+   Dan alasan butir ini **salah**, bukan cuma usang. "Berlebih untuk situs satu
+   bahasa" memerikan repo lain: template ini menyajikan dua locale (`id` + `en`,
+   `src/config/site.ts`) dan memasangkannya lewat `translationGroupId`. Memakai
+   `?locale=id` di sini membuang setiap baris `en` **tanpa satu pun gerbang
+   merah** — `assertTranslationsArePairable` menangkap terjemahan yang tiba
+   tanpa grup, bukan terjemahan yang tidak pernah ikut ditarik. Hasilnya build
+   hijau yang menerbitkan setiap halaman `/en/**` sebagai bahasa Indonesia
+   berpenanda "belum diterjemahkan": bentuk kegagalan yang sama persis dengan
+   ADR-0018 (`view=full` yang diabaikan → setiap artikel kosong, build hijau),
+   dan `AGENTS.md` sudah menyebutnya kegagalan, bukan optimasi.
+
+   Jadi yang menunggu pencabutan penahanan bukan "pasang `?locale=`", melainkan
+   keputusan yang lebih kecil: **deployment satu-locale** boleh mengirimnya, dan
+   itu berarti satu traversal per locale (parameternya menerima satu nilai),
+   bukan satu traversal yang lebih ramping.
 3. **Kartu share per halaman.** Butuh pembangkit yang terikat seni domain;
    `SITE_SOCIAL_IMAGE` (satu kartu, opsional) tetap keadaan yang didukung.
 4. **BFF portal Jualanku (ADR-0014).** Dua kontrak yang dulu memblokirnya sudah
