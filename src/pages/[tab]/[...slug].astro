@@ -21,7 +21,8 @@ export async function getStaticPaths() {
         props: {
           entry: item.entry,
           slug: item.slug,
-          isFallback: item.isFallback
+          isFallback: item.isFallback,
+          gambar: item.gambar
         }
       });
     }
@@ -30,9 +31,9 @@ export async function getStaticPaths() {
   return paths;
 }
 
-const { entry, slug, isFallback } = Astro.props;
+const { entry, slug, isFallback, gambar } = Astro.props;
 ---
 
-<ArtikelLayout entry={entry} slug={slug} isFallback={isFallback}>
+<ArtikelLayout entry={entry} slug={slug} isFallback={isFallback} gambar={gambar}>
   <Fragment set:html={entry.bodyHtml} />
 </ArtikelLayout>

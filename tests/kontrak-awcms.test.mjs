@@ -174,10 +174,25 @@ function ringkas(post) {
  * `jejak` mencatat setiap permintaan supaya tes bisa membuktikan tidak ada
  * lagi satu permintaan per post (N+1 yang dulu ada).
  */
-function pasangFetchTiruan(posts, { ukuranHalaman = 100, jejak = [] } = {}) {
+function pasangFetchTiruan(posts, { ukuranHalaman = 100, jejak = [], media = new Map() } = {}) {
   globalThis.fetch = async (input) => {
     const url = new URL(String(input));
     jejak.push(url.pathname + url.search);
+
+    if (url.pathname === "/api/v1/media/objects") {
+      const ids = (url.searchParams.get("ids") ?? "").split(",").filter(Boolean);
+
+      // Kontrak awcms: id yang tidak resolve DILAPORKAN di `unresolved`, tidak
+      // dibuang diam-diam — itu yang membuat pemanggil bisa membedakan "tidak
+      // punya gambar" dari "gambarnya hilang".
+      return Response.json({
+        success: true,
+        data: {
+          items: ids.filter((id) => media.has(id)).map((id) => ({ id, ...media.get(id) })),
+          unresolved: ids.filter((id) => !media.has(id))
+        }
+      });
+    }
 
     const detail = url.pathname.match(/^\/api\/v1\/blog\/posts\/(.+)$/);
     if (detail) {
@@ -341,5 +356,151 @@ describe("traversal build feed", () => {
     assert.equal(artikel.length, 1);
     assert.equal(artikel[0].isFallback, false);
     assert.equal(artikel[0].slug, "artikel-0");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Gambar artikel dari media awcms.
+//
+// Kelas cacat yang dijaga di sini sama dengan yang membuat berkas ini ada:
+// keluaran yang SALAH tanpa satu pun kegagalan. Sebuah build yang kehilangan
+// seluruh gambarnya — token tanpa `media.read`, awcms yang lebih tua, media
+// yang tidak dikonfigurasi — menerbitkan situs yang tampak sengaja tanpa
+// ilustrasi, dan tidak ada yang bisa membedakannya dari situs yang memang
+// begitu.
+// ---------------------------------------------------------------------------
+
+const MEDIA_ID = "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee";
+
+function buatObjek({ altText = "Foto loket layanan", width = 1600, height = 900 } = {}) {
+  return {
+    publicUrl: "https://media.contoh.test/news/foto.webp",
+    altText,
+    mimeType: "image/webp",
+    width,
+    height
+  };
+}
+
+describe("gambar artikel dari media awcms", () => {
+  let getArticles;
+  let resetContentCacheForTests;
+
+  beforeEach(async () => {
+    process.env.AWCMS_API_URL = "http://awcms.uji";
+    process.env.AWCMS_API_TOKEN = TOKEN;
+    ({ getArticles, resetContentCacheForTests } = await import("../src/lib/content.ts"));
+    resetContentCacheForTests();
+  });
+
+  afterEach(() => {
+    globalThis.fetch = fetchAsli;
+  });
+
+  test("featuredMediaId menjadi gambar artikel, dengan altText dari awcms", async () => {
+    const posts = [{ ...buatPost(0), featuredMediaId: MEDIA_ID }];
+    pasangFetchTiruan(posts, { media: new Map([[MEDIA_ID, buatObjek()]]) });
+
+    const [artikel] = await getArticles("panduan", "id");
+
+    assert.equal(artikel.gambar.src, "https://media.contoh.test/news/foto.webp");
+    assert.equal(artikel.gambar.alt, "Foto loket layanan");
+    assert.equal(artikel.gambar.width, 1600);
+    assert.equal(artikel.gambar.height, 900);
+  });
+
+  test("altText kosong jatuh ke judul artikel, bukan ke alt kosong", async () => {
+    // `alt=""` memberi tahu pembaca layar bahwa gambarnya dekoratif. Gambar
+    // kepala artikel bukan dekorasi, jadi kosong adalah jawaban yang salah —
+    // judulnya setidaknya dalam bahasa yang sedang dibaca.
+    const posts = [{ ...buatPost(0), featuredMediaId: MEDIA_ID }];
+    pasangFetchTiruan(posts, {
+      media: new Map([[MEDIA_ID, buatObjek({ altText: "   " })]])
+    });
+
+    const [artikel] = await getArticles("panduan", "id");
+    assert.equal(artikel.gambar.alt, "Artikel 0");
+  });
+
+  test("artikel tanpa featuredMediaId TIDAK memicu satu permintaan media pun", async () => {
+    const jejak = [];
+    pasangFetchTiruan([buatPost(0)], { jejak });
+
+    await getArticles("panduan", "id");
+
+    assert.equal(jejak.filter((j) => j.startsWith("/api/v1/media/")).length, 0);
+  });
+
+  test("satu id yang hilang menjadi placeholder, sisanya tetap terbit", async () => {
+    // awcms mengizinkan objek di-purge dan memutuskan rujukan yang menggantung
+    // menjadi inert, bukan penghalang (ADR-0056 §B). Menggagalkan build di sini
+    // berarti situs tidak bisa terbit karena satu gambar dihapus.
+    const hilang = "ffffffff-bbbb-4ccc-8ddd-eeeeeeeeeeee";
+    const posts = [
+      { ...buatPost(0), featuredMediaId: MEDIA_ID },
+      { ...buatPost(1), featuredMediaId: hilang }
+    ];
+    pasangFetchTiruan(posts, { media: new Map([[MEDIA_ID, buatObjek()]]) });
+
+    const artikel = await getArticles("panduan", "id");
+
+    assert.equal(artikel.length, 2);
+    assert.ok(artikel[0].gambar);
+    assert.equal(artikel[1].gambar, undefined);
+  });
+
+  test("SELURUH id yang hilang MENGGAGALKAN build", async () => {
+    // Bentuk yang sama dengan cacat ADR-0018: build hijau, situs terbit, dan
+    // setiap artikel kehilangan gambarnya sekaligus tanpa ada yang menyebutnya.
+    const posts = [
+      { ...buatPost(0), featuredMediaId: MEDIA_ID },
+      { ...buatPost(1), featuredMediaId: "ffffffff-bbbb-4ccc-8ddd-eeeeeeeeeeee" }
+    ];
+    pasangFetchTiruan(posts, { media: new Map() });
+
+    await assert.rejects(
+      () => getArticles("panduan", "id"),
+      (e) => /resolved NONE/.test(e.message)
+    );
+  });
+
+  test("lebih dari 100 id dipecah menjadi beberapa permintaan, tanpa kehilangan satu pun", async () => {
+    // `ids` dibatasi 100 di awcms dan kelebihannya dijawab 400 — bukan
+    // dipotong. Tanpa pemecahan, situs dengan 150 artikel bergambar gagal
+    // build; dengan pemecahan yang salah, sebagian gambar hilang diam-diam.
+    const jejak = [];
+    const media = new Map();
+    const posts = Array.from({ length: 150 }, (_, i) => {
+      const id = `aaaaaaaa-bbbb-4ccc-8ddd-${String(i).padStart(12, "0")}`;
+      media.set(id, buatObjek());
+      return { ...buatPost(i), featuredMediaId: id };
+    });
+    pasangFetchTiruan(posts, { media, jejak });
+
+    const artikel = await getArticles("panduan", "id");
+
+    assert.equal(artikel.length, 150);
+    assert.equal(artikel.filter((a) => a.gambar).length, 150);
+
+    const permintaanMedia = jejak.filter((j) => j.startsWith("/api/v1/media/objects"));
+    assert.equal(permintaanMedia.length, 2);
+    for (const permintaan of permintaanMedia) {
+      const ids = new URL(`http://x${permintaan}`).searchParams.get("ids").split(",");
+      assert.ok(ids.length <= 100, `satu permintaan membawa ${ids.length} id`);
+    }
+  });
+
+  test("media di-resolve SEKALI per build, bukan sekali per tab atau per locale", async () => {
+    const jejak = [];
+    const posts = [
+      { ...buatPost(0), featuredMediaId: MEDIA_ID, grup: "grup-1" },
+      { ...buatPost(1, { locale: "en", grup: "grup-1" }), featuredMediaId: MEDIA_ID }
+    ];
+    pasangFetchTiruan(posts, { media: new Map([[MEDIA_ID, buatObjek()]]), jejak });
+
+    await getArticles("panduan", "id");
+    await getArticles("panduan", "en");
+
+    assert.equal(jejak.filter((j) => j.startsWith("/api/v1/media/objects")).length, 1);
   });
 });

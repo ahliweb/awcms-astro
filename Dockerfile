@@ -106,14 +106,22 @@ ENV NODE_ENV=production \
     PORT=8080 \
     HOST=0.0.0.0
 
-# Yang disalin hanya dua: berkas statis yang disajikan, dan penyaji yang sudah
-# dibundel menjadi satu berkas. Bundel itu yang membuat image ini tidak perlu
-# `node_modules` sama sekali — pohon dependency `astro` berukuran ratusan
-# megabyte dan tidak satu pun barisnya dibutuhkan untuk menyajikan berkas.
-# `dist/server/entry.mjs` beserta `chunks/` juga tidak ikut: isinya sudah ada
-# di dalam bundel.
+# Yang disalin hanya tiga: berkas statis yang disajikan, penyaji yang sudah
+# dibundel menjadi satu berkas, dan asal media yang build tanyakan ke awcms.
+# Bundel itu yang membuat image ini tidak perlu `node_modules` sama sekali —
+# pohon dependency `astro` berukuran ratusan megabyte dan tidak satu pun
+# barisnya dibutuhkan untuk menyajikan berkas. `dist/server/entry.mjs` beserta
+# `chunks/` juga tidak ikut: isinya sudah ada di dalam bundel.
 COPY --from=build /app/dist/client ./dist/client
 COPY --from=build /app/dist/server/penyaji.mjs ./dist/server/penyaji.mjs
+
+# Baris ini WAJIB ikut, dan ketiadaannya tidak menggagalkan apa pun (ADR-0025).
+# `asal-media.json` yang tertinggal di stage build berarti penyaji jatuh ke
+# `img-src 'self'`, dan setiap gambar artikel dari host media awcms diblokir
+# browser — pada image yang build-nya hijau, dengan halaman yang terbit utuh
+# selain gambarnya. Berkas ini selalu ada setelah `bun run build` sukses:
+# deployment tanpa media publik tetap menuliskannya dengan `configured: false`.
+COPY --from=build /app/dist/server/asal-media.json ./dist/server/asal-media.json
 
 # Image bun sudah membawa pengguna non-root `bun`. Tidak ada alasan proses yang
 # hanya membaca berkas berjalan sebagai root.

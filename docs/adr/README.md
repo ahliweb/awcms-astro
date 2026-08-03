@@ -27,6 +27,7 @@ menyesuaikan gaya, menambah tes.
 | [0022](0022-situs-menerbitkan-tenant-default-awcms.md) | Situs ini menerbitkan tenant DEFAULT (owner) `awcms` | Diterima |
 | [0023](0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md) | Penahanan ADR-0021 dipersempit: pekerjaan yang tidak membutuhkan `awcms` boleh mendarat | Diterima |
 | [0024](0024-seni-lokal-di-src-assets.md) | Seni lokal di `src/assets/`, di-resolve `import.meta.glob` sebagai URL | Diterima |
+| [0025](0025-gambar-artikel-dari-media-awcms.md) | Gambar artikel dari media `awcms`: resolusi sekali per build, `img-src` yang ditanyakan | Diterima |
 
 > **Kenapa penomoran mulai dari 0014.** ADR di repo ini melanjutkan urutan repo
 > rujukan yang identitasnya dilepas di [#11](https://github.com/ahliweb/awcms-astro/pull/11);

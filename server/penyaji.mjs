@@ -41,6 +41,7 @@
  * ber-hash pada namanya, jadi ia aman di-cache selamanya dan itulah
  * satu-satunya cara rebuild tidak memaksa pembaca mengunduh ulang seluruh CSS.
  */
+import { existsSync, readFileSync } from "node:fs";
 import http from "node:http";
 import { posix } from "node:path";
 
@@ -77,12 +78,20 @@ export const CACHE_HALAMAN = "public, max-age=0, must-revalidate";
  *
  * ## Menyesuaikannya di sebuah situs
  *
- * `img-src 'self'` adalah butir yang paling mungkin perlu dilonggarkan: situs
- * yang menyajikan gambar artikel dari host media awcms harus menambahkan origin
- * itu di sini. Lakukan di berkas ini — bukan lewat env dan bukan lewat header
- * kedua di Traefik — lalu perbarui `tests/penyaji.test.mjs`. Dua sumber
- * kebijakan yang saling menimpa adalah cara paling sunyi untuk berakhir tanpa
- * kebijakan sama sekali.
+ * `img-src` sudah dilonggarkan untuk **satu** hal, dan hanya lewat satu jalur:
+ * origin media `awcms`, yang `scripts/asal-media.mjs` tanyakan ke
+ * `GET /api/v1/media/public-origin` saat build lalu tulis ke
+ * `dist/server/asal-media.json` (ADR-0025). Nilai itu milik deployment `awcms`,
+ * bukan pilihan situs ini — menuliskannya dengan tangan di sini berarti dua
+ * salinan satu nilai yang sepakat sampai salah satunya disunting, dan
+ * kegagalannya tidak menyebut sebabnya di mana pun: gambar diblokir diam-diam
+ * oleh kebijakan yang tampak baik-baik saja.
+ *
+ * Origin LAIN — CDN, host gambar pihak ketiga — tetap ditambahkan di berkas
+ * ini dengan tangan, lalu `tests/penyaji.test.mjs` diperbarui. Yang tidak boleh
+ * berubah: kebijakan tetap dirangkai **di sini saja**. Berkas JSON itu data,
+ * bukan kebijakan kedua. Dua sumber kebijakan yang saling menimpa adalah cara
+ * paling sunyi untuk berakhir tanpa kebijakan sama sekali.
  *
  * `frame-ancestors 'none'` sengaja tumpang tindih dengan `X-Frame-Options`:
  * yang pertama yang dipatuhi browser modern, yang kedua masih dibaca perantara
@@ -90,11 +99,56 @@ export const CACHE_HALAMAN = "public, max-age=0, must-revalidate";
  * dan direktif itu hanya akan menyulitkan `bun run serve` di localhost tanpa
  * menambah apa pun di produksi.
  */
+/**
+ * Origin media yang ditulis build, atau `undefined`.
+ *
+ * Dibaca dari letak berkas ini sendiri, bukan dari cwd: penyaji dijalankan
+ * `bun dist/server/penyaji.mjs` dari akar repo di pengembangan dan dari `/app`
+ * di dalam image, dan jalur relatif-cwd akan benar di satu tempat saja.
+ *
+ * Berkas yang tidak ada bukan kesalahan — build tanpa `awcms` (atau deployment
+ * yang memang tidak menyajikan media publik) menghasilkan situs yang tidak
+ * merujuk satu gambar media pun, dan `img-src 'self'` justru kebijakan yang
+ * benar untuknya. Yang TIDAK boleh terjadi adalah nilai rusak yang lolos:
+ * apa pun selain origin http(s) yang bisa di-parse diperlakukan sebagai tidak
+ * ada, karena satu nilai cacat di dalam header membuat browser menolak SELURUH
+ * kebijakan — bersama setiap direktif lain di dalamnya.
+ */
+export function asalMediaTerkonfigurasi(
+  berkas = new URL("./asal-media.json", import.meta.url).pathname
+) {
+  if (!existsSync(berkas)) return undefined;
+
+  let isi;
+  try {
+    isi = JSON.parse(readFileSync(berkas, "utf8"));
+  } catch {
+    return undefined;
+  }
+
+  if (isi?.configured !== true || typeof isi.origin !== "string") return undefined;
+
+  let parsed;
+  try {
+    parsed = new URL(isi.origin);
+  } catch {
+    return undefined;
+  }
+
+  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") return undefined;
+
+  // `origin` dari URL yang di-parse, bukan string aslinya: itu yang membuang
+  // path, query, dan spasi yang bisa menyelundupkan direktif kedua ke header.
+  return parsed.origin;
+}
+
+const ASAL_MEDIA = asalMediaTerkonfigurasi();
+
 export const CSP = [
   "default-src 'self'",
   "script-src 'self'",
   "style-src 'self'",
-  "img-src 'self'",
+  ASAL_MEDIA ? `img-src 'self' ${ASAL_MEDIA}` : "img-src 'self'",
   "font-src 'self'",
   "connect-src 'self'",
   "frame-src 'none'",

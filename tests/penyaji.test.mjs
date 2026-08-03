@@ -23,9 +23,11 @@
  * Lapis kedua DILEWATI bila belum ada hasil build, dan ia mengatakannya —
  * gerbang yang diam saat tidak berjalan adalah gerbang yang tidak ada.
  */
-import { test, describe, expect } from "bun:test";
+import { test, describe, expect, afterEach } from "bun:test";
 import assert from "node:assert/strict";
-import { existsSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 import {
   CACHE_ASET,
@@ -33,6 +35,7 @@ import {
   CSP,
   HEADER_KEAMANAN,
   PERMISSIONS_POLICY,
+  asalMediaTerkonfigurasi,
   aturanCache,
   buatServer,
   jalurNormal
@@ -291,5 +294,93 @@ describe.skipIf(!adaArtefak)("artefak produksi menyajikan hasil build", () => {
     ]);
     jalan = undefined;
     assert.notEqual(kode, "tidak berhenti");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Asal media → `img-src`.
+//
+// Nilai ini datang dari build (`scripts/asal-media.mjs`, ADR-0025), bukan dari
+// berkas ini, dan ia berakhir DI DALAM sebuah header. Satu nilai cacat yang
+// lolos membuat browser menolak SELURUH kebijakan — bersama `script-src`,
+// `object-src`, dan setiap direktif lain yang ada di dalamnya. Karena itu tiap
+// bentuk masukan yang tidak sah diuji satu per satu, bukan diringkas.
+// ---------------------------------------------------------------------------
+
+describe("asal media dari build", () => {
+  /** @type {string[]} */
+  const sementara = [];
+
+  afterEach(() => {
+    while (sementara.length) rmSync(sementara.pop(), { recursive: true, force: true });
+  });
+
+  function berkas(isi) {
+    const dir = mkdtempSync(join(tmpdir(), "asal-media-"));
+    sementara.push(dir);
+    const jalur = join(dir, "asal-media.json");
+    writeFileSync(jalur, typeof isi === "string" ? isi : JSON.stringify(isi));
+    return jalur;
+  }
+
+  test("origin yang sah dipakai", () => {
+    assert.equal(
+      asalMediaTerkonfigurasi(
+        berkas({ configured: true, origin: "https://media.contoh.test", baseUrl: "https://media.contoh.test/news" })
+      ),
+      "https://media.contoh.test"
+    );
+  });
+
+  test("berkas yang tidak ada BUKAN kesalahan", () => {
+    // Build tanpa awcms tidak merujuk satu gambar media pun, dan `img-src
+    // 'self'` justru kebijakan yang benar untuknya.
+    assert.equal(asalMediaTerkonfigurasi(join(tmpdir(), "tidak-ada-sama-sekali.json")), undefined);
+  });
+
+  test("configured: false diperlakukan sebagai tidak ada", () => {
+    assert.equal(
+      asalMediaTerkonfigurasi(berkas({ configured: false, origin: null, baseUrl: null })),
+      undefined
+    );
+  });
+
+  test("JSON rusak tidak melempar dan tidak melebarkan apa pun", () => {
+    assert.equal(asalMediaTerkonfigurasi(berkas("{ bukan json")), undefined);
+  });
+
+  test("skema selain http/https ditolak", () => {
+    // `data:` di dalam `img-src` membuka kembali persis permukaan injeksi yang
+    // kebijakan ketat ini ada untuk menutupnya.
+    for (const origin of ["data:image/png;base64,AAAA", "file:///etc/passwd", "ftp://media.test"]) {
+      assert.equal(asalMediaTerkonfigurasi(berkas({ configured: true, origin, baseUrl: origin })), undefined);
+    }
+  });
+
+  test("nilai yang membawa direktif kedua dipangkas menjadi origin saja", () => {
+    // Ini yang membuat `new URL(...).origin` dipakai alih-alih string aslinya:
+    // tanpa itu, sebuah nilai berspasi menyelundupkan direktif ke dalam header.
+    assert.equal(
+      asalMediaTerkonfigurasi(
+        berkas({
+          configured: true,
+          origin: "https://media.contoh.test/news; script-src *",
+          baseUrl: "x"
+        })
+      ),
+      "https://media.contoh.test"
+    );
+  });
+
+  test("origin tanpa string ditolak", () => {
+    assert.equal(asalMediaTerkonfigurasi(berkas({ configured: true, origin: null })), undefined);
+    assert.equal(asalMediaTerkonfigurasi(berkas({ configured: true, origin: 42 })), undefined);
+  });
+
+  test("CSP repo template ini tetap `img-src 'self'`", () => {
+    // Template ini tidak membawa `dist/server/asal-media.json`, jadi kebijakan
+    // bawaannya harus tetap yang paling ketat. Gerbang ini yang menangkap
+    // sebuah berkas yang tanpa sengaja ikut ter-commit.
+    assert.match(CSP, /img-src 'self'(;|$)/);
   });
 });

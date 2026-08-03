@@ -5,7 +5,7 @@ import DisclaimerNote from '../DisclaimerNote.astro';
 import Ilustrasi from '../Ilustrasi.astro';
 import { getLocaleFromPath, getSiteUrl, localePath, siteConfig, tabTitleKey, type TabSlug } from '../../config/site';
 import { getArticles } from '../../lib/content';
-import { getArticleImage, getTabImage } from '../../lib/article-images';
+import { getArticleVisual, getTabImage } from '../../lib/article-images';
 import { collectionSchema } from '../../lib/schema';
 import { t } from '../../lib/po';
 
@@ -69,12 +69,18 @@ const schema = collectionSchema(
   </section>
 
   <div class="grid-cards">
-    {articles.map(({ entry, slug }) => {
-      const imgInfo = getArticleImage(tab, slug);
+    {articles.map((article) => {
+      const { entry, slug } = article;
+      const imgInfo = getArticleVisual(article, tab, slug);
       return (
         <a href={localePath(locale, `/${tab}/${slug}/`)} class="card">
           <div class="card-img-wrapper">
-            <Ilustrasi src={imgInfo.src} alt={imgInfo.alt} />
+            <Ilustrasi
+              src={imgInfo.src}
+              alt={imgInfo.alt}
+              width={imgInfo.width}
+              height={imgInfo.height}
+            />
           </div>
           <div class="card-content">
             <div class="kartu-baris-atas">

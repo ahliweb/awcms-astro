@@ -16,7 +16,7 @@
   },
   "scripts": {
     "dev": "bun --bun astro dev",
-    "build": "bun run check && bun --bun astro build && bun run build:penyaji",
+    "build": "bun run check && bun --bun astro build && bun run build:penyaji && bun run build:asal-media",
     "build:penyaji": "bun build server/penyaji.mjs --target=bun --outfile dist/server/penyaji.mjs",
     "check": "bun run check:lockfile && bun --bun astro check",
     "check:lockfile": "bun scripts/cek-lockfile.mjs",
@@ -26,7 +26,8 @@
     "serve": "bun dist/server/penyaji.mjs",
     "start": "bun run serve",
     "preview": "bun run serve",
-    "release": "bun scripts/rilis.mjs"
+    "release": "bun scripts/rilis.mjs",
+    "build:asal-media": "bun scripts/asal-media.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.10",

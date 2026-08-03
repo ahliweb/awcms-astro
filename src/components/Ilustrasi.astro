@@ -34,14 +34,29 @@ interface Props {
   alt: string;
   /** true untuk gambar besar di atas lipatan; mengubah gaya DAN prioritas muat. */
   hero?: boolean;
+  /**
+   * Ukuran intrinsik bila sumbernya melaporkannya — media awcms iya, seni lokal
+   * tidak. Ia TIDAK menentukan tata letak (bingkai yang memaksakan rasio), tapi
+   * ia memberi tahu browser rasio berkasnya sebelum bytes-nya tiba, sehingga
+   * `object-fit: cover` tidak sempat memotong dari kotak yang salah.
+   */
+  width?: number | null;
+  height?: number | null;
 }
 
-const { src, alt, hero = false } = Astro.props;
+const { src, alt, hero = false, width, height } = Astro.props;
 ---
 
 {
   src ? (
-    <img src={src} alt={alt} loading={hero ? 'eager' : 'lazy'} decoding="async" />
+    <img
+      src={src}
+      alt={alt}
+      width={width ?? undefined}
+      height={height ?? undefined}
+      loading={hero ? 'eager' : 'lazy'}
+      decoding="async"
+    />
   ) : (
     <div
       class={hero ? 'visual-placeholder visual-hero' : 'visual-placeholder'}

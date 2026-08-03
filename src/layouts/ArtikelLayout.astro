@@ -9,7 +9,7 @@ import DisclaimerNote from '../components/DisclaimerNote.astro';
 import TranslationNotice from '../components/TranslationNotice.astro';
 import Ilustrasi from '../components/Ilustrasi.astro';
 import { getLocaleFromPath, getSiteUrl, localePath, localeHtmlLang, siteConfig, tabTitleKey } from '../config/site';
-import { getArticleImage } from '../lib/article-images';
+import { getArticleVisual } from '../lib/article-images';
 import { SITE_SOCIAL_IMAGE } from '../lib/social-image';
 import { articleSchema } from '../lib/schema';
 import { t } from '../lib/po';
@@ -19,13 +19,15 @@ interface Props {
   entry: LocalizedArticle['entry'];
   slug: string;
   isFallback?: boolean;
+  /** Gambar hasil resolusi awcms; `undefined` jatuh ke seni lokal lalu placeholder. */
+  gambar?: LocalizedArticle['gambar'];
 }
 
-const { entry, slug, isFallback = false } = Astro.props;
+const { entry, slug, isFallback = false, gambar } = Astro.props;
 const data = entry.data;
 const locale = getLocaleFromPath(Astro.url.pathname);
 
-const articleVisual = getArticleImage(data.kategori, slug);
+const articleVisual = getArticleVisual({ gambar }, data.kategori, slug);
 const shareCard = SITE_SOCIAL_IMAGE;
 const canonicalUrl = getSiteUrl(localePath(locale, `/${data.kategori}/${slug}/`));
 
@@ -86,7 +88,13 @@ const schema = articleSchema({
 
     <header class="artikel-kepala">
       <div class="article-hero-frame">
-        <Ilustrasi src={articleVisual.src} alt={articleVisual.alt} hero />
+        <Ilustrasi
+          src={articleVisual.src}
+          alt={articleVisual.alt}
+          width={articleVisual.width}
+          height={articleVisual.height}
+          hero
+        />
       </div>
 
       <h1 class="artikel-title">{data.title}</h1>
