@@ -104,7 +104,11 @@ Tampilan dikerjakan terakhir karena ia satu-satunya lapisan yang murah diubah.
 - [ ] `LICENSE` — periksa cakupannya; kode dan konten sering butuh ketentuan berbeda.
 - [ ] `SECURITY.md`, `CONTRIBUTING.md`, `GOVERNANCE.md`, `CODE_OF_CONDUCT.md`, `SUPPORT.md`.
 - [ ] `.github/workflows/ci.yml` dan templat issue/PR.
-- [ ] `.claude/skills/` — encode standar domain menjadi prosedur.
+- [ ] `.claude/skills/` — template membawa **tiga** skill yang berlaku untuk
+      setiap situs turunan (integrasi `awcms`, gerbang, menurunkan situs baru).
+      Biarkan ketiganya; **tambahkan** skill khas domainmu di sampingnya, jangan
+      menggantinya. Skill yang memerikan sesuatu yang tidak ada di repomu adalah
+      cacat, dan `bun run audit:dokumen` memeriksa jalur yang disebutnya.
 
 ## 8. Rilis pertama
 

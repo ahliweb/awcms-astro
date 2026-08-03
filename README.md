@@ -236,10 +236,17 @@ membuatnya tidak perlu `node_modules` sama sekali.
   opsional) tetap keadaan yang didukung, dan halaman tanpa kartu mana pun tidak
   memasang tag gambar sama sekali — pratinjau jatuh ke kartu teks yang rapi.
 - **BFF portal Jualanku (ADR-0014).** `/internal/login`, sesi BFF sisi server,
-  cookie portal, CSRF. Sisi `awcms` sudah mendarat (ADR-0049/0050), tetapi ini
-  memanggil `awcms` **di setiap permintaan runtime** — bukan sekali per build —
-  jadi ia tetap ditahan sampai ada instans untuk membuktikannya. Prasyarat
-  sisanya di [`04-kesiapan.md`](docs/awcms-astro/jualanku/04-kesiapan.md).
+  cookie portal, CSRF. Fondasi `awcms`-nya **lengkap**: kontrak sesi
+  (ADR-0049/0050) dan business-scope resolver yang kini punya penyedia
+  (`awcms` ADR-0060 — sebelumnya NO-OP fail-closed). Yang menahannya bukan lagi
+  kontrak yang hilang melainkan uji
+  [ADR-0023](docs/adr/0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md): ia
+  memanggil `awcms` **di setiap permintaan runtime**, bukan sekali per build,
+  jadi bentuknya ditentukan respons `awcms` pada tiap permintaan — dan repo
+  template ini tidak punya instans untuk membuktikannya. Satu prasyarat tersisa
+  di sisi sana juga: bentuk scope merchant Jualanku masih butuh ADR admission-nya
+  sendiri. Prasyarat di repo ini ada di
+  [`04-kesiapan.md`](docs/awcms-astro/jualanku/04-kesiapan.md).
 - **Filter locale di feed awcms — sudah ADA di awcms, dan justru TIDAK boleh
   dipakai template ini.** Traversal kontennya sendiri sudah selesai: satu
   `GET /api/v1/blog/posts?view=full&order=created_at`, disusuri lewat
@@ -273,6 +280,7 @@ membuatnya tidak perlu `node_modules` sama sekali.
 | [`docs/awcms-astro/ui-ux-design-system.md`](docs/awcms-astro/ui-ux-design-system.md) | Design token, komponen, aksesibilitas   |
 | [`docs/awcms-astro/integrasi-awcms.md`](docs/awcms-astro/integrasi-awcms.md)         | Kontrak integrasi dengan awcms          |
 | [`docs/deploy-coolify.md`](docs/deploy-coolify.md)                                   | Deploy dan rebuild lewat webhook        |
+| [`.claude/skills/`](.claude/skills/README.md)                                        | Skill proyek: integrasi, gerbang, situs baru |
 
 ## Lisensi
 
