@@ -90,6 +90,14 @@ execSync('bun run build', { stdio: 'inherit' });
 console.log('Menjalankan bun run audit:konten ...');
 execSync('bun run audit:konten', { stdio: 'inherit' });
 
+// SEBELUM changeset dilipat, dan itu bukan urutan yang bebas dipilih: tautan
+// relatif di `.changesets/` ditulis dari sudut pandang direktori itu, jadi
+// begitu isinya dilipat ke CHANGELOG.md dan berkasnya dihapus, gerbang ini
+// kehilangan satu-satunya kesempatan memeriksanya pada bentuk yang ditulis
+// penulisnya.
+console.log('Menjalankan bun run audit:dokumen ...');
+execSync('bun run audit:dokumen', { stdio: 'inherit' });
+
 // ── Lipat changeset ke CHANGELOG.md ──────────────────────────────────────────
 // Tanggal lokal, bukan UTC: merilis malam hari WIB akan tercatat mundur sehari
 // bila memakai toISOString().
