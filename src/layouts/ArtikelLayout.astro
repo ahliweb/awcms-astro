@@ -21,14 +21,20 @@ interface Props {
   isFallback?: boolean;
   /** Gambar hasil resolusi awcms; `undefined` jatuh ke seni lokal lalu placeholder. */
   gambar?: LocalizedArticle['gambar'];
+  /** Kartu share artikel ini; `undefined` jatuh ke kartu situs, lalu ke tanpa gambar. */
+  kartuShare?: LocalizedArticle['kartuShare'];
 }
 
-const { entry, slug, isFallback = false, gambar } = Astro.props;
+const { entry, slug, isFallback = false, gambar, kartuShare } = Astro.props;
 const data = entry.data;
 const locale = getLocaleFromPath(Astro.url.pathname);
 
 const articleVisual = getArticleVisual({ gambar }, data.kategori, slug);
-const shareCard = SITE_SOCIAL_IMAGE;
+// Kartu artikel lebih dulu, kartu situs sesudahnya, dan tanpa gambar sebagai
+// keadaan terakhir yang tetap didukung. Yang ikut berpindah bersama URL-nya
+// adalah MIME dan ukurannya — memakai URL baru dengan metadata lama persis
+// cacat yang `social-image.ts` ada untuk mencegahnya.
+const shareCard = kartuShare?.src ?? SITE_SOCIAL_IMAGE;
 const canonicalUrl = getSiteUrl(localePath(locale, `/${data.kategori}/${slug}/`));
 
 // Nama tab datang dari katalog PO lewat konfigurasi tab, bukan dari peta
@@ -62,7 +68,9 @@ const schema = articleSchema({
   title: data.title,
   description: data.description,
   image: shareCard,
-  imageAlt: articleVisual.alt,
+  imageAlt: kartuShare?.alt ?? articleVisual.alt,
+  imageWidth: kartuShare?.width,
+  imageHeight: kartuShare?.height,
   updatedDate: new Date(data.updatedDate),
   section: tabName,
 });
@@ -74,7 +82,10 @@ const schema = articleSchema({
   currentTab={data.kategori}
   ogType="article"
   ogImage={shareCard}
-  ogImageAlt={articleVisual.alt}
+  ogImageAlt={kartuShare?.alt ?? articleVisual.alt}
+  ogImageType={kartuShare?.type}
+  ogImageWidth={kartuShare ? kartuShare.width : undefined}
+  ogImageHeight={kartuShare ? kartuShare.height : undefined}
   schema={schema}
   articleMeta={{
     modifiedTime: new Date(data.updatedDate).toISOString(),

@@ -15,6 +15,7 @@ export async function getStaticPaths() {
             slug: item.slug,
             isFallback: item.isFallback,
             gambar: item.gambar,
+            kartuShare: item.kartuShare,
           },
         });
       }
@@ -23,9 +24,9 @@ export async function getStaticPaths() {
   return paths;
 }
 
-const { entry, slug, isFallback, gambar } = Astro.props;
+const { entry, slug, isFallback, gambar, kartuShare } = Astro.props;
 ---
 
-<ArtikelLayout entry={entry} slug={slug} isFallback={isFallback} gambar={gambar}>
+<ArtikelLayout entry={entry} slug={slug} isFallback={isFallback} gambar={gambar} kartuShare={kartuShare}>
   <Fragment set:html={entry.bodyHtml} />
 </ArtikelLayout>

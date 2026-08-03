@@ -102,6 +102,16 @@ type AwcmsBlogPost = AwcmsBlogPostSummary & {
    * shipped one defect of exactly that shape (ADR-0018).
    */
   featuredMediaId?: string | null;
+  /**
+   * Explicit "use this image for the social/SEO preview" override.
+   *
+   * awcms declares it as taking **priority over `featuredMediaId`**, and its own
+   * `seo-facts-port-adapter.ts` resolves exactly `seo_image_media_id ??
+   * featured_media_id`. That precedence is mirrored here rather than reinvented:
+   * a site whose share card disagreed with the CMS's own SEO surface would be
+   * two answers to one question, and only one of them visible to the editor.
+   */
+  seoImageMediaId?: string | null;
 };
 
 /**
@@ -175,6 +185,24 @@ export interface LocalizedArticle {
     width: number | null;
     height: number | null;
   };
+  /**
+   * The article's own share card, when awcms has one for it.
+   *
+   * It carries its OWN `type`/`width`/`height` and that is the whole point.
+   * `SITE_SOCIAL_IMAGE` is declared to every crawler as `image/png` at
+   * 1200×630 — a contract with whoever set it (`.env.example` says so). A media
+   * object is whatever the editor uploaded: WebP at 1600×900, most likely.
+   * Reusing the site card's constants for it would publish three claims that
+   * are false on every article page, and a scraper that trusts them either
+   * letterboxes the card or drops it.
+   */
+  kartuShare?: {
+    src: string;
+    alt: string;
+    type: string;
+    width: number | null;
+    height: number | null;
+  };
 }
 
 /**
@@ -223,7 +251,11 @@ async function fetchMedia(
   const ids = [
     ...new Set(
       posts
-        .map((post) => post.featuredMediaId)
+        // Both ids, one batch. They overlap on most posts (an article with only
+        // a featured image uses it for both surfaces), and `resolveObjekMedia`
+        // dedupes — so asking for the union costs nothing and asking twice
+        // would double the round trips for no answer that differs.
+        .flatMap((post) => [post.featuredMediaId, post.seoImageMediaId])
         .filter((id): id is string => typeof id === "string" && id !== "")
     )
   ];
@@ -460,7 +492,35 @@ function toArticle(
     // in the reader's language. An empty string is treated as absent — a blank
     // `alt` on a content image tells a screen reader the image is decorative,
     // which this one is not.
-    gambar: gambarUntuk(post, media)
+    gambar: gambarUntuk(post, media),
+    kartuShare: kartuShareUntuk(post, media)
+  };
+}
+
+/**
+ * `LocalizedArticle["kartuShare"]` for one post, or `undefined`.
+ *
+ * Precedence is awcms's, not this repo's: `seoImageMediaId ?? featuredMediaId`.
+ * An article with neither falls through to `SITE_SOCIAL_IMAGE` at the call
+ * site, and a site with neither publishes no image tag at all — a supported
+ * state that renders as a clean text card, unlike a broken image which renders
+ * as nothing.
+ */
+function kartuShareUntuk(
+  post: AwcmsBlogPost,
+  media: Map<string, ObjekMedia>
+): LocalizedArticle["kartuShare"] {
+  const id = post.seoImageMediaId || post.featuredMediaId;
+  const objek = id ? media.get(id) : undefined;
+
+  if (!objek) return undefined;
+
+  return {
+    src: objek.publicUrl,
+    alt: objek.altText?.trim() || post.title,
+    type: objek.mimeType,
+    width: objek.width,
+    height: objek.height
   };
 }
 
