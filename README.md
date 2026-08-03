@@ -61,11 +61,14 @@ panggilan ke CMS saat pembaca meminta halaman. Aturan cache, lima header
 keamanan — termasuk `Content-Security-Policy` ketat dan `Permissions-Policy`
 sejak ADR-0019 — dan kompresi tinggal di
 [`server/penyaji.mjs`](server/penyaji.mjs) dan dijaga
-[`tests/penyaji.test.mjs`](tests/penyaji.test.mjs). Kelimanya bernilai sama
-dengan `awcms`; `Strict-Transport-Security` yang `awcms` kirim di produksi belum
-ada di sini, dan itu dicatat sebagai celah bernomor di
-[`docs/awcms-astro/standar-performa-dan-keamanan.md`](docs/awcms-astro/standar-performa-dan-keamanan.md)
-alih-alih dibiarkan tertutup oleh kata "disamakan".
+[`tests/penyaji.test.mjs`](tests/penyaji.test.mjs). Yang keenam,
+`Strict-Transport-Security`, dikirim **hanya di produksi**
+([ADR-0029](docs/adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md)) —
+karena HSTS berlaku untuk HOST dan tidak bisa dibatalkan dari sisi situs, jadi
+satu pratinjau lokal yang mengirimkannya akan mengunci setiap proyek lain di
+`localhost` selama setahun. Postur lengkapnya, beserta empat celah yang MASIH
+terbuka, ada di
+[`docs/awcms-astro/standar-performa-dan-keamanan.md`](docs/awcms-astro/standar-performa-dan-keamanan.md).
 
 "Build berikutnya" tidak berarti menunggu seseorang menekan tombol: awcms
 memicu rebuild lewat webhook begitu sebuah post terbit, jadi jeda antara redaksi

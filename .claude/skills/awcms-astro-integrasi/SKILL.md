@@ -106,15 +106,29 @@ sebuah ADR menyentuh konten publik, media, atau kredensial.
 | ADR-0061 — permukaan host-resolved boleh di-cache di tepi | Tidak berlaku: situs ini tidak lewat Varnish, dan tidak punya cabang 404 yang membedakan tenant |
 | ADR-0062 — skill digerbangi terhadap kodenya | **Sebagian.** `bun run audit:dokumen` memeriksa jalur berkas yang disebut berkas ini. Yang belum: kutipan `ADR-NNNN` belum diperiksa resolve ke berkasnya |
 
-## Celah yang diketahui pada lapisan ini
+## Batas waktu: ada, dan TIDAK sama dengan retry
 
-`awcmsGet` **tidak punya batas waktu**. Ketiadaan retry di sana disengaja dan
-benar (build yang lambat lalu menerbitkan situs setengah isi lebih buruk daripada
-build yang gagal) — tetapi `awcms` yang menggantung menggantungkan build sampai
-batas waktu job CI, atau selamanya di mesin lokal, dengan pesan yang tidak
-menyebut sebabnya. Ia celah 4 di
-[`standar-performa-dan-keamanan.md`](../../../docs/awcms-astro/standar-performa-dan-keamanan.md),
-beserta pemeriksa yang harus ikut mendarat: tiruan yang tidak pernah menjawab.
+`awcmsGet` memasang `AbortSignal.timeout` — bawaan 30 detik, diubah lewat
+`AWCMS_API_TIMEOUT_MS`. Ia tidak bertabrakan dengan aturan "tanpa retry" di atas,
+dan bedanya perlu dipegang: **tanpa-retry memutuskan apa yang terjadi saat
+`awcms` menjawab buruk; batas waktu memutuskan apa yang terjadi saat ia tidak
+pernah menjawab sama sekali.** Keduanya berakhir sama — build gagal, nol berkas
+terbit.
+
+Yang dijaganya bukan kelambatan melainkan **kesenyapan**: koneksi yang diterima
+lalu tidak pernah dijawab, bentuk kegagalan paling umum dari basis data yang
+kehabisan koneksi. `fetch` tidak punya batas waktu bawaan, jadi sebelum ini build
+menggantung sampai batas job CI membunuhnya — dengan pesan yang menyebut nama
+job, bukan `awcms`.
+
+Dua hal yang jangan diubah tanpa membaca alasannya:
+
+- **Batasnya longgar (30 detik), dan itu disengaja.** `view=full` membawa
+  `contentJson` utuh; tenant besar di basis data dingin bisa sah-sah saja lambat.
+  Menyetelnya ke nilai "jalur permintaan sehat" mengubah build lambat menjadi
+  build gagal — kebalikan dari gunanya.
+- **Nilai yang cacat DITOLAK, termasuk `0`.** `0` terlihat seperti "tanpa batas"
+  dan justru mengembalikan gantungan yang gerbang ini ada untuk mencegah.
 
 ## Rujukan
 

@@ -109,12 +109,25 @@ Tampilan dikerjakan terakhir karena ia satu-satunya lapisan yang murah diubah.
       domainmu di sampingnya, jangan menggantinya. Skill yang memerikan sesuatu
       yang tidak ada di repomu adalah cacat, dan `bun run audit:dokumen`
       memeriksa jalur yang disebutnya — `.claude/` tidak dikecualikan.
-- [ ] **Jawab celah 1 di
-      [`standar-performa-dan-keamanan.md`](standar-performa-dan-keamanan.md):**
-      `Strict-Transport-Security` belum dikirim template ini. Sampai ia dikirim,
-      pasang HSTS di proxy situsmu **dan catat di ADR bahwa kamu memasangnya di
-      sana** — supaya penggantimu kelak tidak memasang kebijakan kedua yang
-      menimpa kebijakan pertama.
+- [ ] **Pastikan deployment-mu menyetel `NODE_ENV=production`.**
+      `Strict-Transport-Security` dikirim penyaji hanya di balik gerbang itu
+      ([ADR-0029](../adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md)),
+      dan deployment yang tidak menyetelnya **tidak mendapat HSTS tanpa satu pun
+      yang mengatakannya**. `Dockerfile` menyetelnya; jalur deploy lain harus
+      menyetelnya sendiri.
+
+      **Jangan** menambahkannya lagi di Traefik: dua sumber kebijakan yang
+      saling menimpa adalah cara paling sunyi berakhir tanpa kebijakan sama
+      sekali, dan itu persis yang sudah terjadi sekali di sini — selama dua bulan
+      semua orang mengira HSTS dipasang di sana.
+
+- [ ] **Putuskan `includeSubDomains` secara sadar, atau jangan sentuh.**
+      Template ini sengaja mengirim `max-age=31536000` saja. Menambahkannya
+      memaksa **setiap subdomain** organisasimu menjadi HTTPS-saja selama
+      setahun, di browser setiap orang yang pernah membuka situs ini — dan yang
+      menanggung akibatnya layanan lain, yang pemiliknya tidak ikut memutuskan.
+      Tambahkan hanya bila kamu sudah memeriksa bahwa semuanya HTTPS, di
+      `server/penyaji.mjs`, lalu perbarui `tests/penyaji.test.mjs`.
 
 ## 8. Rilis pertama
 

@@ -170,11 +170,11 @@ Cara mencapainya — dan ini yang mengikat:
 
 - Tidak ada dependency UI besar; interaktivitas memakai DOM vanilla.
 - **Tidak ada webfont.** `--font-sans` adalah `system-ui`: nol permintaan font, nol FOIT/FOUT, nol kontribusi ke CLS. Ia dicatat sebagai keputusan privasi di `src/styles/global.css`; ia juga keputusan performa, dan sebuah situs yang menambahkan font wajib men-self-host-nya di `public/` alih-alih menambah origin ke jalur render kritis.
-- Gambar layar pertama `loading="eager"` + `fetchpriority="high"`; sisanya `loading="lazy"`. **`fetchpriority` belum dipasang `src/components/Ilustrasi.astro`** — celah 2 di dokumen standar, dengan pemeriksanya.
+- Gambar layar pertama `loading="eager"` + `fetchpriority="high"`; sisanya `loading="lazy"`. Keduanya dibutuhkan dan tidak saling menggantikan: `eager` hanya berarti "jangan tunda", sementara prioritas bawaan sebuah `<img>` tetap **Low** sampai layout membuktikan ia di viewport. Ditegakkan `bun run audit:konten` atas keluaran, jadi `<img>` yang tidak lewat `src/components/Ilustrasi.astro` ikut tertangkap.
 - **Tema dipasang berkas eksternal `public/tema.js` yang dimuat `<script src>` klasik**, bukan skrip inline. Sejak [ADR-0019](../adr/0019-csp-ketat-dikirim-penyaji.md) penyaji mengirim `script-src 'self'` tanpa `'unsafe-inline'`, jadi skrip inline bukan "kurang rapi" — ia mati di browser pembaca. Bundel Astro selalu `type="module"` dan modul selalu ditunda, jadi ia bukan pengganti untuk kasus sebelum-paint.
 - Kompresi respons bukan hanya gzip: `compression` menegosiasikan **Brotli** (RFC 7932) saat browser memintanya, dan Brotli mengalahkan gzip sekitar 15–20% pada HTML.
 - `Cache-Control` dua aturan sesuai RFC 9111: aset ber-hash `immutable` satu tahun, HTML `max-age=0, must-revalidate` sehingga rebuild langsung terlihat pembaca.
-- Anggaran yang terbukti di repo rujukan: **beranda ≤ 250 KB gambar, halaman konten ≤ 100 KB.** Ia **belum punya pemeriksa** di sini dan belum pernah diukur satu kali pun (celah 3).
+- Anggaran yang terbukti di repo rujukan: **beranda ≤ 250 KB gambar, halaman konten ≤ 100 KB.** Sejak 4 Agustus 2026 ia **diukur** `bun run audit:konten` atas `dist/client`, per halaman. Yang ditimbang hanya gambar yang benar-benar diterbitkan build ini — media `awcms` tidak ada di sana, jadi angka ini menjaga seni lokal dan bukan seluruh berat halaman.
 
 ## Keamanan
 
@@ -189,7 +189,7 @@ Yang mengikat di sini:
 - `bun audit` wajib nol sebelum rilis.
 - Tautan keluar `target="_blank"` wajib `rel="noopener noreferrer"`.
 
-**Celah yang diketahui terbuka** — dan disebut di sini supaya tidak ditemukan sebagai kejutan: `Strict-Transport-Security` belum dikirim (`awcms` mengirimkannya di produksi), anggaran performa tidak punya pemeriksa, dan `awcmsGet` tidak punya batas waktu. Kesembilannya bernomor di dokumen standar, masing-masing dengan pemeriksa yang harus ikut mendarat saat ia ditutup.
+**Lima dari sembilan celah ditutup 4 Agustus 2026** ([ADR-0029](../adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md) untuk HSTS, sisanya tanpa perubahan postur): HSTS, `fetchpriority`, anggaran gambar, batas waktu `awcmsGet`, dan header pembocor teknologi. **Empat masih terbuka** dan disebut di sini supaya tidak ditemukan sebagai kejutan: pin action/image ke SHA, analisis statik, pengukuran Core Web Vitals, dan SBOM rilis. Kesembilannya bernomor di dokumen standar.
 
 ## Gerbang mutu
 

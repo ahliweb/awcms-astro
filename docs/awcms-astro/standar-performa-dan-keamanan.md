@@ -5,7 +5,7 @@ internasional yang menamainya**, beserta daftar celah yang jujur.
 
 Dokumen ini tidak menambah satu pun aturan baru. Aturannya sudah ada — di
 [`AGENTS.md`](../../AGENTS.md), [`standar-teknis.md`](standar-teknis.md), dan
-tiga belas ADR. Yang belum ada adalah **nama luar** bagi aturan-aturan itu, dan
+enam belas ADR. Yang belum ada adalah **nama luar** bagi aturan-aturan itu, dan
 ketiadaan nama itu punya dua akibat yang nyata:
 
 1. Sebuah situs yang dibangun dari template ini tidak bisa menjawab
@@ -53,27 +53,34 @@ dibuktikan [`tests/penyaji.test.mjs`](../../tests/penyaji.test.mjs):
 | `X-Frame-Options` | `DENY` | `DENY` | Wajib (bersama `frame-ancestors`) |
 | `Referrer-Policy` | `strict-origin-when-cross-origin` | sama | Wajib |
 | `Permissions-Policy` | `geolocation=(), camera=(), microphone=(), payment=()` | sama persis | Wajib |
-| `Strict-Transport-Security` | **tidak dikirim** | `max-age=31536000; includeSubDomains`, digerbangi produksi | Wajib |
+| `Strict-Transport-Security` | `max-age=31536000`, digerbangi produksi | `max-age=31536000; includeSubDomains`, digerbangi produksi | Wajib |
+| `Server` / `X-Powered-By` | **dihapus**, dan ketiadaannya diasersi | — | Wajib tidak membocorkan versi |
 | `Cross-Origin-Opener-Policy` | tidak dikirim | tidak dikirim | Dianjurkan |
 | `Cross-Origin-Resource-Policy` | tidak dikirim | tidak dikirim | Dianjurkan |
 
-**Klaim "lima header keamanan, disamakan dengan postur `awcms`" karena itu tidak
-lagi akurat, dan koreksinya bukan kosmetik.** Kelima yang ada memang identik
-nilainya. Yang tidak identik adalah **jumlahnya**: `awcms` mengirim keenam di
-produksi, dengan `Strict-Transport-Security` digerbangi `isProduction` di
-`src/lib/security/security-headers.ts`. Repo ini mengirim lima, di setiap
-lingkungan.
+**Sampai 4 Agustus 2026 repo ini mengirim LIMA, dan empat berkas menyebutnya
+"disamakan dengan postur `awcms`".** Kelimanya memang identik nilainya; yang
+tidak identik adalah jumlahnya. Alasan yang terbaca masuk akal — TLS diterminasi
+Traefik, jadi "itu urusan lapisan di depan" — tidak bertahan diperiksa: Traefik
+tidak memasang HSTS tanpa middleware yang dinyatakan, jadi yang terjadi bukan
+"dipasang di tempat lain" melainkan **tidak dipasang di mana pun**.
 
-Alasan HSTS tidak ada di sini terbaca masuk akal — TLS diterminasi Traefik, jadi
-"itu urusan lapisan di depan". Alasan itu tidak bertahan diperiksa: Traefik tidak
-memasang HSTS tanpa middleware yang dinyatakan, jadi yang terjadi bukan
-"dipasang di tempat lain" melainkan **tidak dipasang di mana pun**. Dan
-`AGENTS.md` sudah melarang solusinya ditaruh di Traefik — header respons
-ditentukan di satu berkas, bukan dua.
+[ADR-0029](../adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md)
+menutupnya. Dua hal di dalamnya yang perlu diketahui sebelum menyentuh baris
+itu:
 
-Menutupnya adalah pekerjaan kode, bukan dokumen, dan ia **mengubah postur
-keamanan** sehingga butuh ADR-nya sendiri (kriteria di
-[`docs/adr/README.md`](../adr/README.md)). Ia terdaftar di §Celah di bawah.
+- **Gerbang produksinya bukan kerapian.** HSTS tidak bisa dibatalkan dari sisi
+  situs, dan ia berlaku untuk HOST — bukan untuk situs. Di `localhost` yang
+  terkunci bukan hanya pratinjau ini melainkan setiap proyek lain yang
+  dikembangkan pemilik mesin di `http://localhost:<port>`, selama setahun.
+  Asersi yang menjaganya karena itu **terbalik arah**: yang diuji adalah HSTS
+  TIDAK dikirim di luar produksi.
+- **`includeSubDomains` sengaja tidak ikut, berbeda dari `awcms`.** `awcms` satu
+  deployment yang operatornya tahu subdomainnya; template ini berjalan di domain
+  milik organisasi yang hampir pasti punya layanan lain di subdomain lain, dan
+  direktif itu memaksa semuanya HTTPS-saja selama setahun. Sebuah situs yang
+  subdomainnya memang seluruhnya HTTPS boleh menambahkannya — di penyaji, lalu
+  perbarui tesnya.
 
 ## OWASP Top 10 (2021) → permukaan repo ini
 
@@ -86,10 +93,10 @@ permukaan terautentikasi.
 | # | Kategori | Keadaan di sini | Bukti / catatan |
 | --- | --- | --- | --- |
 | A01 | Broken Access Control | Tidak berlaku pada permukaan publik | Tidak ada objek per-pengguna. Yang tersisa: kebocoran **antar tenant** saat build — dijaga asersi tenant di [`src/lib/awcms/tenant.ts`](../../src/lib/awcms/tenant.ts) |
-| A02 | Cryptographic Failures | Sebagian | TLS milik Traefik; token build tidak pernah masuk keluaran (tanpa prefiks `PUBLIC_`). **HSTS belum ada** — lihat §Celah |
+| A02 | Cryptographic Failures | Terpenuhi | TLS milik Traefik; token build tidak pernah masuk keluaran (tanpa prefiks `PUBLIC_`); **HSTS dikirim di produksi** sejak [ADR-0029](../adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md) |
 | A03 | Injection | Terpenuhi | Tidak ada jalur HTML mentah: [`src/lib/content-blocks.ts`](../../src/lib/content-blocks.ts) menyusun tiap elemen dari teks ter-escape dan tag tetap; `set:html` hanya menerima keluarannya. Dijaga [`tests/content-blocks.test.mjs`](../../tests/content-blocks.test.mjs) |
 | A04 | Insecure Design | Terpenuhi | Static-by-default adalah keputusan ber-ADR ([ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md)), bukan default yang kebetulan. Pemotongan konten diam-diam diperlakukan sebagai **kegagalan** di [`src/lib/content.ts`](../../src/lib/content.ts) |
-| A05 | Security Misconfiguration | Sebagian | Lima header + CSP ketat dikirim penyaji ([ADR-0019](../adr/0019-csp-ketat-dikirim-penyaji.md)); tanpa secret di repo; image non-root. **HSTS dan header `Server`/`X-Powered-By` belum digerbangi** — §Celah |
+| A05 | Security Misconfiguration | Terpenuhi | Enam header di produksi, CSP ketat dikirim penyaji ([ADR-0019](../adr/0019-csp-ketat-dikirim-penyaji.md), [ADR-0029](../adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md)); `Server`/`X-Powered-By` dihapus; tanpa secret di repo; image non-root |
 | A06 | Vulnerable Components | Terpenuhi | `bun audit --audit-level=low` di job `check` CI; Dependabot mingguan; `bun install --frozen-lockfile` di CI dan di image; gerbang lockfile `bun run check:lockfile` |
 | A07 | Identification & Auth Failures | Tidak berlaku | Tidak ada login. Kredensial build adalah kredensial **mesin** yang ditolak bila berbentuk token sesi manusia — [`src/lib/awcms/tenant.ts`](../../src/lib/awcms/tenant.ts) |
 | A08 | Software & Data Integrity | Sebagian | `bun.lock` di-commit dan digerbangi dua lapis. **Action GitHub dipin ke tag, bukan SHA commit; image dasar dipin ke tag, bukan digest** — §Celah |
@@ -101,9 +108,9 @@ permukaan terautentikasi.
 | Kategori | Butir yang relevan | Keadaan |
 | --- | --- | --- |
 | V5 Validation & Encoding | Output encoding pada tiap sink | Terpenuhi. Astro meng-escape secara bawaan; satu-satunya `set:html` menerima keluaran `renderContentBlocks` dan tidak pernah string dari sumber lain |
-| V9 Communications | TLS di produksi | Sebagian — TLS ada, **HSTS tidak** |
+| V9 Communications | TLS di produksi | Terpenuhi — TLS milik Traefik, HSTS dikirim penyaji di produksi (ADR-0029) |
 | V14.4 HTTP Security Headers | CSP, `nosniff`, `Referrer-Policy`, `Permissions-Policy` | Terpenuhi dan **dibuktikan tes**, bukan diperiksa mata |
-| V14.4 | Header yang membocorkan teknologi (`Server`, `X-Powered-By`) | **Belum diverifikasi gerbang mana pun** — §Celah |
+| V14.4 | Header yang membocorkan teknologi (`Server`, `X-Powered-By`) | Terpenuhi — dihapus `pasangHeader`, dan ketiadaannya diasersi atas tiga kelas respons |
 | V14.5 Validate HTTP Request Header | Tidak berlaku | Permintaan tidak dipetakan ke berkas oleh kode repo ini — itu milik adapter `@astrojs/node`, dan [`AGENTS.md`](../../AGENTS.md) melarang menulisnya ulang justru karena kelas cacat traversal sudah selesai di sana |
 
 ## ISO/IEC 27001:2022 Annex A — kontrol yang menyentuh kode
@@ -183,24 +190,36 @@ ADR-0024 untuk dirinya sendiri — dan anggaran gambar di
 [`standar-teknis.md`](standar-teknis.md#performa) adalah tempat pertama
 kelebihannya akan terlihat.
 
-## Celah yang belum ditutup
+## Celah: lima ditutup, empat terbuka
 
-Diurutkan menurut akibat, bukan menurut usaha. Kolom terakhir menyebut apa yang
-harus ikut mendarat — di repo ini **aturan tanpa pemeriksanya adalah aturan yang
-akan dilanggar**, dan itu berlaku juga untuk aturan yang datang dari standar
-luar.
+Diurutkan menurut akibat, bukan menurut usaha. **Lima ditutup pada 4 Agustus
+2026**, masing-masing bersama pemeriksanya — di repo ini aturan tanpa
+pemeriksanya adalah aturan yang akan dilanggar, dan itu berlaku juga untuk
+aturan yang datang dari standar luar.
 
-| # | Celah | Akibat bila dibiarkan | Butuh ADR? | Pemeriksa yang harus ikut |
-| --- | --- | --- | --- | --- |
-| 1 | `Strict-Transport-Security` tidak dikirim | Permintaan HTTP pertama seorang pembaca bisa dibajak sebelum redirect ke HTTPS terjadi. `awcms` menutup ini; repo ini tidak | **Ya** — mengubah postur keamanan | Asersi di `tests/penyaji.test.mjs`, termasuk bahwa ia **tidak** dikirim saat bukan produksi (HSTS di localhost mengunci `bun run serve` di browser pengembang selama setahun) |
-| 2 | `fetchpriority="high"` tidak ada pada gambar di atas lipatan | [`standar-teknis.md`](standar-teknis.md#performa) mewajibkannya; [`src/components/Ilustrasi.astro`](../../src/components/Ilustrasi.astro) memasang `loading="eager"` saja. LCP menunggu penemuan gambar oleh preload scanner alih-alih diprioritaskan | Tidak | Gerbang keluaran di `scripts/audit-konten.mjs`: gambar `eager` pertama tiap halaman wajib membawa `fetchpriority` |
-| 3 | Anggaran gambar tidak punya pemeriksa | Angka 250 KB / 100 KB sudah tertulis sejak repo rujukan dan **tidak pernah diukur satu kali pun** | Tidak | `scripts/audit-konten.mjs` sudah membaca `dist/client` — menjumlahkan byte aset per halaman adalah gerbang yang datanya sudah ada di tangannya |
-| 4 | `awcmsGet` tanpa batas waktu | `awcms` yang menggantung menggantungkan build sampai batas waktu job CI (15 menit) atau selamanya di mesin lokal, dengan pesan yang tidak menyebut sebabnya | Tidak | Tiruan di `tests/kontrak-awcms.test.mjs` yang tidak pernah menjawab, dan asersi bahwa build menyerah dengan pesan yang menyebut `AWCMS_API_URL` |
-| 5 | Header pembocor teknologi tidak diverifikasi | ASVS V14.4 menuntut `Server`/`X-Powered-By` tidak membocorkan versi. Keduanya kemungkinan besar memang tidak dikirim — tetapi "kemungkinan besar" bukan yang dijanjikan gerbang di repo ini | Tidak | Satu asersi negatif di `tests/penyaji.test.mjs` |
-| 6 | Action GitHub dipin ke tag, image dasar dipin ke tag | Tag bisa dipindahkan. SSDF PS.2 dan OpenSSF Scorecard sama-sama menuntut pin ke SHA commit / digest | Tidak | Dependabot sudah mengelola keduanya bila dipin ke SHA; gerbang tambahan tidak perlu |
-| 7 | Tidak ada analisis statik | `awcms` menjalankan CodeQL dan punya skill triase-nya. Repo ini tidak punya padanannya, dan permukaannya memang jauh lebih kecil — tetapi "lebih kecil" bukan "nol" | Tidak | Workflow CodeQL terjadwal, bukan per-PR (permukaannya tidak membenarkan biaya per-PR) |
-| 8 | Core Web Vitals tidak diukur | Target di §Performa adalah klaim tanpa bukti sampai ada yang mengukurnya | Tidak | Lighthouse CI atas `dist/client` di job `build` — hanya berjalan bila situs punya sumber konten, sama seperti gerbang keluaran lain |
-| 9 | Tidak ada SBOM pada rilis | SSDF PS.2. Konsumen hilir tidak bisa menjawab "apakah rilis ini terdampak advisory X" tanpa membangun ulang | Tidak | Langkah di `scripts/rilis.mjs` |
+Baris yang tertutup **tetap di tabel**. Dihapus, ia akan diusulkan lagi sebagai
+temuan baru enam bulan kemudian, dan pemeriksanya akan dilonggarkan oleh orang
+yang tidak tahu kenapa ia ada.
+
+| # | Celah | Keadaan | Pemeriksa |
+| --- | --- | --- | --- |
+| 1 | `Strict-Transport-Security` tidak dikirim | **DITUTUP** — [ADR-0029](../adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md): digerbangi produksi, tanpa `includeSubDomains` | Tiga asersi di `tests/penyaji.test.mjs`, **mutation-proven**. Yang terpenting arahnya terbalik: HSTS **tidak** dikirim di luar produksi — sebuah gerbang yang hanya memeriksa "header ada" akan hijau pada versi yang mengunci setiap `localhost` pengembang selama setahun |
+| 2 | `fetchpriority="high"` tidak ada pada gambar di atas lipatan | **DITUTUP** — [`Ilustrasi.astro`](../../src/components/Ilustrasi.astro) memasangnya saat `hero`. `loading="eager"` saja tidak cukup: prioritas bawaan sebuah `<img>` tetap Low sampai layout membuktikan ia di viewport | Gerbang `performa` di `scripts/audit-konten.mjs`: setiap `<img loading="eager">` di `dist/client` wajib membawa `fetchpriority="high"`. Diperiksa di KELUARAN, sehingga `<img>` yang tidak lewat komponen ikut tertangkap |
+| 3 | Anggaran gambar tidak punya pemeriksa | **DITUTUP** — 250 KB beranda, 100 KB halaman konten, diukur untuk pertama kalinya sejak angka itu ditulis | Gerbang `performa`: menjumlahkan byte gambar yang benar-benar DITERBITKAN build ini, per halaman. Media `awcms` tidak ada di `dist/client` sehingga tidak ikut tertimbang — batas yang disengaja, dan disebut di skripnya |
+| 4 | `awcmsGet` tanpa batas waktu | **DITUTUP** — `AbortSignal.timeout`, bawaan 30 detik, diubah lewat `AWCMS_API_TIMEOUT_MS` | Dua asersi di `tests/kontrak-awcms.test.mjs`, **mutation-proven**: tiruan yang menerima koneksi lalu tidak pernah menjawab (melepas sinyalnya membuat tes itu menggantung, persis cacat aslinya), dan nilai batas cacat yang DITOLAK alih-alih diam-diam jatuh ke bawaan |
+| 5 | Header pembocor teknologi tidak diverifikasi | **DITUTUP** — `Server` dan `X-Powered-By` dihapus `pasangHeader`, bukan sekadar diasersi: "tidak dikirim hari ini" dan "tidak akan dikirim" adalah dua hal berbeda | Asersi negatif atas tiga kelas respons di `tests/penyaji.test.mjs`, **mutation-proven** |
+| 6 | Action GitHub dipin ke tag, image dasar dipin ke tag | **TERBUKA** — tag bisa dipindahkan; SSDF PS.2 dan OpenSSF Scorecard menuntut pin ke SHA commit / digest | Dependabot sudah mengelola keduanya bila dipin ke SHA; gerbang tambahan tidak perlu |
+| 7 | Tidak ada analisis statik | **TERBUKA** — `awcms` menjalankan CodeQL dan punya skill triase-nya. Permukaan di sini jauh lebih kecil, tetapi "lebih kecil" bukan "nol" | Workflow CodeQL terjadwal, bukan per-PR |
+| 8 | Core Web Vitals tidak diukur | **TERBUKA** — target di §Performa masih klaim tanpa bukti. Celah 2 dan 3 menutup dua PENYEBAB LCP buruk; keduanya bukan pengukurannya | Lighthouse CI atas `dist/client` di job `build`, hanya berjalan bila situs punya sumber konten |
+| 9 | Tidak ada SBOM pada rilis | **TERBUKA** — konsumen hilir tidak bisa menjawab "apakah rilis ini terdampak advisory X" tanpa membangun ulang | Langkah di `scripts/rilis.mjs` |
+
+**Empat yang tersisa dibiarkan terbuka dengan sadar, bukan karena kehabisan
+waktu.** Tiga (6, 7, 9) menyentuh rantai pasok dan menuntut keputusan tooling
+yang lebih baik diambil sekali untuk kedua repo keluarga daripada dua kali dengan
+hasil berbeda. Celah 8 menuntut Chrome di CI dan hanya berjalan pada situs yang
+punya sumber konten — ia **tidak bisa dibuktikan di repo template ini**, dan
+gerbang yang tidak bisa dibuktikan di tempat ia ditulis adalah gerbang yang akan
+membusuk.
 
 ## Yang sengaja TIDAK diadopsi
 

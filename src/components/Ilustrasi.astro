@@ -24,9 +24,20 @@
  *     jadi tidak ada pergeseran tata letak saat gambar selesai dimuat — dan
  *     sumber berasio lain DIPOTONG, yang `bun run audit:konten` tolak lebih
  *     dulu.
- *   - **Hero dimuat `eager`.** Ia hampir selalu elemen LCP halaman, dan
- *     `loading="lazy"` pada elemen di atas lipatan justru menunda hal yang
- *     paling dilihat pembaca.
+ *   - **Hero dimuat `eager` DAN `fetchpriority="high"`.** Ia hampir selalu
+ *     elemen LCP halaman. Keduanya dibutuhkan dan tidak saling menggantikan:
+ *     `loading="eager"` hanya berarti "jangan tunda", sementara prioritas
+ *     bawaan sebuah `<img>` di Chromium adalah **Low** sampai layout selesai
+ *     membuktikan ia berada di viewport. Sampai saat itu ia mengantre di
+ *     belakang CSS dan setiap gambar lain yang ditemukan lebih dulu.
+ *     `fetchpriority="high"` memindahkannya ke depan antrean pada saat
+ *     penemuan, dan itu tepat yang diukur LCP.
+ *
+ *     Ia dipasang di sini, sekali, bukan di empat pemanggil — persis alasan
+ *     komponen ini ada. `standar-teknis.md` sudah mewajibkannya sejak lama
+ *     sementara kodenya hanya memasang `eager`; sejak ADR-0028 celah itu
+ *     bernomor, dan `scripts/audit-konten.mjs` kini menolak halaman terbit yang
+ *     punya gambar `eager` tanpa `fetchpriority`.
  */
 interface Props {
   /** URL seni, atau `undefined` — keadaan yang didukung, bukan kegagalan. */
@@ -55,6 +66,7 @@ const { src, alt, hero = false, width, height } = Astro.props;
       width={width ?? undefined}
       height={height ?? undefined}
       loading={hero ? 'eager' : 'lazy'}
+      fetchpriority={hero ? 'high' : undefined}
       decoding="async"
     />
   ) : (
