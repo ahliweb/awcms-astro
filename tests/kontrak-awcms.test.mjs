@@ -612,3 +612,36 @@ describe("kartu share per artikel", () => {
     assert.equal(ids.length, 2);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Kartu situs sebagai objek utuh.
+//
+// Yang dijaga di sini bukan nilainya melainkan BENTUKNYA: selama `src` dan
+// `alt` adalah dua nilai terpisah, keduanya bisa datang dari dua gambar
+// berbeda — dan itu yang terjadi sebelum ini, di halaman seksi maupun halaman
+// artikel. Tipe `KartuShare` yang membuatnya berhenti bisa ditulis; tes ini
+// menjaga bawaannya tetap benar.
+// ---------------------------------------------------------------------------
+
+describe("kartu situs", () => {
+  test("membawa MIME dan ukuran yang dikontrakkan .env.example", async () => {
+    const { kartuSitus, SOCIAL_IMAGE_WIDTH, SOCIAL_IMAGE_HEIGHT } = await import(
+      "../src/lib/social-image.ts"
+    );
+    const kartu = kartuSitus("Kartu berbagi situs");
+
+    // Template ini tidak mengisi SITE_SOCIAL_IMAGE, jadi bawaannya `undefined`
+    // — dan itu keadaan yang DIDUKUNG: halaman tidak memasang tag gambar sama
+    // sekali dan pratinjau jatuh ke kartu teks.
+    if (kartu === undefined) {
+      assert.equal(SOCIAL_IMAGE_WIDTH, 1200);
+      assert.equal(SOCIAL_IMAGE_HEIGHT, 630);
+      return;
+    }
+
+    assert.equal(kartu.type, "image/png");
+    assert.equal(kartu.width, SOCIAL_IMAGE_WIDTH);
+    assert.equal(kartu.height, SOCIAL_IMAGE_HEIGHT);
+    assert.equal(kartu.alt, "Kartu berbagi situs");
+  });
+});

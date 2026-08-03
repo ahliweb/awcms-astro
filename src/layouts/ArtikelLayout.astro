@@ -30,11 +30,10 @@ const data = entry.data;
 const locale = getLocaleFromPath(Astro.url.pathname);
 
 const articleVisual = getArticleVisual({ gambar }, data.kategori, slug);
-// Kartu artikel lebih dulu, kartu situs sesudahnya, dan tanpa gambar sebagai
-// keadaan terakhir yang tetap didukung. Yang ikut berpindah bersama URL-nya
-// adalah MIME dan ukurannya — memakai URL baru dengan metadata lama persis
-// cacat yang `social-image.ts` ada untuk mencegahnya.
-const shareCard = kartuShare?.src ?? SITE_SOCIAL_IMAGE;
+// Kartu artikel diteruskan utuh; `BaseLayout` yang jatuh ke kartu situs saat
+// artikel ini tidak punya. Yang TIDAK boleh dilakukan di sini adalah memilih
+// URL-nya sendiri lalu menyerahkan alt secara terpisah — itu yang membuat
+// halaman ini sempat memasang alt hero artikel pada kartu situs.
 const canonicalUrl = getSiteUrl(localePath(locale, `/${data.kategori}/${slug}/`));
 
 // Nama tab datang dari katalog PO lewat konfigurasi tab, bukan dari peta
@@ -67,8 +66,8 @@ const schema = articleSchema({
   canonicalUrl,
   title: data.title,
   description: data.description,
-  image: shareCard,
-  imageAlt: kartuShare?.alt ?? articleVisual.alt,
+  image: kartuShare?.src ?? SITE_SOCIAL_IMAGE,
+  imageAlt: kartuShare?.alt ?? t(locale, 'share.imageAlt'),
   imageWidth: kartuShare?.width,
   imageHeight: kartuShare?.height,
   updatedDate: new Date(data.updatedDate),
@@ -81,11 +80,7 @@ const schema = articleSchema({
   description={data.description}
   currentTab={data.kategori}
   ogType="article"
-  ogImage={shareCard}
-  ogImageAlt={kartuShare?.alt ?? articleVisual.alt}
-  ogImageType={kartuShare?.type}
-  ogImageWidth={kartuShare ? kartuShare.width : undefined}
-  ogImageHeight={kartuShare ? kartuShare.height : undefined}
+  shareCard={kartuShare}
   schema={schema}
   articleMeta={{
     modifiedTime: new Date(data.updatedDate).toISOString(),

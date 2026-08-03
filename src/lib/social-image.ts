@@ -34,3 +34,48 @@ export const SOCIAL_IMAGE_HEIGHT = 630;
  * absolut.
  */
 export const SITE_SOCIAL_IMAGE: string | undefined = siteConfig.socialImage;
+
+/**
+ * Satu kartu share, dengan seluruh metadata yang mendeskripsikannya.
+ *
+ * ## Kenapa satu objek, bukan lima prop terpisah
+ *
+ * Selama `ogImage` dan `ogImageAlt` adalah dua prop, keduanya bisa berasal dari
+ * dua gambar BERBEDA — dan memang begitu yang terjadi: halaman seksi memasang
+ * `og:image` kartu situs dengan `og:image:alt` yang memerikan hero seksinya,
+ * dan halaman artikel melakukan hal yang sama dengan alt hero artikelnya.
+ * Pembaca layar di lini masa sosial karena itu mendengar deskripsi gambar yang
+ * TIDAK sedang ditampilkan kepadanya, dan tak satu pun gerbang bisa melihatnya:
+ * kedua tag ada, keduanya terisi, dan keduanya masuk akal dibaca sendiri.
+ *
+ * Digabung menjadi satu objek, cacat itu berhenti bisa ditulis. `alt` tidak
+ * punya jalan untuk berpisah dari `src` yang dijelaskannya.
+ */
+export type KartuShare = {
+  src: string;
+  alt: string;
+  /** MIME sebenarnya. Kartu situs dikontrakkan PNG; media awcms membawa miliknya. */
+  type: string;
+  width: number | null;
+  height: number | null;
+};
+
+/**
+ * Kartu situs sebagai kartu halaman, atau `undefined` bila tidak ada.
+ *
+ * Ukuran dan MIME-nya konstanta, dan itu SAH di sini justru karena ia kontrak:
+ * `.env.example` menyuruh siapa pun yang mengisi `SITE_SOCIAL_IMAGE` memakai
+ * PNG 1200×630. Yang tidak sah adalah memakai konstanta yang sama untuk gambar
+ * yang tidak pernah menandatangani kontrak itu — lihat ADR-0026.
+ */
+export function kartuSitus(alt: string): KartuShare | undefined {
+  if (!SITE_SOCIAL_IMAGE) return undefined;
+
+  return {
+    src: SITE_SOCIAL_IMAGE,
+    alt,
+    type: 'image/png',
+    width: SOCIAL_IMAGE_WIDTH,
+    height: SOCIAL_IMAGE_HEIGHT,
+  };
+}
