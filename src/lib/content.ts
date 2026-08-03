@@ -48,6 +48,7 @@
  * degrading gracefully.
  */
 import { awcmsGet } from "./awcms/client";
+import { resolveObjekMedia, type ObjekMedia } from "./awcms/media";
 import { renderContentBlocks } from "./content-blocks";
 import { defaultLocale, type Locale, type TabSlug } from "../config/site";
 
@@ -92,6 +93,15 @@ type AwcmsBlogPost = AwcmsBlogPostSummary & {
   metaDescription: string | null;
   canonicalUrl: string | null;
   translationGroupId?: string | null;
+  /**
+   * Id of the article's featured image, resolved to a URL in one batch below.
+   *
+   * OPTIONAL for the same reason `translationGroupId` is: it rides on the full
+   * row, and a summary response has none. Declaring it required would make the
+   * type promise something a summary cannot deliver — and this file has already
+   * shipped one defect of exactly that shape (ADR-0018).
+   */
+  featuredMediaId?: string | null;
 };
 
 /**
@@ -145,6 +155,26 @@ export interface LocalizedArticle {
   };
   /** True when this locale has no translation and the default-locale article is shown. */
   isFallback: boolean;
+  /**
+   * The article's image, resolved from awcms media ONCE PER BUILD.
+   *
+   * It lands here rather than in `article-images.ts` because that module is
+   * synchronous and components must never fetch (`AGENTS.md`). Resolving it
+   * there would mean either an async component or one HTTP request per rendered
+   * card — for a site with 300 articles across two locales, hundreds of
+   * requests for data a single batch already holds.
+   *
+   * `undefined` is a supported state and stays common: an article with no
+   * featured image, a deployment that serves no public media, or an id that no
+   * longer resolves. The caller falls back to local art (ADR-0024) and then to
+   * the styled placeholder.
+   */
+  gambar?: {
+    src: string;
+    alt: string;
+    width: number | null;
+    height: number | null;
+  };
 }
 
 /**
@@ -163,6 +193,59 @@ const PAGE_SIZE = 50;
 const MAX_PAGES = 400;
 
 let postsCache: Promise<AwcmsBlogPost[]> | undefined;
+let mediaCache: Promise<Map<string, ObjekMedia>> | undefined;
+
+/**
+ * Every featured image referenced by the feed, resolved in one batch per build.
+ *
+ * ## Why one id failing and ALL ids failing are treated differently
+ *
+ * A `featuredMediaId` that does not resolve has two very different causes, and
+ * collapsing them would hide the one that matters:
+ *
+ *   - **One id missing** is an operator action. awcms lets an object be purged
+ *     and decided, in its own ADR-0056 §B, that references to it go inert
+ *     rather than blocking the purge. Failing the build here would put this
+ *     repo in the position of vetoing that decision — a site that cannot
+ *     publish because someone deleted one picture. It renders the placeholder.
+ *   - **Every id missing** is not an operator action. It is a build credential
+ *     without `media_library.media.read`, an awcms too old to serve the
+ *     endpoint, or a deployment whose media is not configured at all. All three
+ *     publish a site where EVERY article lost its image at once, and none of
+ *     them fail anything — the exact shape of the ADR-0018 defect this file was
+ *     rewritten to end.
+ *
+ * So: zero resolved out of N requested throws; anything else proceeds.
+ */
+async function fetchMedia(
+  posts: AwcmsBlogPost[]
+): Promise<Map<string, ObjekMedia>> {
+  const ids = [
+    ...new Set(
+      posts
+        .map((post) => post.featuredMediaId)
+        .filter((id): id is string => typeof id === "string" && id !== "")
+    )
+  ];
+
+  if (ids.length === 0) return new Map();
+
+  const resolved = await resolveObjekMedia(ids);
+
+  if (resolved.size === 0) {
+    throw new Error(
+      `awcms resolved NONE of the ${ids.length} featured images this feed ` +
+        `references. One missing image is an operator having purged it; all of ` +
+        `them missing is not — it is a build token without ` +
+        `media_library.media.read, an awcms that predates ` +
+        `GET /api/v1/media/objects, or media that is not configured on this ` +
+        `deployment. Building anyway would publish every article with its ` +
+        `image silently replaced by a placeholder.`
+    );
+  }
+
+  return resolved;
+}
 
 /**
  * Every published post, in full, fetched once per build.
@@ -337,7 +420,8 @@ function readBlock(post: AwcmsBlogPost): AwcmsAstroBlock {
 function toArticle(
   post: AwcmsBlogPost,
   source: AwcmsBlogPost,
-  isFallback: boolean
+  isFallback: boolean,
+  media: Map<string, ObjekMedia>
 ): LocalizedArticle {
   const block = readBlock(post);
   const sourceBlock = readBlock(source);
@@ -365,7 +449,37 @@ function toArticle(
       // never from a raw-HTML field, because there is not one.
       bodyHtml: renderContentBlocks(post.contentJson)
     },
-    isFallback
+    isFallback,
+    // The TRANSLATED post's image, not the source's: an editor who gave a
+    // locale its own artwork meant it for that locale. Falling back to the
+    // source's image is correct and automatic — a fallback article IS the
+    // source post, so `post` already is it.
+    //
+    // `altText` from awcms wins over the article title because it was written
+    // for the image; the title is the honest second choice, and it is at least
+    // in the reader's language. An empty string is treated as absent — a blank
+    // `alt` on a content image tells a screen reader the image is decorative,
+    // which this one is not.
+    gambar: gambarUntuk(post, media)
+  };
+}
+
+/** `LocalizedArticle["gambar"]` for one post, or `undefined`. */
+function gambarUntuk(
+  post: AwcmsBlogPost,
+  media: Map<string, ObjekMedia>
+): LocalizedArticle["gambar"] {
+  const objek = post.featuredMediaId
+    ? media.get(post.featuredMediaId)
+    : undefined;
+
+  if (!objek) return undefined;
+
+  return {
+    src: objek.publicUrl,
+    alt: objek.altText?.trim() || post.title,
+    width: objek.width,
+    height: objek.height
   };
 }
 
@@ -380,6 +494,8 @@ export async function getArticles(
   locale: Locale
 ): Promise<LocalizedArticle[]> {
   const posts = await fetchPublishedPosts();
+  mediaCache ??= fetchMedia(posts);
+  const media = await mediaCache;
 
   // Rule 1: the default locale defines the page set.
   const sources = posts.filter(
@@ -408,7 +524,8 @@ export async function getArticles(
       return toArticle(
         translated ?? source,
         source,
-        !translated && locale !== defaultLocale
+        !translated && locale !== defaultLocale,
+        media
       );
     })
     // Rule 3: explicit order field, then title as a stable tiebreaker.
@@ -431,5 +548,6 @@ export async function getArticle(
 
 /** Test seam: drops the per-build memoised fetch. */
 export function resetContentCacheForTests(): void {
+  mediaCache = undefined;
   postsCache = undefined;
 }

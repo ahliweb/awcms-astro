@@ -10,7 +10,12 @@ export async function getStaticPaths() {
       for (const item of await getArticles(tab.slug, lang)) {
         paths.push({
           params: { lang, tab: tab.slug, slug: item.slug },
-          props: { entry: item.entry, slug: item.slug, isFallback: item.isFallback },
+          props: {
+            entry: item.entry,
+            slug: item.slug,
+            isFallback: item.isFallback,
+            gambar: item.gambar,
+          },
         });
       }
     }
@@ -18,9 +23,9 @@ export async function getStaticPaths() {
   return paths;
 }
 
-const { entry, slug, isFallback } = Astro.props;
+const { entry, slug, isFallback, gambar } = Astro.props;
 ---
 
-<ArtikelLayout entry={entry} slug={slug} isFallback={isFallback}>
+<ArtikelLayout entry={entry} slug={slug} isFallback={isFallback} gambar={gambar}>
   <Fragment set:html={entry.bodyHtml} />
 </ArtikelLayout>

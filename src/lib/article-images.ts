@@ -14,18 +14,18 @@
  *   1. **Local art** — drop files under `src/assets/` following the naming
  *      convention below. Nothing else: no registry to edit, no code to write.
  *      This path touches `awcms` nowhere at all.
- *   2. **awcms media** — resolve `featuredMediaId` to a public R2 URL through
- *      `GET /api/v1/media/objects?ids=…`, which exists and already carries
- *      `featuredMediaId` on every full row of the build feed. **Still held**
- *      (ADR-0021, narrowed by ADR-0023): the code that calls it is code whose
- *      shape `awcms` decides, and this template repo has no `awcms` instance to
- *      prove the call right — its own CI conditions the build on
- *      `vars.AWCMS_API_URL` for exactly that reason. Two decisions are already
- *      written down for when it is unheld: the resolved image belongs on
- *      `LocalizedArticle` (resolved once per build in `content.ts`, never in
- *      this synchronous module), and `img-src` must name the media origin in
- *      `server/penyaji.mjs` — ADR-0019 §Menyesuaikan says to widen it there
- *      rather than through an env var.
+ *   2. **awcms media** — `featuredMediaId` resolved to a public URL through
+ *      `GET /api/v1/media/objects?ids=…`. **This is now implemented too**
+ *      (ADR-0025), and it lives in `content.ts`, not here: this module is
+ *      synchronous and components must never fetch. Both decisions ADR-0021
+ *      recorded were kept — the resolved image lands on `LocalizedArticle`, and
+ *      `img-src` names the media origin, discovered from
+ *      `GET /api/v1/media/public-origin` rather than copied by hand.
+ *
+ * **awcms media wins over local art.** A `featuredMediaId` was chosen by an
+ * editor for one specific article; a file under `src/assets/` is whatever the
+ * site put at that path. When both exist, the more specific choice is the one
+ * that was actually made about this article — see `getArticleVisual` below.
  *
  * ## Naming convention
  *
@@ -79,6 +79,7 @@
  *     on the site — and it does not get updated when the tariff changes.
  */
 import { cariSeni, indeksSeni, manusiawi } from "./seni-lokal";
+import type { LocalizedArticle } from "./content";
 
 /**
  * Every file under `src/assets/`, as a URL.
@@ -105,10 +106,35 @@ const MODUL = import.meta.glob("../assets/**/*.{png,jpg,jpeg,gif,webp,avif,svg}"
 const SENI = indeksSeni(MODUL, "../assets/");
 
 export type ArticleVisual = {
-  /** Site-relative URL, or `undefined` when this site has no art for it. */
+  /** Absolute or site-relative URL, or `undefined` when there is no art for it. */
   src: string | undefined;
   alt: string;
+  /** Intrinsic size, when the source reported one. awcms media does; local art does not. */
+  width?: number | null;
+  height?: number | null;
 };
+
+/**
+ * The image for one article: awcms media first, local art second, placeholder
+ * third.
+ *
+ * The order is the whole point, and it is not "remote beats local". It is
+ * **specific beats generic**: `featuredMediaId` is a choice an editor made
+ * about THIS article in the CMS, while `artikel/<tab>/<slug>` is a file a site
+ * happened to place at a matching path. When both exist, honouring the file
+ * would silently override an editorial decision — and nothing on the page would
+ * say so.
+ *
+ * A site that wants the opposite does not need a flag: it stops setting the
+ * featured image in awcms. That is a decision made where the article lives.
+ */
+export function getArticleVisual(
+  article: Pick<LocalizedArticle, "gambar">,
+  tab: string,
+  slug: string
+): ArticleVisual {
+  return article.gambar ?? getArticleImage(tab, slug);
+}
 
 export function getArticleImage(tab: string, slug: string): ArticleVisual {
   return {

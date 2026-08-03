@@ -269,8 +269,14 @@ sengaja yang belum tercatat di `awcms-family-compatibility.yaml`.
 Template ini belum membawa satu pun ilustrasi, tetapi bingkainya sudah ada dan
 aturan di bawah berlaku sejak gambar pertama dimasukkan situs yang memakainya.
 
-**Cara memasukkannya: taruh berkasnya di `src/assets/`, tidak ada langkah
-kedua.** Konvensi namanya — relatif terhadap `src/assets/`, tanpa ekstensi —
+**Dua sumber, dan yang lebih spesifik menang.** `featuredMediaId` di `awcms`
+adalah pilihan editor untuk artikel ITU dan dipakai lebih dulu (ADR-0025);
+berkas di `src/assets/` adalah cadangan tingkat template. Gambar media
+di-resolve **sekali per build** di `content.ts` dan tinggal di
+`LocalizedArticle.gambar` — jangan pernah memanggilnya dari komponen.
+
+**Cara memasukkan seni lokal: taruh berkasnya di `src/assets/`, tidak ada
+langkah kedua.** Konvensi namanya — relatif terhadap `src/assets/`, tanpa ekstensi —
 `hero`, `tab/<tab>`, dan `artikel/<tab>/<slug>`; ekstensi apa pun dari
 `EKSTENSI_SENI` berlaku, jadi mengganti `.svg` menjadi `.webp` tidak menyentuh
 satu baris kode pun. **Tidak ada fallback dari artikel ke seni seksinya**
