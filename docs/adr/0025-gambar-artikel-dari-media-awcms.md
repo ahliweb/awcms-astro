@@ -119,6 +119,21 @@ cacat membuat browser menolak SELURUH kebijakan — bersama `script-src`,
   lebih longgar daripada aslinya. Sebuah SITUS menjalankan build yang sama
   terhadap `awcms` sungguhan di CI-nya.
 
+  > **Dicoba, dan ini yang menghalanginya — 3 Agustus 2026.** Menutup risiko ini
+  > secara lokal butuh dua hal, dan keduanya tidak ada. **Pertama**, jalur data
+  > host→container ke Postgres `awcms` mati: TCP connect berhasil (docker-proxy
+  > menerima di loopback) tetapi sesi menggantung — `Connection timeout after 30s
+  > (sent startup message, but never received response)`, dan ping ke IP
+  > container 100% hilang sementara outbound DARI container jalan dan seluruh
+  > konfigurasi bridge benar. Itu drop di lapisan bawah host, bukan cacat kode di
+  > repo mana pun, dan bukan sesuatu yang bisa diperbaiki dengan tweak
+  > iptables/sysctl. **Kedua**, dan ini yang menentukan: basis data itu ter-migrasi
+  > (126 tabel) tetapi **kosong** — nol tenant, nol post, nol objek media. Sebuah
+  > build end-to-end terhadapnya tidak akan membuktikan apa pun tentang resolusi
+  > media, dan mengisinya berarti mengarang data di basis data pengembangan orang
+  > lain untuk memuaskan sebuah tes. Risikonya tetap diterima, sekarang dengan
+  > alasan yang bisa diperiksa alih-alih diasumsikan.
+
 ## Alternatif yang dipertimbangkan
 
 - **Membaca origin dari `publicUrl` yang dikembalikan** — ditolak, dan alasannya

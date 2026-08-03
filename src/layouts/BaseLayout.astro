@@ -17,7 +17,7 @@ import {
   type Locale,
 } from '../config/site';
 import { t } from '../lib/po';
-import { SITE_SOCIAL_IMAGE, SOCIAL_IMAGE_HEIGHT, SOCIAL_IMAGE_WIDTH } from '../lib/social-image';
+import { kartuSitus, type KartuShare } from '../lib/social-image';
 import { siteSchema } from '../lib/schema';
 import '../styles/global.css';
 
@@ -26,26 +26,19 @@ interface Props {
   description?: string;
   currentTab?: string;
   /**
-   * URL absolut kartu share. Wajib PNG — lihat `src/lib/social-image.ts`.
+   * Kartu share halaman ini, LENGKAP dengan metadata yang memerikannya.
+   *
+   * Satu objek dan bukan lima prop, karena selama `src` dan `alt` terpisah
+   * keduanya bisa datang dari dua gambar berbeda — dan itu yang terjadi
+   * sebelum ini: halaman seksi dan halaman artikel memasang alt hero mereka
+   * pada kartu SITUS. Pembaca layar di lini masa sosial mendengar deskripsi
+   * gambar yang tidak sedang ditampilkan, dan tidak ada gerbang yang bisa
+   * melihatnya — kedua tag ada dan keduanya masuk akal dibaca sendiri.
+   *
    * Kosong berarti halaman ini tidak memasang tag gambar sama sekali; itu
    * keadaan yang didukung dan merupakan bawaan template.
    */
-  ogImage?: string;
-  /** Teks alternatif kartu share; dibaca pembaca layar di lini masa sosial. */
-  ogImageAlt?: string;
-  /**
-   * MIME dan ukuran kartu share, bila ia BUKAN kartu situs.
-   *
-   * Bawaannya menyatakan `image/png` 1200×630 — kontrak `.env.example` dengan
-   * siapa pun yang mengisi `SITE_SOCIAL_IMAGE`. Kartu per artikel dari media
-   * awcms bukan itu: ia WebP 1600×900 pada umumnya. Membiarkannya memakai
-   * bawaan berarti setiap halaman artikel memasang TIGA klaim yang salah, dan
-   * pengunduh pratinjau yang memercayainya akan melebarkan kartu ke kotak yang
-   * salah atau menolaknya — tanpa satu pun kegagalan di build.
-   */
-  ogImageType?: string;
-  ogImageWidth?: number | null;
-  ogImageHeight?: number | null;
+  shareCard?: KartuShare | undefined;
   canonicalUrl?: string;
   ogType?: 'website' | 'article';
   /** JSON-LD tambahan khas halaman ini (Article, ItemList, Place, …). */
@@ -78,11 +71,7 @@ const {
   title,
   description = t(locale, 'home.description'),
   currentTab,
-  ogImage = SITE_SOCIAL_IMAGE,
-  ogImageAlt = t(locale, 'share.imageAlt'),
-  ogImageType = 'image/png',
-  ogImageWidth = SOCIAL_IMAGE_WIDTH,
-  ogImageHeight = SOCIAL_IMAGE_HEIGHT,
+  shareCard,
   canonicalUrl = getSiteUrl(pathname.endsWith('/') ? pathname : `${pathname}/`),
   ogType = 'website',
   schema,
@@ -101,6 +90,12 @@ const fullTitle = title.includes(siteConfig.name)
   : `${title} — ${siteConfig.name}`;
 
 const metaDescription = description.slice(0, 160);
+
+// Kartu halaman, atau kartu situs, atau tidak sama sekali — dan `alt` selalu
+// ikut kartunya. `share.imageAlt` memerikan kartu SITUS, jadi ia hanya dipakai
+// bersama kartu situs; halaman yang membawa kartunya sendiri membawa alt-nya
+// sendiri juga.
+const kartu = shareCard ?? kartuSitus(t(locale, 'share.imageAlt'));
 
 // hreflang: setiap halaman punya pasangan di seluruh locale karena route
 // dibangun berpasangan, jadi alternate selalu valid.
@@ -160,14 +155,14 @@ const jsonLd = {
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={metaDescription} />
-    {ogImage && (
+    {kartu && (
       <>
-        <meta property="og:image" content={ogImage} />
-        <meta property="og:image:secure_url" content={ogImage} />
-        <meta property="og:image:type" content={ogImageType} />
-        {ogImageWidth && <meta property="og:image:width" content={String(ogImageWidth)} />}
-        {ogImageHeight && <meta property="og:image:height" content={String(ogImageHeight)} />}
-        <meta property="og:image:alt" content={ogImageAlt} />
+        <meta property="og:image" content={kartu.src} />
+        <meta property="og:image:secure_url" content={kartu.src} />
+        <meta property="og:image:type" content={kartu.type} />
+        {kartu.width && <meta property="og:image:width" content={String(kartu.width)} />}
+        {kartu.height && <meta property="og:image:height" content={String(kartu.height)} />}
+        <meta property="og:image:alt" content={kartu.alt} />
       </>
     )}
     <meta property="og:locale" content={ogLocale} />
@@ -184,14 +179,14 @@ const jsonLd = {
     {/* Twitter. `summary_large_image` menjanjikan gambar besar, jadi tanpa
         kartu yang nyata kartunya diturunkan ke `summary` alih-alih menjanjikan
         gambar yang tidak ada. */}
-    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:card" content={kartu ? 'summary_large_image' : 'summary'} />
     <meta name="twitter:url" content={canonicalUrl} />
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={metaDescription} />
-    {ogImage && (
+    {kartu && (
       <>
-        <meta name="twitter:image" content={ogImage} />
-        <meta name="twitter:image:alt" content={ogImageAlt} />
+        <meta name="twitter:image" content={kartu.src} />
+        <meta name="twitter:image:alt" content={kartu.alt} />
       </>
     )}
 
