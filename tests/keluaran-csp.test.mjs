@@ -156,7 +156,7 @@ describe.skipIf(!ada)("keluaran build siap untuk CSP ketat", () => {
     // `'self'` juga menolak host lain dan `data:`. Sebuah komponen yang menarik
     // pustaka dari CDN gagal di produksi saja — di dev ia bekerja sempurna.
     const asing = halaman
-      .flatMap(({ nama, isi }) => [
+      .flatMap(({ isi }) => [
         ...skripDi(isi).map((tag) => tag.src),
         ...(isi.match(/<link[^>]+rel=["']stylesheet["'][^>]*>/gi) ?? []).map(
           (tag) => tag.match(/\shref=["']([^"']*)["']/i)?.[1]

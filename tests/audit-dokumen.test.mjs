@@ -206,6 +206,85 @@ describe("indeks ADR", () => {
   });
 });
 
+describe("daftar permukaan kilau", () => {
+  /** Fixture minimal: hanya kedua berkas bertanda yang dibaca gerbang ini. */
+  function pohonKilau(selectorCss, barisTabel) {
+    return pohon({
+      "src/styles/global.css": [
+        "/* kilau:permukaan:mulai */",
+        `${selectorCss} {`,
+        "  overflow: hidden;",
+        "}",
+        "/* kilau:permukaan:selesai */"
+      ].join("\n"),
+      "docs/awcms-astro/ui-ux-design-system.md": [
+        "# Design system",
+        "",
+        "<!-- kilau:permukaan:mulai -->",
+        "| Permukaan | Dipakai untuk |",
+        "| --- | --- |",
+        ...barisTabel,
+        "<!-- kilau:permukaan:selesai -->"
+      ].join("\n")
+    });
+  }
+
+  test("daftar yang sama persis lolos", () => {
+    const akar = pohonKilau(".kilau,\n.card", [
+      "| `.kilau` | Class umum |",
+      "| `.card` | Kartu |"
+    ]);
+
+    expect(jalankan(akar).kode).toBe(0);
+  });
+
+  test("tabel mendaftarkan permukaan yang tidak ada di CSS MERAH — cacat `.wilayah-filter-btn`", () => {
+    const akar = pohonKilau(".kilau", [
+      "| `.kilau` | Class umum |",
+      "| `.wilayah-filter-btn` | Tombol repo rujukan |"
+    ]);
+    const { kode, keluaran } = jalankan(akar);
+
+    expect(kode).toBe(1);
+    expect(keluaran).toContain("permukaan-kilau");
+    expect(keluaran).toContain(".wilayah-filter-btn");
+  });
+
+  test("permukaan baru di CSS yang lupa dicatat MERAH — arah sebaliknya", () => {
+    const akar = pohonKilau(".kilau,\n.tombol-baru", ["| `.kilau` | Class umum |"]);
+    const { kode, keluaran } = jalankan(akar);
+
+    expect(kode).toBe(1);
+    expect(keluaran).toContain(".tombol-baru");
+  });
+
+  test("penanda yang tidak lengkap MERAH, bukan dilewati", () => {
+    const akar = pohon({
+      "src/styles/global.css": "/* kilau:permukaan:mulai */\n.kilau { }",
+      "docs/awcms-astro/ui-ux-design-system.md": "# Design system"
+    });
+
+    expect(jalankan(akar).kode).toBe(1);
+  });
+
+  test("satu sisi hilang MERAH — kontrak sepihak bukan kontrak yang terpenuhi", () => {
+    const akar = pohon({
+      "src/styles/global.css":
+        "/* kilau:permukaan:mulai */\n.kilau { }\n/* kilau:permukaan:selesai */"
+    });
+
+    expect(jalankan(akar).kode).toBe(1);
+  });
+
+  test("kedua sisi tidak ada dilewati dan MENGATAKANNYA", () => {
+    const akar = pohon({ "README.md": "# Situs tanpa design system" });
+    const { kode, keluaran } = jalankan(akar);
+
+    expect(kode).toBe(0);
+    expect(keluaran).toContain("kilau");
+  });
+});
+
 test("repo ini sendiri lolos", () => {
   const { kode, keluaran } = jalankan(".");
 

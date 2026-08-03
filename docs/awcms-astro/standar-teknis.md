@@ -168,7 +168,7 @@ Gerbang standar ini, seluruhnya wajib hijau sebelum pekerjaan dinyatakan selesai
 | Keluaran CSP | `bun test` **setelah** `bun run build` | Gaya dan skrip inline di HTML, sumber lintas-origin, JS yang ikut hilang | Ya — melewati dirinya bila `dist/` belum ada |
 | Audit konten — gambar | `bun run audit:konten` | Rasio terhadap `--ratio-visual`, format dibaca dari isi berkas, XML SVG, ukuran teks terkecil di SVG | Ya |
 | Audit konten — keluaran | `bun run audit:konten` **setelah** `bun run build` | Judul/deskripsi/canonical, hreflang pincang, aset yang dijanjikan metadata tetapi tidak diterbitkan, tautan mati, sitemap, nama key yang bocor ke layar | Ya — melewati dirinya bila `dist/` belum ada |
-| Audit dokumen | `bun run audit:dokumen` | Tautan markdown ke berkas yang tidak ada (diselesaikan dari letak berkasnya, sehingga aturan tautan `.changesets/` ikut terjaga), indeks ADR yang tidak lengkap dua arah, kolom Status yang tidak setuju dengan ADR-nya | Ya |
+| Audit dokumen | `bun run audit:dokumen` | Tautan markdown ke berkas yang tidak ada (diselesaikan dari letak berkasnya, sehingga aturan tautan `.changesets/` ikut terjaga), indeks ADR yang tidak lengkap dua arah, kolom Status yang tidak setuju dengan ADR-nya, daftar permukaan kilau yang menyimpang dari `global.css` | Ya |
 | Audit dependency | `bun audit` | Kerentanan rantai build | Ya |
 | CI | `.github/workflows/ci.yml` | Seluruhnya yang ada, pada setiap PR | Ya |
 
