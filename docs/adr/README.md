@@ -23,12 +23,13 @@ menyesuaikan gaya, menambah tes.
 | [0018](0018-kontrak-build-token-mesin-dan-traversal-konten.md) | Kontrak build terhadap `awcms`: tenant dari token mesin, traversal cursor, gerbang terjemahan | Diterima |
 | [0019](0019-csp-ketat-dikirim-penyaji.md) | CSP ketat dikirim penyaji; skrip tidak lagi tinggal di dalam HTML | Diterima |
 | [0020](0020-layar-admin-kembali-ke-awcms.md) | Layar admin kembali ke `awcms`; repo ini murni publik + BFF | Diterima |
-| [0021](0021-tahan-pengembangan-menunggu-fondasi-awcms.md) | Pengembangan repo ini ditahan sampai fondasi `awcms` selesai | Diterima |
+| [0021](0021-tahan-pengembangan-menunggu-fondasi-awcms.md) | Pengembangan repo ini ditahan sampai fondasi `awcms` selesai | Digantikan [ADR-0027](0027-penahanan-adr-0021-selesai.md) |
 | [0022](0022-situs-menerbitkan-tenant-default-awcms.md) | Situs ini menerbitkan tenant DEFAULT (owner) `awcms` | Diterima |
 | [0023](0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md) | Penahanan ADR-0021 dipersempit: pekerjaan yang tidak membutuhkan `awcms` boleh mendarat | Diterima |
 | [0024](0024-seni-lokal-di-src-assets.md) | Seni lokal di `src/assets/`, di-resolve `import.meta.glob` sebagai URL | Diterima |
 | [0025](0025-gambar-artikel-dari-media-awcms.md) | Gambar artikel dari media `awcms`: resolusi sekali per build, `img-src` yang ditanyakan | Diterima |
 | [0026](0026-kartu-share-per-artikel-dari-media-awcms.md) | Kartu share per artikel dari media `awcms`, dengan metadata yang ikut berpindah | Diterima |
+| [0027](0027-penahanan-adr-0021-selesai.md) | Penahanan ADR-0021 selesai: kedua indikatornya terpenuhi | Diterima |
 
 > **Kenapa penomoran mulai dari 0014.** ADR di repo ini melanjutkan urutan repo
 > rujukan yang identitasnya dilepas di [#11](https://github.com/ahliweb/awcms-astro/pull/11);

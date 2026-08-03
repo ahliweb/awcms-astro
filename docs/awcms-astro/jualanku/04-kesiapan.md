@@ -8,7 +8,7 @@
 | --- | ----------------------------------------------------------------------------- | --------------------------------------------------------------------- |
 | 1   | [ADR-0014](../../adr/0014-rendering-campuran-dan-bff-portal.md) diterima      | ADR ber-status `Accepted` — **selesai**                               |
 | 2   | ADR-0045 di `awcms` diterima                                                  | ADR di repo `awcms` — **selesai**                                     |
-| 3   | Endpoint introspeksi sesi ada di `awcms` + terdokumentasi OpenAPI             | Kontrak + test di repo `awcms`                                        |
+| 3   | Endpoint introspeksi sesi ada di `awcms` + terdokumentasi OpenAPI             | **SELESAI** — `GET /api/v1/auth/session` + kode handoff sekali-pakai (`awcms` ADR-0049/0050) |
 | 4   | Proof-of-concept adapter + satu rute on-demand + BFF                          | Login → sesi → baca profil lewat `awcms` privat, di branch terpisah   |
 | 5   | Konfigurasi deployment portal (image, proxy, healthcheck, variabel runtime)   | Deploy staging berhasil                                               |
 | 6   | Jalur rollback statis terdokumentasi **dan dicoba**                            | Build statis penuh hijau di CI + langkah rollback tertulis            |
@@ -16,6 +16,22 @@
 
 Butir 3 adalah dependensi keras: tanpa kontrak sesi, PoC hanya bisa memalsukan
 sesi, dan PoC yang memalsukan bagian tersulitnya tidak membuktikan apa pun.
+**Ia sudah selesai** (`awcms` ADR-0049/0050, 1–2 Agustus 2026), dan begitu pula
+business-scope resolver yang dulu NO-OP fail-closed (`awcms` ADR-0060).
+
+**Yang menahan portal sekarang bukan kontrak yang hilang, melainkan dua hal
+lain**, dan keduanya perlu disebut supaya tabel di atas tidak terbaca sebagai
+"tinggal butir 4–7":
+
+- **Di repo ini:** uji [ADR-0023](../../adr/0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md).
+  BFF memanggil `awcms` di **setiap permintaan runtime**, jadi bentuknya
+  ditentukan respons `awcms` pada tiap permintaan — dan repo template ini tidak
+  punya instans untuk membuktikan panggilannya benar. Butir 4 (PoC) karena itu
+  bukan sekadar pekerjaan yang belum dimulai; ia pekerjaan yang belum bisa
+  dibuktikan siapa pun di sini.
+- **Di `awcms`:** bentuk scope merchant Jualanku masih butuh ADR admission-nya
+  sendiri. ADR-0060 memberi resolver-nya penyedia; ia tidak memutuskan bagaimana
+  merchant dipetakan ke scope.
 
 ## 2. Cakupan proof-of-concept
 

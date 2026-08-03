@@ -1,6 +1,6 @@
 # ADR-0021 — Pengembangan repo ini ditahan sampai fondasi `awcms` selesai
 
-- **Status:** Accepted
+- **Status:** Superseded by [ADR-0027](0027-penahanan-adr-0021-selesai.md)
 - **Tanggal:** 2 Agustus 2026
 - **Aturan pemilik:** 2 Agustus 2026 — "pengembangan lanjutan repo ini menanti pengembangan **dasar** pada repo `ahliweb/awcms` selesai dulu, baru lanjut pengembangan dari repo ini."
 - **Terkait:** [ADR-0020](0020-layar-admin-kembali-ke-awcms.md) (layar admin kembali ke `awcms` — keputusan yang memindahkan pusat gravitasi pekerjaan ke sana), `awcms` [ADR-0047](https://github.com/ahliweb/awcms/blob/main/docs/adr/0047-mini-micro-frozen-foundation-built-here.md) (pembekuan `awcms-mini`/`awcms-micro`), `awcms` [ADR-0051](https://github.com/ahliweb/awcms/blob/main/docs/adr/0051-admin-screens-consolidated-in-awcms.md)
@@ -87,12 +87,22 @@ milik `awcms`:
 - **§4 "yang belum" habis** — seam yang menunggu penyedia, rute publik
   host-resolved, dan sisa penyerapan `awcms-micro`.
 
-  **BELUM, per 3 Agustus 2026.** Ketiganya masih terbuka di §4: business-scope
+  ~~**BELUM, per 3 Agustus 2026.** Ketiganya masih terbuka di §4: business-scope
   resolver base tetap NO-OP fail-closed, rute konten host-based `/blog/{slug}`
   masih follow-up, dan `newsletter` + `social-publishing` + pustaka komponen
-  Wave 0 + trajektori Wave 3 belum diserap. Satu dari dua indikator terpenuhi
-  bukan pencabutan — dan yang mencabut tetap pernyataan pemilik, bukan skor
-  indikator.
+  Wave 0 + trajektori Wave 3 belum diserap.~~
+
+  **TERPENUHI juga, 4 Agustus 2026** — dua dari tiga ditutup, dan yang ketiga
+  ternyata tidak pernah termasuk. `awcms` ADR-0059 mendaratkan rute konten
+  host-resolved (`/news/**`; `/blog/{slug}` **ditolak dengan bukti** — Astro
+  membiarkan dua berkas rute saling menaungi diam-diam), dan ADR-0060 memberi
+  business-scope resolver penyedianya. Sisa penyerapan `awcms-micro`
+  (`newsletter`, `social-publishing`, pustaka `src/components/ui/`) **masih
+  belum ada dan tidak memblokir repo ini** — itu bukan penilaian dari sini
+  melainkan kesimpulan `awcms` sendiri di §Kesiapan `awcms-astro`
+  PROJECT_STATE-nya: **"Yang tersisa DAN milik repo ini: nol."**
+
+  Konsekuensinya ditulis di [ADR-0027](0027-penahanan-adr-0021-selesai.md).
 
 Kriteria itu **indikator, bukan gerbang otomatis**: yang mencabut penahanan
 tetap pernyataan pemilik. Ditulis di sini supaya "sudah selesai belum?" punya
