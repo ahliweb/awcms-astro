@@ -139,7 +139,9 @@ Kolom terakhir menunjukkan padanan yang harus dituju saat integrasi, agar kompon
 
 Setiap tombol dan setiap tautan yang dibungkus card atau area khusus mendapat satu sapuan cahaya yang bergerak **dari pojok kiri atas ke pojok kanan bawah** saat hover maupun fokus keyboard. Sapuan berjalan sekali per interaksi, tidak berulang dan tidak berdenyut.
 
-Daftar permukaan adalah kontrak, bukan kumpulan kebetulan. Ia ditulis satu kali di `src/styles/global.css` di antara penanda `kilau:permukaan:mulai` dan `kilau:permukaan:selesai`. Di repo rujukan `bun run audit` memeriksa daftar itu sama persis dengan tabel di bawah; di `awcms-astro` pemeriksa itu **belum ada**, jadi kesesuaiannya saat ini dijaga mata pembaca kode — dan itu berarti ia akan menyimpang:
+Daftar permukaan adalah kontrak, bukan kumpulan kebetulan. Ia ditulis satu kali di `src/styles/global.css` di antara penanda `kilau:permukaan:mulai` dan `kilau:permukaan:selesai`. **`bun run audit:dokumen` kini membandingkannya dengan tabel di bawah, dua arah.**
+
+Sebelum gerbang itu ada, paragraf ini berbunyi "pemeriksa itu belum ada, jadi kesesuaiannya dijaga mata pembaca kode — dan itu berarti ia akan menyimpang". Ia memang sudah menyimpang: tabel ini mendaftarkan `.wilayah-filter-btn`, tombol filter wilayah milik repo rujukan yang **tidak pernah ada di template ini** — tidak di CSS, tidak di satu komponen pun. Sebuah baris yang menjanjikan permukaan berkilau pada tombol yang tidak ada tidak akan pernah terlihat salah oleh siapa pun yang membaca dokumennya saja.
 
 <!-- kilau:permukaan:mulai -->
 | Permukaan | Dipakai untuk |
@@ -148,7 +150,6 @@ Daftar permukaan adalah kontrak, bukan kumpulan kebetulan. Ia ditulis satu kali 
 | `.card` | Kartu artikel dan kartu wilayah, seluruhnya berupa `<a>` |
 | `.chip` | CTA hero, filter, pengalih tema, pemicu pengalih bahasa |
 | `.share-btn` | Tombol berbagi dan tombol salin tautan |
-| `.wilayah-filter-btn` | Tombol kirim filter wilayah |
 | `.lang-switcher-menu a` | Tautan bahasa di dalam menu |
 <!-- kilau:permukaan:selesai -->
 
@@ -170,7 +171,9 @@ Mobile-first dari 360px. Tabel dibungkus `.table-responsive` — otomatis untuk 
 
 ### Gambar
 
-`<Image>` dari `astro:assets`, tidak pernah `<img>` mentah. Potongan ditetapkan lewat `width`/`height` — dipotong saat build, bukan oleh `object-fit` di browser, sehingga piksel yang tidak tampil tidak ikut diunduh. Layar pertama `loading="eager"` + `fetchpriority="high"`; sisanya `lazy`.
+**Di `awcms-astro` ini `<img>` biasa, bukan `<Image>` dari `astro:assets`** — dan itu keputusan, bukan kelalaian ([ADR-0024](../adr/0024-seni-lokal-di-src-assets.md)). Seni lokal di-resolve `import.meta.glob` dengan `query: "?url"` menjadi URL string; `astro:assets` mengembalikan `ImageMetadata`, yang mengubah bentuk `ArticleVisual` dan keempat bingkai sekaligus, serta memperlakukan SVG berbeda dari raster — padahal SVG justru format yang gerbang repo ini ditulis untuk membaca. Konsekuensi yang diterima: raster tidak di-encode ulang dan tidak ada `srcset`.
+
+Pemotongan tidak hilang karenanya. Bingkai memotong lewat `object-fit: cover` di CSS, dan `bun run audit:konten` menolak sumber yang bukan `--ratio-visual` sebelum ia sempat terbit — jadi yang terpotong sudah dicegah, bukan sekadar tidak diunduh. Gambar besar di atas lipatan dimuat `eager`, sisanya `lazy`; keduanya ditetapkan satu kali di [`Ilustrasi.astro`](../../src/components/Ilustrasi.astro), bukan di setiap pemanggil.
 
 **Satu rasio untuk seluruh situs, dipakai bingkai maupun sumber.** Di repo ini 16∶9. Bingkai memakai `object-fit: cover`, jadi sumber berasio lain tidak diperkecil — ia dipotong, diam-diam, di setiap ukuran layar. Sumber 1∶1 pada bingkai 16∶9 kehilangan 22% teratas, dan judul gambar hampir selalu ada di sana.
 

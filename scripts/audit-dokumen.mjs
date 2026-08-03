@@ -32,6 +32,14 @@
  *      tabel yang tidak menyebut status sama sekali — ia dibaca sebagai
  *      keputusan yang masih berlaku. Status yang tidak dikenal DILAPORKAN,
  *      bukan dilewati diam-diam.
+ *   4. **Daftar permukaan kilau sama persis di CSS dan di dokumen.**
+ *      `ui-ux-design-system.md` menyebut daftar itu "kontrak, bukan kumpulan
+ *      kebetulan", menunjuk penanda di `src/styles/global.css`, dan mengakui
+ *      terus terang bahwa pemeriksanya belum ada — "jadi kesesuaiannya saat ini
+ *      dijaga mata pembaca kode, dan itu berarti ia akan menyimpang". Ia sudah
+ *      menyimpang: tabelnya mendaftarkan `.wilayah-filter-btn`, permukaan repo
+ *      rujukan yang tidak pernah ada di sini. Gerbang ini yang diminta dokumen
+ *      itu sendiri.
  *
  * ## Yang sengaja TIDAK diperiksa
  *
@@ -283,6 +291,108 @@ function auditIndeksAdr() {
 }
 
 // ---------------------------------------------------------------------------
+// 4. Daftar permukaan kilau — CSS vs dokumen
+// ---------------------------------------------------------------------------
+
+const CSS_KILAU = "src/styles/global.css";
+const DOK_KILAU = "docs/awcms-astro/ui-ux-design-system.md";
+
+/** Isi di antara sepasang penanda, atau `undefined` bila penandanya tak lengkap. */
+function antaraPenanda(isi, mulai, selesai) {
+  const awal = isi.indexOf(mulai);
+  const akhir = isi.indexOf(selesai);
+  if (awal === -1 || akhir === -1 || akhir < awal) return undefined;
+  return isi.slice(awal + mulai.length, akhir);
+}
+
+/**
+ * Daftar selector di depan `{` pada blok CSS bertanda.
+ *
+ * Dibaca sampai `{` pertama, bukan seluruh blok: yang menjadi kontrak adalah
+ * daftar permukaannya, bukan properti yang diberikan kepadanya.
+ */
+function permukaanCss(blok) {
+  const daftar = blok.split("{")[0];
+  return daftar
+    .split(",")
+    .map((bagian) => bagian.trim())
+    .filter(Boolean);
+}
+
+/** Kolom pertama tiap baris tabel markdown bertanda, tanpa backtick. */
+function permukaanDokumen(blok) {
+  /** @type {string[]} */
+  const hasil = [];
+
+  for (const baris of blok.split("\n")) {
+    const kolom = baris.match(/^\|([^|]+)\|/)?.[1]?.trim();
+    if (!kolom) continue;
+    if (/^-+$/.test(kolom) || kolom === "Permukaan") continue;
+    hasil.push(kolom.replace(/`/g, "").trim());
+  }
+
+  return hasil;
+}
+
+function auditPermukaanKilau() {
+  const adaCss = existsSync(gabung(AKAR, CSS_KILAU));
+  const adaDok = existsSync(gabung(AKAR, DOK_KILAU));
+
+  if (!adaCss && !adaDok) {
+    catatan.push("kilau: berkas CSS maupun dokumennya tidak ada — gerbang permukaan DILEWATI");
+    return;
+  }
+
+  // Satu ada, satu tidak, adalah keadaan yang TIDAK boleh lewat diam-diam:
+  // kontrak yang salah satu sisinya hilang bukan kontrak yang terpenuhi.
+  if (!adaCss || !adaDok) {
+    langgar(
+      "permukaan-kilau",
+      adaCss ? DOK_KILAU : CSS_KILAU,
+      "hilang sementara pasangannya ada — daftar permukaan tidak bisa dibandingkan"
+    );
+    return;
+  }
+
+  const blokCss = antaraPenanda(
+    readFileSync(gabung(AKAR, CSS_KILAU), "utf8"),
+    "/* kilau:permukaan:mulai */",
+    "/* kilau:permukaan:selesai */"
+  );
+  const blokDok = antaraPenanda(
+    readFileSync(gabung(AKAR, DOK_KILAU), "utf8"),
+    "<!-- kilau:permukaan:mulai -->",
+    "<!-- kilau:permukaan:selesai -->"
+  );
+
+  if (blokCss === undefined || blokDok === undefined) {
+    langgar(
+      "permukaan-kilau",
+      blokCss === undefined ? CSS_KILAU : DOK_KILAU,
+      "penanda `kilau:permukaan:mulai`/`:selesai` tidak lengkap"
+    );
+    return;
+  }
+
+  const dariCss = permukaanCss(blokCss);
+  const dariDok = permukaanDokumen(blokDok);
+
+  for (const permukaan of dariCss) {
+    if (!dariDok.includes(permukaan)) {
+      langgar("permukaan-kilau", DOK_KILAU, `\`${permukaan}\` ada di CSS tetapi tidak di tabel`);
+    }
+  }
+
+  for (const permukaan of dariDok) {
+    if (!dariCss.includes(permukaan)) {
+      langgar("permukaan-kilau", DOK_KILAU, `tabel mendaftarkan \`${permukaan}\` yang tidak ada di CSS`);
+    }
+  }
+
+  catatan.push(`kilau: ${dariCss.length} permukaan di CSS, ${dariDok.length} baris tabel`);
+}
+
+// ---------------------------------------------------------------------------
 // Jalankan
 // ---------------------------------------------------------------------------
 
@@ -293,6 +403,7 @@ if (!existsSync(AKAR) || !statSync(AKAR).isDirectory()) {
 
 auditTautan(berkasMarkdown());
 auditIndeksAdr();
+auditPermukaanKilau();
 
 console.log("── audit dokumen ──");
 for (const baris of catatan) console.log(`  ${baris}`);
