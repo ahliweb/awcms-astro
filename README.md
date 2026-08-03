@@ -10,19 +10,19 @@ menunggu basis data, dan CMS tidak pernah menghadap internet publik.
 
 | Template          | Mode                   | Basis data | Dipakai untuk                                            | Status                |
 | ----------------- | ---------------------- | ---------- | -------------------------------------------------------- | --------------------- |
-| **`awcms-astro`** | Statis (SSG)           | Tidak ada  | Situs informasi publik, profil, dokumentasi, portal       | **Ditahan** (ADR-0021) |
+| **`awcms-astro`** | Statis (SSG)           | Tidak ada  | Situs informasi publik, profil, dokumentasi, portal       | **Dikembangkan**      |
 | `awcms`           | Online-first, superset | PostgreSQL | Back-office, ERP, multi-tenant — **backend repo ini**     | **Dikembangkan**      |
 | `awcms-micro`     | Online penuh, ramping  | PostgreSQL | Website/e-commerce yang dinamis sejak awal                | Referensi (dibekukan) |
 | `awcms-mini`      | Hybrid offline-first   | PostgreSQL | Operasional lapangan dengan koneksi tak dapat diandalkan  | Referensi (dibekukan) |
 
-Sejak **2 Agustus 2026** pengembangan repo ini **ditahan** sampai pengembangan
-dasar `awcms` selesai ([ADR-0021](docs/adr/0021-tahan-pengembangan-menunggu-fondasi-awcms.md)).
-Yang tetap mendarat selama penahanan hanya patch keamanan, bump dependency, dan
-koreksi dokumen yang berhenti benar karena `awcms` berubah. Alasannya bukan
-kekurangan pekerjaan: seluruh sisa backlog di bawah menunggu `awcms` bergerak
-lebih dulu, dan membangun di atas kontrak yang belum stabil berarti menulisnya
-dua kali — repo ini sudah membayarnya sekali (ADR-0018). Apa yang menunggu, dan
-apa yang menandai penahanan ini bisa dicabut, ada di ADR-0021.
+Repo ini sempat **ditahan** dari 2 sampai 4 Agustus 2026 sampai fondasi `awcms`
+selesai (ADR-0021). Penahanan itu berakhir karena kedua indikator yang ia tulis
+sendiri terpenuhi — tiap modul `awcms` punya layar, dan §4 `PROJECT_STATE`-nya
+habis ([ADR-0027](docs/adr/0027-penahanan-adr-0021-selesai.md)). Yang
+menggantikannya satu pertanyaan yang tidak akan kedaluwarsa: **apakah perubahan
+ini akan ditulis ulang bila `awcms` berubah?** Bila ya, ia butuh instans `awcms`
+untuk dibuktikan sebelum mendarat — dan "endpoint-nya sudah ada" bukan jawaban
+"tidak" ([ADR-0023](docs/adr/0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md)).
 
 Sejak **31 Juli 2026** hanya dua repo yang dikembangkan: repo ini dan `awcms`.
 `awcms-micro` dan `awcms-mini` dibekukan sebagai referensi — boleh dibaca dan
@@ -59,9 +59,13 @@ Yang menyajikan berkas itu adalah **proses Bun**, bukan nginx (ADR-0016) — jad
 "tanpa runtime" bukan klaim repo ini; klaimnya adalah tanpa basis data dan tanpa
 panggilan ke CMS saat pembaca meminta halaman. Aturan cache, lima header
 keamanan — termasuk `Content-Security-Policy` ketat dan `Permissions-Policy`
-sejak ADR-0019, disamakan dengan postur `awcms` — dan
-kompresi tinggal di [`server/penyaji.mjs`](server/penyaji.mjs) dan dijaga
-[`tests/penyaji.test.mjs`](tests/penyaji.test.mjs).
+sejak ADR-0019 — dan kompresi tinggal di
+[`server/penyaji.mjs`](server/penyaji.mjs) dan dijaga
+[`tests/penyaji.test.mjs`](tests/penyaji.test.mjs). Kelimanya bernilai sama
+dengan `awcms`; `Strict-Transport-Security` yang `awcms` kirim di produksi belum
+ada di sini, dan itu dicatat sebagai celah bernomor di
+[`docs/awcms-astro/standar-performa-dan-keamanan.md`](docs/awcms-astro/standar-performa-dan-keamanan.md)
+alih-alih dibiarkan tertutup oleh kata "disamakan".
 
 "Build berikutnya" tidak berarti menunggu seseorang menekan tombol: awcms
 memicu rebuild lewat webhook begitu sebuah post terbit, jadi jeda antara redaksi
@@ -277,6 +281,7 @@ membuatnya tidak perlu `node_modules` sama sekali.
 | [`.changesets/README.md`](.changesets/README.md)                                     | Cara menulis catatan perubahan          |
 | [`docs/awcms-astro/README.md`](docs/awcms-astro/README.md)                           | Posisi standar di keluarga AWCMS        |
 | [`docs/awcms-astro/standar-teknis.md`](docs/awcms-astro/standar-teknis.md)           | Aturan teknis yang mengikat             |
+| [`docs/awcms-astro/standar-performa-dan-keamanan.md`](docs/awcms-astro/standar-performa-dan-keamanan.md) | Peta ke OWASP/ASVS/ISO 27001/SSDF + Core Web Vitals, dan sembilan celah terbuka |
 | [`docs/awcms-astro/ui-ux-design-system.md`](docs/awcms-astro/ui-ux-design-system.md) | Design token, komponen, aksesibilitas   |
 | [`docs/awcms-astro/integrasi-awcms.md`](docs/awcms-astro/integrasi-awcms.md)         | Kontrak integrasi dengan awcms          |
 | [`docs/deploy-coolify.md`](docs/deploy-coolify.md)                                   | Deploy dan rebuild lewat webhook        |

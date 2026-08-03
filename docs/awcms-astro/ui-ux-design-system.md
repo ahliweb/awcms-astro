@@ -58,7 +58,9 @@ Diimplementasikan sebagai CSS custom properties di `:root` pada `src/styles/glob
 | `--kilau-puncak` | `rgba(2,132,199,.34)` | `rgba(255,255,255,.26)` | Puncak pita, di tengah gradien |
 | `--kilau-durasi` | `.85s` | sama | Lama satu sapuan |
 
-Di tema terang permukaannya putih, jadi kilau putih tidak akan terlihat — dipakai rona aksen. Komponen yang latar hover-nya **sudah** pekat menimpa kedua token dengan putih: `.share-btn`, `.wilayah-filter-btn`, dan `.chip` di dalam hero. Gradien hero adalah nilai tetap, bukan token, sehingga ia gelap di tema mana pun.
+Di tema terang permukaannya putih, jadi kilau putih tidak akan terlihat — dipakai rona aksen. Komponen yang latar hover-nya **sudah** pekat menimpa kedua token dengan putih: `.share-btn` dan `.chip` di dalam hero. Gradien hero adalah nilai tetap, bukan token, sehingga ia gelap di tema mana pun.
+
+> Kalimat itu sampai 4 Agustus 2026 menyebut `.wilayah-filter-btn` sebagai yang ketiga — permukaan repo rujukan yang **tidak pernah ada di template ini**. Gerbang `bun run audit:dokumen` membandingkan tabel di §Kilau hover dengan penanda di `src/styles/global.css` dan sudah menghapusnya dari sana; ia **tidak** membaca prosa, jadi salinan yang satu ini bertahan satu hari lebih lama. Itu batas gerbangnya, dan disebut supaya tidak dikira lebih luas daripada yang ia periksa.
 
 ### Gap terhadap kosakata AWCMS
 
@@ -79,7 +81,7 @@ Token berikut **belum ada** di repo ini. Bukan kelalaian — situs informasi sta
 
 ```mermaid
 flowchart LR
-  Sys["prefers-color-scheme"] --> Resolve["Skrip inline sebelum paint"]
+  Sys["prefers-color-scheme"] --> Resolve["public/tema.js — berkas eksternal, sebelum paint"]
   Pref["localStorage 'theme'"] --> Resolve
   Resolve --> Attr["data-theme di <html>"]
   Attr --> Tokens["CSS variables aktif"]
@@ -87,6 +89,8 @@ flowchart LR
 ```
 
 Pilihan pengguna di `localStorage` selalu menang; tanpa itu mengikuti preferensi sistem. `data-theme` dipasang **sebelum paint pertama** untuk mencegah kedip. Tanpa JavaScript, tema mengikuti `prefers-color-scheme` lewat media query di CSS — bukan terkunci di terang.
+
+**Ia BUKAN skrip inline, dan bedanya menentukan apakah halamannya hidup.** Sejak [ADR-0019](../adr/0019-csp-ketat-dikirim-penyaji.md) penyaji mengirim `script-src 'self'` tanpa `'unsafe-inline'`, jadi `<script is:inline>` berisi kode mati di browser pembaca. Skrip ini tinggal di `public/tema.js` dan dimuat `<script src>` **klasik** — bukan bundel Astro, karena bundel Astro selalu `type="module"` dan modul selalu ditunda, sehingga ia tidak bisa berjalan sebelum paint pertama.
 
 Polanya sama dengan AWCMS, satu perbedaan: AWCMS menambahkan fallback ke preferensi tenant dari basis data. Di sini tidak ada tenant, jadi rantainya berhenti di preferensi sistem.
 
@@ -101,12 +105,15 @@ Kolom terakhir menunjukkan padanan yang harus dituju saat integrasi, agar kompon
 | `Breadcrumb` | Jejak navigasi + JSON-LD `BreadcrumbList` | — | Breadcrumb |
 | `LangSwitcher` | Pengalih locale berbasis `<details>` | **Jalan tanpa JavaScript** | i18n switcher |
 | `TranslationNotice` | Penanda konten yang jatuh ke locale default | Membawa `lang` yang benar untuk pembaca layar | — (khas awcms-astro) |
-| `SyaratList` / `ProcedureSteps` | Render daftar terstruktur dari frontmatter | Tidak pernah menerima markup mentah | — (khas domain) |
-| `BiayaTable` / `UnitLayananTable` | Tabel data + sumber | Scroll horizontal tanpa membuat `body` ikut scroll | `Table` / `DataGrid` |
+| `SyaratList` / `ProcedureSteps` | Render daftar terstruktur dari blok `awcmsAstro` di `contentJson` | Tidak pernah menerima markup mentah | — (khas domain) |
+| `BiayaTable` | Tabel data + sumber | Scroll horizontal tanpa membuat `body` ikut scroll | `Table` / `DataGrid` |
 | `FaqAccordion` | Accordion `<details>` + JSON-LD `FAQPage` | Tanpa JavaScript | Accordion |
-| `WilayahFilter` | Pemilih data referensi | **Daftar penuh tetap terender tanpa JS** | `FilterBar` |
 | `DisclaimerNote` | Tiga varian: footer, umum, peringatan | Peringatan kanal resmi wajib di halaman penindakan | `ActionBanner` |
 | `ShareButtons` | Bagikan ke kanal sosial + salin tautan | **Tanpa SDK/widget/piksel** | — (khas awcms-astro) |
+| `Ilustrasi` | Bingkai gambar bertoken | `src: undefined` adalah keadaan yang DIDUKUNG — ia merender `.visual-placeholder`, bukan bingkai setinggi nol | — (khas awcms-astro) |
+| `LangFlag`, `TabNav`, `Breadcrumb`, `TranslationNotice` | Lihat baris di atasnya masing-masing | — | — |
+
+**`UnitLayananTable` dan `WilayahFilter` dihapus dari tabel ini, bukan ditandai "belum dibuat".** Keduanya komponen repo rujukan yang tidak pernah ikut ke template ini, dan `WilayahFilter` bahkan punya baris sendiri di tabel "Tanpa JavaScript" di bawah yang menjanjikan perilaku sebuah komponen yang tidak ada. Sebuah tabel komponen yang mendaftarkan komponen yang tidak ada adalah kelas cacat yang sama dengan `.wilayah-filter-btn` di §Kilau hover — dan keduanya berasal dari repo yang sama.
 
 ### Komponen yang belum ada dan akan dibutuhkan
 
@@ -121,7 +128,7 @@ Kolom terakhir menunjukkan padanan yang harus dituju saat integrasi, agar kompon
 | Navigasi, tautan, breadcrumb | Berfungsi penuh |
 | Pengalih bahasa | Terbuka lewat `<details>` |
 | Accordion FAQ | Terbuka lewat `<details>` |
-| Filter wilayah | Daftar penuh tetap terender |
+| Seluruh badan artikel — syarat, langkah, biaya, dasar hukum | Terender penuh; ia HTML statis, bukan hasil render klien |
 | Tema | Mengikuti `prefers-color-scheme` |
 | Tombol salin tautan | **Disembunyikan** — tombol yang diam saat diklik lebih buruk daripada tombol yang tidak ada |
 
@@ -134,6 +141,10 @@ Kolom terakhir menunjukkan padanan yang harus dituju saat integrasi, agar kompon
 - Tabel memakai `th` dengan `scope` benar.
 - `prefers-reduced-motion: reduce` dihormati.
 - Badan konten yang jatuh ke locale default membawa atribut `lang` yang benar, supaya pembaca layar melafalkannya dengan aturan yang tepat.
+
+Targetnya **WCAG 2.1 AA** untuk permukaan publik dan **WCAG 2.2 AA** untuk permukaan Jualanku bila ia kelak ada ([ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md)). Dua kriteria 2.2 yang paling mungkin menggigit lebih dulu di antarmuka mana pun yang membawa kontrol: **2.4.11 Focus Not Obscured** dan **2.5.8 Target Size (Minimum)** — yang kedua sudah dipenuhi di sini lewat aturan target sentuh 44px di atas, yang pertama belum pernah diuji karena repo ini belum punya elemen melayang mana pun.
+
+Kontras token warna di repo ini **belum pernah diaudit terukur** (lihat peringatan di §Gap terhadap kosakata AWCMS). Itu satu-satunya butir WCAG di dokumen ini yang tidak bisa dijawab "sudah" — dan ia ditulis begitu alih-alih dibiarkan tampak terjaga.
 
 ### Kilau hover — standar interaksi
 
@@ -167,7 +178,9 @@ Sapuan ini murni CSS. Ia tidak menambah satu byte JavaScript pun dan tidak berpe
 
 ### Responsif
 
-Mobile-first dari 360px. Tabel dibungkus `.table-responsive` — otomatis untuk tabel markdown lewat rehype plugin. Kartu memakai `grid-template-columns: repeat(auto-fill, minmax(320px, 1fr))`.
+Mobile-first dari 360px. Kartu memakai `grid-template-columns: repeat(auto-fill, minmax(320px, 1fr))`.
+
+**Tabel di badan artikel menggulir sendiri, bukan lewat pembungkus.** Versi sebelumnya paragraf ini menyebut `.table-responsive` "yang disisipkan rehype plugin"; pipeline markdown itu tidak ada lagi di repo ini, dan yang tersisa dari resep itu adalah tabel `min-width: 34rem` tanpa pembungkus penggulung — persis penyebab gulir mendatar di 360px. `src/styles/global.css` karena itu memakai `display: block` + `overflow-x: auto` langsung pada `.content-body table`, tanpa `min-width`. (`renderContentBlocks()` sendiri belum memancarkan tabel sama sekali — `awcms` tidak punya tipe blok tabel — jadi aturan itu menunggu tipe itu ada.)
 
 ### Gambar
 

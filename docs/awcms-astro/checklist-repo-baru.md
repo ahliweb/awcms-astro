@@ -22,7 +22,7 @@ Yang **tidak** perlu disentuh: `src/lib/`, `src/layouts/`, `src/components/`, `s
 
 - [ ] `src/config/site.ts` — nama, domain, `siteUrl`, daftar locale, navigasi utama beserta urutannya.
 - [ ] `.env` dari `.env.example` — `AWCMS_API_URL`, `AWCMS_API_TOKEN` (kredensial mesin, ia yang membawa tenant), `AWCMS_TENANT_ID` sebagai asersi. **Konten tidak tinggal di repo ini**: tidak ada `src/content.config.ts` dan tidak ada frontmatter, karena artikel ditarik dari `awcms` saat build (ADR-0018). Skema yang dulu ditegakkan Zod kini tanggung jawab sisi `awcms` — daftar jaminannya di [`integrasi-awcms.md`](integrasi-awcms.md).
-- [ ] `astro.config.mjs` — `site`, `compressHTML: true`, pipeline markdown, `serialize` sitemap.
+- [ ] `astro.config.mjs` — `site`, `compressHTML: true`, `serialize` sitemap. **Tidak ada pipeline markdown**: konten datang dari `awcms` sebagai blok terstruktur, dan yang merendernya `src/lib/content-blocks.ts`, bukan remark/rehype. Empat setelan lain di berkas itu **jangan disentuh tanpa membaca alasannya**: `output: "static"`, adapter node, `build.inlineStylesheets: "never"`, dan `vite.build.assetsInlineLimit: 0` — dua yang terakhir yang membuat CSP ketat mungkin, dan keduanya gagal secara diam-diam bila dilonggarkan.
 - [ ] `package.json` — `name`, `description`, `homepage`, `repository`, `engines`, dan seluruh skrip.
 - [ ] Versi Bun konsisten di tiga tempat: `packageManager` + `engines.bun`, `bun-version` di CI, dan tag image di `Dockerfile`.
 
@@ -98,17 +98,23 @@ Tampilan dikerjakan terakhir karena ia satu-satunya lapisan yang murah diubah.
 
 - [ ] `AGENTS.md` — kontrak kerja; ikat seluruh standar dan tunjuk dokumen rincinya.
 - [ ] `README.md` — kenapa situs ini ada.
-- [ ] `docs/ARCHITECTURE.md` — anatomi repo.
-- [ ] `docs/PROJECT_STATE.md` — keadaan dan titik lanjut.
 - [ ] `docs/adr/0001-*.md` — keputusan pertama: kenapa statis, kenapa struktur ini.
+- [ ] **Opsional, dan template ini sengaja tidak membawanya:** `docs/ARCHITECTURE.md` (anatomi repo) dan `docs/PROJECT_STATE.md` (keadaan dan titik lanjut). Di template, perannya dipikul §Struktur README, docblock tiap berkas, dan §"Yang belum ada". Buat keduanya bila situsmu tumbuh melampaui itu — **jangan** membuatnya kosong untuk memuaskan daftar ini. Berkas kosong yang wajib adalah cara paling cepat sebuah checklist berhenti dibaca.
 - [ ] `LICENSE` — periksa cakupannya; kode dan konten sering butuh ketentuan berbeda.
 - [ ] `SECURITY.md`, `CONTRIBUTING.md`, `GOVERNANCE.md`, `CODE_OF_CONDUCT.md`, `SUPPORT.md`.
 - [ ] `.github/workflows/ci.yml` dan templat issue/PR.
-- [ ] `.claude/skills/` — template membawa **tiga** skill yang berlaku untuk
-      setiap situs turunan (integrasi `awcms`, gerbang, menurunkan situs baru).
-      Biarkan ketiganya; **tambahkan** skill khas domainmu di sampingnya, jangan
-      menggantinya. Skill yang memerikan sesuatu yang tidak ada di repomu adalah
-      cacat, dan `bun run audit:dokumen` memeriksa jalur yang disebutnya.
+- [ ] `.claude/skills/` — template membawa **empat** skill yang berlaku untuk
+      setiap situs turunan (integrasi `awcms`, gerbang, menurunkan situs baru,
+      dan performa/keamanan). Biarkan keempatnya; **tambahkan** skill khas
+      domainmu di sampingnya, jangan menggantinya. Skill yang memerikan sesuatu
+      yang tidak ada di repomu adalah cacat, dan `bun run audit:dokumen`
+      memeriksa jalur yang disebutnya — `.claude/` tidak dikecualikan.
+- [ ] **Jawab celah 1 di
+      [`standar-performa-dan-keamanan.md`](standar-performa-dan-keamanan.md):**
+      `Strict-Transport-Security` belum dikirim template ini. Sampai ia dikirim,
+      pasang HSTS di proxy situsmu **dan catat di ADR bahwa kamu memasangnya di
+      sana** — supaya penggantimu kelak tidak memasang kebijakan kedua yang
+      menimpa kebijakan pertama.
 
 ## 8. Rilis pertama
 
@@ -133,9 +139,9 @@ Urutannya bukan selera: `bun run audit:konten` membaca `dist/client`, dan tanpa 
 | --- | --- |
 | Menulis banyak artikel sebelum skema final | Migrasi frontmatter manual di puluhan berkas lintas locale |
 | Menambah aturan di dokumentasi tanpa pemeriksanya | Aturan dilanggar diam-diam, ketahuan berbulan-bulan kemudian |
-| Memakai `<img>` mentah "sementara" | Optimasi terlewat tanpa satu pun peringatan |
 | Menaruh string UI langsung di `.astro` | String itu tidak akan pernah bisa diterjemahkan, dan halamannya tetap tampak benar dalam locale default sehingga tidak ada yang menyadarinya |
-| Membiarkan `public/` menampung gambar konten | Seluruh gambar lolos dari pipeline optimasi |
+| Membiarkan `public/` menampung gambar konten | Ia lolos dari `bun run audit:konten`: gerbang rasio, format-dari-isi-berkas, dan ukuran teks SVG hanya membaca `src/assets/`. `public/` sengaja dikecualikan karena favicon wajib bujur sangkar dan kartu share punya ukuran bakunya sendiri — jadi menaruh ilustrasi di sana berarti menerbitkannya tanpa satu pun pemeriksa |
+| Mengisi `src/assets/` dengan foto raster besar | Tidak ada `srcset` ([ADR-0024](../adr/0024-seni-lokal-di-src-assets.md)), jadi ponsel 360px mengunduh berkas yang sama dengan desktop 1920px. Anggaran gambar di [`standar-teknis.md`](standar-teknis.md#performa) adalah tempat pertama kelebihannya terlihat — dan anggaran itu **belum punya pemeriksa** |
 | Rasio sumber gambar berbeda dari rasio bingkainya | Gambar tetap tampil, hanya isinya yang terpotong — tidak ada yang menyadarinya sampai ada yang membaca teks di dalamnya |
 | Memercayai ekstensi berkas gambar | Berkas `.png` yang isinya JPEG berjalan normal sampai ada perkakas yang membacanya menurut namanya |
 | Menaruh nominal atau data di dalam gambar | Ia lolos dari aturan yang menjaga angka lain, dan tidak ikut diperbarui saat angkanya berubah |

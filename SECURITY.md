@@ -10,17 +10,27 @@ Kami menargetkan tanggapan awal dalam **3 hari kerja** dan perbaikan untuk keren
 
 ## Permukaan serangan repo ini
 
-Situs ini **statis murni** (`output: 'static'`): tidak ada basis data, tidak ada runtime server, tidak ada autentikasi, dan tidak ada form yang mengirim data ke mana pun. Kelas kerentanan yang biasanya dominan — injeksi SQL, kebocoran sesi, kontrol akses — tidak berlaku di sini.
+Keluarannya **statis** (`output: 'static'`): tidak ada basis data, tidak ada autentikasi, dan tidak ada form yang mengirim data ke mana pun. Kelas kerentanan yang biasanya dominan — injeksi SQL, kebocoran sesi, kontrol akses per-pengguna — tidak berlaku di sini.
+
+**"Tanpa runtime server" BUKAN bagian dari klaim itu, dan pernah keliru ditulis begitu di sini.** Sejak [ADR-0016](docs/adr/0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md) keluaran build disajikan sebuah proses Bun ([`server/penyaji.mjs`](server/penyaji.mjs)) di belakang Traefik. Proses itu adalah permukaan, dan ia yang memegang seluruh header respons — jadi ia justru bagian yang paling pantas diperiksa, bukan bagian yang tidak ada.
 
 Yang tetap relevan:
 
 | Area | Risiko |
 | --- | --- |
-| Dependency | Kerentanan transitif pada rantai build. Dijaga `bun audit`; wajib nol sebelum rilis |
-| Konten | Markdown dirender sebagai HTML. Markup mentah di badan artikel dapat menyisipkan skrip |
-| Tautan keluar | Tautan ke kanal resmi wajib `rel="noopener noreferrer"` bila `target="_blank"` |
-| Aset | SVG yang dirasterisasi saat build dapat merujuk sumber daya eksternal |
+| Dependency | Kerentanan transitif pada rantai build. Dijaga `bun audit --audit-level=low` di CI; wajib nol sebelum rilis |
+| Konten dari CMS | Badan artikel datang dari `awcms` sebagai **blok terstruktur**, bukan HTML atau markdown. [`src/lib/content-blocks.ts`](src/lib/content-blocks.ts) menyusun tiap elemen dari teks ter-escape dan tag tetap, jadi tidak ada jalur markup mentah — menambahkan tipe blok `html`/`raw`/`embed` membatalkan seluruh jaminan itu |
+| Penyaji | Header keamanan, CSP, dan aturan cache. Satu-satunya pemilik: `server/penyaji.mjs`; kebijakan kedua di Traefik atau `<meta http-equiv>` adalah cara paling sunyi berakhir tanpa kebijakan sama sekali |
+| Kredensial build | `AWCMS_API_TOKEN` adalah kredensial mesin baca-saja yang membawa tenant-nya. Ia tidak pernah ber-prefiks `PUBLIC_` dan karena itu tidak pernah masuk keluaran; ia **tetap** terbaca di cache builder pada mesin build |
+| Tautan keluar | Tautan `target="_blank"` wajib `rel="noopener noreferrer"` |
+| Aset | SVG di `src/assets/` dapat merujuk sumber daya eksternal; `img-src` di CSP yang membatasinya saat halaman dirender |
 | Pipeline rilis | Skrip build dan rilis punya akses tulis ke repo |
+
+## Kontrol, dan celahnya
+
+Pemetaan lengkap ke **OWASP Top 10 2021, OWASP ASVS 4.0.3, OWASP Secure Headers Project, ISO/IEC 27001:2022 Annex A, dan NIST SSDF SP 800-218** ada di [`docs/awcms-astro/standar-performa-dan-keamanan.md`](docs/awcms-astro/standar-performa-dan-keamanan.md) ([ADR-0028](docs/adr/0028-jangkar-standar-performa-dan-keamanan.md)).
+
+Dokumen itu memuat **daftar celah yang belum ditutup**, dan daftar itu sengaja publik. Yang paling perlu diketahui pelapor: `Strict-Transport-Security` **belum dikirim** repo ini, sementara `awcms` mengirimkannya di produksi. Itu keadaan yang sudah diketahui dan tercatat — melaporkannya lagi tidak menambah informasi; melaporkan **akibat konkret**-nya pada sebuah deployment nyata, menambah.
 
 ## Aturan yang mengikat
 

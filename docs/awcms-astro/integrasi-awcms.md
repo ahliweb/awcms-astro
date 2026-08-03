@@ -4,7 +4,12 @@ Kontrak perpindahan dari konten markdown di repo ke **pengelolaan dinamis** lewa
 
 Dokumen ini menetapkan pemetaan model data, batas tanggung jawab, dan urutan migrasi — **sebelum** adapter-nya dibangun, supaya struktur konten hari ini tidak menutup jalannya. Itu memang tujuan aslinya sejak ADR-0001 repo rujukan.
 
-> **Status: rencana yang mengikat, belum diimplementasikan.** Adapter belum ada. Yang sudah ada adalah kontrak yang membuatnya bisa dibangun tanpa membongkar komponen.
+> **Status: SUDAH TERJADI untuk konten, masih rencana untuk sisanya.** Sampai 4 Agustus 2026 baris ini berbunyi "Adapter belum ada" — dan dibantah oleh berkas ini sendiri 120 baris di bawah, yang menulis "perpindahan itu sudah terjadi di `awcms-astro`". Yang benar adalah yang kedua:
+>
+> - **Sudah mendarat:** adapter [`src/lib/content.ts`](../../src/lib/content.ts) menarik konten dari `awcms` saat build lewat build feed ([ADR-0018](../adr/0018-kontrak-build-token-mesin-dan-traversal-konten.md)); gambar artikel dan kartu share dari media `awcms` ([ADR-0025](../adr/0025-gambar-artikel-dari-media-awcms.md), [ADR-0026](../adr/0026-kartu-share-per-artikel-dari-media-awcms.md)); tenant dari kredensial mesin.
+> - **Masih rencana:** pemetaan taxonomy, seluruh baris di §"Yang paling berisiko hilang saat migrasi" — jaminan yang di repo rujukan ditegakkan Zod dan gerbang audit, dan yang penegakannya **harus** ada di sisi `awcms`.
+>
+> Membaca dokumen ini sebagai "belum ada apa-apa" akan membuat seseorang membangun ulang adapter yang sudah ada. Itu kelas cacat yang `awcms` [ADR-0062](https://github.com/ahliweb/awcms/blob/main/docs/adr/0062-skills-are-gated-against-the-code-they-describe.md) tulis sebagai alasan menggerbangi skill terhadap kodenya: sebuah kalimat "belum ada" mulai benar, lalu barangnya dibangun, dan kalimat itu menua menjadi kebohongan yang percaya diri.
 
 ## Kapan integrasi ini dipicu
 
@@ -145,13 +150,34 @@ Bentuk yang harus dihasilkan sumber data mana pun, sudah dipakai `src/lib/conten
 ```ts
 interface LocalizedArticle {
   slug: string;
-  entry: { id: string; data: ArtikelData };
+  entry: {
+    id: string;
+    data: ArtikelData;
+    /** Dirender SEKALI di adapter dari blok terstruktur — tidak pernah dari field HTML. */
+    bodyHtml: string;
+  };
   /** true bila artikel locale ini belum ada dan yang dipakai versi default. */
   isFallback: boolean;
+  /** Gambar artikel dari media awcms, di-resolve sekali per build. `undefined` didukung. */
+  gambar?: { src: string; alt: string; width: number | null; height: number | null };
+  /** Kartu share artikel, dengan MIME dan ukurannya SENDIRI (ADR-0026). */
+  kartuShare?: {
+    src: string;
+    alt: string;
+    type: string;
+    width: number | null;
+    height: number | null;
+  };
 }
 
 getArticles(tab: TabSlug, locale: Locale): Promise<LocalizedArticle[]>
 ```
+
+Tiga field terakhir mendarat sesudah dokumen ini pertama ditulis, dan **ketiganya
+bagian dari kontrak** — bukan tambahan opsional. `bodyHtml` yang membuat tidak
+ada jalur HTML mentah dari CMS; `gambar` dan `kartuShare` yang membuat komponen
+tidak pernah perlu mengambil datanya sendiri, karena media di-resolve satu batch
+per build alih-alih satu permintaan per kartu yang dirender.
 
 Aturan yang wajib dipertahankan adapter API:
 

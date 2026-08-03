@@ -75,6 +75,7 @@ Yang **tidak** menyimpang dan wajib diikuti: `AGENTS.md` sebagai kontrak kerja, 
 | Dokumen | Isi |
 | --- | --- |
 | [`standar-teknis.md`](standar-teknis.md) | Aturan teknis yang mengikat: stack, struktur, i18n, konten, aset, SEO, gerbang mutu |
+| [`standar-performa-dan-keamanan.md`](standar-performa-dan-keamanan.md) | Peta ke OWASP Top 10 / ASVS / Secure Headers, ISO 27001 Annex A, NIST SSDF, dan Core Web Vitals — beserta sembilan celah yang belum ditutup ([ADR-0028](../adr/0028-jangkar-standar-performa-dan-keamanan.md)) |
 | [`ui-ux-design-system.md`](ui-ux-design-system.md) | Design token, komponen, aksesibilitas, dan pemetaannya ke kosakata AWCMS |
 | [`integrasi-awcms.md`](integrasi-awcms.md) | Kontrak perpindahan ke pengelolaan dinamis: content model, adapter, batas tanggung jawab |
 | [`checklist-repo-baru.md`](checklist-repo-baru.md) | Langkah memulai situs baru di atas standar ini |
@@ -84,7 +85,7 @@ Yang **tidak** menyimpang dan wajib diikuti: `AGENTS.md` sebagai kontrak kerja, 
 
 Tiga hal yang tidak lazim, dan justru menjadi intinya:
 
-1. **Aturan punya penegak.** Kepatuhan yang hanya tertulis akan dilanggar — itu terbukti di repo rujukan, tempat `bun run audit` memeriksa kelengkapan sumber, konsistensi antar locale, keunikan gambar, metadata SEO, dan tautan mati, lalu menggagalkan rilis (ADR-0008 repo rujukan). Di `awcms-astro` gerbang itu **baru sebagian**: paritas katalog PO dan aturan penyajian sudah dijaga `bun test`, sisanya masih menunggu — daftarnya di [README repo ini](../../README.md#yang-belum-ada-backlog-eksplisit-bukan-kelalaian).
+1. **Aturan punya penegak.** Kepatuhan yang hanya tertulis akan dilanggar — itu terbukti di repo rujukan, tempat `bun run audit` memeriksa kelengkapan sumber, konsistensi antar locale, keunikan gambar, metadata SEO, dan tautan mati, lalu menggagalkan rilis (ADR-0008 repo rujukan). Di `awcms-astro` gerbang itu kini **empat perintah**, dan tiap satunya menangkap kelas cacat yang tidak menggagalkan apa pun saat terjadi: `bun run check` (tipe + lockfile), `bun test` (katalog PO, kontrak `awcms`, header/cache penyaji, CSP atas keluaran), `bun run audit:konten` (sumber gambar + enam gerbang atas `dist/client`), dan `bun run audit:dokumen` (tautan mati, indeks ADR dua arah, daftar permukaan kilau, jalur berkas yang disebut dokumen — termasuk yang disebut `.claude/skills/`). Yang **belum** digerbangi disebut terus terang di [`standar-performa-dan-keamanan.md`](standar-performa-dan-keamanan.md) §Celah, bukan dibiarkan tampak terjaga.
 
 2. **Multi-locale tanpa halaman pincang.** Kumpulan slug ditentukan satu locale sumber; sisanya jatuh ke sana dengan penanda yang jujur. Tidak pernah ada 404 antar bahasa dan tidak pernah ada nama key mentah yang tampil. Lihat ADR-0003 repo rujukan.
 

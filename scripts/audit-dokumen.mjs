@@ -419,7 +419,7 @@ function auditPermukaanKilau() {
  * "Belum dibuat" bukan alasan — itu justru yang gerbang ini cari.
  */
 const JALUR_DIKECUALIKAN = new Map([
-  ["docs/PROJECT_STATE.md", "milik `awcms` — indikator pencabutan ADR-0021 dibaca di sana"],
+  ["docs/PROJECT_STATE.md", "milik `awcms` (indikator pencabutan ADR-0021 dibaca di sana) DAN bentuk standar keluarga yang repo ini sengaja tidak bawa — `standar-teknis.md` §Dokumentasi menyebut siapa yang memikul perannya di sini"],
   ["tests/admin-navigation-registry.test.ts", "milik `awcms` — gerbang yang menegakkan kriteria 1"],
   ["docs/awcms/14_ui_ux_design_system.md", "milik `awcms` — sumber standar UI keluarga"],
   ["src/lib/security/security-headers.ts", "milik `awcms` — asal `BASE_CSP_DIRECTIVES` yang ADR-0019 selaraskan"],

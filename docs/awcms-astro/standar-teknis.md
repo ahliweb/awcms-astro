@@ -40,12 +40,16 @@ docs/{adr,workflows,awcms-astro}/
 .claude/skills/
 ```
 
-**Di `awcms-astro` sendiri empat entri di atas tidak ada, dan itu disengaja:**
-`content/`, `content.config.ts`, `data/`, dan `assets/images/` adalah bentuk
-konten-di-repo. Repo ini menariknya dari `awcms` saat build, jadi kontrak
-frontmatter digantikan `src/lib/content.ts` (adapter API → `LocalizedArticle`)
-dan data referensi tinggal di CMS. Sebagai gantinya ada dua entri yang tidak ada
-di daftar standar: `server/penyaji.mjs` (penyaji produksi sejak
+**Di `awcms-astro` sendiri LIMA entri di atas tidak ada, dan itu disengaja.**
+Empat pertama — `content/`, `content.config.ts`, `data/`, dan `assets/images/` —
+adalah bentuk konten-di-repo. Repo ini menariknya dari `awcms` saat build, jadi
+kontrak frontmatter digantikan `src/lib/content.ts` (adapter API →
+`LocalizedArticle`) dan data referensi tinggal di CMS. Yang kelima adalah
+`docs/workflows/`: perannya dipikul `.claude/skills/`, karena prosedur yang bisa
+dijalankan mengalahkan prosedur yang harus dibaca lebih dulu.
+
+Sebagai gantinya ada dua entri yang tidak ada di daftar standar:
+`server/penyaji.mjs` (penyaji produksi sejak
 [ADR-0016](../adr/0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md)) dan
 `tests/` (gerbang yang berjalan lewat `bun test`).
 
@@ -96,8 +100,6 @@ Aturan penulisan yang mengikat:
 | Aturan | Wajib |
 | --- | --- |
 | Berkas sumber di `src/assets/`, bukan `public/` | Ya |
-| Render dengan `<Image>` dari `astro:assets`, tidak pernah `<img>` mentah | Ya |
-| Potongan ditetapkan lewat `width`/`height`, bukan hanya `object-fit` | Ya |
 | Satu entitas konten = satu gambar unik, dipetakan terpusat dari slug | Ya |
 | SVG wajib XML valid; `&` telanjang membuat browser diam-diam gagal merender | Ya |
 | **Rasio sumber sama dengan rasio bingkainya** | Ya |
@@ -110,6 +112,15 @@ Aturan penulisan yang mengikat:
 
 Empat aturan bertanda tebal lahir dari cacat nyata dan bukan kehati-hatian teoretis; rinciannya di ADR-0013 repo rujukan.
 
+**Dua aturan keluarga yang `awcms-astro` sengaja TIDAK ikuti**, dan yang sampai 4 Agustus 2026 masih tertulis di tabel ini sebagai "wajib" sambil dibantah kodenya sendiri:
+
+| Aturan keluarga | Yang berlaku di `awcms-astro` | Kenapa |
+| --- | --- | --- |
+| Render dengan `<Image>` dari `astro:assets`, tidak pernah `<img>` mentah | `<img>` di atas URL hasil `import.meta.glob` dengan `query: "?url"` | [ADR-0024](../adr/0024-seni-lokal-di-src-assets.md). `astro:assets` mengembalikan `ImageMetadata`, bukan string — ia mengubah bentuk `ArticleVisual` beserta keempat bingkainya, dan memperlakukan SVG berbeda dari raster padahal SVG justru format yang gerbang repo ini ditulis untuk membaca |
+| Potongan ditetapkan lewat `width`/`height`, bukan hanya `object-fit` | Satu `--ratio-visual` untuk seluruh situs; bingkai memotong lewat `object-fit: cover` | Potongan tidak hilang karenanya — ia **dicegah**: `bun run audit:konten` menolak sumber yang bukan `--ratio-visual` sebelum ia sempat terbit |
+
+**Biaya yang diterima, dan wajib dibaca sebelum sebuah situs mengisi `src/assets/` dengan foto:** raster tidak di-encode ulang dan **tidak ada `srcset`**, jadi ponsel 360px mengunduh berkas yang sama dengan desktop 1920px. Itu bisa diterima untuk SVG dan untuk gambar artikel yang datang dari media `awcms`; ia berhenti bisa diterima untuk foto raster besar. Anggaran di §Performa adalah tempat pertama kelebihannya terlihat.
+
 **Rasio adalah yang paling mudah terlewat.** Bingkai memakai `object-fit: cover`, jadi sumber berasio lain tidak diperkecil — ia dipotong, diam-diam, di setiap ukuran layar. Sumber 1∶1 pada bingkai 16∶9 kehilangan 22% teratas, dan judul gambar hampir selalu ada di sana.
 
 **Dua aturan isi menuntut mata manusia.** Pemeriksa tidak bisa membaca isi gambar. Katakan itu terus terang di dokumentasi: aturan yang tampak terjaga padahal tidak lebih berbahaya daripada aturan yang jelas-jelas manual.
@@ -121,8 +132,10 @@ Wajib di setiap halaman yang boleh diindeks:
 - `<title>` unik, `meta description` ≤ 160 karakter dan tidak kosong, tepat satu `<h1>`.
 - `canonical` absolut dengan trailing slash konsisten.
 - `hreflang` seluruh locale + `x-default`.
-- Kartu share **PNG** dengan `og:image:width`, `og:image:height`, dan `og:image:alt` terisi. **Bukan SVG dan bukan WebP** — pengunduh pratinjau sosial bukan browser dan dukungannya tidak merata.
-- `twitter:card` `summary_large_image`.
+- Kartu share, **bila ada**, memasang `og:image:width`, `og:image:height`, `og:image:type`, dan `og:image:alt` yang memerikan gambar **itu** — bukan gambar lain di halaman yang sama. Halaman tanpa kartu tidak memasang tag gambar sama sekali: pratinjau tanpa gambar jatuh ke kartu teks yang rapi, pratinjau dengan gambar rusak tidak jatuh ke mana pun.
+- **MIME dan ukuran kartu ikut dari kartunya, bukan dari konstanta.** Konstanta 1200×630 PNG berlaku untuk **satu** hal: `SITE_SOCIAL_IMAGE`, dan hanya karena `.env.example` mengontrakkannya kepada siapa pun yang mengisinya. Kartu per artikel datang dari media `awcms` dan membawa MIME serta ukurannya sendiri — WebP 1600×900, kemungkinan besar ([ADR-0026](../adr/0026-kartu-share-per-artikel-dari-media-awcms.md)). Memakai konstanta situs untuk gambar yang tidak pernah menandatangani kontrak itu menerbitkan tiga klaim yang salah di setiap halaman artikel, dan scraper yang memercayainya akan me-letterbox kartunya atau membuangnya.
+- Yang **tetap** benar dari aturan lama: hindari SVG sebagai kartu share. Pengunduh pratinjau sosial bukan browser dan dukungan SVG-nya tidak merata. Yang berubah hanya larangan menyeluruh atas WebP — ia dibantah oleh kartu yang benar-benar diunggah editor.
+- `twitter:card` `summary_large_image` bila ada kartu, `summary` bila tidak.
 - Satu blok JSON-LD `@graph` berisi identitas situs, ditambah skema khas halaman.
 - Sitemap dengan `lastmod` dari tanggal konten, bukan waktu build.
 
@@ -143,17 +156,40 @@ Target WCAG 2.1 AA. Yang mengikat:
 
 ## Performa
 
+Target **hasil**, diukur pada p75 kunjungan nyata — Core Web Vitals:
+
+| Metrik | Ambang | Catatan |
+| --- | --- | --- |
+| LCP — Largest Contentful Paint | ≤ 2,5 detik | Elemen terbesarnya hampir selalu ilustrasi artikel |
+| INP — Interaction to Next Paint | ≤ 200 milidetik | **Menggantikan FID sejak Maret 2024.** Dokumen yang masih menyebut FID basi, bukan sedang memakai alternatif |
+| CLS — Cumulative Layout Shift | ≤ 0,1 | Bingkai memesan ruangnya lewat `aspect-ratio: var(--ratio-visual)`; tidak ada webfont yang bisa menggesernya |
+
+**Belum satu pun dari ketiganya diukur di `awcms-astro`**, dan itu ditulis apa adanya — target tanpa pengukuran adalah klaim, dan klaim yang tampak terjaga lebih berbahaya daripada gap yang jelas. Rencana pengukurannya (celah 8) di [`standar-performa-dan-keamanan.md`](standar-performa-dan-keamanan.md).
+
+Cara mencapainya — dan ini yang mengikat:
+
 - Tidak ada dependency UI besar; interaktivitas memakai DOM vanilla.
-- Gambar layar pertama `loading="eager"` + `fetchpriority="high"`; sisanya `loading="lazy"`.
-- Tema dipasang skrip inline sebelum paint untuk mencegah kedip.
-- Anggaran yang terbukti di repo rujukan: **beranda ≤ 250 KB gambar, halaman konten ≤ 100 KB.**
+- **Tidak ada webfont.** `--font-sans` adalah `system-ui`: nol permintaan font, nol FOIT/FOUT, nol kontribusi ke CLS. Ia dicatat sebagai keputusan privasi di `src/styles/global.css`; ia juga keputusan performa, dan sebuah situs yang menambahkan font wajib men-self-host-nya di `public/` alih-alih menambah origin ke jalur render kritis.
+- Gambar layar pertama `loading="eager"` + `fetchpriority="high"`; sisanya `loading="lazy"`. **`fetchpriority` belum dipasang `src/components/Ilustrasi.astro`** — celah 2 di dokumen standar, dengan pemeriksanya.
+- **Tema dipasang berkas eksternal `public/tema.js` yang dimuat `<script src>` klasik**, bukan skrip inline. Sejak [ADR-0019](../adr/0019-csp-ketat-dikirim-penyaji.md) penyaji mengirim `script-src 'self'` tanpa `'unsafe-inline'`, jadi skrip inline bukan "kurang rapi" — ia mati di browser pembaca. Bundel Astro selalu `type="module"` dan modul selalu ditunda, jadi ia bukan pengganti untuk kasus sebelum-paint.
+- Kompresi respons bukan hanya gzip: `compression` menegosiasikan **Brotli** (RFC 7932) saat browser memintanya, dan Brotli mengalahkan gzip sekitar 15–20% pada HTML.
+- `Cache-Control` dua aturan sesuai RFC 9111: aset ber-hash `immutable` satu tahun, HTML `max-age=0, must-revalidate` sehingga rebuild langsung terlihat pembaca.
+- Anggaran yang terbukti di repo rujukan: **beranda ≤ 250 KB gambar, halaman konten ≤ 100 KB.** Ia **belum punya pemeriksa** di sini dan belum pernah diukur satu kali pun (celah 3).
 
 ## Keamanan
 
-- Tidak ada secret, token, atau kredensial di repo. Repo statis tidak membutuhkannya.
-- Tidak ada skrip pihak ketiga, tidak ada pengumpulan data pribadi pembaca.
+Pemetaan lengkap ke **OWASP Top 10 2021, OWASP ASVS 4.0.3, OWASP Secure Headers Project, ISO/IEC 27001:2022 Annex A, dan NIST SSDF SP 800-218** ada di [`standar-performa-dan-keamanan.md`](standar-performa-dan-keamanan.md) ([ADR-0028](../adr/0028-jangkar-standar-performa-dan-keamanan.md)). Edisi OWASP-nya **disamakan dengan `awcms`**; naik edisi adalah keputusan tingkat keluarga, bukan tingkat repo.
+
+Yang mengikat di sini:
+
+- Tidak ada secret, token, atau kredensial di repo. Kredensial build tinggal di `.env`/platform build, tidak pernah ber-prefiks `PUBLIC_`.
+- Tidak ada skrip pihak ketiga, tidak ada pengumpulan data pribadi pembaca. Larangan itu **tidak punya pengecualian "tapi ini untuk keamanan"** — ia yang menolak pelaporan CSP dan RUM.
+- Tidak ada jalur HTML mentah dari CMS. Blok konten disusun dari teks ter-escape dan tag tetap.
+- Header respons ditentukan di **satu** berkas. Kebijakan kedua — di proxy, di `<meta http-equiv>`, di variabel env — adalah cara paling sunyi berakhir tanpa kebijakan sama sekali.
 - `bun audit` wajib nol sebelum rilis.
 - Tautan keluar `target="_blank"` wajib `rel="noopener noreferrer"`.
+
+**Celah yang diketahui terbuka** — dan disebut di sini supaya tidak ditemukan sebagai kejutan: `Strict-Transport-Security` belum dikirim (`awcms` mengirimkannya di produksi), anggaran performa tidak punya pemeriksa, dan `awcmsGet` tidak punya batas waktu. Kesembilannya bernomor di dokumen standar, masing-masing dengan pemeriksa yang harus ikut mendarat saat ia ditutup.
 
 ## Gerbang mutu
 
@@ -190,14 +226,18 @@ Setiap perubahan yang memengaruhi konten publik, struktur, dependency, atau depl
 
 Wajib ada dan wajib sinkron dengan kode:
 
-| Berkas | Isi |
-| --- | --- |
-| `AGENTS.md` | Kontrak kerja teknis yang mengikat seluruh standar dan menunjuk dokumen rincinya |
-| `README.md` | Kenapa situs ini ada, bentuknya, cara menjalankan |
-| `docs/ARCHITECTURE.md` | Anatomi setiap folder dan berkas; apa yang sudah ada vs gap |
-| `docs/PROJECT_STATE.md` | Keadaan proyek, utang yang diketahui, titik lanjut |
-| `docs/adr/` | Keputusan beserta alasannya |
-| `docs/workflows/` | Cara mengerjakan tugas berulang |
-| `.claude/skills/` | Standar di atas, di-encode menjadi prosedur yang bisa dijalankan agen AI |
+| Berkas | Isi | Ada di `awcms-astro`? |
+| --- | --- | --- |
+| `AGENTS.md` | Kontrak kerja teknis yang mengikat seluruh standar dan menunjuk dokumen rincinya | Ya |
+| `README.md` | Kenapa situs ini ada, bentuknya, cara menjalankan | Ya |
+| `docs/adr/` | Keputusan beserta alasannya | Ya — indeksnya digerbangi dua arah |
+| `.claude/skills/` | Standar di atas, di-encode menjadi prosedur yang bisa dijalankan agen AI | Ya — empat skill |
+| `docs/ARCHITECTURE.md` | Anatomi setiap folder dan berkas; apa yang sudah ada vs gap | **Tidak.** Perannya dipikul §Struktur README dan docblock tiap berkas |
+| `docs/PROJECT_STATE.md` | Keadaan proyek, utang yang diketahui, titik lanjut | **Tidak.** Perannya dipikul §"Yang belum ada" di README dan §Celah di dokumen standar |
+| `docs/workflows/` | Cara mengerjakan tugas berulang | **Tidak.** Perannya dipikul `.claude/skills/` — prosedur yang bisa dijalankan mengalahkan prosedur yang harus dibaca dulu |
+
+**Tiga baris terakhir sengaja berbunyi "tidak", bukan dihapus.** Sampai 4 Agustus 2026 tabel ini menuntut ketiganya "wajib ada" untuk sebuah repo `awcms-astro` sementara repo rujukan standar ini — repo ini sendiri — tidak membawa satu pun. Sebuah situs turunan yang membacanya akan membuat tiga berkas kosong untuk memuaskan daftar, dan berkas kosong yang wajib adalah cara paling cepat sebuah daftar berhenti dibaca. Yang benar bukan menghapus barisnya, melainkan mengatakan **siapa yang memikul perannya di sini**.
+
+Yang ditambahkan sejak: [`standar-performa-dan-keamanan.md`](standar-performa-dan-keamanan.md) — peta ke standar internasional beserta daftar celahnya ([ADR-0028](../adr/0028-jangkar-standar-performa-dan-keamanan.md)).
 
 Dokumentasi yang menyimpang dari kode lebih berbahaya daripada tidak ada dokumentasi: ia dipercaya. Karena itu **memperbarui dokumen adalah bagian dari iterasi yang sama**, bukan pekerjaan susulan.
