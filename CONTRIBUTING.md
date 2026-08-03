@@ -6,13 +6,16 @@ Terima kasih sudah berniat membantu. Sebelum apa pun, satu hal yang membentuk se
 
 Situs yang dibangun dari template ini menambahkan aturan kontennya sendiri — verifikasi tarif, dasar hukum, data unit layanan — dan aturan itu ditegakkan di sisi `awcms` tempat kontennya tinggal, bukan di sini.
 
-> **Pengembangan repo ini sedang DITAHAN** sampai pengembangan dasar
-> [`ahliweb/awcms`](https://github.com/ahliweb/awcms) selesai
-> ([ADR-0021](docs/adr/0021-tahan-pengembangan-menunggu-fondasi-awcms.md)).
-> Selama itu berlaku, yang mendarat hanya patch keamanan, bump dependency, dan
-> koreksi dokumen yang berhenti benar karena `awcms` berubah. Issue dan diskusi
-> tetap diterima — dan tetap berguna: ia yang menentukan urutan pekerjaan saat
-> penahanan dicabut.
+> **Penahanan pengembangan sudah SELESAI** sejak 4 Agustus 2026
+> ([ADR-0027](docs/adr/0027-penahanan-adr-0021-selesai.md)); repo ini dan
+> [`ahliweb/awcms`](https://github.com/ahliweb/awcms) sama-sama dikembangkan.
+> Yang menggantikannya satu pertanyaan yang tetap berlaku:
+> **apakah perubahan ini akan ditulis ulang bila `awcms` berubah?** Bila ya, ia
+> butuh instans `awcms` untuk membuktikan panggilannya benar sebelum mendarat —
+> dan "endpoint-nya sudah ada" bukan jawaban "tidak"
+> ([ADR-0023](docs/adr/0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md)).
+> Repo template ini tidak punya instans, jadi kontribusi yang menyentuh
+> pengambilan konten paling berguna bila datang dari sebuah situs nyata.
 
 Kontributor agen AI: baca [`AGENTS.md`](AGENTS.md) lebih dulu. Ia kontrak kerja teknis yang mengikat, bukan ringkasan.
 

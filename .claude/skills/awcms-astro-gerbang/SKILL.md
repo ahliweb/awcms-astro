@@ -36,11 +36,28 @@ bun run audit:dokumen   # markdown repo ini         — tanpa build, tanpa jarin
 - **URL eksternal dan anchor** di `audit:dokumen` — yang pertama butuh jaringan
   (gerbang yang merah karena situs pihak ketiga mati akan diabaikan orang), yang
   kedua berarti menebak slugifikasi heading GitHub.
+- **PROSA.** Empat dari lima gerbang `audit:dokumen` membaca STRUKTUR — tautan,
+  tabel indeks, blok bertanda, span kode. Sebuah kalimat biasa yang menyatakan
+  sesuatu yang tidak ada lolos seluruhnya, dan itu bukan hipotesis: gerbang
+  permukaan kilau menghapus `.wilayah-filter-btn` dari tabel bertanda pada 3
+  Agustus 2026, dan **salinannya di paragraf tiga puluh baris di atas tabel itu
+  bertahan sampai 4 Agustus**. Nama yang sama, dokumen yang sama, gerbang yang
+  dibuat khusus untuknya.
+- **Kolom "Keadaan" di `docs/awcms-astro/standar-performa-dan-keamanan.md`.**
+  Sebuah baris bisa berbunyi "Terpenuhi" setelah kontrolnya dicabut, dan tidak
+  ada yang akan merah. Itu biaya yang ADR-0028 nyatakan menerimanya.
+- **Kutipan ADR.** `ADR-0042` di sebuah berkas tidak diperiksa resolve ke
+  `docs/adr/0042-*.md` — aturan 2 `awcms`
+  [ADR-0062](https://github.com/ahliweb/awcms/blob/main/docs/adr/0062-skills-are-gated-against-the-code-they-describe.md),
+  yang belum ada di sini. Ia murah ditutup: gerbangnya sudah membaca seluruh
+  markdown repo ini dan sudah punya indeks ADR. Yang perlu dipikirkan hanya
+  memisahkan kutipan ADR **`awcms`** dari kutipan ADR repo ini — keduanya ditulis
+  `ADR-NNNN`, dan yang pertama tidak akan pernah ada di `docs/adr/` sini.
 
 ## Aturan yang mengikat: aturan baru wajib membawa pemeriksanya
 
-Repo ini sudah menemukan **lima** dokumen yang menyatakan sesuatu yang tidak ada,
-dan tak satu pun memerahkan apa pun:
+Repo ini sudah menemukan **sebelas** dokumen yang menyatakan sesuatu yang tidak
+ada, dan tak satu pun memerahkan apa pun:
 
 1. Indeks ADR mendaftarkan enam keputusan yang tak pernah ada di sini.
 2. `getArticleImage` mengembalikan `undefined` tanpa syarat dan tiga pemanggilnya
@@ -50,8 +67,39 @@ dan tak satu pun memerahkan apa pun:
 4. Checklist repo baru menyuruh menyiapkan lima jalur yang tidak ada.
 5. `og:image:alt` memerikan gambar yang berbeda dari `og:image`.
 
-Tiga di antaranya kini digerbangi `audit:dokumen`. **Menulis aturan tanpa
-pemeriksanya adalah menambah calon nomor enam.**
+Enam berikutnya ditemukan 4 Agustus 2026, seluruhnya dalam satu pembacaan
+([ADR-0028](../../../docs/adr/0028-jangkar-standar-performa-dan-keamanan.md)):
+
+6. **PROSA yang sama dengan nomor 3.** `.wilayah-filter-btn` masih disebut di
+   paragraf tiga puluh baris di atas tabel yang gerbangnya sudah bersihkan.
+7. `integrasi-awcms.md` berbunyi "Adapter belum ada" sementara 120 baris di
+   bawahnya berbunyi "perpindahan itu sudah terjadi". Dua kalimat, satu berkas,
+   saling membantah — dan yang salah adalah yang dibaca lebih dulu.
+8. `standar-teknis.md` mewajibkan `<Image>` dari `astro:assets` dan melarang
+   `<img>` mentah, sementara ADR-0024 memutuskan sebaliknya **dan tabel di
+   berkas yang sama** menuliskan keputusan itu.
+9. `standar-teknis.md` mewajibkan kartu share PNG dan melarang WebP, sementara
+   ADR-0026 membuat kartu artikel membawa MIME-nya sendiri dari media `awcms`.
+10. `standar-teknis.md` dan `ui-ux-design-system.md` menyebut tema dipasang
+    "skrip inline sebelum paint" — yang sejak ADR-0019 justru **mati** di
+    browser pembaca.
+11. `standar-teknis.md` mewajibkan tiga dokumen yang repo rujukan standar itu —
+    repo ini sendiri — tidak membawa satu pun.
+
+Empat kelas kini digerbangi `audit:dokumen`. Sisanya prosa, dan prosa tidak bisa
+digerbangi. **Menulis aturan tanpa pemeriksanya adalah menambah calon nomor dua
+belas.**
+
+### Yang membuat nomor 7–11 mungkin, dan cara menghindarinya
+
+Kelimanya punya bentuk yang sama: sebuah kalimat yang **benar saat ditulis**,
+lalu sebuah ADR mengubah kodenya, lalu kalimatnya tidak ikut. Ia tidak pernah
+salah ketik — ia menua.
+
+Yang menangkapnya bukan gerbang melainkan kebiasaan: **saat sebuah ADR
+mendarat, grep nama benda yang ia ubah di seluruh markdown.** ADR-0024 mengubah
+cara gambar dirender; `grep -rn "astro:assets" docs/` akan menemukan nomor 8
+dalam satu detik pada hari ADR itu ditulis.
 
 ## Menambah pemeriksa ke `audit:dokumen`
 

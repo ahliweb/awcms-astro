@@ -52,30 +52,40 @@ mesin yang bisa dipegang BFF — **sudah mendarat** di `awcms` (ADR-0049 dan
 ADR-0050, 1 Agustus 2026). Yang belum: implementasinya di sini, dengan
 prasyarat di [`04-kesiapan.md`](docs/awcms-astro/jualanku/04-kesiapan.md).
 
-## PENAHANAN — baca sebelum memulai apa pun (berlaku 2 Agustus 2026)
+## Satu uji sebelum memulai apa pun (berlaku 4 Agustus 2026 — ADR-0027)
 
-**Pengembangan repo ini DITAHAN sampai pengembangan dasar `awcms` selesai**
-([ADR-0021](docs/adr/0021-tahan-pengembangan-menunggu-fondasi-awcms.md)). Kalau
-kamu ke sini untuk menambah fitur, gerbang, atau dokumen — berhenti dan periksa
-dulu apakah penahanan ini masih berlaku.
+**Penahanan ADR-0021 SELESAI.** Kedua indikator yang ADR itu tulis sendiri
+terpenuhi pada 3–4 Agustus 2026, dan ia di-supersede
+[ADR-0027](docs/adr/0027-penahanan-adr-0021-selesai.md). Fitur, gerbang, dan
+dokumen baru boleh mendarat lagi. ADR-0021 tetap dibaca sebagai catatan sejarah
+— ia menjelaskan kenapa repo ini diam selama dua hari, dan alasannya benar saat
+ditulis.
 
-| Boleh mendarat | Ditahan |
-| --- | --- |
-| Patch keamanan | Fitur baru |
-| Bump dependency (Dependabot tetap jalan) | Refactor |
-| **Koreksi** dokumen yang berhenti benar karena `awcms` berubah | Penambahan gerbang, penambahan dokumen |
+Yang **menggantikannya** adalah satu pertanyaan, diambil utuh dari
+[ADR-0023](docs/adr/0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md) dan
+tidak berubah sedikit pun:
 
-Alasannya bukan kekurangan pekerjaan: seluruh sisa backlog menunggu `awcms`
-bergerak lebih dulu, dan membangun di atas kontrak yang belum stabil berarti
-menulisnya dua kali. Repo ini sudah membayarnya sekali — adapter kontennya
-ditulis untuk daftar ringkasan, lalu ditulis ulang saat `awcms` mengirimkan build
-feed (ADR-0018), dan versi pertamanya menerbitkan situs yang setiap artikelnya
-kosong dengan build hijau.
+> **Apakah perubahan ini akan ditulis ulang bila `awcms` berubah?**
 
-Yang **tetap** wajib dijaga selama penahanan: dokumen yang menyesatkan adalah
-cacat, bukan pekerjaan baru. Kalau `awcms` mengubah sebuah kontrak dan berkas ini
-menjadi salah, koreksinya mendarat. Titik lanjut lengkap — apa yang menunggu dan
-kenapa — ada di ADR-0021 §Titik lanjut.
+Yang berubah hanya premisnya. Selama ADR-0021 berlaku, "ya" berarti *ditahan
+sampai fondasi selesai*. Sekarang "ya" berarti *butuh instans `awcms` untuk
+membuktikan panggilannya benar sebelum mendarat* — batas yang sama, alasan yang
+berbeda, dan alasan yang kedua tidak akan pernah kedaluwarsa. Repo template ini
+tidak punya instans; itu sebabnya job `build` di CI dikondisikan pada terisinya
+`vars.AWCMS_API_URL`.
+
+Batas eksplisit ADR-0023 juga tidak berubah: **"endpoint-nya sudah ada" bukan
+jawaban "tidak".**
+
+Yang masih ditahan oleh uji itu, dan oleh apa: **BFF portal Jualanku**
+(ADR-0014) memanggil `awcms` di SETIAP permintaan runtime, bukan sekali per
+build, jadi bentuknya ditentukan respons `awcms` pada tiap permintaan.
+
+Alasan yang membuat uji ini mahal untuk dilanggar tidak berubah: membangun di
+atas kontrak yang belum stabil berarti menulisnya dua kali, dan repo ini sudah
+membayarnya sekali — adapter kontennya ditulis untuk daftar ringkasan, lalu
+ditulis ulang saat `awcms` mengirimkan build feed (ADR-0018), dan versi
+pertamanya menerbitkan situs yang setiap artikelnya kosong dengan build hijau.
 
 ## Di mana pekerjaan boleh mendarat (berlaku 31 Juli 2026)
 
@@ -177,11 +187,21 @@ sengaja yang belum tercatat di `awcms-family-compatibility.yaml`.
 
 - **`server/penyaji.mjs` adalah satu-satunya tempat header respons ditentukan**
   (ADR-0016). Lima header keamanan — termasuk `Content-Security-Policy` dan
-  `Permissions-Policy` sejak ADR-0019, keduanya disamakan dengan postur `awcms`
-  — dua aturan `Cache-Control`, dan kompresi
+  `Permissions-Policy` sejak ADR-0019 — dua aturan `Cache-Control`, dan kompresi
   tinggal di sana dan tidak boleh tersebar ke tempat lain — di nginx aturan
   serupa harus di-`include` ulang di setiap `location`, dan melupakannya
   menghasilkan halaman tanpa satu pun header keamanan tanpa ada yang gagal.
+
+  **Kelimanya bernilai sama dengan `awcms`; jumlahnya TIDAK sama.** `awcms`
+  mengirim enam di produksi — yang keenam `Strict-Transport-Security`,
+  digerbangi `isProduction`. Repo ini belum mengirimkannya di lingkungan mana
+  pun, dan "TLS diterminasi Traefik" bukan jawabannya: Traefik tidak memasang
+  HSTS tanpa middleware yang dinyatakan, jadi yang terjadi bukan "dipasang di
+  tempat lain" melainkan tidak dipasang di mana pun. Selisih ini dicatat sebagai
+  celah nomor 1 di
+  [`docs/awcms-astro/standar-performa-dan-keamanan.md`](docs/awcms-astro/standar-performa-dan-keamanan.md),
+  dan menutupnya butuh ADR karena ia mengubah postur keamanan. Jangan menulis
+  ulang klaim "disamakan dengan postur `awcms`" tanpa memeriksa jumlahnya.
 - **Jangan menulis penyaji berkas sendiri.** Penerjemahan URL menjadi path
   berkas tetap milik adapter `@astrojs/node`. Setiap baris yang melakukannya
   sendiri adalah baris yang bisa keliru menjadi pembacaan berkas arbitrer —
@@ -371,6 +391,27 @@ aturan yang jelas-jelas manual.
   Variabel non-`PUBLIC_` bisa terbaca `undefined` di dalam chunk prerender
   meskipun nilainya ada di `.env`, dan kegagalannya menyamar jadi masalah lain.
 
+## Standar luar yang mengikat repo ini (ADR-0028)
+
+Aturan di dokumen ini sebagian besar memetakan ke kontrol yang sudah punya nama
+di luar sana. Petanya — beserta **daftar celah yang jujur** — ada di
+[`docs/awcms-astro/standar-performa-dan-keamanan.md`](docs/awcms-astro/standar-performa-dan-keamanan.md).
+Tiga hal yang perlu diketahui sebelum menyentuh header, cache, atau anggaran
+performa:
+
+- **Edisi OWASP disamakan dengan `awcms`** (Top 10 2021, ASVS 4.0.3). Naik edisi
+  adalah keputusan tingkat keluarga, bukan tingkat repo — dua matriks pada dua
+  edisi berbeda tidak bisa dijumlahkan, dan selisih penomorannya akan dibaca
+  sebagai celah kontrol.
+- **Target performa adalah Core Web Vitals pada p75**: LCP ≤ 2,5 detik, INP ≤ 200
+  milidetik, CLS ≤ 0,1. INP menggantikan FID sejak Maret 2024 — dokumen yang
+  masih menyebut FID sudah basi, bukan sedang memakai alternatif. **Belum satu
+  pun dari ketiganya diukur di repo ini**, dan itu ditulis apa adanya alih-alih
+  dibiarkan tampak terjaga.
+- **Sembilan celah terbuka, dan tiap satunya menyebut pemeriksa yang harus ikut
+  mendarat.** Menutup sebuah celah tanpa pemeriksanya berarti memindahkannya
+  dari "diketahui terbuka" ke "dikira tertutup", dan yang kedua lebih buruk.
+
 ## Definition of Done
 
 - [ ] `bun run build` bersih (termasuk `astro check`).
@@ -396,6 +437,11 @@ aturan yang jelas-jelas manual.
       lambang instansi maupun data tiruan, dan teksnya terbaca pada lebar 360px.
 - [ ] Perubahan pada penyajian — header, CSP, `Cache-Control`, kompresi, port —
       dibuktikan `tests/penyaji.test.mjs`, bukan diperiksa dengan mata.
+- [ ] Perubahan yang menyentuh header, cache, kompresi, atau anggaran performa
+      ikut memperbarui barisnya di
+      `docs/awcms-astro/standar-performa-dan-keamanan.md`. Kolom "Keadaan" di
+      sana **tidak bisa digerbangi mesin** — sebuah baris bisa berbunyi
+      "Terpenuhi" setelah kontrolnya dicabut, dan tidak ada yang akan merah.
 - [ ] Keluaran build tidak membawa gaya maupun skrip di dalam HTML-nya.
       `bun test` setelah `bun run build` menjalankan `tests/keluaran-csp.test.mjs`
       atas `dist/client/` — tanpa hasil build, gerbang itu MELEWATI dirinya dan

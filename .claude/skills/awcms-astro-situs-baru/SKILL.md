@@ -56,6 +56,9 @@ Disengaja. Tampilan terakhir karena ia satu-satunya lapisan yang murah diubah.
 | `AWCMS_TENANT_ID` dikosongkan | Sah, tetapi tidak memeriksa apa pun — token tenant lain akan membangun situs penuh berisi artikel milik orang lain, dengan build hijau |
 | String antarmuka ditulis harfiah di `.astro` | Ia tidak pernah diterjemahkan; gerbang katalog PO menangkap key yang hilang, bukan literal yang tak pernah jadi key |
 | Lupa `bun run audit:konten` **setelah** build | Enam gerbang keluaran melewati dirinya dan mengatakannya — di sebuah SITUS itu berarti tidak berjalan |
+| Mengira `Strict-Transport-Security` sudah dikirim | Template ini **tidak** mengirimkannya (`awcms` mengirimkannya di produksi), dan Traefik tidak memasangnya tanpa middleware yang dinyatakan. Pasang di proxy situsmu, lalu catat di ADR bahwa kamu memasangnya di sana — celah 1 di [`standar-performa-dan-keamanan.md`](../../../docs/awcms-astro/standar-performa-dan-keamanan.md) |
+| Mengisi `src/assets/` dengan foto raster besar | Tidak ada `srcset` (ADR-0024): ponsel 360px mengunduh berkas yang sama dengan desktop 1920px. Anggaran gambar ada, **pemeriksanya belum** |
+| Membuat `docs/ARCHITECTURE.md` dan `docs/PROJECT_STATE.md` kosong "karena checklist minta" | Berkas kosong yang wajib adalah cara paling cepat sebuah checklist berhenti dibaca. Keduanya OPSIONAL; template ini sengaja tidak membawanya |
 
 ## Sebelum rilis pertama
 

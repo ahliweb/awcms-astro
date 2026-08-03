@@ -17,7 +17,15 @@
  *
  *   1. lima header keamanan — tiga yang dulu ada di
  *      `ops/nginx-header-keamanan.conf`, ditambah Content-Security-Policy dan
- *      Permissions-Policy (ADR-0019, disamakan dengan postur `awcms`);
+ *      Permissions-Policy (ADR-0019). Kelimanya bernilai sama dengan `awcms`;
+ *      JUMLAHNYA tidak — `awcms` mengirim `Strict-Transport-Security` di
+ *      produksi dan berkas ini tidak mengirimkannya di lingkungan mana pun.
+ *      Itu celah yang diketahui, bernomor 1 di
+ *      `docs/awcms-astro/standar-performa-dan-keamanan.md`, dan menutupnya
+ *      butuh ADR karena ia mengubah postur keamanan. Jangan menambahkannya
+ *      tanpa gerbang yang membuktikan ia TIDAK dikirim di luar produksi: HSTS
+ *      di localhost mengunci `bun run serve` di browser pengembang selama
+ *      setahun, dan tidak ada cara membatalkannya dari sisi situs;
  *   2. `Cache-Control` yang eksplisit untuk HTML dan untuk aset ber-hash;
  *   3. kompresi respons, yang dulu dilakukan `gzip on` di nginx.
  *
