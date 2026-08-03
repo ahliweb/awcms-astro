@@ -68,6 +68,18 @@ memicu rebuild lewat webhook begitu sebuah post terbit, jadi jeda antara redaksi
 menekan *publish* dan pembaca melihatnya adalah lama build, bukan lama seseorang
 teringat. Rantainya di [`docs/deploy-coolify.md`](docs/deploy-coolify.md).
 
+## Memulai situs baru
+
+Repo ini adalah **template repository** GitHub. Tombol **"Use this template"**
+membuat repo baru berisi seluruh kerangkanya dengan riwayat commit yang bersih —
+bukan fork, jadi situsmu tidak mewarisi 4 tahun commit template.
+
+Yang ikut terbawa dan harus dikosongkan lebih dulu — `.changesets/`,
+`CHANGELOG.md`, `docs/adr/`, identitas di `package.json` — beserta urutan
+langkah setelahnya ada di
+[`checklist-repo-baru.md`](docs/awcms-astro/checklist-repo-baru.md). Urutannya
+disengaja: kontrak lebih dulu, konten berikutnya, tampilan terakhir.
+
 ## Menjalankan
 
 ```bash
