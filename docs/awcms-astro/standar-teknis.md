@@ -12,10 +12,10 @@ Kata **wajib** di dokumen ini berarti pelanggarannya menggagalkan gerbang mutu, 
 | Runtime | Bun `>=1.3.0`, ditegakkan `engines.bun` + `packageManager` | Satu runtime untuk seluruh keluarga AWCMS (ADR-0015); `bun.lock` satu-satunya lockfile |
 | Framework UI | **Tidak ada** | Interaktivitas ditulis DOM vanilla. Tidak ada React/Vue/Svelte |
 | Styling | Satu berkas CSS global + design token | Tanpa framework CSS; token di `:root`, tema gelap lewat `data-theme` |
-| Konten | Content Layer API, markdown per koleksi per locale | Kontrak frontmatter tervalidasi saat build |
+| Konten | **Ditarik dari `awcms` saat build** (ADR-0018); standar keluarga menyebut markdown per koleksi per locale | Kontraknya `LocalizedArticle` di `src/lib/content.ts`, bukan frontmatter |
 | i18n | Katalog PO + `t(locale, key)` | Bisa disunting penutur asli tanpa risiko merusak sintaks |
 | Sitemap | `@astrojs/sitemap` dengan `serialize` | `lastmod` dari tanggal konten, bukan waktu build |
-| Gambar | `astro:assets` | Dipotong dan dikonversi seukuran tampilan saat build |
+| Gambar | `<img>` di atas URL hasil `import.meta.glob` (ADR-0024); standar keluarga menyebut `astro:assets` | Satu bentuk untuk SVG maupun raster; pemotongan dijaga bingkai CSS + gerbang rasio |
 
 **Dilarang:** framework UI, framework CSS, library animasi, SDK/widget/piksel pihak ketiga, dan analytics yang melacak individu.
 
@@ -72,7 +72,7 @@ Rantai fallback membuat pelanggaran "belum diterjemahkan" tidak merusak situs â€
 
 ## Konten
 
-Kontrak frontmatter ada di `src/content.config.ts` dan merupakan **satu-satunya acuan**. Mengubahnya adalah perubahan MAJOR.
+**Di `awcms-astro` konten tidak tinggal di repo.** Ia ditarik dari `awcms` saat build (ADR-0018), jadi kontraknya adalah `LocalizedArticle` di `src/lib/content.ts` â€” bukan frontmatter, dan tidak ada `content.config.ts` di sini. Yang di bawah ini adalah standar KELUARGA untuk situs yang kontennya markdown-di-repo; ia tetap ditulis karena skema itu yang harus dipenuhi sisi `awcms` agar situs seperti ini punya jaminan yang sama.
 
 Yang wajib ada pada skema repo yang menyajikan informasi terikat aturan:
 

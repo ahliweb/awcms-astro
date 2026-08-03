@@ -4,17 +4,24 @@ Langkah menurunkan repo baru dari standar ini. Urutannya disengaja: kontrak lebi
 
 Prasyarat: baca [`README.md`](README.md) untuk memastikan `awcms-astro` memang pilihan yang tepat, dan [`standar-teknis.md`](standar-teknis.md) untuk aturan yang mengikat.
 
-## 1. Salin kerangka
+## 1. Buat repo dari template
 
-Ambil dari repo rujukan: `src/lib/`, `src/layouts/`, `src/components/` (kecuali komponen khas domain), `src/styles/global.css`, `scripts/`, `.github/`, `.changesets/`, dan seluruh `docs/` kecuali isi domain.
+`ahliweb/awcms-astro` adalah **template repository** GitHub: tombol **"Use this template"** membuat repo baru berisi seluruh kerangkanya dengan riwayat commit yang bersih. Tidak ada langkah salin-tempel, dan tidak ada berkas yang tertinggal karena seseorang lupa menyalinnya — cara lama, dan cara repo ini sendiri pernah mewarisi indeks ADR milik repo lain.
 
-**Jangan bawa:** `src/content/`, `src/data/`, `src/assets/images/`, `src/locales/*/messages.po`, `docs/workflows/` yang khas domain lama.
+Yang ikut terbawa dan **harus dikosongkan sebelum commit pertama**, karena isinya riwayat template dan bukan riwayat situs kamu:
+
+- [ ] `.changesets/*.md` — hapus seluruh berkas kecuali `README.md`.
+- [ ] `CHANGELOG.md` — kosongkan; ia riwayat rilis template.
+- [ ] `docs/adr/00*.md` + tabel di `docs/adr/README.md` — keputusan template ini, bukan keputusan situs kamu. Mulai penomoranmu sendiri dari `0001`; `bun run audit:dokumen` menuntut tabel dan berkasnya cocok dua arah, jadi menghapus satu tanpa yang lain memerahkan CI.
+- [ ] `package.json` — `name`, `description`, `homepage`, `repository`, dan `version` (kembalikan ke `0.1.0`).
+- [ ] `graphify-out/` — artefak analisis repo template; hapus, dan tambahkan ke `.gitignore` bila kamu tidak memakai perkakasnya.
+
+Yang **tidak** perlu disentuh: `src/lib/`, `src/layouts/`, `src/components/`, `src/styles/global.css`, `scripts/`, `tests/`, `server/`, `.github/`. Itulah kerangkanya.
 
 ## 2. Tetapkan kontrak sebelum menulis satu artikel pun
 
 - [ ] `src/config/site.ts` — nama, domain, `siteUrl`, daftar locale, navigasi utama beserta urutannya.
-- [ ] `src/content.config.ts` — skema frontmatter. **Ini keputusan yang paling mahal diubah belakangan.** Tentukan sekarang: field apa yang memaksa penulis memutuskan hal penting sejak awal?
-- [ ] `src/data/` — data referensi yang tidak boleh diketik ulang di markdown.
+- [ ] `.env` dari `.env.example` — `AWCMS_API_URL`, `AWCMS_API_TOKEN` (kredensial mesin, ia yang membawa tenant), `AWCMS_TENANT_ID` sebagai asersi. **Konten tidak tinggal di repo ini**: tidak ada `src/content.config.ts` dan tidak ada frontmatter, karena artikel ditarik dari `awcms` saat build (ADR-0018). Skema yang dulu ditegakkan Zod kini tanggung jawab sisi `awcms` — daftar jaminannya di [`integrasi-awcms.md`](integrasi-awcms.md).
 - [ ] `astro.config.mjs` — `site`, `compressHTML: true`, pipeline markdown, `serialize` sitemap.
 - [ ] `package.json` — `name`, `description`, `homepage`, `repository`, `engines`, dan seluruh skrip.
 - [ ] Versi Bun konsisten di tiga tempat: `packageManager` + `engines.bun`, `bun-version` di CI, dan tag image di `Dockerfile`.
@@ -30,10 +37,9 @@ Pertanyaan yang menentukan bentuk skema: **kesalahan apa yang paling merugikan p
 
 ## 4. Konten dan aset
 
-- [ ] Tulis satu artikel lengkap di locale default sebagai acuan bentuk.
-- [ ] **Tetapkan satu rasio gambar untuk seluruh situs**, lalu pakai rasio itu di setiap bingkai **dan** setiap sumber. Bingkai memakai `object-fit: cover`; sumber berasio lain dipotong diam-diam, bukan diperkecil.
-- [ ] Siapkan gambar sumber di `src/assets/images/`.
-- [ ] Isi peta `src/lib/article-images.ts` — satu entitas = satu gambar unik.
+- [ ] Tulis satu artikel lengkap di locale default **lewat panel admin `awcms`** sebagai acuan bentuk, lalu build dan lihat hasilnya. Konten tidak ditulis di repo ini.
+- [ ] **Tetapkan satu rasio gambar untuk seluruh situs**, lalu pakai rasio itu di setiap bingkai **dan** setiap sumber. Bingkai memakai `object-fit: cover`; sumber berasio lain dipotong diam-diam, bukan diperkecil. Nilainya `--ratio-visual` di `src/styles/global.css`, dan `bun run audit:konten` menegakkannya atas tiap berkas di `src/assets/`.
+- [ ] Taruh ilustrasi di `src/assets/` mengikuti konvensi nama — `hero`, `tab/<tab>`, `artikel/<tab>/<slug>`, tanpa ekstensi ([ADR-0024](../adr/0024-seni-lokal-di-src-assets.md)). **Tidak ada peta yang harus diisi**: `src/lib/article-images.ts` menyelesaikannya lewat `import.meta.glob`, dan berkas yang tidak ada merender placeholder bergaya.
 - [ ] Kartu share: **opsional, dan defaultnya tidak ada.** `awcms-astro` tidak
       membawa pembangkit kartu (`scripts/kartu-share.mjs` hanya ada di repo
       rujukan). Bila situs ini punya satu kartu baku, taruh berkasnya di

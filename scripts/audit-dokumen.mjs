@@ -40,6 +40,16 @@
  *      menyimpang: tabelnya mendaftarkan `.wilayah-filter-btn`, permukaan repo
  *      rujukan yang tidak pernah ada di sini. Gerbang ini yang diminta dokumen
  *      itu sendiri.
+ *   5. **Jalur berkas yang disebut dokumen harus ada.** Bukan tautan — span
+ *      kode seperti `` `src/lib/content.ts` ``. Dokumen di sini memerikan
+ *      berkas jauh lebih sering daripada menautkannya, dan repo ini sudah
+ *      menemukan empat kali dokumen yang menyatakan sesuatu yang tidak ada
+ *      dalam satu hari. Jalur milik `awcms` dan repo rujukan **wajib** ada di
+ *      `JALUR_DIKECUALIKAN` beserta alasan yang menyebut miliknya siapa.
+ *      Pengecualian yang membusuk — tidak lagi disebut dokumen mana pun —
+ *      menutupi jalur yang kelak benar-benar hilang, jadi ia ikut dijaga; tetapi
+ *      di `tests/audit-dokumen.test.mjs`, bukan di sini, karena daftarnya milik
+ *      repo ini sementara gerbang ini harus tetap benar atas pohon mana pun.
  *
  * ## Yang sengaja TIDAK diperiksa
  *
@@ -393,6 +403,76 @@ function auditPermukaanKilau() {
 }
 
 // ---------------------------------------------------------------------------
+// 5. Jalur berkas yang disebut dokumen harus ada
+// ---------------------------------------------------------------------------
+
+/**
+ * Jalur yang boleh disebut walau tidak ada di repo ini, beserta alasannya.
+ *
+ * Daftar ini yang membedakan gerbang dari gangguan. Sebagian besar jalur yang
+ * hilang **bukan** cacat: dokumen di sini membandingkan diri dengan `awcms` dan
+ * dengan repo rujukan, dan perbandingan itu justru isinya. Tanpa pengecualian
+ * ber-alasan, gerbang ini akan memerahkan tiap kalimat yang menyebut berkas
+ * repo lain — lalu orang akan mematikannya, dan bersamanya cacat yang nyata.
+ *
+ * Aturan menambah baris: **alasannya wajib menyebut MILIK SIAPA jalur itu.**
+ * "Belum dibuat" bukan alasan — itu justru yang gerbang ini cari.
+ */
+const JALUR_DIKECUALIKAN = new Map([
+  ["docs/PROJECT_STATE.md", "milik `awcms` — indikator pencabutan ADR-0021 dibaca di sana"],
+  ["tests/admin-navigation-registry.test.ts", "milik `awcms` — gerbang yang menegakkan kriteria 1"],
+  ["docs/awcms/14_ui_ux_design_system.md", "milik `awcms` — sumber standar UI keluarga"],
+  ["src/lib/security/security-headers.ts", "milik `awcms` — asal `BASE_CSP_DIRECTIVES` yang ADR-0019 selaraskan"],
+  ["scripts/kartu-share.mjs", "milik repo rujukan — disebut PERSIS karena tidak ada di sini"],
+  ["src/content.config.ts", "bentuk konten-di-repo yang repo ini gantikan — disebut untuk menjelaskan penggantinya"],
+  ["docs/ARCHITECTURE.md", "dokumen yang checklist minta DIBUAT situs turunan, bukan yang template ini bawa"],
+  ["docs/adr/x.md", "placeholder contoh di `.changesets/README.md`, bukan jalur sungguhan"]
+]);
+
+/** Awalan yang menandai sebuah span kode sebagai jalur berkas repo. */
+const AWALAN_JALUR = ["src/", "scripts/", "server/", "tests/", "public/", "docs/", "infra/"];
+
+function auditJalurDisebut(berkas) {
+  let diperiksa = 0;
+  const dipakai = new Set();
+
+  for (const nama of berkas) {
+    const isi = readFileSync(gabung(AKAR, nama), "utf8").replace(/```[\s\S]*?```/g, "");
+
+    for (const cocok of isi.matchAll(/`([A-Za-z0-9_./*-]+)`/g)) {
+      const jalur = cocok[1];
+
+      if (!AWALAN_JALUR.some((awalan) => jalur.startsWith(awalan))) continue;
+
+      // Jalur berakhiran `/` memerikan BENTUK standar keluarga (blok "Struktur
+      // wajib"), bukan berkas repo ini; `*` adalah pola, bukan jalur. Keduanya
+      // dilewati, dan itu disebut supaya tidak dikira terjaga.
+      if (jalur.endsWith("/") || jalur.includes("*")) continue;
+
+      if (JALUR_DIKECUALIKAN.has(jalur)) {
+        dipakai.add(jalur);
+        continue;
+      }
+
+      diperiksa += 1;
+
+      if (!beradaDi(jalur)) {
+        langgar("jalur-disebut", nama, `menyebut \`${jalur}\` yang tidak ada di repo ini`);
+      }
+    }
+  }
+
+  // Pengecualian yang tidak lagi dipakai adalah pengecualian yang membusuk: ia
+  // berhenti dibaca, lalu menutupi jalur yang kelak benar-benar hilang. Yang
+  // menegakkannya `tests/audit-dokumen.test.mjs`, BUKAN gerbang ini — daftarnya
+  // milik repo ini, sementara gerbang ini harus tetap benar saat dijalankan
+  // atas pohon mana pun (fixture tes, dan situs turunan yang dokumennya lain).
+  catatan.push(
+    `jalur: ${diperiksa} span diperiksa, ${dipakai.size}/${JALUR_DIKECUALIKAN.size} pengecualian terpakai`
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Jalankan
 // ---------------------------------------------------------------------------
 
@@ -401,9 +481,12 @@ if (!existsSync(AKAR) || !statSync(AKAR).isDirectory()) {
   process.exit(2);
 }
 
-auditTautan(berkasMarkdown());
+const dokumen = berkasMarkdown();
+
+auditTautan(dokumen);
 auditIndeksAdr();
 auditPermukaanKilau();
+auditJalurDisebut(dokumen);
 
 console.log("── audit dokumen ──");
 for (const baris of catatan) console.log(`  ${baris}`);

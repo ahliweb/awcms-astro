@@ -61,7 +61,7 @@ Keluarga AWCMS bersifat **Bun-only** dan **PostgreSQL + RLS wajib**. Sejak ADR-0
 | --- | --- | --- | --- |
 | ~~Runtime~~ | Bun | **Bun** — divergence DITUTUP oleh ADR-0015 repo rujukan | Repo ini kini Bun-only seperti seluruh keluarga: `bun.lock`, `bun test`, `oven/bun` di image, `package-ecosystem: bun` di Dependabot |
 | Basis data | PostgreSQL + RLS | **Tidak ada** | Tidak ada data tenant-scoped. Kontrol akses ditegakkan review repo, bukan RLS |
-| Kontrak API | OpenAPI/AsyncAPI wajib | **Tidak berlaku** | Tidak ada API. Kontraknya adalah frontmatter (`content.config.ts`) |
+| Kontrak API | OpenAPI/AsyncAPI wajib | **Tidak berlaku** | Repo ini tidak MENYAJIKAN API — ia mengonsumsi milik `awcms`. Kontraknya `LocalizedArticle` di `src/lib/content.ts`, dijaga `tests/kontrak-awcms.test.mjs` |
 | Idempotency, audit trail, outbox | Wajib pada mutation | **Tidak berlaku** | Tidak ada mutation runtime |
 
 Divergence yang tersisa berlaku **selama repo tetap tanpa basis data**. Saat sebuah situs di atas template ini mulai menyimpan data tenant-scoped sendiri, seluruh kontrol keluarga kembali berlaku penuh.

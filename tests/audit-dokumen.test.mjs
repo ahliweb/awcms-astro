@@ -18,7 +18,7 @@
  * ikut menjaga dokumen, bukan hanya menjaga skripnya.
  */
 import { afterEach, describe, expect, test } from "bun:test";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -282,6 +282,87 @@ describe("daftar permukaan kilau", () => {
 
     expect(kode).toBe(0);
     expect(keluaran).toContain("kilau");
+  });
+});
+
+describe("jalur yang disebut dokumen", () => {
+  test("jalur yang ada lolos", () => {
+    const akar = pohon({
+      "README.md": "Adapter ada di `src/lib/content.ts`.",
+      "src/lib/content.ts": "export {}"
+    });
+
+    expect(jalankan(akar).kode).toBe(0);
+  });
+
+  test("jalur yang tidak ada MERAH", () => {
+    const akar = pohon({ "README.md": "Isi peta `src/lib/article-images.ts`." });
+    const { kode, keluaran } = jalankan(akar);
+
+    expect(kode).toBe(1);
+    expect(keluaran).toContain("jalur-disebut");
+  });
+
+  test("span kode yang bukan jalur repo tidak dihitung", () => {
+    const akar = pohon({
+      "README.md": [
+        "Jalankan `bun run build`, baca `--ratio-visual`, panggil `getArticles()`.",
+        "Bandingkan dengan `awcms_blog_posts` dan `x/y/z.ts`."
+      ].join("\n")
+    });
+
+    expect(jalankan(akar).kode).toBe(0);
+  });
+
+  test("jalur berakhiran / dan berpola * dilewati — ia memerikan bentuk, bukan berkas", () => {
+    const akar = pohon({
+      "README.md": "Struktur: `src/components/`, katalog `src/locales/*/messages.po`."
+    });
+
+    expect(jalankan(akar).kode).toBe(0);
+  });
+
+  test("jalur milik repo lain lolos lewat pengecualian ber-alasan", () => {
+    // `docs/PROJECT_STATE.md` milik awcms dan tidak akan pernah ada di sini.
+    // Tanpa daftar pengecualian, tiap kalimat yang membandingkan diri dengan
+    // repo saudaranya akan merah — dan gerbang yang begitu akan dimatikan.
+    const akar = pohon({
+      "README.md": "Indikatornya di `docs/PROJECT_STATE.md` milik awcms.",
+      "docs/awcms-astro/x.md": [
+        "`tests/admin-navigation-registry.test.ts`",
+        "`docs/awcms/14_ui_ux_design_system.md`",
+        "`src/lib/security/security-headers.ts`",
+        "`scripts/kartu-share.mjs`",
+        "`src/content.config.ts`",
+        "`docs/ARCHITECTURE.md`",
+        "`docs/adr/x.md`"
+      ].join("\n\n")
+    });
+
+    expect(jalankan(akar).kode).toBe(0);
+  });
+
+  test("setiap pengecualian masih benar-benar disebut dokumen repo ini", () => {
+    // Pengecualian yang membusuk menutupi jalur yang kelak benar-benar hilang.
+    // Aturannya milik repo ini, bukan milik skripnya — skrip itu harus tetap
+    // benar saat dijalankan atas pohon fixture maupun situs turunan.
+    const skrip = readFileSync("scripts/audit-dokumen.mjs", "utf8");
+    const blok = skrip.match(/const JALUR_DIKECUALIKAN = new Map\(\[([\s\S]*?)\n\]\);/);
+
+    if (!blok) throw new Error("JALUR_DIKECUALIKAN tidak ditemukan");
+
+    const jalur = [...blok[1].matchAll(/\["([^"]+)",/g)].map((m) => m[1]);
+    expect(jalur.length).toBeGreaterThan(0);
+
+    const dokumen = Bun.spawnSync(["git", "ls-files", "*.md"])
+      .stdout.toString()
+      .trim()
+      .split("\n");
+    const semua = dokumen.map((f) => readFileSync(f, "utf8")).join("\n");
+
+    const membusuk = jalur.filter((p) => !semua.includes(`\`${p}\``));
+
+    expect(membusuk).toEqual([]);
   });
 });
 
