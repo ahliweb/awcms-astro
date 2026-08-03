@@ -226,12 +226,15 @@ membuatnya tidak perlu `node_modules` sama sekali.
 
 ## Yang belum ada (backlog eksplisit, bukan kelalaian)
 
-- **Kartu share per halaman.** Generatornya di repo rujukan terikat pada seni
-  dan data domainnya. Yang ada di sini hanya SATU kartu opsional lewat
-  `SITE_SOCIAL_IMAGE`; tanpa itu halaman tidak memasang tag gambar sama sekali
-  dan pratinjau sosial jatuh ke kartu teks. Itu keadaan yang **didukung** —
-  jangan menunjuk `SITE_SOCIAL_IMAGE` ke berkas yang belum ada, karena
-  pratinjau yang rusak tidak gagal di build mana pun.
+- **Kartu share yang DIBANGKITKAN per halaman.** Kartu yang *diunggah* sudah
+  bekerja: artikel memakai `seoImageMediaId` (atau `featuredMediaId`) dari
+  `awcms`, lengkap dengan MIME dan ukurannya sendiri
+  ([ADR-0026](docs/adr/0026-kartu-share-per-artikel-dari-media-awcms.md)). Yang
+  belum ada adalah pembangkit yang menormalkan kartu ke 1200×630 dari judul dan
+  seni artikel — ia menambah encoder gambar sebagai dependency build, jadi ia
+  pantas mendapat ADR-nya sendiri. `SITE_SOCIAL_IMAGE` (satu kartu situs,
+  opsional) tetap keadaan yang didukung, dan halaman tanpa kartu mana pun tidak
+  memasang tag gambar sama sekali — pratinjau jatuh ke kartu teks yang rapi.
 - **BFF portal Jualanku (ADR-0014).** `/internal/login`, sesi BFF sisi server,
   cookie portal, CSRF. Sisi `awcms` sudah mendarat (ADR-0049/0050), tetapi ini
   memanggil `awcms` **di setiap permintaan runtime** — bukan sekali per build —

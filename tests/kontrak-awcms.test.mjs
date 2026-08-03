@@ -504,3 +504,111 @@ describe("gambar artikel dari media awcms", () => {
     assert.equal(jejak.filter((j) => j.startsWith("/api/v1/media/objects")).length, 1);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Kartu share per artikel.
+//
+// awcms menyatakan `seoImageMediaId` MENGALAHKAN `featuredMediaId` untuk
+// pratinjau sosial, dan `seo-facts-port-adapter.ts` miliknya menyelesaikan
+// persis `seo_image_media_id ?? featured_media_id`. Urutan itu dicerminkan di
+// sini, bukan ditemukan ulang: situs yang kartunya berbeda dari permukaan SEO
+// CMS-nya sendiri adalah dua jawaban untuk satu pertanyaan, dan hanya satu yang
+// terlihat editor.
+// ---------------------------------------------------------------------------
+
+const KARTU_ID = "bbbbbbbb-cccc-4ddd-8eee-ffffffffffff";
+
+describe("kartu share per artikel", () => {
+  let getArticles;
+  let resetContentCacheForTests;
+
+  beforeEach(async () => {
+    process.env.AWCMS_API_URL = "http://awcms.uji";
+    process.env.AWCMS_API_TOKEN = TOKEN;
+    ({ getArticles, resetContentCacheForTests } = await import("../src/lib/content.ts"));
+    resetContentCacheForTests();
+  });
+
+  afterEach(() => {
+    globalThis.fetch = fetchAsli;
+  });
+
+  test("seoImageMediaId mengalahkan featuredMediaId — urutan milik awcms", async () => {
+    const posts = [{ ...buatPost(0), featuredMediaId: MEDIA_ID, seoImageMediaId: KARTU_ID }];
+    pasangFetchTiruan(posts, {
+      media: new Map([
+        [MEDIA_ID, buatObjek()],
+        [
+          KARTU_ID,
+          {
+            publicUrl: "https://media.contoh.test/news/kartu.png",
+            altText: "Kartu berbagi",
+            mimeType: "image/png",
+            width: 1200,
+            height: 630
+          }
+        ]
+      ])
+    });
+
+    const [artikel] = await getArticles("panduan", "id");
+
+    assert.equal(artikel.kartuShare.src, "https://media.contoh.test/news/kartu.png");
+    // Gambar HALAMAN tetap featuredMediaId: yang diprioritaskan awcms hanya
+    // permukaan pratinjau, bukan ilustrasi di badan artikel.
+    assert.equal(artikel.gambar.src, "https://media.contoh.test/news/foto.webp");
+  });
+
+  test("tanpa seoImageMediaId, featuredMediaId menjadi kartunya", async () => {
+    const posts = [{ ...buatPost(0), featuredMediaId: MEDIA_ID }];
+    pasangFetchTiruan(posts, { media: new Map([[MEDIA_ID, buatObjek()]]) });
+
+    const [artikel] = await getArticles("panduan", "id");
+    assert.equal(artikel.kartuShare.src, artikel.gambar.src);
+  });
+
+  test("kartu membawa MIME dan ukurannya sendiri, bukan konstanta kartu situs", async () => {
+    // Inilah cacat yang menunggu bila keduanya tidak ikut: setiap halaman
+    // artikel memasang `image/png` 1200×630 untuk berkas WebP 1600×900, dan
+    // pengunduh pratinjau yang memercayainya melebarkan ke kotak yang salah
+    // atau menolak kartunya — tanpa satu pun kegagalan di build.
+    const posts = [{ ...buatPost(0), featuredMediaId: MEDIA_ID }];
+    pasangFetchTiruan(posts, { media: new Map([[MEDIA_ID, buatObjek()]]) });
+
+    const [artikel] = await getArticles("panduan", "id");
+
+    assert.equal(artikel.kartuShare.type, "image/webp");
+    assert.equal(artikel.kartuShare.width, 1600);
+    assert.equal(artikel.kartuShare.height, 900);
+  });
+
+  test("artikel tanpa gambar apa pun tidak punya kartu — dan itu didukung", async () => {
+    pasangFetchTiruan([buatPost(0)]);
+
+    const [artikel] = await getArticles("panduan", "id");
+    assert.equal(artikel.kartuShare, undefined);
+  });
+
+  test("kedua id diminta dalam SATU batch, dan yang sama tidak diminta dua kali", async () => {
+    const jejak = [];
+    const posts = [
+      { ...buatPost(0), featuredMediaId: MEDIA_ID, seoImageMediaId: KARTU_ID },
+      { ...buatPost(1), featuredMediaId: MEDIA_ID }
+    ];
+    pasangFetchTiruan(posts, {
+      media: new Map([
+        [MEDIA_ID, buatObjek()],
+        [KARTU_ID, { ...buatObjek(), publicUrl: "https://media.contoh.test/news/kartu.png" }]
+      ]),
+      jejak
+    });
+
+    await getArticles("panduan", "id");
+
+    const permintaan = jejak.filter((j) => j.startsWith("/api/v1/media/objects"));
+    assert.equal(permintaan.length, 1);
+    const ids = new URL(`http://x${permintaan[0]}`).searchParams.get("ids").split(",");
+    assert.deepEqual([...new Set(ids)].sort(), ids.sort());
+    assert.equal(ids.length, 2);
+  });
+});

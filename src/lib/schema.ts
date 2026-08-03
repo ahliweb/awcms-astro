@@ -56,6 +56,14 @@ export interface ArticleSchemaInput {
   /** URL absolut kartu share, atau `undefined` bila situs ini belum punya. */
   image?: string;
   imageAlt: string;
+  /**
+   * Ukuran nyata gambarnya. Dihilangkan berarti "kartu situs", yang memang
+   * 1200×630 menurut kontrak `.env.example`. Untuk gambar apa pun yang BUKAN
+   * itu — kartu per artikel dari media awcms — mengisinya wajib: structured
+   * data yang salah lebih buruk daripada yang tidak lengkap, karena ia diklaim.
+   */
+  imageWidth?: number | null;
+  imageHeight?: number | null;
   updatedDate: Date;
   section: string;
 }
@@ -72,7 +80,16 @@ export function articleSchema(input: ArticleSchemaInput): Schema {
     // ia selalu ada dan selalu menyatakan ImageObject 1200×630 di URL yang
     // tidak pernah dibangkitkan siapa pun — structured data yang salah lebih
     // buruk daripada structured data yang tidak lengkap, karena ia diklaim.
-    ...(input.image ? { image: imageObject(input.image, input.imageAlt) } : {}),
+    ...(input.image
+      ? {
+          image: imageObject(
+            input.image,
+            input.imageAlt,
+            input.imageWidth,
+            input.imageHeight
+          )
+        }
+      : {}),
     // Sumber tanggal hanya satu: `updatedDate`. Repo tidak menyimpan tanggal
     // terbit terpisah, dan mengarang `datePublished` yang berbeda akan menjadi
     // klaim yang tidak bisa dipertanggungjawabkan.
@@ -110,12 +127,22 @@ export function collectionSchema(name: string, description: string, items: Array
 // butuh skema wilayah menulisnya dari datanya sendiri, bukan dari sisa data
 // situs lain.
 
-function imageObject(url: string, alt: string): Schema {
+function imageObject(
+  url: string,
+  alt: string,
+  width?: number | null,
+  height?: number | null
+): Schema {
   return {
     '@type': 'ImageObject',
     url,
-    width: SOCIAL_IMAGE_WIDTH,
-    height: SOCIAL_IMAGE_HEIGHT,
+    // Ukuran yang dilaporkan sumbernya, dan HANYA jatuh ke konstanta kartu
+    // situs saat pemanggil tidak menyebutkan apa pun. Sebelumnya konstanta itu
+    // dipakai tanpa syarat, sehingga kartu per artikel dari media awcms —
+    // WebP 1600×900, umumnya — akan diklaim 1200×630 di structured data yang
+    // dibaca mesin, bukan manusia yang bisa melihat selisihnya.
+    width: width ?? SOCIAL_IMAGE_WIDTH,
+    height: height ?? SOCIAL_IMAGE_HEIGHT,
     caption: alt,
   };
 }
