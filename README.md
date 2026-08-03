@@ -220,16 +220,22 @@ membuatnya tidak perlu `node_modules` sama sekali.
   dan pratinjau sosial jatuh ke kartu teks. Itu keadaan yang **didukung** —
   jangan menunjuk `SITE_SOCIAL_IMAGE` ke berkas yang belum ada, karena
   pratinjau yang rusak tidak gagal di build mana pun.
-- **Gambar artikel — tidak lagi diblokir awcms, tinggal dua keputusan di sini.**
-  [`src/lib/article-images.ts`](src/lib/article-images.ts) masih mengembalikan
-  `src: undefined` dan setiap pemanggil merender blok bertoken. Endpoint yang
-  dulu ditunggu **sudah ada**: `GET /api/v1/media/objects?ids=…` batch-resolve
+- **Gambar artikel dari media awcms.** Jalur **lokal sudah ada**
+  ([ADR-0024](docs/adr/0024-seni-lokal-di-src-assets.md)): taruh berkas di
+  `src/assets/` mengikuti konvensi `hero`, `tab/<tab>`,
+  `artikel/<tab>/<slug>` — tanpa langkah kedua. Yang belum adalah sumber
+  KEDUA, yaitu media `awcms` lewat `featuredMediaId`, dan itu **ditahan**
+  (ADR-0021, dipersempit [ADR-0023](docs/adr/0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md)):
+  endpointnya memang sudah ada — `GET /api/v1/media/objects?ids=…` batch-resolve
   media id menjadi `{ publicUrl, altText, mimeType, width, height }`, dan feed
-  build sudah membawa `featuredMediaId` di setiap baris penuh. Yang tersisa ada
-  di repo ini: (1) gambar hasil resolusi tinggal di `LocalizedArticle` —
-  di-resolve sekali per build di `content.ts` — bukan di modul sinkron yang
+  build sudah membawa `featuredMediaId` — tetapi kode yang memanggilnya bentuknya
+  ditentukan respons `awcms`, dan repo template ini tidak punya instans untuk
+  membuktikan panggilannya benar. Dua keputusan sudah tertulis untuk saat
+  penahanannya dicabut: (1) gambar hasil resolusi tinggal di `LocalizedArticle`,
+  di-resolve sekali per build di `content.ts`, bukan di modul sinkron yang
   dipanggil komponen; (2) `img-src 'self'` memblokir host media, jadi origin-nya
-  harus dinyatakan di [`server/penyaji.mjs`](server/penyaji.mjs) (ADR-0019).
+  harus dinyatakan di [`server/penyaji.mjs`](server/penyaji.mjs) (ADR-0019) —
+  seni lokal tidak menuntut itu karena ia terbit di origin situs sendiri.
   Rasionya sudah ditetapkan dan sudah punya pemeriksa: seluruh bingkai memakai
   `--ratio-visual` (16∶9), sumber berasio lain **dipotong** — bukan diperkecil.
   Aturan isinya di [`AGENTS.md`](AGENTS.md#gambar).

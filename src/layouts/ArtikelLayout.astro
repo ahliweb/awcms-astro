@@ -7,6 +7,7 @@ import BiayaTable from '../components/BiayaTable.astro';
 import FaqAccordion from '../components/FaqAccordion.astro';
 import DisclaimerNote from '../components/DisclaimerNote.astro';
 import TranslationNotice from '../components/TranslationNotice.astro';
+import Ilustrasi from '../components/Ilustrasi.astro';
 import { getLocaleFromPath, getSiteUrl, localePath, localeHtmlLang, siteConfig, tabTitleKey } from '../config/site';
 import { getArticleImage } from '../lib/article-images';
 import { SITE_SOCIAL_IMAGE } from '../lib/social-image';
@@ -85,7 +86,7 @@ const schema = articleSchema({
 
     <header class="artikel-kepala">
       <div class="article-hero-frame">
-        <div class="visual-placeholder visual-hero" role="img" aria-label={articleVisual.alt}></div>
+        <Ilustrasi src={articleVisual.src} alt={articleVisual.alt} hero />
       </div>
 
       <h1 class="artikel-title">{data.title}</h1>

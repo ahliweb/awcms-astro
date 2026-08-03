@@ -1,0 +1,52 @@
+---
+/**
+ * Satu ilustrasi, atau blok bertoken yang menggantikannya.
+ *
+ * ## Kenapa komponen, bukan tiga percabangan
+ *
+ * Percabangan "ada gambar / tidak ada gambar" muncul di empat bingkai berbeda
+ * (`hero-visual-frame`, `feature-hero-img`, `card-img-wrapper`,
+ * `article-hero-frame`). Ditulis empat kali, ia akan menyimpang empat kali —
+ * dan bentuk penyimpangan yang paling mungkin adalah `alt` yang hilang atau
+ * `role="img"` yang tertinggal pada elemen yang sudah menjadi `<img>`, yaitu
+ * dua cacat yang hanya terasa oleh pembaca yang tidak melihat layarnya.
+ *
+ * ## Yang dijaga di sini
+ *
+ *   - **Placeholder tetap punya nama.** `role="img"` + `aria-label` membuat
+ *     blok kosong terbaca sebagai gambar tanpa gambar, bukan sebagai `<div>`
+ *     yang dilewati begitu saja.
+ *   - **`<img>` tidak menerima `role="img"`.** Ia sudah punya peran itu;
+ *     menuliskannya lagi adalah redundansi yang membuat sebagian screen reader
+ *     mengumumkannya dua kali.
+ *   - **Rasio dipaksakan bingkainya, bukan berkasnya.** Setiap bingkai
+ *     mendeklarasikan `--ratio-visual` dan memotong dengan `object-fit: cover`,
+ *     jadi tidak ada pergeseran tata letak saat gambar selesai dimuat — dan
+ *     sumber berasio lain DIPOTONG, yang `bun run audit:konten` tolak lebih
+ *     dulu.
+ *   - **Hero dimuat `eager`.** Ia hampir selalu elemen LCP halaman, dan
+ *     `loading="lazy"` pada elemen di atas lipatan justru menunda hal yang
+ *     paling dilihat pembaca.
+ */
+interface Props {
+  /** URL seni, atau `undefined` — keadaan yang didukung, bukan kegagalan. */
+  src?: string | undefined;
+  alt: string;
+  /** true untuk gambar besar di atas lipatan; mengubah gaya DAN prioritas muat. */
+  hero?: boolean;
+}
+
+const { src, alt, hero = false } = Astro.props;
+---
+
+{
+  src ? (
+    <img src={src} alt={alt} loading={hero ? 'eager' : 'lazy'} decoding="async" />
+  ) : (
+    <div
+      class={hero ? 'visual-placeholder visual-hero' : 'visual-placeholder'}
+      role="img"
+      aria-label={alt}
+    />
+  )
+}

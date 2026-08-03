@@ -67,6 +67,12 @@ Wajib tetap hijau:
       terikat aturan yang sama dengan template: tiap ADR tercatat, tiap baris
       menunjuk berkas yang ada, dan kolom Status setuju dengan ADR-nya.
 
+**Menaruh seni:** berkas di `src/assets/`, konvensi nama `hero`, `tab/<tab>`,
+`artikel/<tab>/<slug>` tanpa ekstensi — tidak ada registry yang harus ikut
+disunting. Berkas yang tidak ada merender placeholder bergaya, dan itu keadaan
+yang **didukung**. Rinciannya di
+[ADR-0024](../adr/0024-seni-lokal-di-src-assets.md).
+
 Dua aturan gambar tidak punya pemeriksa dan tidak akan pernah punya: **teks di
 dalam gambar hanya label topik**, dan **tanpa lambang atau atribut instansi
 negara**. Keduanya dinilai manusia, setiap kali seni baru masuk.
