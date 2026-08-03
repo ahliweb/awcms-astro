@@ -269,6 +269,15 @@ sengaja yang belum tercatat di `awcms-family-compatibility.yaml`.
 Template ini belum membawa satu pun ilustrasi, tetapi bingkainya sudah ada dan
 aturan di bawah berlaku sejak gambar pertama dimasukkan situs yang memakainya.
 
+**Cara memasukkannya: taruh berkasnya di `src/assets/`, tidak ada langkah
+kedua.** Konvensi namanya — relatif terhadap `src/assets/`, tanpa ekstensi —
+`hero`, `tab/<tab>`, dan `artikel/<tab>/<slug>`; ekstensi apa pun dari
+`EKSTENSI_SENI` berlaku, jadi mengganti `.svg` menjadi `.webp` tidak menyentuh
+satu baris kode pun. **Tidak ada fallback dari artikel ke seni seksinya**
+(ADR-0024): fallback membuat seluruh artikel satu seksi memakai gambar yang
+sama sambil tampak seperti gambar yang dipilih untuknya. Berkas yang tidak ada
+merender `.visual-placeholder`, dan itu jujur.
+
 - **Satu rasio untuk seluruh situs, dipakai bingkai maupun sumber.** Nilainya
   `--ratio-visual` di `src/styles/global.css`, saat ini 16∶9. Bingkai memakai
   `object-fit: cover`, jadi sumber berasio lain **tidak** diperkecil — ia

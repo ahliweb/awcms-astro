@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumb from '../Breadcrumb.astro';
 import DisclaimerNote from '../DisclaimerNote.astro';
+import Ilustrasi from '../Ilustrasi.astro';
 import { getLocaleFromPath, getSiteUrl, localePath, siteConfig, tabTitleKey, type TabSlug } from '../../config/site';
 import { getArticles } from '../../lib/content';
 import { getArticleImage, getTabImage } from '../../lib/article-images';
@@ -29,6 +30,12 @@ const breadcrumbItems = [
   { name: tabLabel, url: localePath(locale, `/${tab}/`) }
 ];
 
+// `alt` diambil alih dari katalog PO, bukan dipakai apa adanya dari
+// `getTabImage`: yang terakhir memanusiawikan SLUG, sehingga pembaca dengan
+// screen reader mendengar nama seksi versi URL alih-alih versi bahasanya — dan
+// di locale berprefiks ia bahkan bukan bahasa yang sedang dibaca.
+const tabVisual = { ...getTabImage(tab), alt: tabLabel };
+
 const schema = collectionSchema(
   t(locale, `tab.${tab}.h1`, tabLabel),
   description,
@@ -44,7 +51,7 @@ const schema = collectionSchema(
   description={description}
   currentTab={tab}
   canonicalUrl={getSiteUrl(localePath(locale, `/${tab}/`))}
-  ogImageAlt={getTabImage(tab).alt}
+  ogImageAlt={tabVisual.alt}
   schema={schema}
 >
   <Breadcrumb items={breadcrumbItems} />
@@ -57,7 +64,7 @@ const schema = collectionSchema(
       </p>
     </div>
     <div class="feature-hero-img">
-      <div class="visual-placeholder visual-hero" role="img" aria-label={getTabImage(tab).alt}></div>
+      <Ilustrasi src={tabVisual.src} alt={tabVisual.alt} hero />
     </div>
   </section>
 
@@ -67,7 +74,7 @@ const schema = collectionSchema(
       return (
         <a href={localePath(locale, `/${tab}/${slug}/`)} class="card">
           <div class="card-img-wrapper">
-            <div class="visual-placeholder" role="img" aria-label={imgInfo.alt}></div>
+            <Ilustrasi src={imgInfo.src} alt={imgInfo.alt} />
           </div>
           <div class="card-content">
             <div class="kartu-baris-atas">
