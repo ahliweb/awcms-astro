@@ -1,16 +1,16 @@
-# Graph Report - awcms-astro  (2026-08-02)
+# Graph Report - awcms-astro  (2026-08-04)
 
 ## Corpus Check
-- 103 files · ~67,569 words
+- 129 files · ~88,820 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 668 nodes · 994 edges · 67 communities (59 shown, 8 thin omitted)
-- Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 99 edges (avg confidence: 0.88)
+- 861 nodes · 1251 edges · 90 communities (80 shown, 10 thin omitted)
+- Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 99 edges (avg confidence: 0.88)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `55fbf53a`
+- Built from commit: `a0f87c48`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -63,43 +63,66 @@
 - SitemapView.astro
 - BaseLayout.astro
 - 0020-layar-admin-kembali-ke-awcms.md
-- ADR-0018 — Kontrak build terhadap awcms: tenant dari token mesin, traversal cursor + hidrasi, dan gerbang terjemahan
+- Build menarik konten yang benar-benar ada, dari tenant yang benar-benar dimaksud
 - ADR-0021 — Pengembangan repo ini ditahan sampai fondasi `awcms` selesai
 - Home.astro
 - Alur kerja wajib: scope atomic, branch dari main, build bersih
-- Build menarik konten yang benar-benar ada, dari tenant yang benar-benar dimaksud
-- Kontrak integrasi awcms-astro → awcms
+- BaseLayout.astro
+- 0018-kontrak-build-token-mesin-dan-traversal-konten.md
 - Permukaan serangan situs statis murni
 - CSP ketat benar-benar dikirim, dan skrip berhenti tinggal di dalam HTML
 - Gerbang audit konten: memeriksa yang TERBIT, bukan yang tertulis
-- Keluaran build berhenti membawa gaya di dalam HTML
-- CI dan image berhenti mengirim variabel tenant yang sudah ditolak
-- Layar admin kembali ke `awcms`: ADR-0017 di-supersede ADR-0020
 - ADR-0017 — Repo ini memikul halaman admin OWNER/INTERNAL, di samping situs publiknya
+- Build menarik konten yang benar-benar ada, dari tenant yang benar-benar dimaksud
+- Layar admin kembali ke `awcms`: ADR-0017 di-supersede ADR-0020
+- awcms-astro — kontrak integrasi dengan `awcms`
 - Dokumen berhenti menyebut gerbang dan berkas yang tidak ada
 - Keputusan
+- ADR-0022 — Situs ini menerbitkan tenant DEFAULT (owner) `awcms`
+- ADR-0023 — Penahanan ADR-0021 dipersempit: pekerjaan yang tidak membutuhkan `awcms` boleh mendarat
+- BaseLayout.astro
+- Koreksi: indeks ADR yang tak pernah benar, dan titik lanjut locale yang berbalik arah
+- ADR-0017 — Repo ini memikul halaman admin OWNER/INTERNAL, di samping situs publiknya
+- ADR-0019 — CSP ketat dikirim penyaji, dan skrip tidak lagi tinggal di dalam HTML
+- ADR-0025 — Gambar artikel dari media `awcms`: di-resolve sekali per build, dan `img-src` yang DITANYAKAN
+- ADR-0015 — Runtime Bun menutup divergence keluarga AWCMS
+- Gambar artikel dari media `awcms` — dan `img-src` yang ditanyakan, bukan disalin
+- Kartu share per artikel — dan tiga klaim yang berhenti berbohong
+- Gerbang audit dokumen, dan penahanan yang dipersempit supaya ia bisa mendarat
+- Standar awcms-astro — situs statis Astro
+- Koreksi: indeks ADR yang tak pernah benar, dan titik lanjut locale yang berbalik arah
+- `awcms-astro` menjadi template repository GitHub — dan dokumennya dibuat benar untuk itu
+- Ilustrasi lokal: taruh berkas di `src/assets/`, tidak ada langkah kedua
+- Ilustrasi lokal: taruh berkas di `src/assets/`, tidak ada langkah kedua
+- `og:image:alt` berhenti memerikan gambar yang lain
+- Gerbang permukaan kilau — dokumen yang meminta pemeriksanya sendiri, lalu menyimpang persis seperti yang ia ramalkan
+- Deploy dan rebuild lewat webhook (Coolify)
+- awcms-astro — kontrak integrasi dengan `awcms`
+- ADR-0014 — Rendering campuran dan BFF portal Jualanku
+- ADR-0027 — Penahanan ADR-0021 selesai: kedua indikatornya terpenuhi
+- Penahanan ADR-0021 selesai, dan template mendapat skill-nya sendiri
 
 ## God Nodes (most connected - your core abstractions)
 1. `t()` - 19 edges
 2. `ADR-0014 — Rendering campuran dan BFF portal Jualanku` - 17 edges
-3. `siteConfig` - 14 edges
-4. `getArticles()` - 14 edges
-5. `awcms-astro — Design System` - 13 edges
-6. `scripts` - 12 edges
-7. `Kontrak integrasi awcms-astro → awcms` - 11 edges
-8. `Kontrak BFF /_portal-api/**` - 11 edges
-9. `awcms-astro — Standar Teknis` - 11 edges
-10. `getLocaleFromPath()` - 10 edges
+3. `getArticles()` - 15 edges
+4. `scripts` - 14 edges
+5. `siteConfig` - 14 edges
+6. `awcms-astro — Design System` - 13 edges
+7. `awcmsGet()` - 11 edges
+8. `Kontrak integrasi awcms-astro → awcms` - 11 edges
+9. `Kontrak BFF /_portal-api/**` - 11 edges
+10. `awcms-astro — Standar Teknis` - 11 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `Aturan internasionalisasi awcms-astro` --conceptually_related_to--> `localeMeta`  [INFERRED]
   docs/awcms-astro/standar-teknis.md → src/config/site.ts
+- `Experience layer Jualanku.info` --references--> `awcmsGet()`  [INFERRED]
+  docs/adr/0014-rendering-campuran-dan-bff-portal.md → src/lib/awcms/client.ts
 - `Struktur wajib dan aturan arah satu arah` --conceptually_related_to--> `getArticles()`  [INFERRED]
   docs/awcms-astro/standar-teknis.md → src/lib/content.ts
 - `Checklist memulai situs baru di atas awcms-astro` --references--> `siteConfig`  [INFERRED]
   docs/awcms-astro/checklist-repo-baru.md → src/config/site.ts
-- `Experience layer Jualanku.info` --references--> `awcmsGet()`  [INFERRED]
-  docs/adr/0014-rendering-campuran-dan-bff-portal.md → src/lib/awcms/client.ts
 - `Struktur direktori portal yang direncanakan` --references--> `renderContentBlocks()`  [INFERRED]
   docs/awcms-astro/jualanku/01-arsitektur-experience.md → src/lib/content-blocks.ts
 
@@ -117,11 +140,11 @@
 - **Gerbang kesiapan sebelum portal produksi** — docs_awcms_astro_jualanku_04_kesiapan_prasyarat_p0, docs_awcms_astro_jualanku_04_kesiapan_cakupan_proof_of_concept, docs_awcms_astro_jualanku_04_kesiapan_checklist_acceptance, docs_adr_0014_rendering_campuran_dan_bff_portal_urutan_eksekusi_mengikat, docs_awcms_astro_jualanku_01_arsitektur_experience_jalur_rollback_portal [INFERRED 0.85]
 - **Perpindahan penegakan aturan konten dari build ke API** — docs_awcms_astro_integrasi_awcms_jaminan_konten_berisiko_hilang, docs_awcms_astro_standar_teknis_gerbang_mutu, docs_awcms_astro_standar_teknis_aturan_baru_wajib_membawa_pemeriksanya, docs_awcms_astro_integrasi_awcms_pemetaan_model_data, docs_awcms_astro_integrasi_awcms_urutan_migrasi [INFERRED 0.85]
 
-## Communities (67 total, 8 thin omitted)
+## Communities (90 total, 10 thin omitted)
 
 ### Community 0 - "site.ts"
-Cohesion: 0.05
-Nodes (54): breadcrumbSchema, fullItems, locale, locale, locale, locale, locale, locale (+46 more)
+Cohesion: 0.23
+Nodes (11): getSiteUrl(), Locale, localeHtmlLang, articleSchema(), ArticleSchemaInput, collectionSchema(), imageObject(), PUBLISHER_ID (+3 more)
 
 ### Community 1 - "Migrasi runtime dan package manager ke Bun"
 Cohesion: 0.32
@@ -129,19 +152,19 @@ Nodes (8): Pengabaian Dependabot untuk TypeScript >=7, ADR-0014 Rendering campur
 
 ### Community 2 - "package.json"
 Cohesion: 0.05
-Nodes (39): astro, @astrojs/check, @astrojs/node, @astrojs/sitemap, compression, dependencies, astro, @astrojs/check (+31 more)
+Nodes (43): astro, @astrojs/check, @astrojs/node, @astrojs/sitemap, compression, dependencies, astro, @astrojs/check (+35 more)
 
 ### Community 3 - "client.ts"
 Cohesion: 0.08
-Nodes (33): ADR-0022, ADR-0054, Experience layer Jualanku.info, Envelope {success,data} dan resolusi tenant server-side, Pemisahan variabel build-time vs runtime, Struktur direktori portal yang direncanakan, Penanganan error BFF dan correlationId, /api/v1/deploy, bukan /restart (+25 more)
+Nodes (34): ADR-0022, ADR-0054, Envelope {success,data} dan resolusi tenant server-side, Pemisahan variabel build-time vs runtime, Struktur direktori portal yang direncanakan, Penanganan error BFF dan correlationId, /api/v1/deploy, bukan /restart, Deploy dan rebuild lewat webhook (Coolify) (+26 more)
 
 ### Community 4 - "content.ts"
-Cohesion: 0.16
-Nodes (17): ADR-0018, Kontrak adapter LocalizedArticle, defaultLocale, assertFeedReturnedFullRows(), assertTranslationsArePairable(), AwcmsAstroBlock, AwcmsBlogPost, AwcmsBlogPostSummary (+9 more)
+Cohesion: 0.11
+Nodes (25): ADR-0024, Kontrak adapter LocalizedArticle, ADR-0019, asalMediaPublik, ObjekMedia, resolveObjekMedia(), assertFeedReturnedFullRows(), assertTranslationsArePairable() (+17 more)
 
 ### Community 5 - "ADR-0014 — Rendering campuran dan BFF portal Jualanku"
-Cohesion: 0.24
-Nodes (12): ADR-0014 — Rendering campuran dan BFF portal Jualanku, ADR-0045 awcms — Jualanku porting, awcms system of record, Astro BFF, Jalur rollback build statis penuh, Urutan eksekusi mengikat sebelum layar produksi, Penomoran ADR warisan (0001–0013 dianggap terpakai), Proses ADR awcms-astro, Arsitektur experience layer Jualanku, Jalur rollback portal (+4 more)
+Cohesion: 0.18
+Nodes (9): ADR-0026, locale, alternates, jsonLd, locale, metaDescription, ogLocale, KartuShare (+1 more)
 
 ### Community 6 - "content-blocks.ts"
 Cohesion: 0.27
@@ -156,8 +179,8 @@ Cohesion: 0.14
 Nodes (15): Empat aturan src/lib/content.ts, Setiap variabel env wajib ada di .env.example dengan konsekuensinya, Format gambar dibaca dari isi berkas, bukan ekstensinya, String antarmuka lewat katalog PO, src/config/site.ts dan .env satu-satunya tempat konfigurasi, Diam-diam memotong data adalah kegagalan, bukan optimasi, Satu rasio visual untuk seluruh situs (--ratio-visual 16:9), client.ts satu-satunya berkas yang menghubungi awcms (+7 more)
 
 ### Community 9 - "awcms-astro — Design System"
-Cohesion: 0.16
-Nodes (15): Pin versi Bun di tiga tempat yang wajib bergerak bersama, Checklist memulai situs baru di atas awcms-astro, Katalog kesalahan yang paling sering terjadi, Satu rasio gambar untuk seluruh situs, Urutan: kontrak dulu, konten berikutnya, tampilan terakhir, Aturan aset gambar, Aturan baru wajib membawa pemeriksanya, Empat gerbang mutu awcms-astro (+7 more)
+Cohesion: 0.17
+Nodes (15): Pin versi Bun di tiga tempat yang wajib bergerak bersama, Checklist memulai situs baru di atas awcms-astro, Katalog kesalahan yang paling sering terjadi, Urutan: kontrak dulu, konten berikutnya, tampilan terakhir, Kriteria memilih awcms-astro, Posisi awcms-astro di keluarga AWCMS, Standar awcms-astro — situs statis Astro, Aturan baru wajib membawa pemeriksanya (+7 more)
 
 ### Community 10 - "ADR-0016 — Penyajian oleh Bun di belakang Traefik/Coolify; nginx dilepas dari stack"
 Cohesion: 0.15
@@ -176,24 +199,20 @@ Cohesion: 0.18
 Nodes (9): apply, args, body, commit, ketemu, level, [major, minor, patch], pkg (+1 more)
 
 ### Community 14 - "po.ts"
-Cohesion: 0.18
-Nodes (15): engines, bun, aturanCache(), buatServer(), CSP, HEADER_KEAMANAN, jalankan(), jalurNormal() (+7 more)
+Cohesion: 0.09
+Nodes (23): engines, bun, ASAL_MEDIA, asalMediaTerkonfigurasi(), aturanCache(), buatServer(), CSP, HEADER_KEAMANAN (+15 more)
 
 ### Community 15 - "cek-lockfile.mjs"
 Cohesion: 0.25
 Nodes (8): ADR-0015, bacaJsonc(), BLOK_DEPENDENCY, buangTrailingComma(), lock, masalah, pkg, repoRoot
 
 ### Community 16 - "penyaji.test.mjs"
-Cohesion: 0.21
-Nodes (13): Alternatif ditolak: seluruh situs output 'server', Static-by-default dengan rute on-demand, ADR-0015 — Runtime Bun menutup divergence keluarga AWCMS, bun.lock sebagai lockfile tunggal, Divergence runtime dari keluarga AWCMS, Gerbang cek-lockfile sebelum install di CI, Larangan script bernama sama dengan biner yang dipanggilnya, Runtime dan package manager Bun-only (+5 more)
+Cohesion: 0.25
+Nodes (11): Alternatif ditolak: seluruh situs output 'server', Static-by-default dengan rute on-demand, ADR-0015 — Runtime Bun menutup divergence keluarga AWCMS, bun.lock sebagai lockfile tunggal, Divergence runtime dari keluarga AWCMS, Gerbang cek-lockfile sebelum install di CI, Larangan script bernama sama dengan biner yang dipanggilnya, Runtime dan package manager Bun-only (+3 more)
 
 ### Community 17 - "Ekstraksi template awcms-astro dari web-lalulintasmelayani.com"
 Cohesion: 0.29
 Nodes (8): Aturan: komponen tidak pernah mengambil datanya sendiri, Blok konten dirender dari struktur ter-escape (tanpa HTML mentah dari CMS), Ekstraksi template awcms-astro dari web-lalulintasmelayani.com, Penyaringan skema URL (http/https saja) sebelum masuk src/href, Formulir issue Laporan bug, Pengalihan urusan layanan riil ke SUPPORT.md, Kanal pelaporan kerentanan privat (security advisories), Checklist verifikasi konten PR (sumber, dasar hukum, cakupan)
-
-### Community 18 - "katalog-po.test.mjs"
-Cohesion: 0.28
-Nodes (5): tabs, Catalog, parsePo(), readQuoted(), katalog
 
 ### Community 19 - "Render blok gallery dengan placeholder bertanda"
 Cohesion: 0.25
@@ -217,11 +236,11 @@ Nodes (6): astro/tsconfigs/strict, compilerOptions, jsx, jsxImportSource, module
 
 ### Community 24 - "astro.config.mjs"
 Cohesion: 0.43
-Nodes (6): LOCALE_PREFIXES, ADR-0016, neutralPath(), serialize(), SITE, ADR-0014
+Nodes (6): LOCALE_PREFIXES, ADR-0014, ADR-0016, neutralPath(), serialize(), SITE
 
 ### Community 25 - "article-images.ts"
-Cohesion: 0.38
-Nodes (6): ArticleVisual, getArticleImage(), getTabImage(), heroImage, humanise(), ADR-0019
+Cohesion: 0.19
+Nodes (13): ADR-0021, ArticleVisual, getArticleImage(), getArticleVisual(), getTabImage(), heroImage, MODUL, SENI (+5 more)
 
 ### Community 26 - "Bun sebagai runtime dan package manager (ADR-0015)"
 Cohesion: 0.50
@@ -268,26 +287,26 @@ Cohesion: 0.24
 Nodes (10): Alternatif ditolak: portal SPA memanggil awcms langsung, BFF hanya orkestrasi dan proyeksi, Kontrak sesi portal, Alur sesi portal (login, introspeksi, mutasi, logout), Batas keras BFF, Inventaris endpoint BFF, Kontrak BFF /_portal-api/**, Larangan passthrough generik /_portal-api/[...path] (+2 more)
 
 ### Community 44 - "Tanpa lambang, logo, atau atribut resmi instansi negara"
-Cohesion: 0.27
-Nodes (10): Modul awcms yang relevan bagi awcms-astro, Aturan cookie dan CSRF portal, awcms-astro — Design System, Design token CSS custom properties, Gap token terhadap kosakata AWCMS, Jalur adopsi token empat tahap, Pemetaan token ke kosakata design system AWCMS, Pola tanpa JavaScript (+2 more)
+Cohesion: 0.21
+Nodes (13): Satu rasio gambar untuk seluruh situs, Aturan cookie dan CSRF portal, Kelompok komponen portal, Aturan aset gambar, awcms-astro — Design System, Design token CSS custom properties, Gap token terhadap kosakata AWCMS, Inventaris komponen dan padanan AWCMS (+5 more)
 
 ### Community 45 - "Kontrak BFF /_portal-api/**"
-Cohesion: 0.25
-Nodes (9): Baseline WCAG 2.2 AA untuk permukaan Jualanku, Aksesibilitas permukaan Jualanku, Disposition porting Elementor (PORT/REDESIGN/DYNAMIC/REMOVE/DEFER), Kelompok komponen portal, Peta rute, porting UI, dan komponen Jualanku, Tidak ada rute /admin/jualanku di repo ini, Blueprint experience layer Jualanku.info, Pembagian tanggung jawab repo ini vs awcms (+1 more)
+Cohesion: 0.16
+Nodes (23): antaraPenanda(), auditIndeksAdr(), auditJalurDisebut(), auditPermukaanKilau(), auditTautan(), AWALAN_JALUR, beradaDi(), berkasMarkdown() (+15 more)
 
 ### Community 46 - "SitemapView.astro"
 Cohesion: 0.25
 Nodes (8): ADR-0021 — Pengembangan repo ini ditahan sampai fondasi `awcms` selesai, Kapan penahanan ini dicabut, Keputusan, Konsekuensi, Konteks, Titik lanjut — yang menunggu saat penahanan dicabut, Yang DITAHAN, Yang MASIH boleh mendarat
 
 ### Community 47 - "BaseLayout.astro"
-Cohesion: 0.36
-Nodes (8): content_json bernamespace awcmsAstro dengan schemaVersion, Kontrak integrasi awcms-astro → awcms, Jaminan konten yang berisiko hilang saat migrasi, Pemetaan model data ke awcms_blog_posts, Urutan migrasi delapan langkah, Kriteria memilih awcms-astro, Posisi awcms-astro di keluarga AWCMS, Standar awcms-astro — situs statis Astro
+Cohesion: 0.38
+Nodes (7): content_json bernamespace awcmsAstro dengan schemaVersion, Kontrak integrasi awcms-astro → awcms, Jaminan konten yang berisiko hilang saat migrasi, Modul awcms yang relevan bagi awcms-astro, Pemetaan model data ke awcms_blog_posts, Urutan migrasi delapan langkah, Theming lewat data-theme sebelum paint
 
 ### Community 48 - "0020-layar-admin-kembali-ke-awcms.md"
 Cohesion: 0.29
 Nodes (7): Alur kerja wajib: scope atomic, branch dari main, build bersih, Conventional Commits sebagai konvensi commit, Definition of Done (AGENTS.md), Dokumentasi adalah bagian dari produk, Definition of Done (CONTRIBUTING.md), Konvensi commit dan daftar type/scope, bun audit wajib nol kerentanan sebelum rilis
 
-### Community 50 - "ADR-0018 — Kontrak build terhadap awcms: tenant dari token mesin, traversal cursor + hidrasi, dan gerbang terjemahan"
+### Community 50 - "Build menarik konten yang benar-benar ada, dari tenant yang benar-benar dimaksud"
 Cohesion: 0.29
 Nodes (7): 1. Daftar post tidak pernah memuat isinya, 2. Batas 100 baris berhenti menjadi batas, 3. Header tenant yang tidak pernah dibaca siapa pun, Build menarik konten yang benar-benar ada, dari tenant yang benar-benar dimaksud, Gerbang, Terjemahan: gerbang baru yang sengaja menggagalkan, Yang perlu diubah operator
 
@@ -303,11 +322,11 @@ Nodes (5): CSP ketat benar-benar dikirim, dan skrip berhenti tinggal di dalam HT
 Cohesion: 0.33
 Nodes (5): Di mana ia berjalan, Gerbang audit konten: memeriksa yang TERBIT, bukan yang tertulis, Keluaran build (`dist/client/**`), Sumber gambar (`src/assets/**`, `public/**`), Yang tetap manual, dan disebut terus terang
 
-### Community 54 - "Build menarik konten yang benar-benar ada, dari tenant yang benar-benar dimaksud"
-Cohesion: 0.33
+### Community 54 - "BaseLayout.astro"
+Cohesion: 0.29
 Nodes (6): Dokumen yang ikut dikoreksi, Kapan dicabut, Kenapa, dan kenapa bukan karena kekurangan pekerjaan, Kenapa keamanan dan dependency dikecualikan, Pengembangan repo ini ditahan sampai fondasi `awcms` selesai, Titik lanjut
 
-### Community 55 - "Kontrak integrasi awcms-astro → awcms"
+### Community 55 - "0018-kontrak-build-token-mesin-dan-traversal-konten.md"
 Cohesion: 0.33
 Nodes (6): ADR-0022 — Situs ini menerbitkan tenant DEFAULT (owner) `awcms`, Alternatif yang dipertimbangkan, Kenapa TIDAK diverifikasi lewat jaringan, Keputusan, Konsekuensi, Konteks
 
@@ -323,21 +342,109 @@ Nodes (4): Arah sebaliknya, dan ini yang lebih mahal, CI dan image berhenti meng
 Cohesion: 0.40
 Nodes (4): Kenapa keputusannya dibalik, dan kenapa bukan karena buntu, Layar admin kembali ke `awcms`: ADR-0017 di-supersede ADR-0020, Satu klaim lain yang berhenti benar, Yang berubah, dan yang sengaja tidak
 
-### Community 59 - "Keluaran build berhenti membawa gaya di dalam HTML"
-Cohesion: 0.40
-Nodes (5): ADR-0017 — Repo ini memikul halaman admin OWNER/INTERNAL, di samping situs publiknya, Keputusan, Konsekuensi, Konteks, Yang memblokir layar internal pertama (nyata, bukan hipotetis)
+### Community 59 - "ADR-0017 — Repo ini memikul halaman admin OWNER/INTERNAL, di samping situs publiknya"
+Cohesion: 0.25
+Nodes (4): ADR-0020 — Layar admin owner/internal kembali ke `awcms`; repo ini kembali murni publik + BFF, Keputusan, Konsekuensi, Konteks
 
-### Community 60 - "CI dan image berhenti mengirim variabel tenant yang sudah ditolak"
-Cohesion: 0.40
+### Community 60 - "Build menarik konten yang benar-benar ada, dari tenant yang benar-benar dimaksud"
+Cohesion: 0.50
 Nodes (4): ADR-0019 — CSP ketat dikirim penyaji, dan skrip tidak lagi tinggal di dalam HTML, Keputusan, Konsekuensi, Konteks
 
 ### Community 61 - "Layar admin kembali ke `awcms`: ADR-0017 di-supersede ADR-0020"
 Cohesion: 0.50
 Nodes (3): Dokumen berhenti menyebut gerbang dan berkas yang tidak ada, Yang diperbaiki, Yang sengaja TIDAK diubah
 
-### Community 62 - "ADR-0017 — Repo ini memikul halaman admin OWNER/INTERNAL, di samping situs publiknya"
+### Community 62 - "awcms-astro — kontrak integrasi dengan `awcms`"
+Cohesion: 0.25
+Nodes (8): Aturan yang tidak boleh dilanggar, awcms-astro — kontrak integrasi dengan `awcms`, Gambar dan kartu share, `img-src` ditanyakan, tidak disalin, Lima permukaan yang dipakai, Penolakan `awcms` yang WAJIB ditiru di tiruan tes, Rujukan, Sebelum menambah permukaan keenam
+
+### Community 67 - "ADR-0022 — Situs ini menerbitkan tenant DEFAULT (owner) `awcms`"
+Cohesion: 0.19
+Nodes (5): catalogs, Catalog, parsePo(), readQuoted(), rawCatalogs
+
+### Community 68 - "ADR-0023 — Penahanan ADR-0021 dipersempit: pekerjaan yang tidak membutuhkan `awcms` boleh mendarat"
+Cohesion: 0.22
+Nodes (7): locale, number, schema, localePath(), TabSlug, tabTitleKey(), t()
+
+### Community 69 - "BaseLayout.astro"
+Cohesion: 0.19
+Nodes (11): defaultLocale, getLocaleFromPath(), isLocale(), localeMeta, locales, siteUrl, socialImageRaw, stripLocale() (+3 more)
+
+### Community 70 - "Koreksi: indeks ADR yang tak pernah benar, dan titik lanjut locale yang berbalik arah"
+Cohesion: 0.12
+Nodes (12): locale, locale, locale, articleVisual, breadcrumbItems, canonicalUrl, DateTimeFormatOptions, locale (+4 more)
+
+### Community 71 - "ADR-0017 — Repo ini memikul halaman admin OWNER/INTERNAL, di samping situs publiknya"
+Cohesion: 0.22
+Nodes (9): ADR-0024 — Seni lokal di `src/assets/`, di-resolve `import.meta.glob` sebagai URL, Alternatif yang dipertimbangkan, Dua berkas bernama sama = build gagal, Keputusan, Konsekuensi, Konteks, Percabangan gambar/placeholder tinggal di satu komponen, `query: "?url"`, bukan `astro:assets` (+1 more)
+
+### Community 72 - "ADR-0019 — CSP ketat dikirim penyaji, dan skrip tidak lagi tinggal di dalam HTML"
+Cohesion: 0.22
+Nodes (9): 1. Resolusi sekali per build, hasilnya di `LocalizedArticle`, 2. Media `awcms` menang atas seni lokal, 3. Satu id hilang ≠ semua id hilang, 4. `img-src` DITANYAKAN, tidak disalin, ADR-0025 — Gambar artikel dari media `awcms`: di-resolve sekali per build, dan `img-src` yang DITANYAKAN, Alternatif yang dipertimbangkan, Keputusan, Konsekuensi (+1 more)
+
+### Community 73 - "ADR-0025 — Gambar artikel dari media `awcms`: di-resolve sekali per build, dan `img-src` yang DITANYAKAN"
+Cohesion: 0.18
+Nodes (6): breadcrumbSchema, fullItems, locale, breadcrumbItems, locale, sections
+
+### Community 74 - "ADR-0015 — Runtime Bun menutup divergence keluarga AWCMS"
+Cohesion: 0.25
+Nodes (8): 1. Urutannya milik `awcms`, bukan milik repo ini, 2. MIME dan ukuran ikut, dan itu inti ADR ini, 3. Tiga keadaan, semuanya didukung, ADR-0026 — Kartu share per artikel dari media `awcms`, dengan metadata yang ikut berpindah, Alternatif yang dipertimbangkan, Keputusan, Konsekuensi, Konteks
+
+### Community 75 - "Gambar artikel dari media `awcms` — dan `img-src` yang ditanyakan, bukan disalin"
+Cohesion: 0.29
+Nodes (6): Gambar artikel dari media `awcms` — dan `img-src` yang ditanyakan, bukan disalin, Kebijakan tetap dirangkai di satu tempat, Kenapa sekarang, dan dasarnya bukan dari sini, Satu baris `Dockerfile` yang wajib ikut, Tiga keputusan yang menentukan bentuknya, Yang berubah untuk pembaca situs
+
+### Community 76 - "Kartu share per artikel — dan tiga klaim yang berhenti berbohong"
+Cohesion: 0.33
+Nodes (5): Cacat yang sebenarnya ditutup, Kartu share per artikel — dan tiga klaim yang berhenti berbohong, Nol permintaan tambahan, Tiga keadaan, semuanya tetap didukung, Yang berubah untuk pembaca
+
+### Community 77 - "Gerbang audit dokumen, dan penahanan yang dipersempit supaya ia bisa mendarat"
+Cohesion: 0.33
+Nodes (6): ADR-0023 — Penahanan ADR-0021 dipersempit: pekerjaan yang tidak membutuhkan `awcms` boleh mendarat, Alternatif yang dipertimbangkan, Keputusan, Konsekuensi, Konteks, Yang TIDAK berubah
+
+### Community 78 - "Standar awcms-astro — situs statis Astro"
+Cohesion: 0.40
+Nodes (5): Apa yang diperiksa gerbangnya, Gerbang audit dokumen, dan penahanan yang dipersempit supaya ia bisa mendarat, Gerbangnya sendiri dibuktikan dua arah, Kenapa penahanannya dipersempit lebih dulu, Yang ikut berubah
+
+### Community 79 - "Koreksi: indeks ADR yang tak pernah benar, dan titik lanjut locale yang berbalik arah"
+Cohesion: 0.40
+Nodes (4): Dua koreksi yang ikut, Gerbang permukaan kilau — dokumen yang meminta pemeriksanya sendiri, lalu menyimpang persis seperti yang ia ramalkan, Satu hint yang akhirnya bersih, Yang mendarat
+
+### Community 80 - "`awcms-astro` menjadi template repository GitHub — dan dokumennya dibuat benar untuk itu"
+Cohesion: 0.40
+Nodes (4): Indeks ADR mendaftarkan enam keputusan yang tak pernah ada di sini, Indikator pencabutan penahanan: satu dari dua terpenuhi, Koreksi: indeks ADR yang tak pernah benar, dan titik lanjut locale yang berbalik arah, Titik lanjut "filter locale" berbalik arah, bukan sekadar usang
+
+### Community 81 - "Ilustrasi lokal: taruh berkas di `src/assets/`, tidak ada langkah kedua"
+Cohesion: 0.40
+Nodes (4): `awcms-astro` menjadi template repository GitHub — dan dokumennya dibuat benar untuk itu, Dua dokumen standar yang membantah kode, Gerbang kelima: jalur yang disebut dokumen harus ada, Yang ditemukan di `checklist-repo-baru.md`
+
+### Community 82 - "Ilustrasi lokal: taruh berkas di `src/assets/`, tidak ada langkah kedua"
+Cohesion: 0.33
+Nodes (5): Ilustrasi lokal: taruh berkas di `src/assets/`, tidak ada langkah kedua, Media `awcms` TETAP ditahan, Tiga keputusan yang perlu disebut, Yang berubah untuk pembaca situs, Yang ikut hidup karenanya
+
+### Community 83 - "`og:image:alt` berhenti memerikan gambar yang lain"
 Cohesion: 0.50
-Nodes (4): ADR-0020 — Layar admin owner/internal kembali ke `awcms`; repo ini kembali murni publik + BFF, Keputusan, Konsekuensi, Konteks
+Nodes (3): Diperbaiki dengan membuatnya tidak bisa ditulis, `og:image:alt` berhenti memerikan gambar yang lain, Yang tidak berubah
+
+### Community 85 - "Deploy dan rebuild lewat webhook (Coolify)"
+Cohesion: 0.40
+Nodes (5): ADR-0017 — Repo ini memikul halaman admin OWNER/INTERNAL, di samping situs publiknya, Keputusan, Konsekuensi, Konteks, Yang memblokir layar internal pertama (nyata, bukan hipotetis)
+
+### Community 89 - "awcms-astro — kontrak integrasi dengan `awcms`"
+Cohesion: 0.11
+Nodes (16): Aturan yang mengikat: aturan baru wajib membawa pemeriksanya, awcms-astro — gerbang, Definition of Done, Menambah pemeriksa ke `audit:dokumen`, Yang ditangkap masing-masing, Yang TIDAK ditangkap — dan disebut supaya tidak dikira terjaga, awcms-astro — menurunkan situs baru, Jebakan yang paling sering terjadi (+8 more)
+
+### Community 91 - "ADR-0014 — Rendering campuran dan BFF portal Jualanku"
+Cohesion: 0.14
+Nodes (22): ADR-0014 — Rendering campuran dan BFF portal Jualanku, ADR-0045 awcms — Jualanku porting, awcms system of record, Astro BFF, Experience layer Jualanku.info, Jalur rollback build statis penuh, Urutan eksekusi mengikat sebelum layar produksi, Baseline WCAG 2.2 AA untuk permukaan Jualanku, Penomoran ADR warisan (0001–0013 dianggap terpakai), Proses ADR awcms-astro (+14 more)
+
+### Community 92 - "ADR-0027 — Penahanan ADR-0021 selesai: kedua indikatornya terpenuhi"
+Cohesion: 0.25
+Nodes (8): ADR-0027 — Penahanan ADR-0021 selesai: kedua indikatornya terpenuhi, Alternatif yang dipertimbangkan, Keputusan, Konsekuensi, Konteks, Yang masih ditahan, dan oleh apa, Yang menggantikannya: uji ADR-0023, tanpa perubahan, Yang TIDAK berubah
+
+### Community 95 - "Penahanan ADR-0021 selesai, dan template mendapat skill-nya sendiri"
+Cohesion: 0.40
+Nodes (4): Dokumen yang disinkronkan dengan backend, Kedua indikator ADR-0021 terpenuhi, Penahanan ADR-0021 selesai, dan template mendapat skill-nya sendiri, Template mendapat skill
 
 ## Ambiguous Edges - Review These
 - `Runtime dan package manager Bun-only` → `Yang sengaja ditunda dari MVP portal`  [AMBIGUOUS]
@@ -346,9 +453,9 @@ Nodes (4): ADR-0020 — Layar admin owner/internal kembali ke `awcms`; repo ini 
   public/favicon.svg · relation: conceptually_related_to
 
 ## Knowledge Gaps
-- **212 isolated node(s):** `SITE`, `ADR-0014`, `ADR-0016`, `name`, `type` (+207 more)
+- **314 isolated node(s):** `SITE`, `ADR-0014`, `ADR-0016`, `name`, `type` (+309 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **8 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **10 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
@@ -357,13 +464,13 @@ _Questions this graph is uniquely positioned to answer:_
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **What is the exact relationship between `Three Stacked Signal Lamps (red, amber, green)` and `Sky-to-Emerald Brand Palette (Tailwind-family hues)`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
-- **Why does `Checklist memulai situs baru di atas awcms-astro` connect `awcms-astro — Design System` to `site.ts`, `Tanpa lambang, logo, atau atribut resmi instansi negara`, `BaseLayout.astro`?**
-  _High betweenness centrality (0.025) - this node is a cross-community bridge._
-- **Why does `siteConfig` connect `site.ts` to `awcms-astro — Design System`, `content.ts`?**
-  _High betweenness centrality (0.019) - this node is a cross-community bridge._
-- **Why does `ADR-0014 — Rendering campuran dan BFF portal Jualanku` connect `ADR-0014 — Rendering campuran dan BFF portal Jualanku` to `client.ts`, `ADR-0015 — Runtime Bun menutup divergence keluarga AWCMS`, `Kontrak BFF /_portal-api/**`, `BaseLayout.astro`, `penyaji.test.mjs`?**
-  _High betweenness centrality (0.017) - this node is a cross-community bridge._
+- **Why does `Checklist memulai situs baru di atas awcms-astro` connect `awcms-astro — Design System` to `katalog-po.test.mjs`, `Tanpa lambang, logo, atau atribut resmi instansi negara`, `BaseLayout.astro`?**
+  _High betweenness centrality (0.016) - this node is a cross-community bridge._
+- **Why does `awcmsGet()` connect `client.ts` to `ADR-0014 — Rendering campuran dan BFF portal Jualanku`, `content.ts`?**
+  _High betweenness centrality (0.013) - this node is a cross-community bridge._
+- **Why does `siteConfig` connect `katalog-po.test.mjs` to `site.ts`, `ADR-0023 — Penahanan ADR-0021 dipersempit: pekerjaan yang tidak membutuhkan `awcms` boleh mendarat`, `BaseLayout.astro`, `Koreksi: indeks ADR yang tak pernah benar, dan titik lanjut locale yang berbalik arah`, `ADR-0014 — Rendering campuran dan BFF portal Jualanku`, `ADR-0025 — Gambar artikel dari media `awcms`: di-resolve sekali per build, dan `img-src` yang DITANYAKAN`, `awcms-astro — Design System`?**
+  _High betweenness centrality (0.013) - this node is a cross-community bridge._
 - **What connects `SITE`, `ADR-0014`, `ADR-0016` to the rest of the system?**
-  _212 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `site.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.052795031055900624 - nodes in this community are weakly interconnected._
+  _314 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `package.json` be split into smaller, more focused modules?**
+  _Cohesion score 0.045454545454545456 - nodes in this community are weakly interconnected._
