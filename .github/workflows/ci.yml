@@ -76,6 +76,15 @@ jobs:
       - name: Audit konten (sumber gambar)
         run: bun run audit:konten
 
+      # Di sini, bukan di job `build`, dan bukan pula di image produksi: yang
+      # diperiksanya berkas repo ini sendiri — tanpa build, tanpa jaringan,
+      # tanpa awcms. Ia lahir dari indeks ADR yang mendaftarkan enam keputusan
+      # yang tak pernah ada di repo ini dan bertahan sembilan ADR tanpa satu pun
+      # gerbang berbunyi, karena `audit:konten` hanya membaca `dist/client/**`
+      # dan markdown tidak pernah ikut dibangun.
+      - name: Audit dokumen (tautan mati, indeks ADR)
+        run: bun run audit:dokumen
+
       # `bun audit` (dependency) dan `bun run audit:konten` adalah dua hal yang
       # berbeda dan namanya sengaja tidak dibuat mirip.
       - name: Audit dependency

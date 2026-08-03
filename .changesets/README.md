@@ -29,4 +29,6 @@ Apa yang berubah dan **mengapa**. Bagian "mengapa" yang paling bernilai —
 
 Berkas di sini dilipat ke [`CHANGELOG.md`](../CHANGELOG.md) oleh `bun run release`, lalu dihapus. Judulnya diturunkan dua tingkat agar bersarang rapi di bawah heading versi.
 
+**Aturan ini kini dijaga.** `bun run audit:dokumen` menyelesaikan setiap tautan dari letak berkas yang memuatnya, jadi `../docs/adr/x.md` di sini lolos dan `docs/adr/x.md` merah — tanpa aturan khusus untuk direktori ini. Ia berjalan di CI dan, pada `bun run release`, tepat sebelum changeset dilipat.
+
 **Tautan relatif ditulis dari sudut pandang `.changesets/`.** Skrip rilis menulis ulang jalurnya ke sudut pandang akar repo saat melipat — `../docs/adr/x.md` menjadi `docs/adr/x.md`. Sebelum itu ada, setiap tautan relatif meleset satu tingkat begitu dilipat, dan cacatnya baru terlihat di CI: gerbang audit berjalan **sebelum** changeset dilipat, jadi berkas yang rusak belum ada saat audit melihatnya.
