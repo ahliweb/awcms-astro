@@ -205,6 +205,7 @@ Gerbang standar ini, seluruhnya wajib hijau sebelum pekerjaan dinyatakan selesai
 | Audit konten — gambar | `bun run audit:konten` | Rasio terhadap `--ratio-visual`, format dibaca dari isi berkas, XML SVG, ukuran teks terkecil di SVG | Ya |
 | Audit konten — keluaran | `bun run audit:konten` **setelah** `bun run build` | Judul/deskripsi/canonical, hreflang pincang, aset yang dijanjikan metadata tetapi tidak diterbitkan, tautan mati, sitemap, nama key yang bocor ke layar | Ya — melewati dirinya bila `dist/` belum ada |
 | Audit dokumen | `bun run audit:dokumen` | Tautan markdown ke berkas yang tidak ada (diselesaikan dari letak berkasnya, sehingga aturan tautan `.changesets/` ikut terjaga), indeks ADR yang tidak lengkap dua arah, kolom Status yang tidak setuju dengan ADR-nya, daftar permukaan kilau yang menyimpang dari `global.css` | Ya |
+| Audit graf | `bun run audit:graf` | Artefak `graphify-out/` yang terlacak di luar keempat keluaran bersama, laporan yang tidak sepakat dengan `graph.json`, nama komunitas yang tidak dipilih (nama berkas, placeholder, kembar, atau berbeda antar-artefak), dan korpus yang mengabaikan `.graphifyignore` | Ya — sejak 4 Agustus 2026; melewati dirinya bila `graphify-out/` tidak ada |
 | Versi toolchain | `bun test` | Lima nilai versi Bun (`packageManager`, `engines.bun`, dua `bun-version` CI, dua tag `Dockerfile`) yang wajib sepakat, plus digest image yang menempel pada tag yang benar | Ya — sejak [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md) |
 | Permukaan `awcms` | `bun test` | Jalur `/api/v1/…` yang benar-benar dipanggil `src/`, dibandingkan dua arah dengan tabel bertanda di skill integrasi | Ya — sejak ADR-0030 |
 | Audit dependency | `bun audit --audit-level=low` | Kerentanan rantai build. Dijalankan CI **dan** perilis | Ya |
@@ -223,6 +224,41 @@ Melonggarkan pemeriksa agar gerbang hijau adalah pelanggaran, bukan perbaikan. B
 `MAJOR.MINOR.PATCH`, tag git `vX.Y.Z` anotatif. Arti tiap tingkat untuk situs informasi didefinisikan di ADR-0009 repo rujukan — semver dirancang untuk library ber-API, jadi artinya perlu ditetapkan ulang.
 
 Setiap perubahan yang memengaruhi konten publik, struktur, dependency, atau deployment ditulis sebagai changeset **pada iterasi yang sama**, dilipat ke `CHANGELOG.md` saat rilis.
+
+## Graf pengetahuan (`graphify-out/`)
+
+Repo ini melacak indeks graf pengetahuan hasil [graphify](https://github.com/safishamsi/graphify): `graph.json` (data graf), `GRAPH_REPORT.md` (laporan), `manifest.json` (dasar `--update`), dan `cost.json`. Ia dilacak karena berguna dibaca ulang oleh orang dan agen yang baru masuk repo — bukan artefak build, melainkan peta.
+
+**Hanya keempat berkas itu yang terlacak.** Sisanya punya alasan tertulis di `.gitignore` untuk tinggal di luar riwayat: cache spesifik mesin, berkas ber-titik yang selalu intermediate, salinan bertanggal yang menduplikasi artefak hidup di sebelahnya, dan `graph.html` yang berhenti dipancarkan di atas batas node lalu membusuk diam-diam. Ketiga aturan itu ditulis pada 3 Agustus 2026 dan hidup dua hari tanpa pemeriksa; sejak [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md) melarang keadaan itu, `bun run audit:graf` menegakkannya.
+
+### Korpus: apa yang diindeks, dan apa yang sengaja tidak
+
+`.graphifyignore` di akar repo menyempitkan korpus. Sintaksnya sintaks `.gitignore`, dibaca **setelah** `.gitignore`, dan hanya bisa mengecualikan lebih — tidak pernah mengembalikan yang sudah dibuang. Menambah baris di sana selalu aman ke satu arah.
+
+`.changesets/` dikecualikan, dan alasannya struktural, bukan selera. Ia menyumbang **171 dari 971 node** (18% graf) dengan 139 edge yang menunjuk sesama changeset dan hanya 39 yang menyeberang: banyak node, hampir tanpa jembatan — gumpalan terpisah. Ia menaikkan jumlah komunitas dari 90 ke 101 dalam satu rebuild, menurunkan kohesinya, dan mengubur komunitas yang berarti. Ia juga **menceritakan ulang** dokumen yang dirangkumnya, sehingga isi yang sama masuk graf dua kali dengan kata berbeda — terlihat langsung sebagai konsep kunci kembar di laporan. Yang hilang karenanya: tidak ada. Rasional setiap keputusan tinggal di `docs/adr/`, dan itu tetap diindeks.
+
+Sebuah rebuild yang dijalankan tanpa `.graphifyignore` memasukkan kembali apa yang dikecualikan. Gerbangnya menangkap itu.
+
+### Nama komunitas wajib dipilih, bukan diwarisi
+
+graphify menamai komunitas secara otomatis dari **node paling terhubung** di dalamnya (`label_communities_by_hub`). Penamaan itu gratis, deterministik, dan tidak pernah membaca komunitasnya — ia hanya menyalin nama berkas terbesar. Empat aturan mengikat nama yang ikut ter-commit:
+
+1. **Bukan nama berkas.** `client.ts`, `BaseLayout.astro`, `package.json` bukan nama komunitas; itu keluaran penamaan otomatis yang tersedia gratis kapan saja.
+2. **Bukan placeholder `Community N`.** Komunitas tanpa nama adalah lubang di peta.
+3. **Tidak ada dua komunitas bernama sama.** Nama kembar membuat keduanya tak terbedakan oleh setiap konsumen hilir.
+4. **`graph.json` dan `GRAPH_REPORT.md` menyebut nama yang sama** untuk komunitas yang sama.
+
+Aturan ini ditulis karena pelanggarannya sudah terjadi dan tidak terlihat oleh siapa pun. Pada 4 Agustus 2026, **60 dari 101 label menempel pada komunitas yang salah** — warisan clustering lama yang tak pernah divalidasi. Komunitas 6 bernama `content-blocks.ts` sementara isinya seluruhnya dari [`standar-performa-dan-keamanan.md`](standar-performa-dan-keamanan.md); komunitas 22 bernama `Kontrak BFF /_portal-api/**` sementara pusatnya `Pedoman Perilaku`; tiga komunitas berbeda sama-sama bernama `BaseLayout.astro`.
+
+Cacatnya tidak terlihat karena artefaknya JSON yang sah di sebelah laporan yang rapi, dan tidak satu pun gerbang lain membaca `graphify-out/`. Nama komunitas bukan hiasan: itu yang dibaca `graphify query` dan siapa pun yang memakai graf ini untuk mencari jalan. **Graf yang salah menamai dirinya sendiri lebih berbahaya daripada tidak ada graf, karena ia menjawab dengan percaya diri.**
+
+Penyebab teknisnya sudah ditutup di hulu, di skill graphify: langkah pelabelan kini menulis `.graphify_labels.json.sig` — tanda tangan keanggotaan tiap komunitas — sehingga run berikutnya bisa tahu komunitas mana yang benar-benar berubah. Tanpa sidecar itu graphify jatuh ke membandingkan **jumlah** komunitas, dan setiap run yang mengubah jumlahnya memindahkan seluruh label ke komunitas yang berbeda.
+
+### Kesegaran: dilaporkan, tidak memerahkan gerbang
+
+`bun run audit:graf` mencetak selisih antara `built_at_commit` dan `HEAD`, dan tidak pernah gagal karenanya. Memerahkannya berarti setiap PR yang menyentuh berkas terindeks wajib membawa rebuild bermegabyte — gerbang semahal itu akan dilonggarkan dalam sebulan, persis yang §Gerbang mutu larang. Yang dijaga gerbang ini adalah **kebenaran internal** artefaknya; kapan ia dibangun ulang tetap keputusan sadar, dan catatannya membuat keputusan itu terlihat.
+
+Bangun ulang dengan `/graphify .` (penuh, melabeli ulang seluruh komunitas) atau `/graphify . --update` (inkremental). `graphify cluster-only` **tidak** melabeli ulang: ia memakai kembali label tersimpan dan menamai ulang komunitas yang berubah dengan nama hub — jadi ia bisa menghijaukan kohesi sambil memerahkan gerbang label.
 
 ## Dokumentasi
 

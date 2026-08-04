@@ -107,6 +107,7 @@ satu-satunya lockfile.
 | `bun test`               | Renderer blok, gerbang katalog PO, dan gerbang penyajian        |
 | `bun run audit:konten`   | Gerbang audit: sumber gambar, dan keluaran build bila sudah ada |
 | `bun run audit:dokumen`  | Gerbang dokumen: tautan markdown mati, indeks ADR, daftar permukaan kilau |
+| `bun run audit:graf`     | Gerbang graf: artefak `graphify-out/` yang terlacak, dan nama komunitasnya |
 | `bun run build`          | `check` → `astro build` → bundel penyaji                        |
 | `bun run build:penyaji`  | Hanya membundel penyaji ke `dist/server/penyaji.mjs`            |
 | `bun run serve`          | Menjalankan penyaji produksi atas hasil build (port 8080)       |

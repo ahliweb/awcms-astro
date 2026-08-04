@@ -1,0 +1,35 @@
+# Yang TIDAK masuk indeks graf pengetahuan (`graphify-out/`).
+#
+# Sintaksnya sintaks `.gitignore`, dan graphify membaca berkas ini SETELAH
+# `.gitignore` — jadi ia hanya bisa mengecualikan LEBIH, tidak pernah
+# mengembalikan sesuatu yang sudah dibuang `.gitignore`. Menambah baris di sini
+# selalu aman ke satu arah saja: graf menjadi lebih sempit, tidak pernah lebih
+# lebar.
+#
+# Aturannya di `docs/awcms-astro/standar-teknis.md` §Graf pengetahuan, dan
+# `bun run audit:graf` menegakkannya: sebuah rebuild yang lupa berkas ini
+# memasukkan kembali apa yang dikecualikan di sini, dan gerbang itu yang
+# menangkapnya.
+
+# `.changesets/` — prosa rilis, bukan pengetahuan yang bisa ditanyakan.
+#
+# Ia menyumbang 171 dari 971 node (18% graf) saat aturan ini ditulis, dengan 139
+# edge yang menunjuk sesama changeset dan hanya 39 yang menyeberang ke bagian
+# repo lain. Bentuk itu — banyak node, hampir tanpa jembatan — adalah definisi
+# gumpalan terpisah: ia menaikkan jumlah komunitas (90 → 101 pada satu rebuild),
+# menurunkan kohesinya, dan mengubur komunitas yang benar-benar berarti, tanpa
+# menjawab satu pertanyaan pun.
+#
+# Alasannya bukan sekadar ukuran. Changeset **menceritakan ulang** dokumen yang
+# ia rangkum, jadi isinya masuk graf dua kali dengan kata yang berbeda. Itu
+# terlihat langsung di laporan: "Deploy dan rebuild lewat webhook (Coolify)",
+# "ADR-0014 — Rendering campuran dan BFF portal Jualanku", dan "Postur performa
+# dan keamanan punya nama, dan celahnya punya nomor" masing-masing muncul DUA
+# KALI sebagai konsep kunci — satu dari dokumennya, satu dari changeset yang
+# meringkasnya.
+#
+# Yang hilang karena baris ini: tidak ada. Rasional setiap keputusan tinggal di
+# `docs/adr/`, dan itu yang tetap diindeks. Changeset tetap dijaga gerbang lain
+# — `bun run audit:dokumen` memeriksa tautannya, termasuk aturan bahwa tautan
+# `.changesets/` ditulis dari sudut pandang direktori itu sendiri.
+.changesets/

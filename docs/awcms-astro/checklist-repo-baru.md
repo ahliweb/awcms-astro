@@ -72,6 +72,11 @@ Wajib tetap hijau:
       indeks yang **melewati dirinya dan mengatakannya**; yang mempertahankannya
       terikat aturan yang sama dengan template: tiap ADR tercatat, tiap baris
       menunjuk berkas yang ada, dan kolom Status setuju dengan ADR-nya.
+- [ ] `bun run audit:graf` — artefak `graphify-out/`. Situs yang menghapus
+      direktori itu (lihat daftar di atas) mendapat gerbang yang **melewati
+      dirinya dan mengatakannya**; yang mempertahankannya terikat aturan yang
+      sama dengan template, termasuk bahwa nama tiap komunitas harus dipilih,
+      bukan diwarisi dari penamaan otomatis graphify.
 
 **Menaruh seni:** berkas di `src/assets/`, konvensi nama `hero`, `tab/<tab>`,
 `artikel/<tab>/<slug>` tanpa ekstensi — tidak ada registry yang harus ikut
@@ -137,6 +142,7 @@ bun run build          # gerbang lockfile + astro check + astro build + bundel p
 bun test               # harus hijau; setelah build, lapis penyajian ikut jalan
 bun run audit:konten   # setelah build, agar gerbang keluarannya ikut jalan
 bun run audit:dokumen  # tautan markdown & indeks ADR; tidak butuh build
+bun run audit:graf     # artefak graphify-out/; melewati diri bila dihapus
 bun run serve          # periksa header dan cache seperti yang dilihat pembaca
 bun audit              # harus 0 kerentanan
 bun run release minor --apply

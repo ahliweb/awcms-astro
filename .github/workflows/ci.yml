@@ -99,6 +99,15 @@ jobs:
       - name: Audit dokumen (tautan mati, indeks ADR)
         run: bun run audit:dokumen
 
+      # Di sini karena ia hanya membaca artefak yang sudah ada di repo: tanpa
+      # build, tanpa jaringan, tanpa awcms, dan tanpa graphify terpasang. Ia
+      # lahir dari 60 dari 101 label komunitas yang menempel pada komunitas yang
+      # salah di dalam `graph.json` — JSON yang sah, di sebelah laporan yang
+      # rapi, dengan setiap gerbang lain hijau karena tidak satu pun dari mereka
+      # membaca `graphify-out/`.
+      - name: Audit graf (artefak graphify, nama komunitas)
+        run: bun run audit:graf
+
       # `bun audit` (dependency) dan `bun run audit:konten` adalah dua hal yang
       # berbeda dan namanya sengaja tidak dibuat mirip.
       - name: Audit dependency

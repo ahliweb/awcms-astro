@@ -119,7 +119,9 @@ Daftar lengkap dan mengikat ada di [`AGENTS.md`](AGENTS.md#definition-of-done). 
 - [ ] `bun run build` bersih, termasuk `astro check`.
 - [ ] `bun test` hijau — termasuk gerbang katalog PO, penyajian, permukaan
       `awcms`, dan versi toolchain.
-- [ ] `bun run audit:konten` dan `bun run audit:dokumen` hijau.
+- [ ] `bun run audit:konten`, `bun run audit:dokumen`, dan `bun run audit:graf`
+      hijau. Yang terakhir menjaga `graphify-out/` — artefak yang ikut terlacak,
+      jadi ikut terbaca sebagai peta oleh yang datang sesudahmu.
 - [ ] `bun audit` melaporkan **0 kerentanan**.
 
 `bun run release <tingkat> --apply` menjalankan kelimanya dalam urutan yang

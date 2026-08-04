@@ -1,18 +1,19 @@
 ---
 name: awcms-astro-gerbang
-description: Empat gerbang awcms-astro (check, test, audit:konten, audit:dokumen) — apa yang ditangkap masing-masing, apa yang TIDAK, dan aturan bahwa setiap aturan baru wajib membawa pemeriksanya. Gunakan sebelum PR, saat menambah aturan ke dokumen, atau saat sebuah gerbang merah dan sebabnya tidak jelas.
+description: Lima gerbang awcms-astro (check, test, audit:konten, audit:dokumen, audit:graf) — apa yang ditangkap masing-masing, apa yang TIDAK, dan aturan bahwa setiap aturan baru wajib membawa pemeriksanya. Gunakan sebelum PR, saat menambah aturan ke dokumen, atau saat sebuah gerbang merah dan sebabnya tidak jelas.
 ---
 
 # awcms-astro — gerbang
 
-Empat perintah, dan tiap satunya menangkap kelas cacat yang **tidak
-menggagalkan apa pun** saat terjadi. Itu alasan keempatnya ada.
+Lima perintah, dan tiap satunya menangkap kelas cacat yang **tidak
+menggagalkan apa pun** saat terjadi. Itu alasan kelimanya ada.
 
 ```bash
 bun run check           # lockfile + astro check    — tanpa build, tanpa jaringan
 bun test                # unit + kontrak + penyaji  — lapis penyaji melewati diri tanpa dist/
 bun run audit:konten    # sumber gambar + KELUARAN build
 bun run audit:dokumen   # markdown repo ini         — tanpa build, tanpa jaringan
+bun run audit:graf      # artefak graphify-out/     — melewati diri bila direktorinya tak ada
 ```
 
 ## Yang ditangkap masing-masing
@@ -23,6 +24,7 @@ bun run audit:dokumen   # markdown repo ini         — tanpa build, tanpa jarin
 | `bun test` | Paritas katalog PO, kontrak `awcms` (traversal, media, kartu), **permukaan yang dipanggil build**, header + cache penyaji, CSP atas keluaran, **versi toolchain** |
 | `audit:konten` | Rasio gambar terhadap `--ratio-visual`, format dibaca dari ISI berkas, judul/canonical/hreflang, aset yang dijanjikan metadata, tautan mati, sitemap, nama key bocor ke layar |
 | `audit:dokumen` | Tautan markdown mati, indeks ADR lengkap dua arah, status ADR setuju dengan berkasnya, daftar permukaan kilau, jalur berkas yang disebut dokumen |
+| `audit:graf` | Artefak `graphify-out/` terlacak di luar keempat keluaran bersama, laporan yang tidak sepakat dengan `graph.json`, **nama komunitas yang tidak dipilih** (nama berkas, placeholder, kembar, atau berbeda antar-artefak), korpus yang mengabaikan `.graphifyignore` |
 
 ## Yang TIDAK ditangkap — dan disebut supaya tidak dikira terjaga
 
@@ -47,6 +49,13 @@ bun run audit:dokumen   # markdown repo ini         — tanpa build, tanpa jarin
   Sebuah baris bisa berbunyi "Terpenuhi" setelah kontrolnya dicabut, dan tidak
   ada yang akan merah. Itu biaya yang ADR-0028 nyatakan menerimanya.
 - **Prosa di dalam skill maupun docs.** Sama seperti di atas: gerbang membaca struktur.
+- **Kesegaran graf, dan mutu nama komunitas di luar bentuknya.** `audit:graf`
+  MELAPORKAN selisih `built_at_commit` ke `HEAD` tanpa pernah memerahkannya —
+  memerahkannya berarti tiap PR yang menyentuh berkas terindeks wajib membawa
+  rebuild bermegabyte, dan gerbang semahal itu akan dilonggarkan dalam sebulan.
+  Ia juga bisa membuktikan sebuah label BUKAN nama berkas, tetapi tidak bisa
+  menilai apakah namanya baik untuk komunitasnya. Penamaan tetap pekerjaan
+  pembaca; yang dijaga hanya bahwa pekerjaan itu benar-benar dilakukan.
 - **Kutipan ADR.** `ADR-0042` di sebuah berkas tidak diperiksa resolve ke
   `docs/adr/0042-*.md` — aturan 2 `awcms`
   [ADR-0062](https://github.com/ahliweb/awcms/blob/main/docs/adr/0062-skills-are-gated-against-the-code-they-describe.md),
