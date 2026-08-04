@@ -1,13 +1,18 @@
-# Graph Report - .  (2026-08-04)
+# Graph Report - awcms-astro  (2026-08-04)
 
 ## Corpus Check
-- 113 files · ~100,161 words
+- 107 files · ~100,161 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 768 nodes · 1315 edges · 57 communities (50 shown, 7 thin omitted)
+- 768 nodes · 1311 edges · 57 communities (50 shown, 7 thin omitted)
 - Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 82 edges (avg confidence: 0.86)
-- Token cost: 488,244 input · 0 output
+- Token cost: 0 input · 0 output
+
+## Graph Freshness
+- Built from commit: `2525f9f0`
+- Run `git rev-parse HEAD` and compare to check if the graph is stale.
+- Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - Dependency dan skrip proyek
@@ -123,12 +128,12 @@ Cohesion: 0.12
 Nodes (24): ADR-0028, auditAnggaranGambar(), auditGambar(), auditKeluaran(), auditPrioritasGambar(), auditSvg(), bandingkanRasio(), berkasUntuk() (+16 more)
 
 ### Community 4 - "Postur performa dan keamanan"
-Cohesion: 0.12
-Nodes (30): ADR-0028 — Postur performa dan keamanan diikat ke standar yang disebut namanya, Jangkar standar dinyatakan beserta edisinya (§A), Yang ditolak, ditolak secara tertulis (§D), Selisih HSTS dari awcms — header keenam yang tidak dipasang di mana pun, ADR-0029 — HSTS dikirim penyaji, digerbangi produksi, tanpa includeSubDomains, headerKeamanan(produksi) — fungsi murni pemilik header di server/penyaji.mjs, HSTS digerbangi NODE_ENV === "production" (§A), max-age=31536000, tanpa includeSubDomains, tanpa preload (§B) (+22 more)
+Cohesion: 0.11
+Nodes (31): ADR-0028 — Postur performa dan keamanan diikat ke standar yang disebut namanya, Jangkar standar dinyatakan beserta edisinya (§A), Yang ditolak, ditolak secara tertulis (§D), Selisih HSTS dari awcms — header keenam yang tidak dipasang di mana pun, ADR-0029 — HSTS dikirim penyaji, digerbangi produksi, tanpa includeSubDomains, headerKeamanan(produksi) — fungsi murni pemilik header di server/penyaji.mjs, HSTS digerbangi NODE_ENV === "production" (§A), max-age=31536000, tanpa includeSubDomains, tanpa preload (§B) (+23 more)
 
 ### Community 5 - "Experience layer dan BFF Jualanku"
 Cohesion: 0.11
-Nodes (25): Envelope { success, data } dan tenant diresolusi sisi server, 01 — Arsitektur experience layer Jualanku, Perbedaan variabel build-time vs request-time, Jalur rollback ke build statis penuh, Matriks rendering rute Jualanku, Static-by-default dengan rute on-demand di-opt-out satu per satu, Alur sesi portal /_portal-api/auth, Aturan cookie dan CSRF portal (+17 more)
+Nodes (24): Envelope { success, data } dan tenant diresolusi sisi server, 01 — Arsitektur experience layer Jualanku, Perbedaan variabel build-time vs request-time, Jalur rollback ke build statis penuh, Matriks rendering rute Jualanku, Static-by-default dengan rute on-demand di-opt-out satu per satu, Alur sesi portal /_portal-api/auth, Aturan cookie dan CSRF portal (+16 more)
 
 ### Community 6 - "Standar teknis dan kontrak konten"
 Cohesion: 0.13
@@ -139,8 +144,8 @@ Cohesion: 0.16
 Nodes (23): antaraPenanda(), auditIndeksAdr(), auditJalurDisebut(), auditPermukaanKilau(), auditTautan(), AWALAN_JALUR, beradaDi(), berkasMarkdown() (+15 more)
 
 ### Community 8 - "Penyaji Bun dan headernya"
-Cohesion: 0.13
-Nodes (20): ASAL_MEDIA, asalMediaTerkonfigurasi(), aturanCache(), buatServer(), CSP, HEADER_KEAMANAN, HEADER_PRODUKSI, headerKeamanan() (+12 more)
+Cohesion: 0.08
+Nodes (27): engines, bun, ASAL_MEDIA, asalMediaTerkonfigurasi(), aturanCache(), buatServer(), CSP, HEADER_KEAMANAN (+19 more)
 
 ### Community 9 - "Layout dasar dan metadata terstruktur"
 Cohesion: 0.14
@@ -155,12 +160,12 @@ Cohesion: 0.12
 Nodes (20): ADR-0030 — Empat aturan yang sudah tertulis mendapat pemeriksanya; rantai pasok dipin ke SHA, tests/kontrak-awcms.test.mjs — permukaan diekstrak dari kode, dibandingkan dua arah (§D), Lima nilai versi Bun yang wajib sepakat, Perilis menjalankan bun test dan bun audit sesudah build (§C), Rantai pasok dipin ke SHA commit dan digest image (§B), tests/versi-toolchain.test.mjs (§A), Gerbang permukaan awcms — bun test, Gerbang versi toolchain — bun test (+12 more)
 
 ### Community 12 - "Gerbang audit graf"
-Cohesion: 0.16
+Cohesion: 0.15
 Nodes (17): ADR-0030, ARTEFAK_TERLACAK, auditArtefakTerlacak(), auditLabelKomunitas(), auditLaporanSepakat(), auditPengecualian(), catatan, catatKesegaran() (+9 more)
 
 ### Community 13 - "Fixture pohon berkas untuk tes gerbang"
-Cohesion: 0.14
-Nodes (14): engines, bun, jalankan(), pohon(), pohonKilau(), sementara, graf(), jalankan() (+6 more)
+Cohesion: 0.33
+Nodes (6): graf(), laporan(), pohon(), pohonBersih(), repo(), sementara
 
 ### Community 14 - "Katalog PO dan komponen berlokal"
 Cohesion: 0.15
@@ -303,7 +308,7 @@ Nodes (4): Contributor Covenant versi 2.1, Komitmen partisipasi bebas pelecehan,
   public/favicon.svg · relation: conceptually_related_to
 
 ## Knowledge Gaps
-- **192 isolated node(s):** `SITE`, `ADR-0014`, `ADR-0016`, `name`, `type` (+187 more)
+- **193 isolated node(s):** `name`, `type`, `version`, `private`, `description` (+188 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **7 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -320,7 +325,7 @@ _Questions this graph is uniquely positioned to answer:_
   _High betweenness centrality (0.162) - this node is a cross-community bridge._
 - **Are the 2 inferred relationships involving `Gerbang mutu — tabel gerbang yang wajib hijau` (e.g. with `Gerbang audit yang wajib tetap hijau di situs turunan` and `Aturan punya penegak — lima gerbang awcms-astro`) actually correct?**
   _`Gerbang mutu — tabel gerbang yang wajib hijau` has 2 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `SITE`, `ADR-0014`, `ADR-0016` to the rest of the system?**
-  _192 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **What connects `name`, `type`, `version` to the rest of the system?**
+  _193 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Dependency dan skrip proyek` be split into smaller, more focused modules?**
   _Cohesion score 0.044444444444444446 - nodes in this community are weakly interconnected._
