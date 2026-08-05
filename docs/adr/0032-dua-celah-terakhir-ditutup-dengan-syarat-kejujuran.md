@@ -55,6 +55,18 @@ ditolak. Total Blocking Time ≤ 200 ms dipakai sebagai proksi lab-nya — situs
 yang nyaris tanpa JS seharusnya mendekati nol, jadi TBT tinggi adalah sinyal
 JS menyelinap masuk, persis yang ambang INP jaga.
 
+**Yang diaudit adalah SAMPEL, dan batasnya dipilih — bukan diwarisi.** Bawaan
+`@lhci/cli` berhenti diam-diam di 5 URL terdangkal dengan kedalaman penemuan
+2 — pada situs turunan nyata itu berarti TIDAK SATU PUN halaman artikel
+berlokal (`/{lang}/{tab}/{slug}/`, kedalaman 3) pernah diukur, sementara
+404.html memakan satu slot. Review adversarial pra-merge menemukannya dari
+sumber versi yang dipin. Konfigurasi karena itu menyatakan ketiganya:
+`staticDirFileDiscoveryDepth: 4`, `maxAutodiscoverUrls: 10`, dan blocklist
+`/404.html` — diasersi `tests/cwv-lab.test.mjs` supaya tidak ada yang bisa
+mengembalikannya ke bawaan tanpa terlihat. Situs yang butuh cakupan lebih
+menaikkan angkanya di `lighthouserc.json`; sepuluh halaman adalah sampel yang
+dipilih sadar untuk menjaga waktu CI, bukan klaim cakupan penuh.
+
 ### §C — Pemeriksanya (ADR-0030 berlaku untuk penutupan ini juga)
 
 - `tests/analisis-statik.test.mjs`: workflow ada, terjadwal, seluruh action
@@ -70,8 +82,8 @@ JS menyelinap masuk, persis yang ambang INP jaga.
 
 **Yang didapat.** Kesembilan celah ADR-0028 tertutup, masing-masing bersama
 pemeriksanya. SSDF RV.1 naik ke Terpenuhi. Sebuah situs turunan mendapat
-pengukuran CWV lab pada setiap PR sejak hari pertama, tanpa satu byte pun data
-pembacanya dikumpulkan.
+pengukuran CWV lab atas sampel halamannya pada setiap PR sejak hari pertama,
+tanpa satu byte pun data pembacanya dikumpulkan.
 
 **Yang dibayar.** Dua workflow CI bergantung pada dua action pihak ketiga
 (dipin SHA, di-bump Dependabot); ringkasan run CodeQL yang jujur harus terus

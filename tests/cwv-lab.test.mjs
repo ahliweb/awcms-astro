@@ -55,15 +55,46 @@ describe("ambang lighthouserc.json terpaku ke target dokumen standar", () => {
   });
 });
 
+describe("cakupan penemuan halaman adalah PILIHAN, bukan bawaan yang diam", () => {
+  // Review adversarial menemukan bawaan @lhci/cli: maksimal 5 URL terdangkal,
+  // kedalaman 2 — sehingga halaman artikel berlokal (kedalaman 3+) tidak
+  // pernah diukur sementara dokumen berbunyi "atas dist/client". Ketiga nilai
+  // di bawah membuat batasnya DIPILIH dan TERTULIS; menghapusnya mengembalikan
+  // bawaan yang diam-diam menyempitkan cakupan.
+  const collect = konfigurasi.ci?.collect ?? {};
+
+  test("kedalaman penemuan menjangkau halaman artikel berlokal (/{lang}/{tab}/{slug}/)", () => {
+    assert.ok(
+      Number(collect.staticDirFileDiscoveryDepth) >= 4,
+      `staticDirFileDiscoveryDepth=${collect.staticDirFileDiscoveryDepth} — bawaan 2 tidak pernah menemukan halaman kedalaman 3`
+    );
+  });
+
+  test("jumlah URL sampel dinyatakan eksplisit", () => {
+    assert.ok(
+      Number(collect.maxAutodiscoverUrls) >= 10,
+      `maxAutodiscoverUrls=${collect.maxAutodiscoverUrls} — bawaan 5 menghabiskan cakupan pada halaman terdangkal`
+    );
+  });
+
+  test("404.html tidak memakan slot sampel", () => {
+    assert.ok(
+      (collect.autodiscoverUrlBlocklist ?? []).includes("/404.html"),
+      "tanpa blocklist, satu dari sedikit slot sampel diaudit atas halaman 404"
+    );
+  });
+});
+
 describe("langkah CI-nya", () => {
-  /** Blok langkah dari namanya sampai langkah berikutnya. */
-  const blok = ci.slice(
-    ci.indexOf("Core Web Vitals (lab) atas hasil build"),
-    ci.indexOf("- name: Simpan hasil build")
-  );
+  // Langkah dicari dari `uses:`-nya, bukan dari nama tampilannya: nama boleh
+  // dirapikan tanpa satu pun tes merah, dan anchor "langkah berikutnya" gagal
+  // DIAM-DIAM saat langkah tetangga di-rename (indexOf -1 membuat slice meluas
+  // ke hampir seluruh berkas). Batas blok = boundary langkah YAML berikutnya.
+  const langkahSemua = ci.split(/\n(?=\s{6}- name:)/);
+  const blok = langkahSemua.find((l) => l.includes("treosh/lighthouse-ci-action")) ?? "";
 
   test("ada di job build, terkondisi sumber konten — pola gerbang keluaran lainnya", () => {
-    assert.ok(blok.length > 0, "langkah Core Web Vitals tidak ditemukan di ci.yml");
+    assert.ok(blok.length > 0, "langkah lighthouse-ci-action tidak ditemukan di ci.yml");
     assert.match(
       blok,
       /if:\s*vars\.AWCMS_API_URL\s*!=\s*''/,

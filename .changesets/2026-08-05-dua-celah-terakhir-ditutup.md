@@ -21,6 +21,13 @@ dengan syarat kejujuran yang dijaga tes:
   lab, jadi TBT ≤ 200 ms dipakai sebagai proksi dan disebut proksi.
   `tests/cwv-lab.test.mjs` memaku ambang `lighthouserc.json` ke angka dokumen
   standar — melonggarkannya menuntut mengubah tes, yang terlihat di review.
+- Review adversarial pra-merge (19 agen) menemukan bawaan lhci diam-diam
+  berhenti di **5 URL terdangkal** — tidak satu pun halaman artikel berlokal
+  (kedalaman 3) akan pernah diukur. Batas cakupan karena itu DIPILIH dan
+  diasersi: kedalaman 4, 10 URL sampel, 404 di-blocklist — dan kata "sampel"
+  masuk ke setiap dokumen yang menyebut pengukuran ini. Hitungan cakupan
+  CodeQL juga pindah ke `git ls-files` setelah `find` atas daftar direktori
+  terbukti melewatkan `astro.config.mjs` di akar.
 - Yang TIDAK berubah: RUM tetap ditolak, "memenuhi Core Web Vitals" tetap
   tidak boleh ditulis dari hasil lab, dan baris celah yang tertutup tetap di
   tabel [standar-performa-dan-keamanan.md](../docs/awcms-astro/standar-performa-dan-keamanan.md).

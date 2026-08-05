@@ -245,9 +245,9 @@
     "semantic_hash": "a7c42f2788bc39feed520614f349a370"
   },
   ".github/workflows/ci.yml": {
-    "mtime": 1785915232.4996414,
-    "ast_hash": "40e240b5bf2e953a9df1051dfe4d021c",
-    "semantic_hash": "40e240b5bf2e953a9df1051dfe4d021c"
+    "mtime": 1785916963.4816303,
+    "ast_hash": "1e915741b00aa1f37e29d0a2908c76b6",
+    "semantic_hash": ""
   },
   ".github/workflows/rebuild.yml": {
     "mtime": 1785233483.5405033,
@@ -255,8 +255,8 @@
     "semantic_hash": "86867765878d8864598e6a943644e5a9"
   },
   "AGENTS.md": {
-    "mtime": 1785916310.509468,
-    "ast_hash": "b2c830c919e402ac3b0db0412980adab",
+    "mtime": 1785917182.2732773,
+    "ast_hash": "40778235a475bcabc7f328a1c165c728",
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
@@ -280,13 +280,13 @@
     "semantic_hash": "679412a21fb509c2a01605cb78e784f9"
   },
   "README.md": {
-    "mtime": 1785915778.0016181,
-    "ast_hash": "67d8e71978b4cfbc8d2af16e051f470c",
+    "mtime": 1785917219.7775576,
+    "ast_hash": "78848078f25afcfdac48f6202bdcbb69",
     "semantic_hash": ""
   },
   "SECURITY.md": {
-    "mtime": 1785915778.002618,
-    "ast_hash": "505abbca2144f3757c4947f373fe5fb0",
+    "mtime": 1785917215.0805225,
+    "ast_hash": "56f251e0921a0507ae52c304a0017169",
     "semantic_hash": ""
   },
   "SUPPORT.md": {
@@ -305,13 +305,13 @@
     "semantic_hash": "fa64e8d8c20843ccbd1f398108cc62dd"
   },
   "docs/adr/README.md": {
-    "mtime": 1785915778.002618,
-    "ast_hash": "3c4f47bda73fc63a5273ffb82a6bbffb",
+    "mtime": 1785917058.569349,
+    "ast_hash": "acb4a9e3099d4d2a209060608e160bf4",
     "semantic_hash": ""
   },
   "docs/awcms-astro/README.md": {
-    "mtime": 1785915778.002618,
-    "ast_hash": "5c4f3bf5f80a83bfc4b703387383efde",
+    "mtime": 1785917221.6575716,
+    "ast_hash": "1e04b7c9e54dc5b734a41c3df605780a",
     "semantic_hash": ""
   },
   "docs/awcms-astro/checklist-repo-baru.md": {
@@ -350,8 +350,8 @@
     "semantic_hash": "145fcb26b93e4e41b74eaf47c25ccc0a"
   },
   "docs/awcms-astro/standar-teknis.md": {
-    "mtime": 1785916310.511468,
-    "ast_hash": "18ecc09e62d387536e7083459f82d5d4",
+    "mtime": 1785917204.4924436,
+    "ast_hash": "4c25ece3813ebff6f9224dc04e501a9d",
     "semantic_hash": ""
   },
   "docs/awcms-astro/ui-ux-design-system.md": {
@@ -530,8 +530,8 @@
     "semantic_hash": "11624a8816f524c010439370e4b0ac51"
   },
   ".claude/skills/awcms-astro-performa-keamanan/SKILL.md": {
-    "mtime": 1785915778.000618,
-    "ast_hash": "9c92036763a8cd15d0479ec8ded96b50",
+    "mtime": 1785917813.6099439,
+    "ast_hash": "55ec5856940163808b2587e78e9e51e0",
     "semantic_hash": ""
   },
   "docs/adr/0028-jangkar-standar-performa-dan-keamanan.md": {
@@ -550,8 +550,8 @@
     "semantic_hash": "e11194d0d70f0049cbce8ea63317babd"
   },
   "docs/awcms-astro/standar-performa-dan-keamanan.md": {
-    "mtime": 1785916310.511468,
-    "ast_hash": "4b5f04dff8fa261a664accf11aad8c97",
+    "mtime": 1785917165.9981556,
+    "ast_hash": "5a1f6b4c7fa962a47ec58a9959dc95f5",
     "semantic_hash": ""
   },
   "scripts/audit-graf.mjs": {
@@ -577,6 +577,31 @@
   "docs/adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md": {
     "mtime": 1785915778.002618,
     "ast_hash": "c8a4c99ba388f9a519e1b44ee7e2af58",
+    "semantic_hash": ""
+  },
+  "lighthouserc.json": {
+    "mtime": 1785916954.065559,
+    "ast_hash": "a794c807c674e6c7958f3299bb6ddd23",
+    "semantic_hash": ""
+  },
+  "tests/analisis-statik.test.mjs": {
+    "mtime": 1785916987.8968153,
+    "ast_hash": "2918cb07f3836750feec7b697453eecf",
+    "semantic_hash": ""
+  },
+  "tests/cwv-lab.test.mjs": {
+    "mtime": 1785917006.355955,
+    "ast_hash": "8f5480843bccc20296551c23ab032071",
+    "semantic_hash": ""
+  },
+  ".github/workflows/codeql.yml": {
+    "mtime": 1785916894.5121055,
+    "ast_hash": "539ee404ac310eb6c84aba985cf0b4fc",
+    "semantic_hash": ""
+  },
+  "docs/adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md": {
+    "mtime": 1785917055.5533264,
+    "ast_hash": "62aa45d40122f8ee57e71b236f1baeed",
     "semantic_hash": ""
   }
 }

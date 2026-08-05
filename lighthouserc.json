@@ -2,7 +2,10 @@
   "ci": {
     "collect": {
       "staticDistDir": "./dist/client",
-      "numberOfRuns": 3
+      "numberOfRuns": 3,
+      "maxAutodiscoverUrls": 10,
+      "staticDirFileDiscoveryDepth": 4,
+      "autodiscoverUrlBlocklist": ["/404.html"]
     },
     "assert": {
       "assertions": {

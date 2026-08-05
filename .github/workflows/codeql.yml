@@ -64,8 +64,13 @@ jobs:
       - name: Nyatakan cakupan
         if: always()
         run: |
-          TS_MJS=$(find src scripts server tests public -type f \( -name '*.ts' -o -name '*.mjs' -o -name '*.js' \) ! -path '*/node_modules/*' | wc -l)
-          ASTRO=$(find src -type f -name '*.astro' | wc -l)
+          # `git ls-files`, bukan `find` atas daftar direktori: daftar direktori
+          # adalah bentuk lain dari angka yang ditulis tangan — draf pertama
+          # berkas ini melewatkan `astro.config.mjs` di akar karena akar tidak
+          # ada di daftarnya. Yang dihitung harus SELURUH berkas terlacak yang
+          # ekstraktor baca.
+          TS_MJS=$(git ls-files '*.ts' '*.mjs' '*.js' | wc -l)
+          ASTRO=$(git ls-files '*.astro' | wc -l)
           {
             echo "## Cakupan analisis statik"
             echo ""

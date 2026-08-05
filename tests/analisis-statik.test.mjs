@@ -57,21 +57,36 @@ describe("workflow CodeQL — celah 7 ADR-0028", () => {
     assert.match(codeql, /security-events:\s*write/);
   });
 
+  // Blok langkah ringkasan, dari namanya sampai akhir berkas — bukan seluruh
+  // berkas: review adversarial menunjukkan asersi atas seluruh berkas tetap
+  // hijau ketika kalimat batas `.astro` dihapus dari LANGKAHNYA, karena string
+  // `.astro` juga hidup di komentar header workflow.
+  const blokRingkasan = codeql.slice(codeql.indexOf("Nyatakan cakupan"));
+
   test("cakupan DINYATAKAN di ringkasan run — syarat penutupan celah 7", () => {
-    // Yang diasersi bukan kalimatnya melainkan dua penandanya: langkah itu ada,
-    // dan ia menyebut `.astro` — batas yang membuat celah ini lama terbuka.
-    // Langkah tanpa sebutan `.astro` adalah ringkasan yang berhenti mengatakan
-    // bagian yang paling penting.
-    assert.match(codeql, /Nyatakan cakupan/);
-    assert.match(codeql, /GITHUB_STEP_SUMMARY/);
-    assert.match(codeql, /\.astro/);
+    assert.ok(
+      blokRingkasan.length > 0 && blokRingkasan !== codeql.slice(-1),
+      "langkah `Nyatakan cakupan` tidak ditemukan di codeql.yml"
+    );
+    assert.match(blokRingkasan, /GITHUB_STEP_SUMMARY/);
+    assert.match(
+      blokRingkasan,
+      /TIDAK dianalisis.*\.astro|\.astro.*TIDAK dianalisis/s,
+      "ringkasan berhenti menyatakan bahwa berkas .astro TIDAK dianalisis — " +
+        "itu syarat literal yang membuat celah 7 boleh ditutup"
+    );
   });
 
-  test("dihitung langsung, bukan ditulis tangan — angka tak bisa membusuk", () => {
+  test("dihitung langsung dari berkas TERLACAK, bukan daftar direktori tulisan tangan", () => {
+    // Draf pertama memakai `find` atas lima direktori dan melewatkan
+    // `astro.config.mjs` di akar — daftar direktori adalah bentuk lain dari
+    // angka yang ditulis tangan. `git ls-files` menghitung persis korpus yang
+    // ekstraktor baca, apa pun letak berkas barunya.
     assert.match(
-      codeql,
-      /find src .*-name '\*\.astro'/,
-      "jumlah berkas .astro di ringkasan harus dihitung find, bukan konstanta"
+      blokRingkasan,
+      /git ls-files '\*\.astro'/,
+      "jumlah .astro harus dihitung git ls-files, bukan konstanta atau daftar direktori"
     );
+    assert.match(blokRingkasan, /git ls-files '\*\.ts' '\*\.mjs' '\*\.js'/);
   });
 });

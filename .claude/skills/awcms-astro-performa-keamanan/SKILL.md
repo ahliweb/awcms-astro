@@ -91,12 +91,15 @@ Core Web Vitals pada **p75 kunjungan nyata**:
 | INP | ≤ 200 milidetik | JS yang menyelinap masuk. Situs ini nyaris tanpa JS, jadi INP buruk **adalah sinyal**, bukan sekadar angka |
 | CLS | ≤ 0,1 | Webfont yang ditambahkan tanpa `font-display`, atau bingkai gambar yang kehilangan `aspect-ratio` |
 
-**Diukur LAB di CI sejak ADR-0032** — Lighthouse di job `build`, hanya pada
-situs yang punya sumber konten; di repo template langkah itu tidak berjalan.
-LCP dan CLS diasersi pada ambang tabel di atas; INP tidak terukur di lab, jadi
-TBT ≤ 200 ms dipakai sebagai proksi dan disebut proksi. **Jangan menulis
-"memenuhi Core Web Vitals" dari hasil lab** — lab mengukur halaman, bukan
-pembaca, dan p75 kunjungan nyata tetap tidak diukur karena RUM ditolak.
+**LCP dan CLS diasersi LAB di CI sejak ADR-0032** — Lighthouse di job `build`,
+hanya pada situs yang punya sumber konten; di repo template langkah itu tidak
+berjalan. INP tidak terukur di lab, jadi TBT ≤ 200 ms dipakai sebagai proksi
+dan disebut proksi. Yang diaudit **sampel**: hingga 10 URL sampai kedalaman 4
+— batas yang DIPILIH di `lighthouserc.json` dan diasersi `tests/cwv-lab.test.mjs`;
+bawaan lhci diam-diam berhenti di 5 URL terdangkal dan tidak pernah mencapai
+halaman artikel berlokal. **Jangan menulis "memenuhi Core Web Vitals" dari
+hasil lab** — lab mengukur halaman, bukan pembaca, dan p75 kunjungan nyata
+tetap tidak diukur karena RUM ditolak.
 
 Anggaran: **beranda ≤ 250 KB gambar, halaman konten ≤ 100 KB.** Sejak 4 Agustus
 2026 ia **diukur** `bun run audit:konten` atas `dist/client`, per halaman — yang
@@ -118,7 +121,7 @@ disebut setiap kali menjawab pertanyaan kepatuhan:
 | Klaim yang benar | Klaim yang TERLALU BESAR — jangan tulis |
 | --- | --- |
 | "Permukaan JS/TS dianalisis CodeQL terjadwal; `.astro` tidak, dan ringkasan tiap run menyatakannya" | "Repo ini dianalisis statik" tanpa menyebut batas `.astro` |
-| "Core Web Vitals diasersi LAB di CI situs (LCP 2500 ms, CLS 0,1, TBT 200 ms sebagai proksi INP)" | "Memenuhi Core Web Vitals" — itu klaim p75 kunjungan nyata, yang tidak diukur karena RUM ditolak |
+| "LCP dan CLS diasersi LAB di CI situs atas sampel ≤10 halaman (TBT 200 ms sebagai proksi INP)" | "Memenuhi Core Web Vitals" — itu klaim p75 kunjungan nyata, yang tidak diukur karena RUM ditolak; dan "diukur atas dist/client" tanpa kata SAMPEL |
 
 ## Lima kontrol yang DITOLAK — jangan usulkan lagi tanpa membaca alasannya
 

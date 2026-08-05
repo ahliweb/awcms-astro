@@ -174,11 +174,16 @@ jalankan Lighthouse di laptop pengembang:
 | CLS — Cumulative Layout Shift | ≤ 0,1 | Bingkai gambar sudah `aspect-ratio: var(--ratio-visual)`, jadi ruangnya dipesan sebelum gambar tiba. Yang bisa merusaknya: font yang dimuat belakangan — dan repo ini tidak memuat satu pun |
 
 **Sejak [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md)
-ketiganya diukur LAB di CI** — pada setiap PR sebuah situs yang punya sumber
-konten; di repo template langkah itu tidak berjalan karena tidak ada yang bisa
-dibangun. Batasnya wajib ikut dibaca: lab mengukur halaman, bukan pembaca —
-angka p75 kunjungan nyata di tabel di atas TETAP tidak diukur karena RUM
-ditolak, dan INP diwakili proksi lab-nya (Total Blocking Time ≤ 200 ms).
+LCP dan CLS diasersi LAB di CI** — pada setiap PR sebuah situs yang punya
+sumber konten; di repo template langkah itu tidak berjalan karena tidak ada
+yang bisa dibangun. TIGA batasnya wajib ikut dibaca, dan ketiganya dinyatakan:
+(1) lab mengukur halaman, bukan pembaca — angka p75 kunjungan nyata di tabel
+di atas TETAP tidak diukur karena RUM ditolak; (2) INP tidak terukur di lab
+dan diwakili proksinya, Total Blocking Time ≤ 200 ms; (3) yang diaudit adalah
+**sampel** halaman — hingga 10 URL sampai kedalaman 4, angka yang DIPILIH di
+`lighthouserc.json` (bawaan lhci diam-diam berhenti di 5 URL terdangkal dan
+tidak pernah mencapai halaman artikel berlokal) dan dijaga `tests/cwv-lab.test.mjs`;
+situs yang butuh cakupan lebih menaikkannya di berkas itu.
 **Jangan menulis "memenuhi Core Web Vitals" dari hasil lab.** Rinciannya di
 §Celah baris 8.
 
@@ -236,7 +241,7 @@ yang tidak tahu kenapa ia ada.
 | 5 | Header pembocor teknologi tidak diverifikasi | **DITUTUP** — `Server` dan `X-Powered-By` dihapus `pasangHeader`, bukan sekadar diasersi: "tidak dikirim hari ini" dan "tidak akan dikirim" adalah dua hal berbeda | Asersi negatif atas tiga kelas respons di `tests/penyaji.test.mjs`, **mutation-proven** |
 | 6 | Action GitHub dipin ke tag, image dasar dipin ke tag | **DITUTUP** — [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md): empat action dipin ke SHA commit dengan komentar `# vX.Y.Z` yang Dependabot baca, image dasar dipin ke digest | `tests/versi-toolchain.test.mjs`, **mutation-proven**. Ia menutup kelas cacat yang justru DITAMBAHKAN pin digest: saat tag dan digest sama-sama ada, digest yang dipatuhi Docker dan tag hanya jadi komentar |
 | 7 | Tidak ada analisis statik | **DITUTUP** — [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) §A: `.github/workflows/codeql.yml` terjadwal mingguan + pada perubahan, atas permukaan JS/TS. Syarat kejujurannya persis yang kolom ini resepkan sejak awal: langkah `Nyatakan cakupan` menulis ke ringkasan run berapa berkas dianalisis dan berapa `.astro` TIDAK — dihitung `find` saat run, bukan ditulis tangan | `tests/analisis-statik.test.mjs`: seluruh action ber-SHA + komentar versi, jadwal ada, dan langkah pernyataan cakupan — beserta sebutan `.astro`-nya — tidak bisa dihapus diam-diam |
-| 8 | Core Web Vitals tidak diukur | **DITUTUP** — [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) §B: Lighthouse CI atas `dist/client` di job `build`, terkondisi sumber konten seperti gerbang keluaran lainnya — di repo template ia tidak berjalan, di setiap SITUS ia berjalan pada tiap PR. LCP ≤ 2500 ms dan CLS ≤ 0,1 level `error`; INP tidak terukur di lab, jadi TBT ≤ 200 ms dipakai sebagai proksi dan DISEBUT proksi | `tests/cwv-lab.test.mjs`, berjalan di repo template: ambang `lighthouserc.json` TERPAKU ke angka dokumen ini (melonggarkannya menuntut mengubah tes — terlihat di review), langkah CI-nya terkondisi dan dipin SHA |
+| 8 | Core Web Vitals tidak diukur | **DITUTUP** — [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) §B: Lighthouse CI atas **sampel** `dist/client` (hingga 10 URL, kedalaman 4 — batas yang dipilih, bukan bawaan lhci yang diam-diam berhenti di 5 URL terdangkal) di job `build`, terkondisi sumber konten seperti gerbang keluaran lainnya — di repo template ia tidak berjalan, di setiap SITUS ia berjalan pada tiap PR. LCP ≤ 2500 ms dan CLS ≤ 0,1 level `error`; INP tidak terukur di lab, jadi TBT ≤ 200 ms dipakai sebagai proksi dan DISEBUT proksi | `tests/cwv-lab.test.mjs`, berjalan di repo template: ambang `lighthouserc.json` TERPAKU ke angka dokumen ini dan ketiga batas cakupannya (kedalaman, jumlah sampel, blocklist 404) diasersi eksplisit — melonggarkan salah satunya menuntut mengubah tes, yang terlihat di review; langkah CI-nya terkondisi dan dipin SHA |
 | 9 | Tidak ada SBOM pada rilis | **DITUTUP** — [ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md): `scripts/sbom.mjs` menurunkan CycloneDX 1.5 dari `bun.lock` — deterministik, tanpa dependency baru — dan perilis menulisnya SEBELUM commit rilis sehingga `sbom.cdx.json` ikut di dalam tag | `tests/sbom.test.mjs`, **mutation-proven** atas lockfile buatan: paket ber-scope, konversi hash base64→hex, dedup jalur resolusi, dan entri tak dikenal DITOLAK alih-alih dilewati — SBOM yang diam-diam tidak lengkap menjawab "tidak terdampak" dengan percaya diri. Langkah perilisnya diasersi struktural supaya tidak hilang diam-diam |
 
 **Tidak ada yang terbuka hari ini — dan kalimat itu punya batas yang harus
