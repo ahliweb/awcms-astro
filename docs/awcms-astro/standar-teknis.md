@@ -189,7 +189,7 @@ Yang mengikat di sini:
 - `bun audit` wajib nol sebelum rilis.
 - Tautan keluar `target="_blank"` wajib `rel="noopener noreferrer"`.
 
-**Enam dari sembilan celah ditutup 4 Agustus 2026** ([ADR-0029](../adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md) untuk HSTS, [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md) untuk pin rantai pasok, sisanya tanpa perubahan postur): HSTS, `fetchpriority`, anggaran gambar, batas waktu `awcmsGet`, header pembocor teknologi, dan pin action/image ke SHA/digest. **Tiga masih terbuka** dan disebut di sini supaya tidak ditemukan sebagai kejutan: analisis statik, pengukuran Core Web Vitals, dan SBOM rilis. Kesembilannya bernomor di dokumen standar.
+**Tujuh dari sembilan celah ditutup** ([ADR-0029](../adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md) untuk HSTS, [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md) untuk pin rantai pasok, [ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md) untuk SBOM rilis, sisanya tanpa perubahan postur): HSTS, `fetchpriority`, anggaran gambar, batas waktu `awcmsGet`, header pembocor teknologi, pin action/image ke SHA/digest, dan SBOM CycloneDX pada setiap tag. **Dua masih terbuka** dan disebut di sini supaya tidak ditemukan sebagai kejutan: analisis statik dan pengukuran Core Web Vitals. Kesembilannya bernomor di dokumen standar.
 
 ## Gerbang mutu
 
@@ -207,6 +207,7 @@ Gerbang standar ini, seluruhnya wajib hijau sebelum pekerjaan dinyatakan selesai
 | Audit dokumen | `bun run audit:dokumen` | Tautan markdown ke berkas yang tidak ada (diselesaikan dari letak berkasnya, sehingga aturan tautan `.changesets/` ikut terjaga), indeks ADR yang tidak lengkap dua arah, kolom Status yang tidak setuju dengan ADR-nya, daftar permukaan kilau yang menyimpang dari `global.css` | Ya |
 | Audit graf | `bun run audit:graf` | Artefak `graphify-out/` yang terlacak di luar keempat keluaran bersama, laporan yang tidak sepakat dengan `graph.json`, nama komunitas yang tidak dipilih (nama berkas, placeholder, kembar, atau berbeda antar-artefak), dan korpus yang mengabaikan `.graphifyignore` | Ya — sejak 4 Agustus 2026; melewati dirinya bila `graphify-out/` tidak ada |
 | Versi toolchain | `bun test` | Lima nilai versi Bun (`packageManager`, `engines.bun`, dua `bun-version` CI, dua tag `Dockerfile`) yang wajib sepakat, plus digest image yang menempel pada tag yang benar | Ya — sejak [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md) |
+| SBOM | `bun test` | Generator `scripts/sbom.mjs` sinkron dengan `bun.lock` (mutation-proven), dan langkah SBOM di perilis tidak hilang diam-diam. Kesegaran `sbom.cdx.json` di pohon kerja SENGAJA tidak digerbangi — SBOM memerikan rilis, bukan pohon kerja | Ya — sejak [ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md) |
 | Permukaan `awcms` | `bun test` | Jalur `/api/v1/…` yang benar-benar dipanggil `src/`, dibandingkan dua arah dengan tabel bertanda di skill integrasi | Ya — sejak ADR-0030 |
 | Audit dependency | `bun audit --audit-level=low` | Kerentanan rantai build. Dijalankan CI **dan** perilis | Ya |
 | CI | `.github/workflows/ci.yml` | Seluruhnya yang ada, pada setiap PR | Ya |

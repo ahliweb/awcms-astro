@@ -424,7 +424,8 @@ performa:
   masih menyebut FID sudah basi, bukan sedang memakai alternatif. **Belum satu
   pun dari ketiganya diukur di repo ini**, dan itu ditulis apa adanya alih-alih
   dibiarkan tampak terjaga.
-- **Enam dari sembilan celah ditutup 4 Agustus 2026, tiga masih terbuka.**
+- **Tujuh dari sembilan celah ditutup (enam pada 4 Agustus 2026, SBOM menyusul
+  5 Agustus — ADR-0031), dua masih terbuka.**
   Tiap satunya menyebut pemeriksanya, dan baris yang tertutup TETAP di tabel:
   dihapus, ia akan diusulkan lagi sebagai temuan baru, dan pemeriksanya akan
   dilonggarkan oleh orang yang tidak tahu kenapa ia ada. Menutup sebuah celah

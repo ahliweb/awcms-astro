@@ -148,7 +148,7 @@ fisik di luar cakupan sebuah template.
 | Praktik | Keadaan |
 | --- | --- |
 | PS.1 Lindungi seluruh bentuk kode | Terpenuhi — branch protection + review; tidak ada commit langsung ke `main` |
-| PS.2 Sediakan mekanisme verifikasi integritas rilis | **Celah** — rilis bertag tanpa SBOM dan tanpa attestation |
+| PS.2 Sediakan mekanisme verifikasi integritas rilis | Terpenuhi — SBOM CycloneDX deterministik ikut di setiap tag sejak [ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md); regenerasi pada tag yang sama menghasilkan byte identik, jadi SBOM-nya bisa **diverifikasi**, bukan hanya dipercaya |
 | PW.4 Gunakan komponen pihak ketiga yang aman | Terpenuhi — lockfile di-commit, install ter-freeze, audit di CI |
 | PW.7 Review kode | Terpenuhi — PR + CI wajib hijau |
 | PW.8 Uji kode yang dieksekusi | Terpenuhi — lima gerbang, dan tiap gerbang yang **melewati dirinya mengatakannya** |
@@ -205,11 +205,13 @@ ADR-0024 untuk dirinya sendiri — dan anggaran gambar di
 [`standar-teknis.md`](standar-teknis.md#performa) adalah tempat pertama
 kelebihannya akan terlihat.
 
-## Celah: enam ditutup, tiga terbuka
+## Celah: tujuh ditutup, dua terbuka
 
 Diurutkan menurut akibat, bukan menurut usaha. **Enam ditutup pada 4 Agustus
 2026** — lima di pagi hari, yang keenam (pin rantai pasok) menyusul siangnya
-lewat [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md) —
+lewat [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md) — dan
+**yang ketujuh (SBOM, celah 9) pada 5 Agustus 2026** lewat
+[ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md),
 masing-masing bersama pemeriksanya. Di repo ini aturan tanpa
 pemeriksanya adalah aturan yang akan dilanggar, dan itu berlaku juga untuk
 aturan yang datang dari standar luar.
@@ -228,16 +230,20 @@ yang tidak tahu kenapa ia ada.
 | 6 | Action GitHub dipin ke tag, image dasar dipin ke tag | **DITUTUP** — [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md): empat action dipin ke SHA commit dengan komentar `# vX.Y.Z` yang Dependabot baca, image dasar dipin ke digest | `tests/versi-toolchain.test.mjs`, **mutation-proven**. Ia menutup kelas cacat yang justru DITAMBAHKAN pin digest: saat tag dan digest sama-sama ada, digest yang dipatuhi Docker dan tag hanya jadi komentar |
 | 7 | Tidak ada analisis statik | **TERBUKA, dan alasannya lebih tajam daripada "permukaannya kecil"** — CodeQL tidak mengurai `.astro`, jadi ia hanya akan mencakup `src/lib/**.ts`, `scripts/**.mjs`, dan `server/**.mjs`. Menyalakannya lalu menyebut repo ini "dianalisis statik" adalah upacara yang terlihat seperti cakupan — pola yang kedua repo keluarga sudah tolak | Workflow CodeQL terjadwal, dengan cakupannya DINYATAKAN di ringkasan run |
 | 8 | Core Web Vitals tidak diukur | **TERBUKA** — target di §Performa masih klaim tanpa bukti. Celah 2 dan 3 menutup dua PENYEBAB LCP buruk; keduanya bukan pengukurannya | Lighthouse CI atas `dist/client` di job `build`, hanya berjalan bila situs punya sumber konten |
-| 9 | Tidak ada SBOM pada rilis | **TERBUKA** — konsumen hilir tidak bisa menjawab "apakah rilis ini terdampak advisory X" tanpa membangun ulang | Langkah di `scripts/rilis.mjs` |
+| 9 | Tidak ada SBOM pada rilis | **DITUTUP** — [ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md): `scripts/sbom.mjs` menurunkan CycloneDX 1.5 dari `bun.lock` — deterministik, tanpa dependency baru — dan perilis menulisnya SEBELUM commit rilis sehingga `sbom.cdx.json` ikut di dalam tag | `tests/sbom.test.mjs`, **mutation-proven** atas lockfile buatan: paket ber-scope, konversi hash base64→hex, dedup jalur resolusi, dan entri tak dikenal DITOLAK alih-alih dilewati — SBOM yang diam-diam tidak lengkap menjawab "tidak terdampak" dengan percaya diri. Langkah perilisnya diasersi struktural supaya tidak hilang diam-diam |
 
-**Tiga yang tersisa dibiarkan terbuka dengan sadar, bukan karena kehabisan
-waktu.** Dua (7, 9) menyentuh rantai pasok dan menuntut keputusan tooling
-yang lebih baik diambil sekali untuk kedua repo keluarga daripada dua kali dengan
-hasil berbeda. Celah 8 menuntut Chrome di CI dan hanya berjalan pada situs yang
-punya sumber konten — ia **tidak bisa dibuktikan di repo template ini**, dan
-gerbang yang tidak bisa dibuktikan di tempat ia ditulis adalah gerbang yang akan
-membusuk. Konteks keluarganya tercatat di §Hubungan: `awcms` sendiri belum
-mengukur Core Web Vitals, dan ADR-0067 di sana masih `Proposed`.
+**Dua yang tersisa dibiarkan terbuka dengan sadar, bukan karena kehabisan
+waktu.** Celah 7 menunggu analisis statik yang benar-benar mengurai `.astro` —
+menyalakan CodeQL hari ini adalah upacara yang terlihat seperti cakupan. Celah
+8 menuntut Chrome di CI dan hanya berjalan pada situs yang punya sumber konten
+— ia **tidak bisa dibuktikan di repo template ini**, dan gerbang yang tidak
+bisa dibuktikan di tempat ia ditulis adalah gerbang yang akan membusuk.
+Konteks keluarganya tercatat di §Hubungan: `awcms` sendiri belum mengukur Core
+Web Vitals, dan ADR-0067 di sana masih `Proposed`. (Celah 9 semula ikut
+ditahan menunggu "keputusan tooling keluarga";
+[ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md) mencatat
+kenapa hitungan itu berubah: keputusannya ternyata format, bukan tooling, dan
+formatnya sudah dijawab jangkar OWASP yang ada.)
 
 ## Yang sengaja TIDAK diadopsi
 
