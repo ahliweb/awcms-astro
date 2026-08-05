@@ -1,0 +1,84 @@
+name: CodeQL
+
+# ---------------------------------------------------------------------------
+# Analisis statik atas permukaan JS/TS repo ini — celah 7 ADR-0028, ditutup
+# ADR-0032 dengan syarat yang tabel celahnya sendiri tulis: "dengan cakupannya
+# DINYATAKAN di ringkasan run".
+#
+# Syarat itu bukan basa-basi. CodeQL tidak mengurai `.astro`, jadi workflow ini
+# menganalisis `src/lib/**.ts`, `src/config/**.ts`, `scripts/**.mjs`,
+# `server/**.mjs`, `tests/**.mjs`, dan `public/tema.js` — bukan komponen
+# template. Menyalakannya lalu menyebut repo ini "dianalisis statik" tanpa
+# menyebut batas itu adalah upacara yang terlihat seperti cakupan, dan langkah
+# `Nyatakan cakupan` di bawah ada supaya klaimnya tidak pernah lebih besar
+# daripada kenyataannya. `tests/analisis-statik.test.mjs` menjaga langkah itu
+# tidak dihapus diam-diam.
+#
+# Terjadwal mingguan DAN pada perubahan: query CodeQL diperbarui terus oleh
+# GitHub, jadi kode yang tidak berubah pun layak dipindai ulang berkala.
+# Action dipin ke SHA commit (ADR-0030) dengan komentar versi yang Dependabot
+# baca.
+# ---------------------------------------------------------------------------
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "0 2 * * 1" # Senin 02:00 UTC — pemindaian ulang mingguan
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: Analyze (javascript-typescript)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      security-events: write # unggah hasil ke tab Security
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # `dist/` dan `graphify-out/` bukan sumber; `node_modules` sudah
+      # dikecualikan ekstraktor secara bawaan.
+      - uses: github/codeql-action/init@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
+        with:
+          languages: javascript-typescript
+          config: |
+            paths-ignore:
+              - dist
+              - graphify-out
+
+      - uses: github/codeql-action/analyze@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
+        with:
+          category: "/language:javascript-typescript"
+
+      # Dihitung langsung dari pohon kerja, bukan ditulis tangan: angka yang
+      # ditulis tangan berhenti benar begitu berkas bertambah, dan ringkasan
+      # yang basi adalah bentuk lain dari klaim yang lebih besar daripada
+      # kenyataannya.
+      - name: Nyatakan cakupan
+        if: always()
+        run: |
+          # `git ls-files`, bukan `find` atas daftar direktori: daftar direktori
+          # adalah bentuk lain dari angka yang ditulis tangan — draf pertama
+          # berkas ini melewatkan `astro.config.mjs` di akar karena akar tidak
+          # ada di daftarnya. Yang dihitung harus SELURUH berkas terlacak yang
+          # ekstraktor baca.
+          TS_MJS=$(git ls-files '*.ts' '*.mjs' '*.js' | wc -l)
+          ASTRO=$(git ls-files '*.astro' | wc -l)
+          {
+            echo "## Cakupan analisis statik"
+            echo ""
+            echo "- **Dianalisis:** ${TS_MJS} berkas \`.ts\`/\`.mjs\`/\`.js\` (lib, config, scripts, server, tests, tema)."
+            echo "- **TIDAK dianalisis:** ${ASTRO} berkas \`.astro\` — CodeQL tidak punya ekstraktor Astro."
+            echo ""
+            echo "Batas itu alasan celah 7 ADR-0028 lama terbuka; menyatakannya di sini"
+            echo "adalah syarat yang membuatnya boleh ditutup (ADR-0032). Jalur data"
+            echo "berisiko repo ini (\`content-blocks.ts\`, \`penyaji.mjs\`, klien awcms)"
+            echo "seluruhnya berada di dalam cakupan."
+          } >> "$GITHUB_STEP_SUMMARY"

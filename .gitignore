@@ -40,3 +40,8 @@ graphify-out/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/
 # -diam), dan ukurannya menggandakan beban tiap rebuild terhadap riwayat.
 # Ia satu perintah saja dari `graph.json` yang memang dilacak.
 graphify-out/graph.html
+
+# Keluaran lokal @lhci/cli (gerbang Core Web Vitals lab, ADR-0032). Di CI ia
+# hidup di runner dan mati bersamanya; reproduksi lokal yang merah meninggalkan
+# direktori ini — satu `git add -A` yang tidak hati-hati dari masuk riwayat.
+.lighthouseci/

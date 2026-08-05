@@ -30,9 +30,9 @@ Yang tetap relevan:
 
 Pemetaan lengkap ke **OWASP Top 10 2021, OWASP ASVS 4.0.3, OWASP Secure Headers Project, ISO/IEC 27001:2022 Annex A, dan NIST SSDF SP 800-218** ada di [`docs/awcms-astro/standar-performa-dan-keamanan.md`](docs/awcms-astro/standar-performa-dan-keamanan.md) ([ADR-0028](docs/adr/0028-jangkar-standar-performa-dan-keamanan.md)).
 
-Dokumen itu memuat **daftar celah**, dan daftar itu sengaja publik: tujuh ditutup, **dua masih terbuka** — analisis statik dan pengukuran Core Web Vitals.
+Dokumen itu memuat **daftar celah**, dan daftar itu sengaja publik: kesembilan celah bernomornya kini tertutup, dan baris yang tertutup tetap di tabel beserta pemeriksanya masing-masing.
 
-Keduanya keadaan yang sudah diketahui dan tercatat: melaporkannya lagi tidak menambah informasi. Melaporkan **akibat konkret**-nya pada sebuah deployment nyata, menambah.
+Dua batas yang dinyatakan terus terang — bukan celah, melainkan keadaan yang diterima sadar: berkas `.astro` tidak teranalisis statik (CodeQL tidak menguranya, dan ringkasan run menyatakannya), dan Core Web Vitals diukur lab, bukan pada kunjungan nyata (RUM ditolak karena mengumpulkan data pembaca). Melaporkan keduanya lagi tidak menambah informasi; melaporkan **akibat konkret**-nya pada sebuah deployment nyata, menambah.
 
 Satu batas yang perlu diketahui pelapor: `Strict-Transport-Security` dikirim **hanya saat `NODE_ENV=production`**. Sebuah deployment yang tidak menyetelnya tidak mendapat HSTS dan tidak ada yang mengatakannya — itu diterima sadar di [ADR-0029](docs/adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md), dan `Dockerfile` menyetelnya.
 

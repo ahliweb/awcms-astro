@@ -1,6 +1,6 @@
 ---
 name: awcms-astro-performa-keamanan
-description: Pemeriksaan performa dan keamanan awcms-astro terhadap standar yang disebut namanya (OWASP Top 10 2021, ASVS 4.0.3, Secure Headers, ISO 27001 Annex A, NIST SSDF, Core Web Vitals) — apa yang sudah terpenuhi dengan buktinya, sembilan celah bernomor (tujuh ditutup, dua terbuka), dan lima kontrol yang sengaja DITOLAK. Gunakan sebelum rilis, sebelum go-live sebuah situs turunan, saat menyentuh server/penyaji.mjs atau anggaran performa, atau saat menjawab pertanyaan kepatuhan.
+description: Pemeriksaan performa dan keamanan awcms-astro terhadap standar yang disebut namanya (OWASP Top 10 2021, ASVS 4.0.3, Secure Headers, ISO 27001 Annex A, NIST SSDF, Core Web Vitals) — apa yang sudah terpenuhi dengan buktinya, sembilan celah bernomor yang seluruhnya tertutup beserta dua batas yang tetap dinyatakan (.astro tak teranalisis statik; CWV diukur lab, bukan kunjungan nyata), dan lima kontrol yang sengaja DITOLAK. Gunakan sebelum rilis, sebelum go-live sebuah situs turunan, saat menyentuh server/penyaji.mjs atau anggaran performa, atau saat menjawab pertanyaan kepatuhan.
 ---
 
 # awcms-astro — performa dan keamanan
@@ -91,32 +91,37 @@ Core Web Vitals pada **p75 kunjungan nyata**:
 | INP | ≤ 200 milidetik | JS yang menyelinap masuk. Situs ini nyaris tanpa JS, jadi INP buruk **adalah sinyal**, bukan sekadar angka |
 | CLS | ≤ 0,1 | Webfont yang ditambahkan tanpa `font-display`, atau bingkai gambar yang kehilangan `aspect-ratio` |
 
-**Belum satu pun diukur** (celah 8 — masih terbuka). Jangan menulis "memenuhi
-Core Web Vitals" di mana pun sampai ada yang mengukurnya. Celah 2 dan 3 menutup
-dua PENYEBAB LCP buruk; keduanya bukan pengukurannya.
+**LCP dan CLS diasersi LAB di CI sejak ADR-0032** — Lighthouse di job `build`,
+hanya pada situs yang punya sumber konten; di repo template langkah itu tidak
+berjalan. INP tidak terukur di lab, jadi TBT ≤ 200 ms dipakai sebagai proksi
+dan disebut proksi. Yang diaudit **sampel**: hingga 10 URL sampai kedalaman 4
+— batas yang DIPILIH di `lighthouserc.json` dan diasersi `tests/cwv-lab.test.mjs`;
+bawaan lhci diam-diam berhenti di 5 URL terdangkal dan tidak pernah mencapai
+halaman artikel berlokal. **Jangan menulis "memenuhi Core Web Vitals" dari
+hasil lab** — lab mengukur halaman, bukan pembaca, dan p75 kunjungan nyata
+tetap tidak diukur karena RUM ditolak.
 
 Anggaran: **beranda ≤ 250 KB gambar, halaman konten ≤ 100 KB.** Sejak 4 Agustus
 2026 ia **diukur** `bun run audit:konten` atas `dist/client`, per halaman — yang
 ditimbang hanya gambar yang benar-benar diterbitkan build ini, karena media
 `awcms` tidak ada di sana.
 
-## Sembilan celah — tujuh tertutup, dua terbuka
+## Sembilan celah — seluruhnya tertutup, dua batas tetap dinyatakan
 
-Daftar lengkap di dokumen standar. Yang masih **TERBUKA**, dan karena itu yang
-harus dijawab jujur saat ditanya:
+Kesembilannya (1 HSTS, 2 `fetchpriority`, 3 anggaran gambar, 4 batas waktu
+`awcmsGet`, 5 header pembocor, 6 pin SHA/digest, 7 analisis statik, 8 Core Web
+Vitals lab, 9 SBOM rilis) **tetap tercatat di tabel dokumen standar** beserta
+pemeriksanya masing-masing. Jangan hapus barisnya: dihapus, celahnya akan
+diusulkan lagi sebagai temuan baru enam bulan kemudian, dan pemeriksanya akan
+dilonggarkan oleh orang yang tidak tahu kenapa ia ada.
 
-| # | Terbuka | Kenapa belum ditutup |
-| --- | --- | --- |
-| 7 | Tidak ada analisis statik (`awcms` punya CodeQL) | **CodeQL tidak mengurai `.astro`** — ia hanya akan mencakup `src/lib/**.ts`, `scripts/**.mjs`, `server/**.mjs`. Menyalakannya lalu menyebut repo ini "dianalisis statik" adalah upacara yang terlihat seperti cakupan |
-| 8 | Core Web Vitals tidak diukur | Butuh Chrome di CI dan hanya berjalan pada situs yang punya sumber konten; **tidak bisa dibuktikan di repo template** |
+Dua penutupan terakhir (ADR-0032) membawa **syarat kejujuran** yang harus ikut
+disebut setiap kali menjawab pertanyaan kepatuhan:
 
-Tujuh yang tertutup (1 HSTS, 2 `fetchpriority`, 3 anggaran gambar, 4 batas
-waktu `awcmsGet`, 5 header pembocor, 6 pin SHA/digest, 9 SBOM rilis — perilis
-menulis `sbom.cdx.json` CycloneDX sebelum commit rilis, ADR-0031) **tetap
-tercatat di tabel dokumen standar**.
-Jangan hapus barisnya: dihapus, celahnya akan diusulkan lagi sebagai temuan baru
-enam bulan kemudian, dan pemeriksanya akan dilonggarkan oleh orang yang tidak
-tahu kenapa ia ada.
+| Klaim yang benar | Klaim yang TERLALU BESAR — jangan tulis |
+| --- | --- |
+| "Permukaan JS/TS dianalisis CodeQL terjadwal; `.astro` tidak, dan ringkasan tiap run menyatakannya" | "Repo ini dianalisis statik" tanpa menyebut batas `.astro` |
+| "LCP dan CLS diasersi LAB di CI situs atas sampel ≤10 halaman (TBT 200 ms sebagai proksi INP)" | "Memenuhi Core Web Vitals" — itu klaim p75 kunjungan nyata, yang tidak diukur karena RUM ditolak; dan "diukur atas dist/client" tanpa kata SAMPEL |
 
 ## Lima kontrol yang DITOLAK — jangan usulkan lagi tanpa membaca alasannya
 

@@ -219,6 +219,28 @@ jobs:
         if: vars.AWCMS_API_URL != ''
         run: bun run audit:konten
 
+      # Celah 8 ADR-0028 ditutup di sini (ADR-0032): Core Web Vitals diukur
+      # LAB atas hasil build — pengukuran lapangan (RUM) tetap DITOLAK karena
+      # mengumpulkan data pembaca, dan keterbatasannya dinyatakan: lab mengukur
+      # halaman, bukan pembaca, dan INP tidak terukur di lab sehingga Total
+      # Blocking Time 200 ms dipakai sebagai proksi — disebut sebagai proksi.
+      #
+      # Ambang di lighthouserc.json disamakan dengan target dokumen standar
+      # (LCP <= 2500 ms, CLS <= 0.1) dan dijaga tests/cwv-lab.test.mjs supaya
+      # angka di konfigurasi dan angka di dokumen tidak bisa hanyut terpisah.
+      # Yang diaudit SAMPEL — hingga 10 URL kedalaman 4, batas yang DIPILIH di
+      # lighthouserc.json; bawaan lhci berhenti diam-diam di 5 URL terdangkal
+      # dan tidak pernah mencapai halaman artikel berlokal (kedalaman 3).
+      # Seperti dua gerbang di atasnya: hanya berjalan bila situs punya sumber
+      # konten — di repo template langkah ini tidak berjalan, dan ringkasan run
+      # job ini sudah mengatakannya sejak langkah pertama.
+      - name: Core Web Vitals (lab) atas hasil build
+        if: vars.AWCMS_API_URL != ''
+        uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12.6.2
+        with:
+          configPath: lighthouserc.json
+          uploadArtifacts: true
+
       - name: Simpan hasil build
         if: vars.AWCMS_API_URL != ''
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

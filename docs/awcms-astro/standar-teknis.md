@@ -164,7 +164,7 @@ Target **hasil**, diukur pada p75 kunjungan nyata — Core Web Vitals:
 | INP — Interaction to Next Paint | ≤ 200 milidetik | **Menggantikan FID sejak Maret 2024.** Dokumen yang masih menyebut FID basi, bukan sedang memakai alternatif |
 | CLS — Cumulative Layout Shift | ≤ 0,1 | Bingkai memesan ruangnya lewat `aspect-ratio: var(--ratio-visual)`; tidak ada webfont yang bisa menggesernya |
 
-**Belum satu pun dari ketiganya diukur di `awcms-astro`**, dan itu ditulis apa adanya — target tanpa pengukuran adalah klaim, dan klaim yang tampak terjaga lebih berbahaya daripada gap yang jelas. Rencana pengukurannya (celah 8) di [`standar-performa-dan-keamanan.md`](standar-performa-dan-keamanan.md).
+**Sejak [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) LCP dan CLS diasersi LAB di CI** — pada tiap PR situs yang punya sumber konten; di repo template langkah itu tidak berjalan. Ketiga batasnya dinyatakan, bukan disembunyikan: lab mengukur halaman, bukan pembaca (p75 kunjungan nyata tetap tidak diukur — RUM ditolak); INP tidak terukur di lab dan diwakili proksinya TBT ≤ 200 ms; dan yang diaudit **sampel** hingga 10 URL kedalaman 4 — batas yang dipilih di `lighthouserc.json`, bukan bawaan lhci yang diam-diam berhenti di 5 URL terdangkal. Ambang dan batas cakupan itu terpaku ke tes lewat `tests/cwv-lab.test.mjs`.
 
 Cara mencapainya — dan ini yang mengikat:
 
@@ -189,7 +189,7 @@ Yang mengikat di sini:
 - `bun audit` wajib nol sebelum rilis.
 - Tautan keluar `target="_blank"` wajib `rel="noopener noreferrer"`.
 
-**Tujuh dari sembilan celah ditutup** ([ADR-0029](../adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md) untuk HSTS, [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md) untuk pin rantai pasok, [ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md) untuk SBOM rilis, sisanya tanpa perubahan postur): HSTS, `fetchpriority`, anggaran gambar, batas waktu `awcmsGet`, header pembocor teknologi, pin action/image ke SHA/digest, dan SBOM CycloneDX pada setiap tag. **Dua masih terbuka** dan disebut di sini supaya tidak ditemukan sebagai kejutan: analisis statik dan pengukuran Core Web Vitals. Kesembilannya bernomor di dokumen standar.
+**Kesembilan celah ADR-0028 kini tertutup** ([ADR-0029](../adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md) untuk HSTS, [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md) untuk pin rantai pasok, [ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md) untuk SBOM rilis, [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) untuk analisis statik dan Core Web Vitals lab, sisanya tanpa perubahan postur) — masing-masing bersama pemeriksanya, dan barisnya TETAP di tabel dokumen standar. Dua penutupan terakhir membawa syarat kejujuran yang tidak boleh hilang: ringkasan run CodeQL menyatakan `.astro` tidak dianalisis, dan hasil Lighthouse adalah angka LAB — bukan p75 kunjungan nyata, yang tetap tidak diukur karena RUM ditolak.
 
 ## Gerbang mutu
 
@@ -208,6 +208,8 @@ Gerbang standar ini, seluruhnya wajib hijau sebelum pekerjaan dinyatakan selesai
 | Audit graf | `bun run audit:graf` | Artefak `graphify-out/` yang terlacak di luar keempat keluaran bersama, laporan yang tidak sepakat dengan `graph.json`, nama komunitas yang tidak dipilih (nama berkas, placeholder, kembar, atau berbeda antar-artefak), dan korpus yang mengabaikan `.graphifyignore` | Ya — sejak 4 Agustus 2026; melewati dirinya bila `graphify-out/` tidak ada |
 | Versi toolchain | `bun test` | Lima nilai versi Bun (`packageManager`, `engines.bun`, dua `bun-version` CI, dua tag `Dockerfile`) yang wajib sepakat, plus digest image yang menempel pada tag yang benar | Ya — sejak [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md) |
 | SBOM | `bun test` | Generator `scripts/sbom.mjs` sinkron dengan `bun.lock` (mutation-proven), dan langkah SBOM di perilis tidak hilang diam-diam. Kesegaran `sbom.cdx.json` di pohon kerja SENGAJA tidak digerbangi — SBOM memerikan rilis, bukan pohon kerja | Ya — sejak [ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md) |
+| Analisis statik | `.github/workflows/codeql.yml` | Kerentanan pada permukaan JS/TS (lib, config, scripts, server, tests) — terjadwal mingguan + pada perubahan. `.astro` TIDAK dianalisis dan ringkasan run menyatakannya; `tests/analisis-statik.test.mjs` menjaga pernyataan itu tidak dihapus | Ya — sejak [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) |
+| Core Web Vitals (lab) | Job `build` CI, `treosh/lighthouse-ci-action` | LCP > 2500 ms, CLS > 0,1, TBT > 200 ms (proksi INP) atas **sampel** `dist/client` (hingga 10 URL, kedalaman 4 — dipilih di `lighthouserc.json`) — hanya berjalan bila situs punya sumber konten; ambang DAN batas cakupannya terpaku ke dokumen lewat `tests/cwv-lab.test.mjs` | Ya — sejak [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md); di template tidak berjalan |
 | Permukaan `awcms` | `bun test` | Jalur `/api/v1/…` yang benar-benar dipanggil `src/`, dibandingkan dua arah dengan tabel bertanda di skill integrasi | Ya — sejak ADR-0030 |
 | Audit dependency | `bun audit --audit-level=low` | Kerentanan rantai build. Dijalankan CI **dan** perilis | Ya |
 | CI | `.github/workflows/ci.yml` | Seluruhnya yang ada, pada setiap PR | Ya |
