@@ -1,16 +1,16 @@
 # Graph Report - awcms-astro  (2026-08-05)
 
 ## Corpus Check
-- 114 files · ~106,989 words
+- 114 files · ~108,095 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 813 nodes · 1362 edges · 62 communities (55 shown, 7 thin omitted)
+- 813 nodes · 1363 edges · 64 communities (57 shown, 7 thin omitted)
 - Extraction: 94% EXTRACTED · 6% INFERRED · 0% AMBIGUOUS · INFERRED: 82 edges (avg confidence: 0.86)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `ac9043d1`
+- Built from commit: `81df0849`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -75,6 +75,8 @@
 - Rilis membawa SBOM CycloneDX dari lockfile (ADR-0031)
 - Rute pages/ dan getStaticPaths-nya
 - Gerbang Core Web Vitals lab
+- Deploy dan rebuild lewat webhook (Coolify)
+- Perilis menjalankan bun test dan bun audit sesudah build (§C)
 
 ## God Nodes (most connected - your core abstractions)
 1. `awcms-astro — Standar Performa dan Keamanan` - 21 edges
@@ -114,35 +116,35 @@
 - **Postur HSTS: dari selisih yang tercatat ke header yang digerbangi dan diasersi** — docs_adr_0028_jangkar_standar_performa_dan_keamanan_selisih_hsts_dari_awcms, docs_adr_0029_hsts_digerbangi_produksi_tanpa_includesubdomains_hsts_digerbangi_produksi, docs_adr_0029_hsts_digerbangi_produksi_tanpa_includesubdomains_tiga_asersi_mutation_proven, docs_awcms_astro_standar_performa_dan_keamanan_matriks_header_respons, docs_awcms_astro_checklist_repo_baru_node_env_production_prasyarat_hsts [EXTRACTED 1.00]
 - **Empat aturan tertulis yang akhirnya mendapat pemeriksanya** — docs_awcms_astro_standar_teknis_aturan_baru_wajib_membawa_pemeriksanya, docs_adr_0030_aturan_tertulis_mendapat_pemeriksanya_versi_toolchain_test, docs_adr_0030_aturan_tertulis_mendapat_pemeriksanya_kontrak_awcms_test, docs_adr_0030_aturan_tertulis_mendapat_pemeriksanya_perilis_menjalankan_gerbang, docs_adr_0030_aturan_tertulis_mendapat_pemeriksanya_pin_sha_dan_digest [EXTRACTED 1.00]
 
-## Communities (62 total, 7 thin omitted)
+## Communities (64 total, 7 thin omitted)
 
 ### Community 0 - "Dependency dan skrip proyek"
 Cohesion: 0.04
 Nodes (45): astro, @astrojs/check, @astrojs/node, @astrojs/sitemap, compression, dependencies, astro, @astrojs/check (+37 more)
 
 ### Community 1 - "Pengambilan dan render blok konten"
-Cohesion: 0.27
-Nodes (15): ALLOWED_HEADING_LEVELS, AWCMS_BLOCK_TYPES, Block, escapeHtml(), GalleryItem, renderBlock(), renderContentBlocks(), renderGallery() (+7 more)
+Cohesion: 0.10
+Nodes (35): ADR-0024, resolveObjekMedia(), assertFeedReturnedFullRows(), assertTranslationsArePairable(), AwcmsAstroBlock, AwcmsBlogPost, AwcmsBlogPostSummary, ALLOWED_HEADING_LEVELS (+27 more)
 
 ### Community 2 - "Klien awcms, tenant, dan media"
-Cohesion: 0.06
-Nodes (43): ADR-0022, ADR-0024, ADR-0054, ADR-0019, AwcmsApiError, awcmsGet(), baseUrl(), batasWaktuMs() (+35 more)
+Cohesion: 0.08
+Nodes (26): ADR-0022, ADR-0054, ADR-0019, AwcmsApiError, awcmsGet(), baseUrl(), batasWaktuMs(), describeTenantResolution() (+18 more)
 
 ### Community 3 - "Gerbang audit konten"
 Cohesion: 0.12
 Nodes (24): auditAnggaranGambar(), auditGambar(), auditKeluaran(), auditPrioritasGambar(), auditSvg(), bandingkanRasio(), berkasUntuk(), catatan (+16 more)
 
 ### Community 4 - "Postur performa dan keamanan"
-Cohesion: 0.22
-Nodes (8): §A — Celah 7: CodeQL atas permukaan JS/TS, dengan cakupan yang dihitung, bukan diklaim, ADR-0032 — Dua celah terakhir ADR-0028 ditutup, masing-masing dengan syarat kejujurannya, Alternatif yang dipertimbangkan, §B — Celah 8: Core Web Vitals lab, terkondisi sumber konten, dengan proksi yang disebut proksi, §C — Pemeriksanya (ADR-0030 berlaku untuk penutupan ini juga), Keputusan, Konsekuensi, Konteks
+Cohesion: 0.13
+Nodes (13): ADR-0031 — SBOM CycloneDX diturunkan dari `bun.lock` pada setiap rilis, Alternatif yang dipertimbangkan, Keputusan, Konsekuensi, Konteks, §A — Celah 7: CodeQL atas permukaan JS/TS, dengan cakupan yang dihitung, bukan diklaim, ADR-0032 — Dua celah terakhir ADR-0028 ditutup, masing-masing dengan syarat kejujurannya, Alternatif yang dipertimbangkan (+5 more)
 
 ### Community 5 - "Experience layer dan BFF Jualanku"
-Cohesion: 0.11
-Nodes (24): Envelope { success, data } dan tenant diresolusi sisi server, 01 — Arsitektur experience layer Jualanku, Perbedaan variabel build-time vs request-time, Jalur rollback ke build statis penuh, Matriks rendering rute Jualanku, Static-by-default dengan rute on-demand di-opt-out satu per satu, Alur sesi portal /_portal-api/auth, Aturan cookie dan CSRF portal (+16 more)
+Cohesion: 0.12
+Nodes (23): Envelope { success, data } dan tenant diresolusi sisi server, 01 — Arsitektur experience layer Jualanku, Perbedaan variabel build-time vs request-time, Jalur rollback ke build statis penuh, Matriks rendering rute Jualanku, Static-by-default dengan rute on-demand di-opt-out satu per satu, Alur sesi portal /_portal-api/auth, Aturan cookie dan CSRF portal (+15 more)
 
 ### Community 6 - "Standar teknis dan kontrak konten"
-Cohesion: 0.12
-Nodes (20): Aturan 2 awcms ADR-0062 diserap sebagai pekerjaan (§E), Indeks ADR digerbangi dua arah oleh bun run audit:dokumen, Gerbang audit yang wajib tetap hijau di situs turunan, Yang harus dikosongkan sebelum commit pertama, Aturan aset gambar, Dua aturan gambar yang menuntut mata manusia, Gerbang audit dokumen — bun run audit:dokumen, Gerbang audit graf — bun run audit:graf (+12 more)
+Cohesion: 0.19
+Nodes (13): Gerbang audit yang wajib tetap hijau di situs turunan, Aturan aset gambar, Dua aturan gambar yang menuntut mata manusia, Gerbang audit graf — bun run audit:graf, Gerbang audit konten — gambar (bun run audit:konten), Gerbang CI — .github/workflows/ci.yml, Gerbang katalog PO — bun test, Gerbang lockfile — bun run check:lockfile (+5 more)
 
 ### Community 7 - "Gerbang audit dokumen"
 Cohesion: 0.13
@@ -153,36 +155,36 @@ Cohesion: 0.13
 Nodes (20): ASAL_MEDIA, asalMediaTerkonfigurasi(), aturanCache(), buatServer(), CSP, HEADER_KEAMANAN, HEADER_PRODUKSI, headerKeamanan() (+12 more)
 
 ### Community 9 - "Layout dasar dan metadata terstruktur"
-Cohesion: 0.23
-Nodes (11): getSiteUrl(), Locale, localeHtmlLang, articleSchema(), ArticleSchemaInput, collectionSchema(), imageObject(), PUBLISHER_ID (+3 more)
+Cohesion: 0.14
+Nodes (19): ADR-0026, getSiteUrl(), Locale, localeHtmlLang, alternates, jsonLd, locale, metaDescription (+11 more)
 
 ### Community 10 - "Tabel gerbang mutu dan aturan aset"
 Cohesion: 0.13
-Nodes (24): Memulai situs baru di atas awcms-astro, Urutan: kontrak dulu, konten berikutnya, tampilan terakhir, Empat aturan yang wajib dipertahankan adapter API, content_json bernamespace awcmsAstro dengan schemaVersion, Integrasi awcms-astro → awcms, Jaminan konten yang paling berisiko hilang saat migrasi, Kontrak adapter LocalizedArticle, Modul awcms yang relevan bagi situs statis (+16 more)
+Nodes (21): Empat aturan yang wajib dipertahankan adapter API, content_json bernamespace awcmsAstro dengan schemaVersion, Integrasi awcms-astro → awcms, Jaminan konten yang paling berisiko hilang saat migrasi, Kontrak adapter LocalizedArticle, Modul awcms yang relevan bagi situs statis, Pemetaan model data ke awcms_blog_posts, Urutan migrasi delapan langkah (+13 more)
 
 ### Community 11 - "Rantai deploy dan pemeriksa yang dipin"
-Cohesion: 0.12
-Nodes (20): ADR-0030 — Empat aturan yang sudah tertulis mendapat pemeriksanya; rantai pasok dipin ke SHA, tests/kontrak-awcms.test.mjs — permukaan diekstrak dari kode, dibandingkan dua arah (§D), Lima nilai versi Bun yang wajib sepakat, Perilis menjalankan bun test dan bun audit sesudah build (§C), Rantai pasok dipin ke SHA commit dan digest image (§B), tests/versi-toolchain.test.mjs (§A), Gerbang permukaan awcms — bun test, Gerbang versi toolchain — bun test (+12 more)
+Cohesion: 0.18
+Nodes (16): Sembilan celah dicatat sebagai celah, dengan pemeriksanya masing-masing (§C), ADR-0030 — Empat aturan yang sudah tertulis mendapat pemeriksanya; rantai pasok dipin ke SHA, tests/kontrak-awcms.test.mjs — permukaan diekstrak dari kode, dibandingkan dua arah (§D), Lima nilai versi Bun yang wajib sepakat, Rantai pasok dipin ke SHA commit dan digest image (§B), tests/versi-toolchain.test.mjs (§A), Celah 7 — tidak ada analisis statik (CodeQL), Celah 9 — tidak ada SBOM pada rilis (+8 more)
 
 ### Community 12 - "Gerbang audit graf"
-Cohesion: 0.07
-Nodes (31): engines, bun, ARTEFAK_TERLACAK, auditArtefakTerlacak(), auditLabelKomunitas(), auditLaporanSepakat(), auditPengecualian(), catatan (+23 more)
+Cohesion: 0.14
+Nodes (14): engines, bun, jalankan(), pohon(), pohonKilau(), sementara, graf(), jalankan() (+6 more)
 
 ### Community 13 - "ADR-0014 dan rencana porting Jualanku"
 Cohesion: 0.13
 Nodes (18): ADR-0014 — Rendering campuran dan BFF portal Jualanku, ADR-0045 awcms — Jualanku porting, awcms system of record, Astro BFF, Alternatif ditolak: portal SPA memanggil awcms langsung, Alternatif ditolak: seluruh situs output 'server', BFF hanya orkestrasi dan proyeksi, Experience layer Jualanku.info, Jalur rollback build statis penuh, Kontrak sesi portal (+10 more)
 
 ### Community 14 - "Katalog PO dan komponen berlokal"
-Cohesion: 0.21
-Nodes (6): locale, catalogs, Catalog, parsePo(), readQuoted(), rawCatalogs
+Cohesion: 0.22
+Nodes (6): defaultLocale, tabs, Catalog, parsePo(), readQuoted(), katalog
 
 ### Community 15 - "Halaman tab dan beranda"
-Cohesion: 0.17
-Nodes (6): locale, number, schema, siteConfig, TabSlug, getArticleVisual()
+Cohesion: 0.15
+Nodes (8): locale, number, schema, localePath(), siteConfig, TabSlug, tabTitleKey(), getArticleVisual()
 
 ### Community 16 - "Rute berprefiks locale dan pengalihnya"
-Cohesion: 0.14
-Nodes (10): getLocaleFromPath(), isLocale(), localeMeta, locales, prefixedLocales, siteUrl, socialImageRaw, stripLocale() (+2 more)
+Cohesion: 0.18
+Nodes (9): getLocaleFromPath(), isLocale(), localeMeta, locales, prefixedLocales, siteUrl, socialImageRaw, stripLocale() (+1 more)
 
 ### Community 17 - "Gambar artikel dan seni lokal"
 Cohesion: 0.18
@@ -190,7 +192,7 @@ Nodes (13): ADR-0021, ArticleVisual, getArticleImage(), getTabImage(), heroImage
 
 ### Community 18 - "HSTS dan gerbang produksinya (ADR-0029)"
 Cohesion: 0.40
-Nodes (4): ADR-0030, codeql, ADR-0028, ADR-0032
+Nodes (4): codeql, ADR-0028, ADR-0030, ADR-0032
 
 ### Community 19 - "Kontrak kerja dan katalog skill"
 Cohesion: 0.17
@@ -221,12 +223,12 @@ Cohesion: 0.20
 Nodes (12): Keputusan awcms yang mengubah apa yang benar di sini (ADR-0049/0050/0056/0059/0061/0062), Tenant datang dari token mesin, tidak pernah dari header, Checklist sebelum go-live situs turunan, Jebakan yang paling sering terjadi di situs turunan, awcms ADR-0062 — skills are gated against the code they describe, Kutipan ADR-NNNN belum diperiksa resolve ke berkasnya, Skill digerbangi terhadap kode yang dijelaskannya, Template issue: Laporan bug (+4 more)
 
 ### Community 26 - "Sembilan celah dan anggaran performa"
-Cohesion: 0.23
-Nodes (12): Sembilan celah dicatat sebagai celah, dengan pemeriksanya masing-masing (§C), Target Core Web Vitals ditulis sebagai target, beserta pengakuan belum diukur (§B), Kesalahan yang paling sering terjadi saat menurunkan situs, Celah 7 — tidak ada analisis statik (CodeQL), Celah 8 — Core Web Vitals tidak diukur, Celah 9 — tidak ada SBOM pada rilis, Core Web Vitals — LCP, INP, CLS, NIST SSDF (SP 800-218 v1.1) (+4 more)
+Cohesion: 0.19
+Nodes (13): Target Core Web Vitals ditulis sebagai target, beserta pengakuan belum diukur (§B), Celah 8 — Core Web Vitals tidak diukur, Core Web Vitals — LCP, INP, CLS, WCAG 2.1 AA (2.2 AA untuk permukaan Jualanku), Aturan aksesibilitas yang mengikat (WCAG 2.1 AA), Aturan arah data satu arah — komponen tidak mengambil datanya sendiri, Dokumentasi wajib dan wajib sinkron dengan kode, Target dan cara mencapai performa (+5 more)
 
 ### Community 27 - "Design system dan token tema"
-Cohesion: 0.23
-Nodes (12): Gerbang keluaran CSP — bun test setelah bun run build, Aturan aksesibilitas design system, Audit kontras terukur belum pernah dijalankan, awcms-astro — Design System, Design token sebagai CSS custom properties di :root, Gap terhadap kosakata token AWCMS, Jalur adopsi token empat tahap saat integrasi, Pola tanpa JavaScript yang mengikat (+4 more)
+Cohesion: 0.31
+Nodes (9): Gerbang keluaran CSP — bun test setelah bun run build, awcms-astro — Design System, Design token sebagai CSS custom properties di :root, Jalur adopsi token empat tahap saat integrasi, Pola tanpa JavaScript yang mengikat, Sembilan prinsip design system, Pola responsif mobile-first dari 360px, Tanpa gaya dan tanpa skrip di dalam HTML (+1 more)
 
 ### Community 28 - "Seni lokal, ?url, dan pin runtime Bun"
 Cohesion: 0.18
@@ -245,12 +247,12 @@ Cohesion: 0.15
 Nodes (11): apply, args, body, commit, ketemu, level, [major, minor, patch], ADR-0028 (+3 more)
 
 ### Community 32 - "Matriks standar dan edisinya"
-Cohesion: 0.11
-Nodes (31): ADR-0028 — Postur performa dan keamanan diikat ke standar yang disebut namanya, Jangkar standar dinyatakan beserta edisinya (§A), Yang ditolak, ditolak secara tertulis (§D), Selisih HSTS dari awcms — header keenam yang tidak dipasang di mana pun, ADR-0029 — HSTS dikirim penyaji, digerbangi produksi, tanpa includeSubDomains, headerKeamanan(produksi) — fungsi murni pemilik header di server/penyaji.mjs, HSTS digerbangi NODE_ENV === "production" (§A), max-age=31536000, tanpa includeSubDomains, tanpa preload (§B) (+23 more)
+Cohesion: 0.15
+Nodes (25): ADR-0028 — Postur performa dan keamanan diikat ke standar yang disebut namanya, Jangkar standar dinyatakan beserta edisinya (§A), Yang ditolak, ditolak secara tertulis (§D), Selisih HSTS dari awcms — header keenam yang tidak dipasang di mana pun, ADR-0029 — HSTS dikirim penyaji, digerbangi produksi, tanpa includeSubDomains, headerKeamanan(produksi) — fungsi murni pemilik header di server/penyaji.mjs, HSTS digerbangi NODE_ENV === "production" (§A), max-age=31536000, tanpa includeSubDomains, tanpa preload (§B) (+17 more)
 
 ### Community 33 - "Layout halaman artikel"
-Cohesion: 0.12
-Nodes (13): locale, locale, locale, articleVisual, breadcrumbItems, canonicalUrl, DateTimeFormatOptions, locale (+5 more)
+Cohesion: 0.15
+Nodes (7): locale, locale, locale, locale, catalogs, rawCatalogs, t()
 
 ### Community 34 - "Empat aturan tanpa pemeriksa dan pin versi"
 Cohesion: 0.28
@@ -313,27 +315,35 @@ Cohesion: 0.23
 Nodes (10): buangTrailingComma(), ADR-0028, ADR-0031, repoRoot, susunPurl(), susunSbom(), lock, ADR-0030 (+2 more)
 
 ### Community 58 - "BaseLayout, tombol berbagi, dan kartu sosial"
-Cohesion: 0.18
-Nodes (11): ADR-0026, localePath(), swapLocalePath(), tabTitleKey(), alternates, jsonLd, locale, metaDescription (+3 more)
+Cohesion: 0.16
+Nodes (17): ARTEFAK_TERLACAK, auditArtefakTerlacak(), auditLabelKomunitas(), auditLaporanSepakat(), auditPengecualian(), catatan, catatKesegaran(), dirKeluaran (+9 more)
 
 ### Community 59 - "Rilis membawa SBOM CycloneDX dari lockfile (ADR-0031)"
-Cohesion: 0.33
-Nodes (5): ADR-0031 — SBOM CycloneDX diturunkan dari `bun.lock` pada setiap rilis, Alternatif yang dipertimbangkan, Keputusan, Konsekuensi, Konteks
+Cohesion: 0.20
+Nodes (11): Aturan 2 awcms ADR-0062 diserap sebagai pekerjaan (§E), Indeks ADR digerbangi dua arah oleh bun run audit:dokumen, Memulai situs baru di atas awcms-astro, Kesalahan yang paling sering terjadi saat menurunkan situs, Yang harus dikosongkan sebelum commit pertama, Urutan: kontrak dulu, konten berikutnya, tampilan terakhir, Anggaran gambar — beranda ≤ 250 KB, halaman konten ≤ 100 KB, Gerbang audit dokumen — bun run audit:dokumen (+3 more)
 
 ### Community 60 - "Rute pages/ dan getStaticPaths-nya"
-Cohesion: 0.47
-Nodes (4): defaultLocale, getArticles(), getStaticPaths(), getStaticPaths()
+Cohesion: 0.20
+Nodes (9): articleVisual, breadcrumbItems, canonicalUrl, DateTimeFormatOptions, locale, schema, tabConfig, tabName (+1 more)
 
 ### Community 61 - "Gerbang Core Web Vitals lab"
 Cohesion: 0.40
 Nodes (4): ci, konfigurasi, ADR-0028, ADR-0032
+
+### Community 62 - "Deploy dan rebuild lewat webhook (Coolify)"
+Cohesion: 0.25
+Nodes (8): /api/v1/deploy, bukan /restart, Deploy dan rebuild lewat webhook (Coolify), Health check boleh menyala pada image ini, Jaring pengaman rebuild.yml — workflow_dispatch dan jadwal harian, Pemicu di awcms wajib pola dua bagian: antrean dalam transaksi, worker di luar, Rantai deploy: redaksi menerbitkan → antrean → Coolify → build → pembaca, Rollback deploy dan kegagalan build yang sunyi bagi pembaca, Token dan riwayat image — AWCMS_API_TOKEN hanya hidup di stage build
+
+### Community 63 - "Perilis menjalankan bun test dan bun audit sesudah build (§C)"
+Cohesion: 0.50
+Nodes (4): Perilis menjalankan bun test dan bun audit sesudah build (§C), OWASP Top 10 (2021), Gerbang audit dependency — bun audit --audit-level=low, Versioning MAJOR.MINOR.PATCH dan changeset per iterasi
 
 ## Ambiguous Edges - Review These
 - `Three Stacked Signal Lamps (red, amber, green)` → `Sky-to-Emerald Brand Palette (Tailwind-family hues)`  [AMBIGUOUS]
   public/favicon.svg · relation: conceptually_related_to
 
 ## Knowledge Gaps
-- **223 isolated node(s):** `Konteks`, `§A — Celah 7: CodeQL atas permukaan JS/TS, dengan cakupan yang dihitung, bukan diklaim`, `§B — Celah 8: Core Web Vitals lab, terkondisi sumber konten, dengan proksi yang disebut proksi`, `§C — Pemeriksanya (ADR-0030 berlaku untuk penutupan ini juga)`, `Konsekuensi` (+218 more)
+- **223 isolated node(s):** `SITE`, `ADR-0014`, `ADR-0016`, `name`, `type` (+218 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **7 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -344,13 +354,13 @@ _Questions this graph is uniquely positioned to answer:_
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **Why does `ADR-0014 — Rendering campuran dan BFF portal Jualanku` connect `ADR-0014 dan rencana porting Jualanku` to `Keputusan runtime, cache, dan layar admin`?**
   _High betweenness centrality (0.185) - this node is a cross-community bridge._
-- **Why does `awcmsGet()` connect `Klien awcms, tenant, dan media` to `ADR-0014 dan rencana porting Jualanku`?**
+- **Why does `awcmsGet()` connect `Klien awcms, tenant, dan media` to `Pengambilan dan render blok konten`, `ADR-0014 dan rencana porting Jualanku`?**
   _High betweenness centrality (0.146) - this node is a cross-community bridge._
 - **Why does `Experience layer Jualanku.info` connect `ADR-0014 dan rencana porting Jualanku` to `Klien awcms, tenant, dan media`?**
   _High betweenness centrality (0.145) - this node is a cross-community bridge._
 - **Are the 2 inferred relationships involving `Gerbang mutu — tabel gerbang yang wajib hijau` (e.g. with `Gerbang audit yang wajib tetap hijau di situs turunan` and `Aturan punya penegak — lima gerbang awcms-astro`) actually correct?**
   _`Gerbang mutu — tabel gerbang yang wajib hijau` has 2 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `Konteks`, `§A — Celah 7: CodeQL atas permukaan JS/TS, dengan cakupan yang dihitung, bukan diklaim`, `§B — Celah 8: Core Web Vitals lab, terkondisi sumber konten, dengan proksi yang disebut proksi` to the rest of the system?**
+- **What connects `SITE`, `ADR-0014`, `ADR-0016` to the rest of the system?**
   _223 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Dependency dan skrip proyek` be split into smaller, more focused modules?**
   _Cohesion score 0.043478260869565216 - nodes in this community are weakly interconnected._
