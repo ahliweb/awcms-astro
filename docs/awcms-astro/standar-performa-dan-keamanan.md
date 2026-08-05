@@ -71,7 +71,12 @@ memasang keduanya untuk memagari sesi admin terautentikasinya, dan komentar di
 kodenya sendiri (`src/lib/security/security-headers.ts`) menyatakan alasan itu
 TIDAK menular ke template ini — situs publik statis yang gambarnya justru boleh
 disematkan situs lain, dan yang tidak punya sesi untuk dipagari COOP. Rincian
-penolakannya di §"Yang sengaja TIDAK diadopsi".
+penolakannya di §"Yang sengaja TIDAK diadopsi". Sejak 5 Agustus 2026 selisih
+ini **bukan lagi sekadar dua dokumen yang kebetulan sepakat**: `awcms` ADR-0069
+mencatatnya sebagai divergence bernama ber-`reviewDate` 2027-02-04 di manifest
+kompatibilitas keluarganya, satu kohort dengan divergence HSTS repo ini —
+artinya ia kembali ke meja pada tanggal itu alih-alih membusuk, dan tidak ada
+yang akan "memperbaikinya" ke arah paritas tanpa membaca alasannya lebih dulu.
 
 **Sampai 4 Agustus 2026 repo ini mengirim LIMA, dan empat berkas menyebutnya
 "disamakan dengan postur `awcms`".** Kelimanya memang identik nilainya; yang
@@ -257,8 +262,15 @@ tetap ditolak — lab mengukur halaman, bukan pembaca), dan kolom Keadaan tabel
 ini tetap **tidak bisa digerbangi mesin**. Sembilan dari sembilan bukan
 "selesai selamanya"; ia berarti setiap celah yang DIKETAHUI punya pemeriksa,
 dan temuan berikutnya masuk tabel ini sebagai nomor sepuluh — bukan
-menggantikan baris lama. Konteks keluarganya: `awcms` sendiri belum mengukur
-Core Web Vitals, dan ADR-0067 di sana masih `Proposed`.
+menggantikan baris lama.
+
+Konteks keluarganya, per 5 Agustus 2026: `awcms` **sudah** mengukur Core Web
+Vitals di lab pada hari yang sama (Opsi D ADR-0067 di sana — LCP+CLS halaman
+`/login`, nol data pengunjung), jadi kedua repo kini mengukur LAB dan tidak
+satu pun mengukur lapangan; ADR-0067 tetap `Proposed` karena bagian RUM-nya
+masih keputusan pemilik produk di sana, sementara di sini RUM sudah ditolak
+sebagai postur. Selisih yang tersisa bukan lagi soal apakah CWV diukur,
+melainkan siapa yang memikul keputusan lapangan.
 
 ## Yang sengaja TIDAK diadopsi
 
@@ -279,7 +291,9 @@ temuan baru.
   `Cross-Origin-Opener-Policy`) untuk memagari sesi admin-nya, dan komentar di
   kodenya sendiri menyatakan alasan itu tidak menular ke sini: repo ini tidak
   punya sesi untuk dipagari, dan halaman HTML adalah navigasi — yang CORP memang
-  tidak atur.
+  tidak atur. Penolakan ini kini **tercatat di kedua sisi**: `awcms` ADR-0069
+  menjadikannya divergence bernama ber-`reviewDate` 2027-02-04, jadi ia tidak
+  akan diusulkan ulang sebagai temuan enam bulan lagi.
 - **Subresource Integrity.** Tidak ada satu pun sumber daya lintas-origin yang
   dimuat halaman ini. SRI tanpa sumber daya eksternal adalah atribut yang tidak
   menjaga apa pun.
@@ -317,8 +331,10 @@ Repo ini **mengonsumsi** `awcms` dan tidak menyajikan API apa pun, jadi sebagian
 besar kontrol keluarga — RLS, ABAC default-deny, idempotency, audit trail, HMAC
 sinkronisasi — ditegakkan di sana dan tidak punya padanan di sini. Yang
 **bukan** berarti tidak relevan: keputusan `awcms` mengubah apa yang benar di
-sini, dan empat baris terbawah tabel ini datang dari gelombang ADR 4 Agustus
-2026 sisi sana (0065–0068).
+sini. Empat baris tengah tabel ini datang dari gelombang ADR 4 Agustus 2026
+sisi sana (0065–0068); tiga baris terbawah dari putaran 5 Agustus 2026, saat
+kedua repo menutup celah lintas-repo terakhirnya masing-masing dan berhenti
+menyimpan versi berbeda dari fakta yang sama.
 
 | Keputusan `awcms` | Akibatnya di repo ini |
 | --- | --- |
@@ -327,8 +343,11 @@ sini, dan empat baris terbawah tabel ini datang dari gelombang ADR 4 Agustus
 | ADR-0061 — permukaan host-resolved boleh di-cache di tepi | Tidak berlaku langsung: situs ini tidak melewati Varnish. Yang **berlaku** adalah alasannya — 404 yang bisa di-cache adalah kanal observasi kedua. Repo ini tidak punya cabang 404 yang membedakan tenant, jadi kelas cacat itu tidak bisa terjadi di sini |
 | ADR-0062 — skill digerbangi terhadap kode yang dijelaskannya | **Diserap penuh sejak 5 Agustus 2026.** `bun run audit:dokumen` memeriksa jalur berkas yang disebut `.claude/skills/` persis seperti `docs/`, dan kini juga aturan 2-nya: setiap kutipan `ADR-NNNN` wajib resolve ke berkasnya, kecuali ditandai milik repo lain di paragraf yang sama. Gerbang pertamanya langsung menemukan sebelas kutipan tanpa penanda |
 | ADR-0065 — kontrak konsumen `awcms-astro` dibekukan di sana | **Batas antar-repo kini dijaga dari dua arah.** Sisi sini menggerbangi daftar permukaan yang dipanggil (ADR-0030); sisi sana membekukan bentuknya (lima path + closure `$ref`-nya, subset aditif). Perubahan non-aditif pada permukaan yang dipakai build merah di CI `awcms` lebih dulu — dan regenerasi fixture-nya adalah undangan eksplisit agar repo ini diperbarui serentak |
-| ADR-0067 — pengumpulan Core Web Vitals (masih `Proposed`) | **Menguatkan arah yang celah 8 akhirnya tempuh.** `awcms` menghadapi tabrakan yang sama antara telemetri per-kunjungan dan postur privacy-first modulnya, dan menahan keputusannya di pemilik produk. Repo ini menolak RUM dan menutup celah 8 lewat pengukuran lab di CI (ADR-0032 §B) — apa pun opsi yang kelak dipilih di sana, postur sini sudah dinyatakan |
+| ADR-0067 — pengumpulan Core Web Vitals (masih `Proposed`) | **Kini paritas, dan yang tersisa hanyalah siapa memikul keputusan lapangan.** `awcms` mendarat Opsi D-nya pada hari yang sama dengan celah 8 di sini (5 Agustus 2026): LCP+CLS diukur di lab, nol data pengunjung, INP tidak diklaim. Jadi **kedua repo mengukur LAB dan tidak satu pun mengukur lapangan**. Status ADR-nya tetap `Proposed` karena yang tertahan cuma bagian RUM — di sana menunggu pemilik produk, di sini sudah diputus: **ditolak** ([ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) §B) |
 | ADR-0068 — postur standar keluarga: edisi dipin, divergence dicatat | **Kalimat "mengikuti edisi `awcms`" akhirnya punya alamat.** Pin edisi (Top 10 2021, ASVS 4.0.3) kini keputusan ber-ADR dengan tanggal tinjau 2027-02-04, dan HSTS tanpa `includeSubDomains` di sini (ADR-0029) tercatat sebagai divergence bernama di `awcms-family-compatibility.yaml` sisi sana — dengan `reviewDate` yang memerahkan CI `awcms` saat jatuh tempo, bukan catatan yang membusuk diam-diam |
+| ADR-0069 — selisih COOP/CORP dicatat sebagai divergence keluarga | **Penolakan CORP di sini berhenti terbaca sebagai kelalaian.** `awcms` mengirim COOP+CORP `same-origin` untuk memagari sesi adminnya; repo ini tidak mengirim keduanya, dan kedua sisi kini menuliskan alasannya: CORP ditolak sebagai keputusan template (memutuskan penyematan gambar untuk situs yang belum ada), COOP tak punya sesi untuk dipagari karena seluruh halaman di sini adalah navigasi publik. Entri `coop-corp-cross-origin-isolation` ber-`reviewDate` 2027-02-04 di manifest sana yang menjaganya kembali ke meja. **Arah paritas tidak diubah**: situs turunan yang butuh keduanya memutuskannya lewat ADR di repo situsnya, bukan dengan menyalin nilai `awcms` ke template ini |
+| Celah C3 sana ditutup — kompresi yang diwarisi kini WAJIB dinyatakan | Selisih kepemilikan tetap ada dan berhenti tak terlihat: penyaji repo ini mengompresi sendiri (Brotli/gzip ter-negosiasi, `server/penyaji.mjs`), sedangkan `awcms` mewarisinya dari Cloudflare — dan `bun run security:readiness` di sana kini menuntut blok bertanda yang menyebut tier pengompresi beserta akibatnya di luar CDN. Yang perlu dibaca situs turunan: kata "terkompresi" berarti dua hal berbeda di dua repo — di sini milik proses yang repo kirim, di sana milik lapisan yang operator sewa |
+| Celah C16 sana ditutup — CodeQL berhenti mengklaim `.astro` | Pola pernyataan cakupan yang [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) §A tetapkan di sini diadopsi di sana: komentar workflow-nya sempat menyebut "TypeScript/Astro source" padahal CodeQL tak punya ekstraktor Astro. Postur keluarga karena itu kini satu kalimat yang sama di dua repo: **`.astro` tidak teranalisis statik di mana pun, dan masing-masing repo mengatakannya di ringkasan run-nya sendiri** — bukan dibiarkan disimpulkan pembaca |
 
 Celah `awcms` ADR-0062 itu ditutup 5 Agustus 2026, persis semurah yang
 diperkirakan: gerbangnya memang sudah membaca seluruh markdown repo ini dan

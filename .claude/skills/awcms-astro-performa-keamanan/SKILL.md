@@ -132,7 +132,7 @@ ditolak oleh aturan yang sama:
 | --- | --- |
 | Pelaporan CSP (`report-to`) | Mengirim URL yang sedang dibuka pembaca ke sebuah pengumpul. Larangan mengumpulkan data pembaca **tidak punya pengecualian "tapi ini untuk keamanan"** |
 | RUM untuk mengukur Core Web Vitals | Alasan yang sama. Celah 8 karena itu diarahkan ke pengukuran **lab** di CI, dengan keterbatasannya dinyatakan |
-| `Cross-Origin-Resource-Policy: same-origin` menyeluruh | Memblokir situs lain menyematkan gambar dari situs ini — keputusan yang bukan milik sebuah TEMPLATE |
+| `Cross-Origin-Resource-Policy: same-origin` menyeluruh | Memblokir situs lain menyematkan gambar dari situs ini — keputusan yang bukan milik sebuah TEMPLATE. `awcms` mengirimnya (bersama COOP) untuk memagari sesi adminnya; sejak 5 Agustus 2026 selisih itu tercatat sebagai divergence ber-`reviewDate` di manifest keluarga sana (ADR-0069 di sana), jadi **jangan "perbaiki" ke arah paritas** — situs yang membutuhkannya memutuskannya lewat ADR di repo situs itu |
 | Subresource Integrity | Tidak ada satu pun sumber daya lintas-origin. SRI tanpa sumber daya eksternal tidak menjaga apa pun |
 | Rate limiting / WAF di penyaji | Milik Traefik/Coolify. Dua tempat yang memutuskan hal yang sama adalah cara paling sunyi berakhir tanpa keputusan |
 
