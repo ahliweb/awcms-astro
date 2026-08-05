@@ -1,6 +1,6 @@
 ---
 name: awcms-astro-performa-keamanan
-description: Pemeriksaan performa dan keamanan awcms-astro terhadap standar yang disebut namanya (OWASP Top 10 2021, ASVS 4.0.3, Secure Headers, ISO 27001 Annex A, NIST SSDF, Core Web Vitals) — apa yang sudah terpenuhi dengan buktinya, sembilan celah bernomor (enam ditutup, tiga terbuka), dan lima kontrol yang sengaja DITOLAK. Gunakan sebelum rilis, sebelum go-live sebuah situs turunan, saat menyentuh server/penyaji.mjs atau anggaran performa, atau saat menjawab pertanyaan kepatuhan.
+description: Pemeriksaan performa dan keamanan awcms-astro terhadap standar yang disebut namanya (OWASP Top 10 2021, ASVS 4.0.3, Secure Headers, ISO 27001 Annex A, NIST SSDF, Core Web Vitals) — apa yang sudah terpenuhi dengan buktinya, sembilan celah bernomor (tujuh ditutup, dua terbuka), dan lima kontrol yang sengaja DITOLAK. Gunakan sebelum rilis, sebelum go-live sebuah situs turunan, saat menyentuh server/penyaji.mjs atau anggaran performa, atau saat menjawab pertanyaan kepatuhan.
 ---
 
 # awcms-astro — performa dan keamanan
@@ -100,7 +100,7 @@ Anggaran: **beranda ≤ 250 KB gambar, halaman konten ≤ 100 KB.** Sejak 4 Agus
 ditimbang hanya gambar yang benar-benar diterbitkan build ini, karena media
 `awcms` tidak ada di sana.
 
-## Sembilan celah — enam tertutup, tiga terbuka
+## Sembilan celah — tujuh tertutup, dua terbuka
 
 Daftar lengkap di dokumen standar. Yang masih **TERBUKA**, dan karena itu yang
 harus dijawab jujur saat ditanya:
@@ -109,11 +109,11 @@ harus dijawab jujur saat ditanya:
 | --- | --- | --- |
 | 7 | Tidak ada analisis statik (`awcms` punya CodeQL) | **CodeQL tidak mengurai `.astro`** — ia hanya akan mencakup `src/lib/**.ts`, `scripts/**.mjs`, `server/**.mjs`. Menyalakannya lalu menyebut repo ini "dianalisis statik" adalah upacara yang terlihat seperti cakupan |
 | 8 | Core Web Vitals tidak diukur | Butuh Chrome di CI dan hanya berjalan pada situs yang punya sumber konten; **tidak bisa dibuktikan di repo template** |
-| 9 | Tidak ada SBOM pada rilis | SSDF PS.2 |
 
-Enam yang tertutup (1 HSTS, 2 `fetchpriority`, 3 anggaran gambar, 4 batas waktu
-`awcmsGet`, 5 header pembocor, 6 pin SHA/digest) **tetap tercatat di tabel
-dokumen standar**.
+Tujuh yang tertutup (1 HSTS, 2 `fetchpriority`, 3 anggaran gambar, 4 batas
+waktu `awcmsGet`, 5 header pembocor, 6 pin SHA/digest, 9 SBOM rilis — perilis
+menulis `sbom.cdx.json` CycloneDX sebelum commit rilis, ADR-0031) **tetap
+tercatat di tabel dokumen standar**.
 Jangan hapus barisnya: dihapus, celahnya akan diusulkan lagi sebagai temuan baru
 enam bulan kemudian, dan pemeriksanya akan dilonggarkan oleh orang yang tidak
 tahu kenapa ia ada.

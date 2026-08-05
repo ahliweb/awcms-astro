@@ -28,6 +28,7 @@
     "start": "bun run serve",
     "preview": "bun run serve",
     "release": "bun scripts/rilis.mjs",
+    "sbom": "bun scripts/sbom.mjs",
     "build:asal-media": "bun scripts/asal-media.mjs"
   },
   "overrides": {

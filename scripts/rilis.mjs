@@ -135,6 +135,16 @@ execSync('bun test', { stdio: 'inherit' });
 console.log('Menjalankan bun audit ...');
 execSync('bun audit --audit-level=low', { stdio: 'inherit' });
 
+// ── SBOM rilis (ADR-0031) ────────────────────────────────────────────────────
+// SSDF PS.2 / celah 9 ADR-0028: konsumen hilir menjawab "apakah rilis ini
+// terdampak advisory X" dari tag-nya, tanpa membangun ulang. Ditulis SEBELUM
+// commit rilis sehingga sbom.cdx.json ikut di dalam tag, dan deterministik
+// (tanpa timestamp) sehingga siapa pun bisa memverifikasi SBOM sebuah tag
+// memang diturunkan dari bun.lock di sebelahnya. `tests/sbom.test.mjs` menjaga
+// generatornya benar DAN baris ini tidak hilang diam-diam.
+console.log('Menulis sbom.cdx.json (CycloneDX, dari bun.lock) ...');
+execSync('bun run sbom', { stdio: 'inherit' });
+
 // ── Lipat changeset ke CHANGELOG.md ──────────────────────────────────────────
 // Tanggal lokal, bukan UTC: merilis malam hari WIB akan tercatat mundur sehari
 // bila memakai toISOString().
