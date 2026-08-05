@@ -72,7 +72,7 @@ mendekati dan bisa diperiksa hari ini ada dua, keduanya di
 milik `awcms`:
 
 - **Setiap modul punya layar.** ~~Tabel §Layar admin mencatat "**7 dari 21
-  modul** masih tanpa layar" (turun dari 13 saat ADR-0051 ditulis).~~ Nol adalah
+  modul** masih tanpa layar" (turun dari 13 saat `awcms` ADR-0051 ditulis).~~ Nol adalah
   penandanya, dan `tests/admin-navigation-registry.test.ts` di sana yang
   menegakkannya.
 

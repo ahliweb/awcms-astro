@@ -34,7 +34,7 @@ Yang ADR ini tambahkan adalah **cara memastikannya**: layar `/admin/tenants` di 
 
 Kandidat yang jelas adalah build menanyakan `awcms` "apakah tenant saya tenant platform?". Itu **ditolak**, dan alasannya milik `awcms`, bukan kenyamanan:
 
-- `GET /api/v1/auth/session` **menolak kredensial mesin dengan 401 yang sama seperti token tak dikenal** (ADR-0049 §Anti-oracle). Membuatnya menjawab kredensial mesin akan mengubah endpoint itu menjadi pengklasifikasi bearer yang sedang dipegang seseorang.
+- `GET /api/v1/auth/session` **menolak kredensial mesin dengan 401 yang sama seperti token tak dikenal** (`awcms` ADR-0049 §Anti-oracle). Membuatnya menjawab kredensial mesin akan mengubah endpoint itu menjadi pengklasifikasi bearer yang sedang dipegang seseorang.
 - Endpoint baru yang menjawabnya berarti **melebarkan izin token build**, yang hari ini `["blog_content.posts.read"]` dan tidak lebih. Token build yang bocor tidak boleh bisa membaca postur platform.
 
 Asersi build-time sudah menangkap kesalahan yang benar-benar terjadi — **token yang salah ditempel** — dan menangkapnya tanpa menambah satu pun permukaan.

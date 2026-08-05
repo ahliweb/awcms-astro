@@ -50,6 +50,19 @@
  *      menutupi jalur yang kelak benar-benar hilang, jadi ia ikut dijaga; tetapi
  *      di `tests/audit-dokumen.test.mjs`, bukan di sini, karena daftarnya milik
  *      repo ini sementara gerbang ini harus tetap benar atas pohon mana pun.
+ *   6. **Kutipan `ADR-NNNN` resolve ke berkasnya.** Aturan 2 `awcms` ADR-0062,
+ *      yang sejak 4 Agustus 2026 tercatat sebagai pekerjaan di ADR-0028 repo
+ *      ini. Sebuah `ADR-0042` di kalimat adalah rujukan ke keputusan; rujukan
+ *      ke keputusan yang berkasnya tidak ada mengirim pembaca ke tempat kosong
+ *      — kelas cacat yang sama dengan tautan mati, dalam bentuk yang tidak
+ *      pernah menjadi tautan. Kutipan ADR **repo lain** ditulis dengan penanda
+ *      di dekatnya (`awcms`, "repo rujukan", atau tautan github) dan dilewati;
+ *      yang tanpa penanda dan tanpa berkas adalah pelanggaran. Batas jujurnya:
+ *      penanda dibaca per paragraf, jadi kutipan repo lain yang penandanya
+ *      berjarak lebih dari satu paragraf akan salah ditandai — dan kutipan
+ *      lokal yang salah nomor DI DEKAT kata `awcms` akan salah lolos. Keduanya
+ *      belum pernah terjadi di korpus repo ini; bila terjadi, bentuk
+ *      penulisannya yang diperbaiki, bukan gerbangnya yang dilonggarkan.
  *
  * ## Yang sengaja TIDAK diperiksa
  *
@@ -477,6 +490,83 @@ function auditJalurDisebut(berkas) {
 }
 
 // ---------------------------------------------------------------------------
+// 6. Kutipan ADR-NNNN resolve ke berkasnya
+// ---------------------------------------------------------------------------
+
+/**
+ * Penanda bahwa sebuah kutipan ADR milik repo lain. Dibaca atas jendela
+ * paragraf di sekitar kutipan, dengan `awcms-astro` dibuang lebih dulu — nama
+ * repo ini sendiri mengandung "awcms", dan tanpa pembuangan itu setiap kalimat
+ * yang menyebut nama repo ini akan menandai kutipan di dekatnya sebagai milik
+ * tetangga.
+ *
+ * @param {string} jendela
+ * @returns {boolean}
+ */
+function bertandaMilikRepoLain(jendela) {
+  const bersih = jendela.replaceAll("awcms-astro", "");
+  return /awcms|repo rujukan|github\.com/.test(bersih);
+}
+
+function auditKutipanAdr(berkas) {
+  const dirAdr = "docs/adr";
+
+  if (!existsSync(gabung(AKAR, dirAdr))) {
+    catatan.push("kutipan adr: docs/adr/ tidak ada — gerbang kutipan ADR DILEWATI");
+    return;
+  }
+
+  const nomorLokal = new Set(
+    readdirSync(gabung(AKAR, dirAdr))
+      .map((nama) => nama.match(/^(\d{4})-.+\.md$/)?.[1])
+      .filter(Boolean)
+  );
+
+  let diperiksa = 0;
+  let lokal = 0;
+  let milikLain = 0;
+
+  for (const nama of berkas) {
+    // Blok kode berpagar dibuang (contoh dan cuplikan), span kode inline TIDAK:
+    // `ADR-0042` di dalam backtick adalah kutipan, bukan contoh.
+    const isi = readFileSync(gabung(AKAR, nama), "utf8").replace(/```[\s\S]*?```/g, "");
+
+    // Paragraf = blok antar baris kosong. Tabel markdown adalah satu paragraf,
+    // sehingga header "Keputusan `awcms`" menandai seluruh baris di bawahnya.
+    for (const paragraf of isi.split(/\n\s*\n/)) {
+      for (const cocok of paragraf.matchAll(/ADR-(\d{4})/g)) {
+        diperiksa += 1;
+        const nomor = cocok[1];
+
+        if (nomorLokal.has(nomor)) {
+          lokal += 1;
+          continue;
+        }
+
+        // Jendelanya SELURUH paragraf, bukan potongan berkarakter tetap: baris
+        // sebuah tabel bisa ratusan karakter dari header yang menandainya
+        // ("Keputusan `awcms`"), dan potongan tetap memutus penanda itu persis
+        // pada tabel yang paling membutuhkannya.
+        if (bertandaMilikRepoLain(paragraf)) {
+          milikLain += 1;
+          continue;
+        }
+
+        langgar(
+          "kutipan-adr",
+          nama,
+          `menyebut ADR-${nomor} yang tidak resolve ke ${dirAdr}/${nomor}-*.md dan tidak ditandai milik repo lain (\`awcms\`, "repo rujukan", atau tautan github di paragraf yang sama)`
+        );
+      }
+    }
+  }
+
+  catatan.push(
+    `kutipan adr: ${diperiksa} kutipan diperiksa, ${lokal} lokal, ${milikLain} ditandai milik repo lain`
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Jalankan
 // ---------------------------------------------------------------------------
 
@@ -491,6 +581,7 @@ auditTautan(dokumen);
 auditIndeksAdr();
 auditPermukaanKilau();
 auditJalurDisebut(dokumen);
+auditKutipanAdr(dokumen);
 
 console.log("── audit dokumen ──");
 for (const baris of catatan) console.log(`  ${baris}`);

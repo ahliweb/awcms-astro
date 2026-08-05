@@ -310,15 +310,17 @@ sini, dan empat baris terbawah tabel ini datang dari gelombang ADR 4 Agustus
 | ADR-0049/0050 — kredensial mesin + serah-terima sesi BFF | Sudah diserap: tenant dari token, tanpa header tenant ([ADR-0018](../adr/0018-kontrak-build-token-mesin-dan-traversal-konten.md)) |
 | ADR-0059 — rute konten publik host-resolved (`/news/**`) | **Belum diserap, dan bukan pekerjaan kode.** `awcms` kini bisa menyajikan konten publiknya sendiri di domain tenant. Itu membuat "kapan memakai `awcms-astro` alih-alih rute publik `awcms`" menjadi pertanyaan nyata — dijawab di [`README.md`](README.md#kapan-memilih-awcms-astro), dan jawabannya tidak berubah: yang dipilih di sini adalah **nol panggilan ke CMS saat pembaca meminta halaman**, bukan bentuk URL-nya |
 | ADR-0061 — permukaan host-resolved boleh di-cache di tepi | Tidak berlaku langsung: situs ini tidak melewati Varnish. Yang **berlaku** adalah alasannya — 404 yang bisa di-cache adalah kanal observasi kedua. Repo ini tidak punya cabang 404 yang membedakan tenant, jadi kelas cacat itu tidak bisa terjadi di sini |
-| ADR-0062 — skill digerbangi terhadap kode yang dijelaskannya | **Sudah sebagian, dan celahnya sekarang bernama.** `bun run audit:dokumen` memeriksa jalur berkas yang disebut `.claude/skills/` persis seperti `docs/`. Yang belum: aturan 2 ADR-0062 — setiap `ADR-NNNN` yang dikutip harus resolve ke berkasnya |
+| ADR-0062 — skill digerbangi terhadap kode yang dijelaskannya | **Diserap penuh sejak 5 Agustus 2026.** `bun run audit:dokumen` memeriksa jalur berkas yang disebut `.claude/skills/` persis seperti `docs/`, dan kini juga aturan 2-nya: setiap kutipan `ADR-NNNN` wajib resolve ke berkasnya, kecuali ditandai milik repo lain di paragraf yang sama. Gerbang pertamanya langsung menemukan sebelas kutipan tanpa penanda |
 | ADR-0065 — kontrak konsumen `awcms-astro` dibekukan di sana | **Batas antar-repo kini dijaga dari dua arah.** Sisi sini menggerbangi daftar permukaan yang dipanggil (ADR-0030); sisi sana membekukan bentuknya (lima path + closure `$ref`-nya, subset aditif). Perubahan non-aditif pada permukaan yang dipakai build merah di CI `awcms` lebih dulu — dan regenerasi fixture-nya adalah undangan eksplisit agar repo ini diperbarui serentak |
 | ADR-0067 — pengumpulan Core Web Vitals (masih `Proposed`) | **Menguatkan, bukan mengubah, arah celah 8.** `awcms` menghadapi tabrakan yang sama antara telemetri per-kunjungan dan postur privacy-first modulnya, dan menahan keputusannya di pemilik produk. Repo ini sudah menolak RUM; celah 8 tetap diarahkan ke pengukuran lab di CI, apa pun opsi yang kelak dipilih di sana |
 | ADR-0068 — postur standar keluarga: edisi dipin, divergence dicatat | **Kalimat "mengikuti edisi `awcms`" akhirnya punya alamat.** Pin edisi (Top 10 2021, ASVS 4.0.3) kini keputusan ber-ADR dengan tanggal tinjau 2027-02-04, dan HSTS tanpa `includeSubDomains` di sini (ADR-0029) tercatat sebagai divergence bernama di `awcms-family-compatibility.yaml` sisi sana — dengan `reviewDate` yang memerahkan CI `awcms` saat jatuh tempo, bukan catatan yang membusuk diam-diam |
 
-Celah ADR-0062 itu layak ditutup dan murah: gerbangnya sudah membaca seluruh
-markdown repo ini, sudah punya indeks ADR, dan sudah tahu membedakan milik repo
-ini dari milik repo lain. Ia terdaftar sebagai pekerjaan di
-[ADR-0028](../adr/0028-jangkar-standar-performa-dan-keamanan.md).
+Celah `awcms` ADR-0062 itu ditutup 5 Agustus 2026, persis semurah yang
+diperkirakan: gerbangnya memang sudah membaca seluruh markdown repo ini dan
+sudah punya indeks ADR. Pemeriksanya dibuktikan dua arah di
+`tests/audit-dokumen.test.mjs`, dan jalan pertamanya menemukan sebelas kutipan
+yang pembacanya tidak bisa tahu milik siapa. Pekerjaannya tercatat di
+[ADR-0028](../adr/0028-jangkar-standar-performa-dan-keamanan.md) §E.
 
 ## Cara memakai dokumen ini di sebuah situs turunan
 

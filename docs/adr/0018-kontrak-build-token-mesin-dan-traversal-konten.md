@@ -116,7 +116,7 @@ tidak berlaku.
 
 **Kredensialnya harus diterbitkan dengan cakupan tersempit.**
 `POST /api/v1/access/machine-credentials`, `allowed_permission_keys` berisi
-tepat `blog_content.posts.read`. ADR-0049 §3 sudah menolak aksi selain `read`
+tepat `blog_content.posts.read`. `awcms` ADR-0049 §3 sudah menolak aksi selain `read`
 untuk kredensial mesin, jadi token yang bocor tidak bisa mengubah apa pun —
 tetapi ia tetap bisa MEMBACA data tenant, jadi kedaluwarsanya wajib dan
 pencabutannya berlaku pada permintaan berikutnya.
@@ -172,6 +172,6 @@ putuskan adalah bagaimana repo ini berperilaku benar sementara feed itu belum
 ada.
 
 **Menerima token sesi manusia sebagai kredensial build.** Ditolak, dan
-alasannya ada di ADR-0049 §Konteks: sesi kedaluwarsa, reset password mencabut
+alasannya ada di `awcms` ADR-0049 §Konteks: sesi kedaluwarsa, reset password mencabut
 seluruh sesi identitas itu, dan step-up MFA merotasinya. Build akan mati pada
 saat yang tidak bisa diprediksi siapa pun, jauh dari sebabnya.
