@@ -421,11 +421,14 @@ performa:
   sebagai celah kontrol.
 - **Target performa adalah Core Web Vitals pada p75**: LCP ≤ 2,5 detik, INP ≤ 200
   milidetik, CLS ≤ 0,1. INP menggantikan FID sejak Maret 2024 — dokumen yang
-  masih menyebut FID sudah basi, bukan sedang memakai alternatif. **Belum satu
-  pun dari ketiganya diukur di repo ini**, dan itu ditulis apa adanya alih-alih
-  dibiarkan tampak terjaga.
-- **Tujuh dari sembilan celah ditutup (enam pada 4 Agustus 2026, SBOM menyusul
-  5 Agustus — ADR-0031), dua masih terbuka.**
+  masih menyebut FID sudah basi, bukan sedang memakai alternatif. **Sejak
+  ADR-0032 ketiganya diukur LAB di CI situs yang punya sumber konten** (di repo
+  template langkah itu tidak berjalan); p75 kunjungan NYATA tetap tidak diukur
+  karena RUM ditolak, dan itu ditulis apa adanya alih-alih dibiarkan tampak
+  terjaga. Jangan menulis "memenuhi Core Web Vitals" dari hasil lab.
+- **Kesembilan celah kini tertutup** (enam pada 4 Agustus 2026; SBOM, analisis
+  statik, dan Core Web Vitals lab menyusul 5 Agustus — ADR-0031/ADR-0032),
+  **dan baris yang tertutup TETAP di tabel.**
   Tiap satunya menyebut pemeriksanya, dan baris yang tertutup TETAP di tabel:
   dihapus, ia akan diusulkan lagi sebagai temuan baru, dan pemeriksanya akan
   dilonggarkan oleh orang yang tidak tahu kenapa ia ada. Menutup sebuah celah

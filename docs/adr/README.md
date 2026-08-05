@@ -34,6 +34,7 @@ menyesuaikan gaya, menambah tes.
 | [0029](0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md) | HSTS dikirim penyaji, digerbangi produksi, tanpa `includeSubDomains` | Diterima |
 | [0030](0030-aturan-tertulis-mendapat-pemeriksanya.md) | Empat aturan yang sudah tertulis mendapat pemeriksanya; rantai pasok dipin ke SHA dan digest | Diterima |
 | [0031](0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md) | SBOM CycloneDX diturunkan dari `bun.lock` pada setiap rilis, deterministik dan tanpa dependency baru | Diterima |
+| [0032](0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) | Dua celah terakhir ADR-0028 ditutup: CodeQL dengan cakupan dihitung-dinyatakan, dan CWV lab terkondisi sumber konten | Diterima |
 
 > **Kenapa penomoran mulai dari 0014.** ADR di repo ini melanjutkan urutan repo
 > rujukan yang identitasnya dilepas di [#11](https://github.com/ahliweb/awcms-astro/pull/11);

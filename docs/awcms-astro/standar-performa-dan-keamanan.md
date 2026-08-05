@@ -152,7 +152,7 @@ fisik di luar cakupan sebuah template.
 | PW.4 Gunakan komponen pihak ketiga yang aman | Terpenuhi — lockfile di-commit, install ter-freeze, audit di CI |
 | PW.7 Review kode | Terpenuhi — PR + CI wajib hijau |
 | PW.8 Uji kode yang dieksekusi | Terpenuhi — lima gerbang, dan tiap gerbang yang **melewati dirinya mengatakannya** |
-| RV.1 Identifikasi kerentanan secara berkelanjutan | Sebagian — Dependabot + `bun audit`. **Tidak ada analisis statik (CodeQL)**, sementara `awcms` punya |
+| RV.1 Identifikasi kerentanan secara berkelanjutan | Terpenuhi — Dependabot + `bun audit` + CodeQL terjadwal atas permukaan JS/TS sejak [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md), dengan cakupannya (dan batas `.astro`-nya) dinyatakan di tiap ringkasan run |
 
 ## Performa
 
@@ -173,9 +173,14 @@ jalankan Lighthouse di laptop pengembang:
 | INP — Interaction to Next Paint | ≤ 200 milidetik | Menggantikan FID sejak Maret 2024. Situs ini nyaris tanpa JS, jadi ambang ini seharusnya terpenuhi dengan lapang — dan bila tidak, itu sinyal ada JS yang menyelinap masuk |
 | CLS — Cumulative Layout Shift | ≤ 0,1 | Bingkai gambar sudah `aspect-ratio: var(--ratio-visual)`, jadi ruangnya dipesan sebelum gambar tiba. Yang bisa merusaknya: font yang dimuat belakangan — dan repo ini tidak memuat satu pun |
 
-**Belum ada satu pun dari ketiganya yang diukur.** Menuliskannya sebagai target
-tanpa mengatakan itu akan menjadi tepat kelas cacat yang gerbang di repo ini
-dibuat untuk menangkap. Rekomendasi pengukurannya di §Celah.
+**Sejak [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md)
+ketiganya diukur LAB di CI** — pada setiap PR sebuah situs yang punya sumber
+konten; di repo template langkah itu tidak berjalan karena tidak ada yang bisa
+dibangun. Batasnya wajib ikut dibaca: lab mengukur halaman, bukan pembaca —
+angka p75 kunjungan nyata di tabel di atas TETAP tidak diukur karena RUM
+ditolak, dan INP diwakili proksi lab-nya (Total Blocking Time ≤ 200 ms).
+**Jangan menulis "memenuhi Core Web Vitals" dari hasil lab.** Rinciannya di
+§Celah baris 8.
 
 ### Yang sudah benar, dan kenapa
 
@@ -205,13 +210,15 @@ ADR-0024 untuk dirinya sendiri — dan anggaran gambar di
 [`standar-teknis.md`](standar-teknis.md#performa) adalah tempat pertama
 kelebihannya akan terlihat.
 
-## Celah: tujuh ditutup, dua terbuka
+## Celah: kesembilannya ditutup — dan barisnya tetap di sini
 
 Diurutkan menurut akibat, bukan menurut usaha. **Enam ditutup pada 4 Agustus
 2026** — lima di pagi hari, yang keenam (pin rantai pasok) menyusul siangnya
 lewat [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md) — dan
-**yang ketujuh (SBOM, celah 9) pada 5 Agustus 2026** lewat
-[ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md),
+**tiga terakhir pada 5 Agustus 2026**: SBOM lewat
+[ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md), analisis
+statik dan Core Web Vitals lab lewat
+[ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) —
 masing-masing bersama pemeriksanya. Di repo ini aturan tanpa
 pemeriksanya adalah aturan yang akan dilanggar, dan itu berlaku juga untuk
 aturan yang datang dari standar luar.
@@ -228,22 +235,25 @@ yang tidak tahu kenapa ia ada.
 | 4 | `awcmsGet` tanpa batas waktu | **DITUTUP** — `AbortSignal.timeout`, bawaan 30 detik, diubah lewat `AWCMS_API_TIMEOUT_MS` | Dua asersi di `tests/kontrak-awcms.test.mjs`, **mutation-proven**: tiruan yang menerima koneksi lalu tidak pernah menjawab (melepas sinyalnya membuat tes itu menggantung, persis cacat aslinya), dan nilai batas cacat yang DITOLAK alih-alih diam-diam jatuh ke bawaan |
 | 5 | Header pembocor teknologi tidak diverifikasi | **DITUTUP** — `Server` dan `X-Powered-By` dihapus `pasangHeader`, bukan sekadar diasersi: "tidak dikirim hari ini" dan "tidak akan dikirim" adalah dua hal berbeda | Asersi negatif atas tiga kelas respons di `tests/penyaji.test.mjs`, **mutation-proven** |
 | 6 | Action GitHub dipin ke tag, image dasar dipin ke tag | **DITUTUP** — [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md): empat action dipin ke SHA commit dengan komentar `# vX.Y.Z` yang Dependabot baca, image dasar dipin ke digest | `tests/versi-toolchain.test.mjs`, **mutation-proven**. Ia menutup kelas cacat yang justru DITAMBAHKAN pin digest: saat tag dan digest sama-sama ada, digest yang dipatuhi Docker dan tag hanya jadi komentar |
-| 7 | Tidak ada analisis statik | **TERBUKA, dan alasannya lebih tajam daripada "permukaannya kecil"** — CodeQL tidak mengurai `.astro`, jadi ia hanya akan mencakup `src/lib/**.ts`, `scripts/**.mjs`, dan `server/**.mjs`. Menyalakannya lalu menyebut repo ini "dianalisis statik" adalah upacara yang terlihat seperti cakupan — pola yang kedua repo keluarga sudah tolak | Workflow CodeQL terjadwal, dengan cakupannya DINYATAKAN di ringkasan run |
-| 8 | Core Web Vitals tidak diukur | **TERBUKA** — target di §Performa masih klaim tanpa bukti. Celah 2 dan 3 menutup dua PENYEBAB LCP buruk; keduanya bukan pengukurannya | Lighthouse CI atas `dist/client` di job `build`, hanya berjalan bila situs punya sumber konten |
+| 7 | Tidak ada analisis statik | **DITUTUP** — [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) §A: `.github/workflows/codeql.yml` terjadwal mingguan + pada perubahan, atas permukaan JS/TS. Syarat kejujurannya persis yang kolom ini resepkan sejak awal: langkah `Nyatakan cakupan` menulis ke ringkasan run berapa berkas dianalisis dan berapa `.astro` TIDAK — dihitung `find` saat run, bukan ditulis tangan | `tests/analisis-statik.test.mjs`: seluruh action ber-SHA + komentar versi, jadwal ada, dan langkah pernyataan cakupan — beserta sebutan `.astro`-nya — tidak bisa dihapus diam-diam |
+| 8 | Core Web Vitals tidak diukur | **DITUTUP** — [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) §B: Lighthouse CI atas `dist/client` di job `build`, terkondisi sumber konten seperti gerbang keluaran lainnya — di repo template ia tidak berjalan, di setiap SITUS ia berjalan pada tiap PR. LCP ≤ 2500 ms dan CLS ≤ 0,1 level `error`; INP tidak terukur di lab, jadi TBT ≤ 200 ms dipakai sebagai proksi dan DISEBUT proksi | `tests/cwv-lab.test.mjs`, berjalan di repo template: ambang `lighthouserc.json` TERPAKU ke angka dokumen ini (melonggarkannya menuntut mengubah tes — terlihat di review), langkah CI-nya terkondisi dan dipin SHA |
 | 9 | Tidak ada SBOM pada rilis | **DITUTUP** — [ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md): `scripts/sbom.mjs` menurunkan CycloneDX 1.5 dari `bun.lock` — deterministik, tanpa dependency baru — dan perilis menulisnya SEBELUM commit rilis sehingga `sbom.cdx.json` ikut di dalam tag | `tests/sbom.test.mjs`, **mutation-proven** atas lockfile buatan: paket ber-scope, konversi hash base64→hex, dedup jalur resolusi, dan entri tak dikenal DITOLAK alih-alih dilewati — SBOM yang diam-diam tidak lengkap menjawab "tidak terdampak" dengan percaya diri. Langkah perilisnya diasersi struktural supaya tidak hilang diam-diam |
 
-**Dua yang tersisa dibiarkan terbuka dengan sadar, bukan karena kehabisan
-waktu.** Celah 7 menunggu analisis statik yang benar-benar mengurai `.astro` —
-menyalakan CodeQL hari ini adalah upacara yang terlihat seperti cakupan. Celah
-8 menuntut Chrome di CI dan hanya berjalan pada situs yang punya sumber konten
-— ia **tidak bisa dibuktikan di repo template ini**, dan gerbang yang tidak
-bisa dibuktikan di tempat ia ditulis adalah gerbang yang akan membusuk.
-Konteks keluarganya tercatat di §Hubungan: `awcms` sendiri belum mengukur Core
-Web Vitals, dan ADR-0067 di sana masih `Proposed`. (Celah 9 semula ikut
-ditahan menunggu "keputusan tooling keluarga";
-[ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md) mencatat
-kenapa hitungan itu berubah: keputusannya ternyata format, bukan tooling, dan
-formatnya sudah dijawab jangkar OWASP yang ada.)
+**Tidak ada yang terbuka hari ini — dan kalimat itu punya batas yang harus
+ikut dibaca.** Celah 7 dan 8 lama ditahan justru karena penutupan yang mudah
+adalah penutupan yang bohong; keduanya akhirnya ditutup dalam bentuk yang tabel
+ini resepkan sendiri, dengan syarat kejujurannya dijaga tes yang **berjalan di
+repo template** — keberatan lama "gerbang yang tidak bisa dibuktikan di tempat
+ia ditulis akan membusuk" dijawab, bukan diabaikan
+([ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md)).
+Batasnya: `.astro` tetap tidak teranalisis statik (dan ringkasan run CodeQL
+mengatakannya pada setiap jalan), p75 kunjungan nyata tetap tidak diukur (RUM
+tetap ditolak — lab mengukur halaman, bukan pembaca), dan kolom Keadaan tabel
+ini tetap **tidak bisa digerbangi mesin**. Sembilan dari sembilan bukan
+"selesai selamanya"; ia berarti setiap celah yang DIKETAHUI punya pemeriksa,
+dan temuan berikutnya masuk tabel ini sebagai nomor sepuluh — bukan
+menggantikan baris lama. Konteks keluarganya: `awcms` sendiri belum mengukur
+Core Web Vitals, dan ADR-0067 di sana masih `Proposed`.
 
 ## Yang sengaja TIDAK diadopsi
 
@@ -269,7 +279,7 @@ temuan baru.
   dimuat halaman ini. SRI tanpa sumber daya eksternal adalah atribut yang tidak
   menjaga apa pun.
 - **Analytics berbasis RUM untuk mengukur Core Web Vitals.** Ia mengumpulkan data
-  pembaca. Celah 8 di atas karena itu diarahkan ke pengukuran **lab** di CI, dan
+  pembaca. Celah 8 di atas karena itu ditutup lewat pengukuran **lab** di CI, dan
   keterbatasannya dinyatakan: lab mengukur halaman, bukan pembaca.
 - **Rate limiting dan WAF.** Milik Traefik/Coolify, bukan milik proses penyaji.
   Menaruhnya di sini berarti dua tempat yang memutuskan hal yang sama.
@@ -312,7 +322,7 @@ sini, dan empat baris terbawah tabel ini datang dari gelombang ADR 4 Agustus
 | ADR-0061 — permukaan host-resolved boleh di-cache di tepi | Tidak berlaku langsung: situs ini tidak melewati Varnish. Yang **berlaku** adalah alasannya — 404 yang bisa di-cache adalah kanal observasi kedua. Repo ini tidak punya cabang 404 yang membedakan tenant, jadi kelas cacat itu tidak bisa terjadi di sini |
 | ADR-0062 — skill digerbangi terhadap kode yang dijelaskannya | **Diserap penuh sejak 5 Agustus 2026.** `bun run audit:dokumen` memeriksa jalur berkas yang disebut `.claude/skills/` persis seperti `docs/`, dan kini juga aturan 2-nya: setiap kutipan `ADR-NNNN` wajib resolve ke berkasnya, kecuali ditandai milik repo lain di paragraf yang sama. Gerbang pertamanya langsung menemukan sebelas kutipan tanpa penanda |
 | ADR-0065 — kontrak konsumen `awcms-astro` dibekukan di sana | **Batas antar-repo kini dijaga dari dua arah.** Sisi sini menggerbangi daftar permukaan yang dipanggil (ADR-0030); sisi sana membekukan bentuknya (lima path + closure `$ref`-nya, subset aditif). Perubahan non-aditif pada permukaan yang dipakai build merah di CI `awcms` lebih dulu — dan regenerasi fixture-nya adalah undangan eksplisit agar repo ini diperbarui serentak |
-| ADR-0067 — pengumpulan Core Web Vitals (masih `Proposed`) | **Menguatkan, bukan mengubah, arah celah 8.** `awcms` menghadapi tabrakan yang sama antara telemetri per-kunjungan dan postur privacy-first modulnya, dan menahan keputusannya di pemilik produk. Repo ini sudah menolak RUM; celah 8 tetap diarahkan ke pengukuran lab di CI, apa pun opsi yang kelak dipilih di sana |
+| ADR-0067 — pengumpulan Core Web Vitals (masih `Proposed`) | **Menguatkan arah yang celah 8 akhirnya tempuh.** `awcms` menghadapi tabrakan yang sama antara telemetri per-kunjungan dan postur privacy-first modulnya, dan menahan keputusannya di pemilik produk. Repo ini menolak RUM dan menutup celah 8 lewat pengukuran lab di CI (ADR-0032 §B) — apa pun opsi yang kelak dipilih di sana, postur sini sudah dinyatakan |
 | ADR-0068 — postur standar keluarga: edisi dipin, divergence dicatat | **Kalimat "mengikuti edisi `awcms`" akhirnya punya alamat.** Pin edisi (Top 10 2021, ASVS 4.0.3) kini keputusan ber-ADR dengan tanggal tinjau 2027-02-04, dan HSTS tanpa `includeSubDomains` di sini (ADR-0029) tercatat sebagai divergence bernama di `awcms-family-compatibility.yaml` sisi sana — dengan `reviewDate` yang memerahkan CI `awcms` saat jatuh tempo, bukan catatan yang membusuk diam-diam |
 
 Celah `awcms` ADR-0062 itu ditutup 5 Agustus 2026, persis semurah yang
