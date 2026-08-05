@@ -66,7 +66,7 @@ sejak ADR-0019 — dan kompresi tinggal di
 ([ADR-0029](docs/adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md)) —
 karena HSTS berlaku untuk HOST dan tidak bisa dibatalkan dari sisi situs, jadi
 satu pratinjau lokal yang mengirimkannya akan mengunci setiap proyek lain di
-`localhost` selama setahun. Postur lengkapnya, beserta empat celah yang MASIH
+`localhost` selama setahun. Postur lengkapnya, beserta tiga celah yang MASIH
 terbuka, ada di
 [`docs/awcms-astro/standar-performa-dan-keamanan.md`](docs/awcms-astro/standar-performa-dan-keamanan.md).
 
@@ -285,11 +285,11 @@ membuatnya tidak perlu `node_modules` sama sekali.
 | [`.changesets/README.md`](.changesets/README.md)                                     | Cara menulis catatan perubahan          |
 | [`docs/awcms-astro/README.md`](docs/awcms-astro/README.md)                           | Posisi standar di keluarga AWCMS        |
 | [`docs/awcms-astro/standar-teknis.md`](docs/awcms-astro/standar-teknis.md)           | Aturan teknis yang mengikat             |
-| [`docs/awcms-astro/standar-performa-dan-keamanan.md`](docs/awcms-astro/standar-performa-dan-keamanan.md) | Peta ke OWASP/ASVS/ISO 27001/SSDF + Core Web Vitals, dan sembilan celah terbuka |
+| [`docs/awcms-astro/standar-performa-dan-keamanan.md`](docs/awcms-astro/standar-performa-dan-keamanan.md) | Peta ke OWASP/ASVS/ISO 27001/SSDF + Core Web Vitals, dan sembilan celah bernomor (enam ditutup, tiga terbuka) |
 | [`docs/awcms-astro/ui-ux-design-system.md`](docs/awcms-astro/ui-ux-design-system.md) | Design token, komponen, aksesibilitas   |
 | [`docs/awcms-astro/integrasi-awcms.md`](docs/awcms-astro/integrasi-awcms.md)         | Kontrak integrasi dengan awcms          |
 | [`docs/deploy-coolify.md`](docs/deploy-coolify.md)                                   | Deploy dan rebuild lewat webhook        |
-| [`.claude/skills/`](.claude/skills/README.md)                                        | Skill proyek: integrasi, gerbang, situs baru |
+| [`.claude/skills/`](.claude/skills/README.md)                                        | Skill proyek: integrasi, gerbang, situs baru, performa-keamanan |
 
 ## Lisensi
 

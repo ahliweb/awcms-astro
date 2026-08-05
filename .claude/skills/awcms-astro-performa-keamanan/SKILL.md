@@ -1,6 +1,6 @@
 ---
 name: awcms-astro-performa-keamanan
-description: Pemeriksaan performa dan keamanan awcms-astro terhadap standar yang disebut namanya (OWASP Top 10 2021, ASVS 4.0.3, Secure Headers, ISO 27001 Annex A, NIST SSDF, Core Web Vitals) — apa yang sudah terpenuhi dengan buktinya, sembilan celah yang terbuka, dan lima kontrol yang sengaja DITOLAK. Gunakan sebelum rilis, sebelum go-live sebuah situs turunan, saat menyentuh server/penyaji.mjs atau anggaran performa, atau saat menjawab pertanyaan kepatuhan.
+description: Pemeriksaan performa dan keamanan awcms-astro terhadap standar yang disebut namanya (OWASP Top 10 2021, ASVS 4.0.3, Secure Headers, ISO 27001 Annex A, NIST SSDF, Core Web Vitals) — apa yang sudah terpenuhi dengan buktinya, sembilan celah bernomor (enam ditutup, tiga terbuka), dan lima kontrol yang sengaja DITOLAK. Gunakan sebelum rilis, sebelum go-live sebuah situs turunan, saat menyentuh server/penyaji.mjs atau anggaran performa, atau saat menjawab pertanyaan kepatuhan.
 ---
 
 # awcms-astro — performa dan keamanan
@@ -20,13 +20,14 @@ bisa digerbangi mesin**.
 
 ```bash
 bun run check          # tipe + lockfile
-bun test               # katalog PO, kontrak awcms, header + cache penyaji, CSP keluaran
+bun test               # katalog PO, kontrak awcms, header + cache penyaji, CSP keluaran, versi toolchain
 bun run audit:konten   # sumber gambar; setelah build juga enam gerbang keluaran
 bun run audit:dokumen  # tautan, indeks ADR, permukaan kilau, jalur yang disebut dokumen
+bun run audit:graf     # artefak graphify-out/ — nama komunitas yang benar-benar dipilih
 bun audit --audit-level=low   # kerentanan rantai dependency — WAJIB nol sebelum rilis
 ```
 
-`bun run release <tingkat> --apply` menjalankan **kelimanya**, dalam urutan yang
+`bun run release <tingkat> --apply` menjalankan **keenamnya**, dalam urutan yang
 berarti — `bun test` dan `bun run audit:konten` SESUDAH build, karena tiga
 lapisnya melewati diri tanpa `dist/`. Sampai 4 Agustus 2026 perilis melewatkan
 `bun test` dan `bun audit` sepenuhnya, sementara empat dokumen menuntut
@@ -99,7 +100,7 @@ Anggaran: **beranda ≤ 250 KB gambar, halaman konten ≤ 100 KB.** Sejak 4 Agus
 ditimbang hanya gambar yang benar-benar diterbitkan build ini, karena media
 `awcms` tidak ada di sana.
 
-## Sembilan celah — lima tertutup, empat terbuka
+## Sembilan celah — enam tertutup, tiga terbuka
 
 Daftar lengkap di dokumen standar. Yang masih **TERBUKA**, dan karena itu yang
 harus dijawab jujur saat ditanya:
@@ -132,13 +133,16 @@ ditolak oleh aturan yang sama:
 
 ## Sebelum go-live sebuah situs turunan
 
-- [ ] Keempat gerbang hijau **setelah** `bun run build`, bukan sebelum.
+- [ ] Kelima gerbang hijau **setelah** `bun run build`, bukan sebelum.
 - [ ] `bun audit` nol.
 - [ ] `bun run serve`, lalu periksa header yang benar-benar terkirim —
       `curl -sI` dan `curl -s -o /dev/null -D -` harus melaporkan hal yang sama
       (paritas GET/HEAD adalah cacat yang sudah pernah terjadi di sini).
-- [ ] HSTS terpasang di proxy situsmu, **dan tercatat di ADR bahwa ia dipasang
-      di sana** — supaya penggantimu tidak memasang kebijakan kedua.
+- [ ] `NODE_ENV=production` terpasang, sehingga penyaji mengirim HSTS
+      (ADR-0029; image `Dockerfile` menyetelnya). **Jangan pasang kebijakan
+      HSTS kedua di Traefik** — dua sumber kebijakan yang saling menimpa adalah
+      cara paling sunyi berakhir tanpa kebijakan; kalau proxy-mu telanjur
+      memasangnya, pilih satu sumber dan catat di ADR situsmu.
 - [ ] `AWCMS_TENANT_ID` terisi. Ia opsional dan tidak memilih apa pun; yang ia
       cegah adalah token tenant lain membangun situs penuh berisi artikel milik
       orang lain, dengan build hijau.
@@ -154,6 +158,9 @@ ditolak oleh aturan yang sama:
 - [`docs/adr/0019-csp-ketat-dikirim-penyaji.md`](../../../docs/adr/0019-csp-ketat-dikirim-penyaji.md)
 - [`docs/adr/0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md`](../../../docs/adr/0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md)
 - [`AGENTS.md`](../../../AGENTS.md) §Keamanan, §Penyajian, §Standar luar
-- Di sisi `awcms`: skill `awcms-security-hardening` (matriks OWASP/ASVS/ISO yang
-  edisinya disamakan di sini) dan `awcms-performance` (pola akses data — tidak
-  berlaku di repo ini, yang tidak punya basis data)
+- Di sisi `awcms`: ADR-0068 (pin edisi standar keluarga — Top 10 2021, ASVS
+  4.0.3, ditinjau ulang 2027-02-04 — dan divergence HSTS repo ini tercatat di
+  manifest keluarganya), ADR-0065 (kontrak konsumen `awcms-astro` dibekukan dan
+  digerbangi di sana), skill `awcms-security-hardening` (matriks OWASP/ASVS/ISO
+  yang edisinya disamakan di sini), dan `awcms-performance` (pola akses data —
+  tidak berlaku di repo ini, yang tidak punya basis data)

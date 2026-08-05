@@ -58,7 +58,7 @@ Disengaja. Tampilan terakhir karena ia satu-satunya lapisan yang murah diubah.
 | Lupa `bun run audit:konten` **setelah** build | Enam gerbang keluaran melewati dirinya dan mengatakannya — di sebuah SITUS itu berarti tidak berjalan |
 | Men-deploy tanpa `NODE_ENV=production` | `Strict-Transport-Security` **diam-diam tidak terkirim**, dan tidak ada yang mengatakannya (ADR-0029). `Dockerfile` menyetelnya; deployment yang tidak lewat image itu harus menyetelnya sendiri |
 | Menambahkan `includeSubDomains` tanpa memeriksa subdomain | Setiap subdomain organisasi menjadi HTTPS-saja selama setahun, di browser setiap pengunjung — dan yang menanggung akibatnya layanan lain, bukan situs ini |
-| Mengisi `src/assets/` dengan foto raster besar | Tidak ada `srcset` (ADR-0024): ponsel 360px mengunduh berkas yang sama dengan desktop 1920px. Anggaran gambar ada, **pemeriksanya belum** |
+| Mengisi `src/assets/` dengan foto raster besar | Tidak ada `srcset` (ADR-0024): ponsel 360px mengunduh berkas yang sama dengan desktop 1920px. Anggaran gambar (beranda ≤ 250 KB, halaman konten ≤ 100 KB) **diukur** `bun run audit:konten` atas `dist/client` sejak 4 Agustus 2026 — jadi kelebihannya merah setelah build, bukan tidak terlihat |
 | Membuat `docs/ARCHITECTURE.md` dan `docs/PROJECT_STATE.md` kosong "karena checklist minta" | Berkas kosong yang wajib adalah cara paling cepat sebuah checklist berhenti dibaca. Keduanya OPSIONAL; template ini sengaja tidak membawanya |
 
 ## Sebelum rilis pertama
@@ -69,6 +69,7 @@ bun run build          # check + astro build + bundel penyaji + asal media
 bun test               # setelah build, lapis penyaji ikut jalan
 bun run audit:konten   # setelah build, gerbang keluaran ikut jalan
 bun run audit:dokumen  # tidak butuh build
+bun run audit:graf     # artefak graphify-out/; melewati diri bila dihapus
 bun run serve          # periksa header & cache seperti yang dilihat pembaca
 bun audit              # 0 kerentanan
 bun run release minor --apply
