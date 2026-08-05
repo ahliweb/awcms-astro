@@ -28,12 +28,12 @@
 - Tabel gerbang mutu dan aturan aset
 - Rantai deploy dan pemeriksa yang dipin
 - Gerbang audit graf
-- Fixture pohon berkas untuk tes gerbang
+- ADR-0014 dan rencana porting Jualanku
 - Katalog PO dan komponen berlokal
 - Halaman tab dan beranda
 - Rute berprefiks locale dan pengalihnya
 - Gambar artikel dan seni lokal
-- Blueprint rute dan UI Jualanku
+- HSTS dan gerbang produksinya (ADR-0029)
 - Kontrak kerja dan katalog skill
 - Keputusan runtime, cache, dan layar admin
 - Lima gerbang dan Definition of Done
@@ -43,11 +43,11 @@
 - Jebakan situs turunan dan asal tenant
 - Sembilan celah dan anggaran performa
 - Design system dan token tema
-- Konvensi seni lokal dan resolusi URL
+- Seni lokal, ?url, dan pin runtime Bun
 - CSP dan kepemilikan header di satu berkas
 - Penahanan pengembangan dan ujinya
 - Skrip rilis
-- Parser dan gerbang katalog PO
+- Matriks standar dan edisinya
 - Layout halaman artikel
 - Empat aturan tanpa pemeriksa dan pin versi
 - Gerbang lockfile
@@ -70,10 +70,10 @@
 - Pengecualian TypeScript 7 di Dependabot
 - Jaring pengaman rebuild harian
 - Gambar sosial bawaan
-- CI dan image berhenti mengirim variabel tenant yang sudah ditolak
-- Layar admin kembali ke `awcms`: ADR-0017 di-supersede ADR-0020
+- Generator SBOM dan pemeriksanya
+- BaseLayout, tombol berbagi, dan kartu sosial
 - Rilis membawa SBOM CycloneDX dari lockfile (ADR-0031)
-- ADR-0019 — CSP ketat dikirim penyaji, dan skrip tidak lagi tinggal di dalam HTML
+- Rute pages/ dan getStaticPaths-nya
 
 ## God Nodes (most connected - your core abstractions)
 1. `awcms-astro — Standar Performa dan Keamanan` - 21 edges
@@ -167,7 +167,7 @@ Nodes (10): ADR-0030 — Empat aturan yang sudah tertulis mendapat pemeriksanya;
 Cohesion: 0.07
 Nodes (31): engines, bun, ARTEFAK_TERLACAK, auditArtefakTerlacak(), auditLabelKomunitas(), auditLaporanSepakat(), auditPengecualian(), catatan (+23 more)
 
-### Community 13 - "Fixture pohon berkas untuk tes gerbang"
+### Community 13 - "ADR-0014 dan rencana porting Jualanku"
 Cohesion: 0.13
 Nodes (18): ADR-0014 — Rendering campuran dan BFF portal Jualanku, ADR-0045 awcms — Jualanku porting, awcms system of record, Astro BFF, Alternatif ditolak: portal SPA memanggil awcms langsung, Alternatif ditolak: seluruh situs output 'server', BFF hanya orkestrasi dan proyeksi, Experience layer Jualanku.info, Jalur rollback build statis penuh, Kontrak sesi portal (+10 more)
 
@@ -187,7 +187,7 @@ Nodes (11): defaultLocale, getLocaleFromPath(), isLocale(), localeMeta, locales,
 Cohesion: 0.18
 Nodes (14): ADR-0021, ArticleVisual, getArticleImage(), getArticleVisual(), getTabImage(), heroImage, MODUL, SENI (+6 more)
 
-### Community 18 - "Blueprint rute dan UI Jualanku"
+### Community 18 - "HSTS dan gerbang produksinya (ADR-0029)"
 Cohesion: 0.26
 Nodes (12): Selisih HSTS dari awcms — header keenam yang tidak dipasang di mana pun, ADR-0029 — HSTS dikirim penyaji, digerbangi produksi, tanpa includeSubDomains, headerKeamanan(produksi) — fungsi murni pemilik header di server/penyaji.mjs, HSTS digerbangi NODE_ENV === "production" (§A), max-age=31536000, tanpa includeSubDomains, tanpa preload (§B), Tiga asersi mutation-proven di tests/penyaji.test.mjs (§C), Memulai situs baru di atas awcms-astro, NODE_ENV=production adalah prasyarat HSTS pada deployment turunan (+4 more)
 
@@ -227,7 +227,7 @@ Nodes (13): Sembilan celah dicatat sebagai celah, dengan pemeriksanya masing-mas
 Cohesion: 0.19
 Nodes (14): WCAG 2.1 AA (2.2 AA untuk permukaan Jualanku), Aturan aksesibilitas yang mengikat (WCAG 2.1 AA), Gerbang keluaran CSP — bun test setelah bun run build, Aturan aksesibilitas design system, Audit kontras terukur belum pernah dijalankan, awcms-astro — Design System, Design token sebagai CSS custom properties di :root, Gap terhadap kosakata token AWCMS (+6 more)
 
-### Community 28 - "Konvensi seni lokal dan resolusi URL"
+### Community 28 - "Seni lokal, ?url, dan pin runtime Bun"
 Cohesion: 0.18
 Nodes (11): Unit Test dengan bun:test, Pin Versi Bun di Tiga Tempat, Runtime Bun, Dua Berkas Bernama Sama = Build Gagal, import.meta.glob dengan query: "?url", src/components/Ilustrasi.astro, Konvensi Nama Seni (hero, tab/<tab>, artikel/<tab>/<slug>), Seni Lokal di src/assets/ (+3 more)
 
@@ -243,7 +243,7 @@ Nodes (11): awcms-astro sebagai Experience Layer + Satu-satunya BFF, Dua Indikat
 Cohesion: 0.15
 Nodes (11): apply, args, body, commit, ketemu, level, [major, minor, patch], ADR-0028 (+3 more)
 
-### Community 32 - "Parser dan gerbang katalog PO"
+### Community 32 - "Matriks standar dan edisinya"
 Cohesion: 0.19
 Nodes (14): Jangkar standar dinyatakan beserta edisinya (§A), Server / X-Powered-By dihapus, bukan sekadar diasersi (§D), Kapan memilih awcms-astro, Hubungan dengan ahliweb/awcms — dua repo, dua angka, ISO/IEC 25010 (2023) — model mutu produk, ISO/IEC 27001:2022 Annex A, OWASP API Security Top 10 (2023) — dinyatakan tidak berlaku, OWASP ASVS 4.0.3 (L1/L2) (+6 more)
 
@@ -307,11 +307,11 @@ Nodes (4): ci, dockerfile, pkg, VERSI
 Cohesion: 0.50
 Nodes (4): Contributor Covenant versi 2.1, Komitmen partisipasi bebas pelecehan, Pedoman Perilaku, Kontribusi penutur asli dihargai sebagai keahlian
 
-### Community 57 - "CI dan image berhenti mengirim variabel tenant yang sudah ditolak"
+### Community 57 - "Generator SBOM dan pemeriksanya"
 Cohesion: 0.23
 Nodes (10): buangTrailingComma(), ADR-0028, ADR-0031, repoRoot, susunPurl(), susunSbom(), lock, ADR-0030 (+2 more)
 
-### Community 58 - "Layar admin kembali ke `awcms`: ADR-0017 di-supersede ADR-0020"
+### Community 58 - "BaseLayout, tombol berbagi, dan kartu sosial"
 Cohesion: 0.18
 Nodes (9): ADR-0026, locale, alternates, jsonLd, locale, metaDescription, ogLocale, KartuShare (+1 more)
 
@@ -333,11 +333,11 @@ _Questions this graph is uniquely positioned to answer:_
 
 - **What is the exact relationship between `Three Stacked Signal Lamps (red, amber, green)` and `Sky-to-Emerald Brand Palette (Tailwind-family hues)`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
-- **Why does `ADR-0014 — Rendering campuran dan BFF portal Jualanku` connect `Fixture pohon berkas untuk tes gerbang` to `Keputusan runtime, cache, dan layar admin`?**
+- **Why does `ADR-0014 — Rendering campuran dan BFF portal Jualanku` connect `ADR-0014 dan rencana porting Jualanku` to `Keputusan runtime, cache, dan layar admin`?**
   _High betweenness centrality (0.194) - this node is a cross-community bridge._
-- **Why does `awcmsGet()` connect `Klien awcms, tenant, dan media` to `Fixture pohon berkas untuk tes gerbang`?**
+- **Why does `awcmsGet()` connect `Klien awcms, tenant, dan media` to `ADR-0014 dan rencana porting Jualanku`?**
   _High betweenness centrality (0.153) - this node is a cross-community bridge._
-- **Why does `Experience layer Jualanku.info` connect `Fixture pohon berkas untuk tes gerbang` to `Klien awcms, tenant, dan media`?**
+- **Why does `Experience layer Jualanku.info` connect `ADR-0014 dan rencana porting Jualanku` to `Klien awcms, tenant, dan media`?**
   _High betweenness centrality (0.152) - this node is a cross-community bridge._
 - **Are the 2 inferred relationships involving `Gerbang mutu — tabel gerbang yang wajib hijau` (e.g. with `Gerbang audit yang wajib tetap hijau di situs turunan` and `Aturan punya penegak — lima gerbang awcms-astro`) actually correct?**
   _`Gerbang mutu — tabel gerbang yang wajib hijau` has 2 INFERRED edges - model-reasoned connections that need verification._
