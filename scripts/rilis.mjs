@@ -98,6 +98,15 @@ execSync('bun run audit:konten', { stdio: 'inherit' });
 console.log('Menjalankan bun run audit:dokumen ...');
 execSync('bun run audit:dokumen', { stdio: 'inherit' });
 
+// Bersebelahan dengan audit dokumen karena syaratnya sama — tanpa build, tanpa
+// jaringan, tanpa awcms — dan karena keduanya menjaga berkas yang IKUT DIRILIS.
+// `graphify-out/` terlacak, jadi ia masuk tag rilis; artefak yang salah menamai
+// komunitasnya sendiri akan dibaca sebagai peta oleh setiap orang dan agen yang
+// menarik tag itu. Melewati dirinya bila `graphify-out/` tidak ada, dan
+// mengatakannya — keadaan sah untuk situs turunan.
+console.log('Menjalankan bun run audit:graf ...');
+execSync('bun run audit:graf', { stdio: 'inherit' });
+
 // SESUDAH build, dan itu satu-satunya urutan yang berarti: dua lapis `bun test`
 // — gerbang penyajian (`tests/penyaji.test.mjs`) dan gerbang keluaran CSP
 // (`tests/keluaran-csp.test.mjs`) — MELEWATI DIRINYA tanpa `dist/`, dan

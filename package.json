@@ -22,6 +22,7 @@
     "check:lockfile": "bun scripts/cek-lockfile.mjs",
     "audit:konten": "bun scripts/audit-konten.mjs",
     "audit:dokumen": "bun scripts/audit-dokumen.mjs",
+    "audit:graf": "bun scripts/audit-graf.mjs",
     "test": "bun test",
     "serve": "bun dist/server/penyaji.mjs",
     "start": "bun run serve",

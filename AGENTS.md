@@ -443,6 +443,13 @@ performa:
       menambah barisnya di `docs/adr/README.md`** — indeks itu pernah
       mendaftarkan enam keputusan yang tak pernah ada di repo ini sambil
       melewatkan sembilan yang ada, dan bertahan sembilan ADR tanpa terlihat.
+- [ ] `bun run audit:graf` hijau. Ia juga tidak butuh build: artefak
+      `graphify-out/` yang terlacak di luar keempat keluaran bersama, dan nama
+      komunitas yang tidak dipilih — nama berkas warisan penamaan otomatis,
+      placeholder, kembar, atau berbeda antara `graph.json` dan
+      `GRAPH_REPORT.md`. Ia lahir dari 60 dari 101 label yang menempel pada
+      komunitas yang salah, di dalam JSON yang sah, dengan setiap gerbang lain
+      hijau karena tidak satu pun dari mereka membaca `graphify-out/`.
 - [ ] Halaman baru bekerja dengan JavaScript dimatikan.
 - [ ] String antarmuka baru masuk ke SELURUH katalog locale.
 - [ ] Key yang dirangkai dari konfigurasi atau data redaksi dipanggil dengan
