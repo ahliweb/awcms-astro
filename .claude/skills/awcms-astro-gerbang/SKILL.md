@@ -23,7 +23,7 @@ bun run audit:graf      # artefak graphify-out/     — melewati diri bila direk
 | `check` | Tipe, props, impor putus, lockfile milik proyek lain |
 | `bun test` | Paritas katalog PO, kontrak `awcms` (traversal, media, kartu), **permukaan yang dipanggil build**, header + cache penyaji, CSP atas keluaran, **versi toolchain** |
 | `audit:konten` | Rasio gambar terhadap `--ratio-visual`, format dibaca dari ISI berkas, judul/canonical/hreflang, aset yang dijanjikan metadata, tautan mati, sitemap, nama key bocor ke layar |
-| `audit:dokumen` | Tautan markdown mati, indeks ADR lengkap dua arah, status ADR setuju dengan berkasnya, daftar permukaan kilau, jalur berkas yang disebut dokumen |
+| `audit:dokumen` | Tautan markdown mati, indeks ADR lengkap dua arah, status ADR setuju dengan berkasnya, daftar permukaan kilau, jalur berkas yang disebut dokumen, **kutipan `ADR-NNNN` yang resolve ke berkasnya** |
 | `audit:graf` | Artefak `graphify-out/` terlacak di luar keempat keluaran bersama, laporan yang tidak sepakat dengan `graph.json`, **nama komunitas yang tidak dipilih** (nama berkas, placeholder, kembar, atau berbeda antar-artefak), korpus yang mengabaikan `.graphifyignore` |
 
 ## Yang TIDAK ditangkap — dan disebut supaya tidak dikira terjaga
@@ -56,13 +56,15 @@ bun run audit:graf      # artefak graphify-out/     — melewati diri bila direk
   Ia juga bisa membuktikan sebuah label BUKAN nama berkas, tetapi tidak bisa
   menilai apakah namanya baik untuk komunitasnya. Penamaan tetap pekerjaan
   pembaca; yang dijaga hanya bahwa pekerjaan itu benar-benar dilakukan.
-- **Kutipan ADR.** `ADR-0042` di sebuah berkas tidak diperiksa resolve ke
-  `docs/adr/0042-*.md` — aturan 2 `awcms`
-  [ADR-0062](https://github.com/ahliweb/awcms/blob/main/docs/adr/0062-skills-are-gated-against-the-code-they-describe.md),
-  yang belum ada di sini. Ia murah ditutup: gerbangnya sudah membaca seluruh
-  markdown repo ini dan sudah punya indeks ADR. Yang perlu dipikirkan hanya
-  memisahkan kutipan ADR **`awcms`** dari kutipan ADR repo ini — keduanya ditulis
-  `ADR-NNNN`, dan yang pertama tidak akan pernah ada di `docs/adr/` sini.
+- **Paragraf penanda kutipan ADR.** Sejak 5 Agustus 2026 kutipan `ADR-NNNN`
+  DIPERIKSA resolve ke `docs/adr/NNNN-*.md` (aturan 2 `awcms`
+  [ADR-0062](https://github.com/ahliweb/awcms/blob/main/docs/adr/0062-skills-are-gated-against-the-code-they-describe.md)),
+  dan kutipan milik repo lain dilewati bila paragrafnya memuat penanda —
+  `awcms`, "repo rujukan", atau tautan github. Yang TIDAK bisa dinilai gerbang:
+  apakah penandanya jujur. Kutipan `awcms` yang nomornya kelak kembar dengan
+  ADR lokal akan diterima lewat jalur resolusi lokal, dan kutipan lokal yang
+  salah ketik DI DEKAT kata `awcms` akan lolos sebagai milik tetangga. Bila itu
+  terjadi, bentuk penulisannya yang diperbaiki — bukan gerbangnya dilonggarkan.
 
 ## Aturan yang mengikat: aturan baru wajib membawa pemeriksanya
 

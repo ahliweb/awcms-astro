@@ -118,7 +118,7 @@ sebuah ADR menyentuh konten publik, media, atau kredensial.
 | ADR-0056 §B — objek media boleh di-purge, rujukannya jadi inert | **Sudah diserap.** Satu id hilang → placeholder; NOL dari N → build gagal |
 | ADR-0059 — rute konten publik host-resolved `/news/**` | **Bukan pekerjaan kode.** `awcms` kini bisa menyajikan konten publiknya sendiri di domain tenant. Yang dipilih di sini tetap **nol panggilan ke CMS saat pembaca meminta halaman**, bukan bentuk URL-nya |
 | ADR-0061 — permukaan host-resolved boleh di-cache di tepi | Tidak berlaku: situs ini tidak lewat Varnish, dan tidak punya cabang 404 yang membedakan tenant |
-| ADR-0062 — skill digerbangi terhadap kodenya | **Sebagian.** `bun run audit:dokumen` memeriksa jalur berkas yang disebut berkas ini. Yang belum: kutipan `ADR-NNNN` belum diperiksa resolve ke berkasnya |
+| ADR-0062 — skill digerbangi terhadap kodenya | **Diserap penuh sejak 5 Agustus 2026.** `bun run audit:dokumen` memeriksa jalur berkas yang disebut berkas ini DAN kutipan `ADR-NNNN` — yang tidak resolve ke `docs/adr/` dan tidak ditandai milik repo lain adalah pelanggaran |
 | ADR-0065 — kontrak konsumen `awcms-astro` dibekukan | **Batas dijaga dua arah.** Tabel bertanda di atas digerbangi di sini (ADR-0030); bentuk respons kelima path-nya dibekukan di sana (subset aditif, closure `$ref`). Saat fixture di sana di-regenerate, adapter di sini ikut berubah — serentak |
 
 ## Batas waktu: ada, dan TIDAK sama dengan retry

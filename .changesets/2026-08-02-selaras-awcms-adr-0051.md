@@ -21,7 +21,7 @@ di repo yang salah.
 ## Kenapa keputusannya dibalik, dan kenapa bukan karena buntu
 
 Yang menarik: dua kontrak yang ADR-0017 sebut sebagai blocker — header tenant dan
-kredensial mesin yang bisa dipegang BFF — justru **sudah mendarat** (ADR-0049 dan
+kredensial mesin yang bisa dipegang BFF — justru **sudah mendarat** di `awcms` (ADR-0049 dan
 ADR-0050). Jalurnya terbuka, lalu ditutup secara sadar.
 
 Alasan yang menentukan adalah butir yang sudah ditulis ADR-0017 sendiri tanpa

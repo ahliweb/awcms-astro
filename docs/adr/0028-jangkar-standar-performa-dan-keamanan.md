@@ -103,7 +103,7 @@ memutuskan untuk situs yang belum ada.
 Tanpa daftar ini, kelimanya akan diusulkan lagi enam bulan kemudian sebagai
 temuan baru — yang persis alasan ADR ada di repo ini.
 
-### §E — Aturan 2 ADR-0062 diserap sebagai pekerjaan
+### §E — Aturan 2 `awcms` ADR-0062 diserap sebagai pekerjaan
 
 `awcms` ADR-0062 menggerbangi skill terhadap kode yang dijelaskannya, lewat tiga
 aturan. Repo ini sudah memenuhi ruh aturan 1 dan 3: `bun run audit:dokumen`

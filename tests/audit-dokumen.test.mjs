@@ -129,10 +129,10 @@ describe("indeks ADR", () => {
   test("lengkap dua arah lolos", () => {
     const akar = pohon({
       "docs/adr/0001-satu.md": adr("0001"),
-      "docs/adr/0002-dua.md": adr("0002", "Superseded by ADR-0003"),
+      "docs/adr/0002-dua.md": adr("0002", "Superseded by ADR-0001"),
       "docs/adr/README.md": indeks(
         "| [0001](0001-satu.md) | Satu | Diterima |",
-        "| [0002](0002-dua.md) | Dua | Digantikan ADR-0003 |"
+        "| [0002](0002-dua.md) | Dua | Digantikan ADR-0001 |"
       )
     });
 
@@ -363,6 +363,97 @@ describe("jalur yang disebut dokumen", () => {
     const membusuk = jalur.filter((p) => !semua.includes(`\`${p}\``));
 
     expect(membusuk).toEqual([]);
+  });
+});
+
+describe("kutipan ADR", () => {
+  test("kutipan yang resolve ke berkas lokal lolos", () => {
+    const akar = pohon({
+      "docs/adr/0001-satu.md": adr("0001"),
+      "docs/adr/README.md": indeks("| [0001](0001-satu.md) | Satu | Diterima |"),
+      "README.md": "Keputusan ini diambil di ADR-0001 dan tidak berubah."
+    });
+
+    expect(jalankan(akar).kode).toBe(0);
+  });
+
+  test("kutipan tanpa berkas dan tanpa penanda MERAH — rujukan ke keputusan yang tidak ada", () => {
+    const akar = pohon({
+      "docs/adr/0001-satu.md": adr("0001"),
+      "docs/adr/README.md": indeks("| [0001](0001-satu.md) | Satu | Diterima |"),
+      "README.md": "Lihat ADR-0042 untuk alasannya."
+    });
+    const { kode, keluaran } = jalankan(akar);
+
+    expect(kode).toBe(1);
+    expect(keluaran).toContain("kutipan-adr");
+    expect(keluaran).toContain("ADR-0042");
+  });
+
+  test("kutipan milik repo lain lolos lewat penanda di paragraf yang sama", () => {
+    const akar = pohon({
+      "docs/adr/0001-satu.md": adr("0001"),
+      "docs/adr/README.md": indeks("| [0001](0001-satu.md) | Satu | Diterima |"),
+      "README.md": [
+        "Kredensial mesin datang dari `awcms` ADR-0049.",
+        "",
+        "Aturan rasio lahir di ADR-0013 repo rujukan.",
+        "",
+        "Skill digerbangi [ADR-0062](https://github.com/ahliweb/awcms/blob/main/docs/adr/0062-x.md)."
+      ].join("\n")
+    });
+
+    expect(jalankan(akar).kode).toBe(0);
+  });
+
+  test("penanda di paragraf LAIN tidak menular — jendelanya paragraf, bukan berkas", () => {
+    const akar = pohon({
+      "docs/adr/0001-satu.md": adr("0001"),
+      "docs/adr/README.md": indeks("| [0001](0001-satu.md) | Satu | Diterima |"),
+      "README.md": "Repo ini mengikuti `awcms`.\n\nLihat ADR-0049 untuk kredensial mesin."
+    });
+
+    expect(jalankan(akar).kode).toBe(1);
+  });
+
+  test("`awcms-astro` BUKAN penanda milik repo lain — nama repo ini sendiri", () => {
+    // Tanpa pembuangan `awcms-astro` lebih dulu, setiap paragraf yang menyebut
+    // nama repo ini akan meloloskan kutipan rusak di dekatnya sebagai "milik
+    // tetangga" — dan gerbang ini justru paling sering membaca dokumen yang
+    // menyebut nama repo ini.
+    const akar = pohon({
+      "docs/adr/0001-satu.md": adr("0001"),
+      "docs/adr/README.md": indeks("| [0001](0001-satu.md) | Satu | Diterima |"),
+      "README.md": "Template awcms-astro memutuskan ini di ADR-0042."
+    });
+
+    expect(jalankan(akar).kode).toBe(1);
+  });
+
+  test("blok kode berpagar dilewati, span kode inline TIDAK", () => {
+    const akar = pohon({
+      "docs/adr/0001-satu.md": adr("0001"),
+      "docs/adr/README.md": indeks("| [0001](0001-satu.md) | Satu | Diterima |"),
+      "README.md": [
+        "```",
+        "contoh: ADR-0042 di dalam pagar bukan kutipan",
+        "```",
+        "",
+        "Tetapi `ADR-0042` inline adalah kutipan."
+      ].join("\n")
+    });
+    const { kode, keluaran } = jalankan(akar);
+
+    expect(kode).toBe(1);
+    expect(keluaran).toContain("ADR-0042");
+  });
+
+  test("repo tanpa docs/adr/ dilewati dan MENGATAKANNYA", () => {
+    const akar = pohon({ "README.md": "Situs turunan tanpa ADR menyebut ADR-0042." });
+    const { kode, keluaran } = jalankan(akar);
+
+    expect(kode).toBe(0);
+    expect(keluaran).toContain("kutipan ADR DILEWATI");
   });
 });
 

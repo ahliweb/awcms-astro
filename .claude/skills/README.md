@@ -53,6 +53,8 @@ berlawanan dengan koreksi biasa — kalimat "ini belum ada di repo ini" mulai
 benar, lalu barangnya dibangun, dan kalimat itu menua menjadi kebohongan yang
 percaya diri.
 
-Satu aturan ADR-0062 yang **belum** ada di sini: kutipan `ADR-NNNN` tidak
-diperiksa resolve ke berkasnya. Ia tercatat sebagai pekerjaan di
-[ADR-0028](../../docs/adr/0028-jangkar-standar-performa-dan-keamanan.md).
+Sejak 5 Agustus 2026 ketiga aturan `awcms` ADR-0062 itu berlaku penuh di sini:
+kutipan `ADR-NNNN` kini ikut diperiksa `bun run audit:dokumen` — yang tidak
+resolve ke `docs/adr/` dan tidak ditandai milik repo lain (`awcms`,
+"repo rujukan", atau tautan github di paragraf yang sama) adalah pelanggaran.
+Pekerjaan itu dicatat [ADR-0028](../../docs/adr/0028-jangkar-standar-performa-dan-keamanan.md) §E.

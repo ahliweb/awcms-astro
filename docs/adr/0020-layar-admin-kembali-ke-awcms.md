@@ -16,7 +16,7 @@ Sejak itu dua hal terjadi di `awcms`, dan keduanya bergerak berlawanan arah deng
 ADR-0017.
 
 **Pertama, penghalangnya hilang.** Kedua kontrak yang ADR-0017 sebut sebagai blocker
-mendarat pada 1 Agustus 2026: kredensial mesin baca-saja (ADR-0049) dan handoff sesi
+mendarat di `awcms` pada 1 Agustus 2026: kredensial mesin baca-saja (ADR-0049) dan handoff sesi
 BFF (ADR-0050). Jadi jalur ADR-0017 terbuka.
 
 **Kedua, dan justru karena itu, `awcms` menutup jalur itu secara sadar.**

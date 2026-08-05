@@ -439,11 +439,14 @@ performa:
 - [ ] `bun run audit:konten` hijau **setelah** build. Sebelum build ia hanya
       memeriksa sumber gambar dan mengatakan bahwa gerbang keluarannya
       dilewati; membaca keluaran itu adalah bagian dari menjalankannya.
-- [ ] `bun run audit:dokumen` hijau. Ia tidak butuh build: tautan markdown mati
-      dan indeks ADR yang tidak lengkap dua arah. **Menambah ADR berarti
-      menambah barisnya di `docs/adr/README.md`** — indeks itu pernah
-      mendaftarkan enam keputusan yang tak pernah ada di repo ini sambil
-      melewatkan sembilan yang ada, dan bertahan sembilan ADR tanpa terlihat.
+- [ ] `bun run audit:dokumen` hijau. Ia tidak butuh build: tautan markdown mati,
+      indeks ADR yang tidak lengkap dua arah, dan kutipan `ADR-NNNN` yang tidak
+      resolve ke berkasnya — kutipan ADR repo lain ditulis dengan penanda
+      (`awcms`, "repo rujukan", atau tautan github) di paragraf yang sama.
+      **Menambah ADR berarti menambah barisnya di `docs/adr/README.md`** —
+      indeks itu pernah mendaftarkan enam keputusan yang tak pernah ada di repo
+      ini sambil melewatkan sembilan yang ada, dan bertahan sembilan ADR tanpa
+      terlihat.
 - [ ] `bun run audit:graf` hijau. Ia juga tidak butuh build: artefak
       `graphify-out/` yang terlacak di luar keempat keluaran bersama, dan nama
       komunitas yang tidak dipilih — nama berkas warisan penamaan otomatis,
