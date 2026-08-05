@@ -98,7 +98,28 @@ RUN bun run build
 # lapis integrasinya DILEWATI karena tidak ada sumber konten, sehingga image
 # adalah tempat pertama yang benar-benar punya hasil build untuk diuji. Aturan
 # cache dan header karena itu terbukti pada artefak yang persis akan berjalan.
-RUN bun test
+# Hanya gerbang yang menguji ARTEFAK HASIL BUILD yang berjalan di sini. Sisa
+# tests/ membaca metadata repo yang justru DIKECUALIKAN .dockerignore dengan
+# sengaja (.git/, .github/, .claude/, docs/, *.md), dan `audit-graf` memanggil
+# biner `git` yang tidak dibawa image ini. Gerbang-gerbang itu hanya bisa hijau
+# di CI, tempat repo-nya utuh.
+#
+# Menjalankan seluruh suite di sini bukan gerbang yang ketat — ia gerbang yang
+# MUSTAHIL: `RUN bun test` menggagalkan SETIAP build image sejak baris ini ada,
+# jadi image produksi tidak pernah sekali pun terbentuk. Kegagalannya sunyi bagi
+# repo (CI hijau, karena di CI berkasnya ada) dan hanya terlihat oleh yang
+# mencoba men-deploy.
+#
+# `kontrak-awcms.test.mjs` sengaja TIDAK ikut meski sebagian besar isinya
+# artefak: dua tesnya membaca .github/workflows/ci.yml dan
+# .claude/skills/awcms-astro-integrasi/SKILL.md. Ia tetap gerbang CI.
+#
+# AWCMS_* dilepas untuk langkah ini karena tes-tes ini menyetir env-nya sendiri;
+# nilai build yang sungguhan bocor ke dalamnya menggagalkan tes yang seharusnya
+# hijau.
+RUN env -u AWCMS_API_URL -u AWCMS_API_TOKEN -u AWCMS_TENANT_ID \
+    bun test tests/penyaji.test.mjs tests/keluaran-csp.test.mjs \
+             tests/content-blocks.test.mjs tests/seni-lokal.test.mjs
 
 # Alasan yang sama, kelas cacat yang berbeda: gerbang keluaran audit konten
 # (SEO, hreflang, aset yang dijanjikan metadata, tautan mati, sitemap, nama key
