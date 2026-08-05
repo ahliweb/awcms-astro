@@ -75,7 +75,7 @@ Yang **tidak** menyimpang dan wajib diikuti: `AGENTS.md` sebagai kontrak kerja, 
 | Dokumen | Isi |
 | --- | --- |
 | [`standar-teknis.md`](standar-teknis.md) | Aturan teknis yang mengikat: stack, struktur, i18n, konten, aset, SEO, gerbang mutu |
-| [`standar-performa-dan-keamanan.md`](standar-performa-dan-keamanan.md) | Peta ke OWASP Top 10 / ASVS / Secure Headers, ISO 27001 Annex A, NIST SSDF, dan Core Web Vitals — beserta sembilan celah yang belum ditutup ([ADR-0028](../adr/0028-jangkar-standar-performa-dan-keamanan.md)) |
+| [`standar-performa-dan-keamanan.md`](standar-performa-dan-keamanan.md) | Peta ke OWASP Top 10 / ASVS / Secure Headers, ISO 27001 Annex A, NIST SSDF, dan Core Web Vitals — beserta sembilan celah bernomor, enam ditutup dan tiga terbuka ([ADR-0028](../adr/0028-jangkar-standar-performa-dan-keamanan.md)) |
 | [`ui-ux-design-system.md`](ui-ux-design-system.md) | Design token, komponen, aksesibilitas, dan pemetaannya ke kosakata AWCMS |
 | [`integrasi-awcms.md`](integrasi-awcms.md) | Kontrak perpindahan ke pengelolaan dinamis: content model, adapter, batas tanggung jawab |
 | [`checklist-repo-baru.md`](checklist-repo-baru.md) | Langkah memulai situs baru di atas standar ini |

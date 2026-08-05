@@ -189,7 +189,7 @@ Yang mengikat di sini:
 - `bun audit` wajib nol sebelum rilis.
 - Tautan keluar `target="_blank"` wajib `rel="noopener noreferrer"`.
 
-**Lima dari sembilan celah ditutup 4 Agustus 2026** ([ADR-0029](../adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md) untuk HSTS, sisanya tanpa perubahan postur): HSTS, `fetchpriority`, anggaran gambar, batas waktu `awcmsGet`, dan header pembocor teknologi. **Empat masih terbuka** dan disebut di sini supaya tidak ditemukan sebagai kejutan: pin action/image ke SHA, analisis statik, pengukuran Core Web Vitals, dan SBOM rilis. Kesembilannya bernomor di dokumen standar.
+**Enam dari sembilan celah ditutup 4 Agustus 2026** ([ADR-0029](../adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md) untuk HSTS, [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md) untuk pin rantai pasok, sisanya tanpa perubahan postur): HSTS, `fetchpriority`, anggaran gambar, batas waktu `awcmsGet`, header pembocor teknologi, dan pin action/image ke SHA/digest. **Tiga masih terbuka** dan disebut di sini supaya tidak ditemukan sebagai kejutan: analisis statik, pengukuran Core Web Vitals, dan SBOM rilis. Kesembilannya bernomor di dokumen standar.
 
 ## Gerbang mutu
 
