@@ -220,18 +220,21 @@ ADR-0024 untuk dirinya sendiri — dan anggaran gambar di
 [`standar-teknis.md`](standar-teknis.md#performa) adalah tempat pertama
 kelebihannya akan terlihat.
 
-## Celah: kesembilannya ditutup — dan barisnya tetap di sini
+## Celah: kesepuluhnya ditutup — dan barisnya tetap di sini
 
 Diurutkan menurut akibat, bukan menurut usaha. **Enam ditutup pada 4 Agustus
 2026** — lima di pagi hari, yang keenam (pin rantai pasok) menyusul siangnya
 lewat [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md) — dan
-**tiga terakhir pada 5 Agustus 2026**: SBOM lewat
+**tiga berikutnya pada 5 Agustus 2026**: SBOM lewat
 [ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md), analisis
 statik dan Core Web Vitals lab lewat
 [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) —
-masing-masing bersama pemeriksanya. Di repo ini aturan tanpa
-pemeriksanya adalah aturan yang akan dilanggar, dan itu berlaku juga untuk
-aturan yang datang dari standar luar.
+masing-masing bersama pemeriksanya. **Yang kesepuluh ditemukan dan ditutup pada
+6 Agustus 2026**, dan ia bukan kontrol yang hilang melainkan dua baris di tabel
+ini sendiri: pemeriksa celah 2 dan 3 tidak pernah dieksekusi satu kali pun di
+repo tempat ia ditulis. Di repo ini aturan tanpa pemeriksanya adalah aturan yang
+akan dilanggar, dan itu berlaku juga untuk aturan yang datang dari standar luar
+— **dan juga untuk pemeriksa itu sendiri.**
 
 Baris yang tertutup **tetap di tabel**. Dihapus, ia akan diusulkan lagi sebagai
 temuan baru enam bulan kemudian, dan pemeriksanya akan dilonggarkan oleh orang
@@ -248,6 +251,7 @@ yang tidak tahu kenapa ia ada.
 | 7 | Tidak ada analisis statik | **DITUTUP** — [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) §A: `.github/workflows/codeql.yml` terjadwal mingguan + pada perubahan, atas permukaan JS/TS. Syarat kejujurannya persis yang kolom ini resepkan sejak awal: langkah `Nyatakan cakupan` menulis ke ringkasan run berapa berkas dianalisis dan berapa `.astro` TIDAK — dihitung `find` saat run, bukan ditulis tangan | `tests/analisis-statik.test.mjs`: seluruh action ber-SHA + komentar versi, jadwal ada, dan langkah pernyataan cakupan — beserta sebutan `.astro`-nya — tidak bisa dihapus diam-diam |
 | 8 | Core Web Vitals tidak diukur | **DITUTUP** — [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) §B: Lighthouse CI atas **sampel** `dist/client` (hingga 10 URL, kedalaman 4 — batas yang dipilih, bukan bawaan lhci yang diam-diam berhenti di 5 URL terdangkal) di job `build`, terkondisi sumber konten seperti gerbang keluaran lainnya — di repo template ia tidak berjalan, di setiap SITUS ia berjalan pada tiap PR. LCP ≤ 2500 ms dan CLS ≤ 0,1 level `error`; INP tidak terukur di lab, jadi TBT ≤ 200 ms dipakai sebagai proksi dan DISEBUT proksi | `tests/cwv-lab.test.mjs`, berjalan di repo template: ambang `lighthouserc.json` TERPAKU ke angka dokumen ini dan ketiga batas cakupannya (kedalaman, jumlah sampel, blocklist 404) diasersi eksplisit — melonggarkan salah satunya menuntut mengubah tes, yang terlihat di review; langkah CI-nya terkondisi dan dipin SHA |
 | 9 | Tidak ada SBOM pada rilis | **DITUTUP** — [ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md): `scripts/sbom.mjs` menurunkan CycloneDX 1.5 dari `bun.lock` — deterministik, tanpa dependency baru — dan perilis menulisnya SEBELUM commit rilis sehingga `sbom.cdx.json` ikut di dalam tag | `tests/sbom.test.mjs`, **mutation-proven** atas lockfile buatan: paket ber-scope, konversi hash base64→hex, dedup jalur resolusi, dan entri tak dikenal DITOLAK alih-alih dilewati — SBOM yang diam-diam tidak lengkap menjawab "tidak terdampak" dengan percaya diri. Langkah perilisnya diasersi struktural supaya tidak hilang diam-diam |
+| 10 | Pemeriksa celah 2 dan 3 tidak pernah dieksekusi di repo tempat ia ditulis | **DITUTUP** — `tests/audit-konten.test.mjs`. Seluruh keluarga keluaran `scripts/audit-konten.mjs` — termasuk kedua gerbang performa di atas — berada di belakang `if (existsSync("dist/client"))`, dan `dist/client` lahir dari build yang butuh sumber konten. Di repo template itu berarti ~330 baris pemeriksa yang **tidak pernah jalan**: tidak di CI, tidak di `bun test`, tidak di mana pun. Baris 2 dan 3 berbunyi DITUTUP di atas dasar kode yang belum pernah dijalankan siapa pun | 53 kasus atas pohon fixture sungguhan, dijalankan dengan `cwd` fixture sehingga skripnya diuji **apa adanya**, tanpa mode uji yang hanya ada di tes. Tiap gerbang dibuktikan dua arah dan **mutation-proven**: mencabut tuntutan `fetchpriority`, menyamakan anggaran halaman konten dengan anggaran beranda, mencabut dedup `src`, mencabut resiprositas hreflang, mengabaikan namespace katalog, memperlakukan dimensi tak terbaca sebagai lulus, atau menghapus catatan "DILEWATI" — masing-masing memerahkan tes yang berbeda |
 
 **Tidak ada yang terbuka hari ini — dan kalimat itu punya batas yang harus
 ikut dibaca.** Celah 7 dan 8 lama ditahan justru karena penutupan yang mudah
@@ -259,10 +263,28 @@ ia ditulis akan membusuk" dijawab, bukan diabaikan
 Batasnya: `.astro` tetap tidak teranalisis statik (dan ringkasan run CodeQL
 mengatakannya pada setiap jalan), p75 kunjungan nyata tetap tidak diukur (RUM
 tetap ditolak — lab mengukur halaman, bukan pembaca), dan kolom Keadaan tabel
-ini tetap **tidak bisa digerbangi mesin**. Sembilan dari sembilan bukan
+ini tetap **tidak bisa digerbangi mesin**. Sepuluh dari sepuluh bukan
 "selesai selamanya"; ia berarti setiap celah yang DIKETAHUI punya pemeriksa,
-dan temuan berikutnya masuk tabel ini sebagai nomor sepuluh — bukan
+dan temuan berikutnya masuk tabel ini sebagai nomor sebelas — bukan
 menggantikan baris lama.
+
+**Celah 10 adalah bukti bahwa kalimat itu berlaku untuk tabel ini sendiri.**
+Ia ditemukan pada 6 Agustus 2026 dengan satu pertanyaan yang seharusnya
+ditanyakan pada hari celah 2 dan 3 ditutup — *pemeriksanya sendiri pernah
+dijalankan siapa?* — dan jawabannya "tidak pernah, di repo ini". Dua batasnya
+ikut dinyatakan, karena penutupan yang lebih besar daripada kenyataannya persis
+kelas cacat yang tabel ini lawan:
+
+- **Fixture bukan situs.** 53 kasus itu membuktikan LOGIKA gerbangnya atas
+  keluaran buatan yang berbentuk seperti keluaran Astro. Ia tidak membuktikan
+  bahwa `astro build` sungguhan memancarkan bentuk yang sama — itu hanya bisa
+  dibuktikan sebuah SITUS, dan di sana `bun run audit:konten` setelah build
+  memang berjalan pada tiap PR.
+- **Satu baris di skripnya tetap tidak bergerbang, dan itu ditulis di tesnya.**
+  Penyaring `mailto:|tel:|data:|javascript:` tidak bisa dimutasi dari luar —
+  `internal()` sudah menolak skema itu lebih dulu, jadi mencabutnya tidak
+  mengubah satu pun hasil. Tesnya menjaga perilakunya, bukan barisnya, dan
+  selisih itu disebut di sana alih-alih dihitung sebagai cakupan.
 
 Konteks keluarganya, per 5 Agustus 2026: `awcms` **sudah** mengukur Core Web
 Vitals di lab pada hari yang sama (Opsi D ADR-0067 di sana — LCP+CLS halaman

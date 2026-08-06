@@ -32,7 +32,10 @@ bun run audit:graf      # artefak graphify-out/     — melewati diri bila direk
   tanpa lambang instansi negara) — tidak bisa diperiksa mesin, selamanya manual.
 - **Gerbang keluaran `audit:konten`** melewati dirinya tanpa `dist/`, dan
   **mengatakannya**. Di repo template itu normal; di sebuah SITUS itu berarti
-  gerbangnya tidak berjalan.
+  gerbangnya tidak berjalan. Sejak 6 Agustus 2026 yang dilewati hanyalah
+  **jalannya atas situs sungguhan**: logika tiap keluarga sudah dibuktikan
+  `tests/audit-konten.test.mjs` atas pohon fixture, jadi skripnya tidak bisa
+  lagi berhenti memeriksa diam-diam di repo yang tidak pernah membangun.
 - **Lapis penyaji `bun test`** melewati dirinya tanpa `dist/`, dengan alasan
   yang sama.
 - **URL eksternal dan anchor** di `audit:dokumen` — yang pertama butuh jaringan
@@ -133,6 +136,22 @@ Yang menangkapnya bukan gerbang melainkan kebiasaan: **saat sebuah ADR
 mendarat, grep nama benda yang ia ubah di seluruh markdown.** ADR-0024 mengubah
 cara gambar dirender; `grep -rn "astro:assets" docs/` akan menemukan nomor 8
 dalam satu detik pada hari ADR itu ditulis.
+
+## Menambah pemeriksa ke `audit:konten`
+
+Skripnya **tidak** menerima akar sebagai argumen — ia membaca direktori kerja.
+`tests/audit-konten.test.mjs` karena itu menjalankannya dengan `cwd` sebuah
+pohon fixture, bukan dengan bendera uji: sebuah mode yang hanya hidup di tes
+adalah jalur kode yang tidak pernah dipakai situs mana pun.
+
+Fixture minimalnya tiga berkas — `src/config/site.ts` (locale),
+`src/styles/global.css` (`--ratio-visual`), dan satu halaman di
+`dist/client/` — karena skripnya membaca ketiganya sebelum gerbang apa pun
+jalan. Menambah gerbang berarti menambah **dua** kasus: merah saat cacatnya
+ada, hijau saat tidak. Lalu buktikan tesnya bukan hiasan: mutasi barisnya di
+skrip dan pastikan tepat kasus itu yang merah. Dua kali cara itu menemukan
+lubang di tes yang sudah hijau — cabang `image` JSON-LD yang tidak pernah
+diuji, dan satu penyaring skema yang ternyata tidak bisa dimutasi sama sekali.
 
 ## Menambah pemeriksa ke `audit:dokumen`
 
