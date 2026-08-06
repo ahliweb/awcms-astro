@@ -75,7 +75,7 @@ Variabel (semua **Build Variable**, kecuali yang ditandai):
 | `SITE_NAME`, `SITE_DESCRIPTION` | Identitas situs |
 | `SITE_LOCALES` | Prefix locale selain locale default, dipisah koma |
 | `AWCMS_API_URL` | Origin instans awcms |
-| `AWCMS_API_TOKEN` | **Secret.** Kredensial mesin (`awcmsm_…`), scope `blog_content.posts.read`. Ia juga yang menentukan tenant |
+| `AWCMS_API_TOKEN` | **Secret.** Kredensial mesin (`awcmsm_…`), scope `blog_content.posts.read` **dan** `media_library.media.read` — yang kedua dipakai `build:asal-media`, dan tanpanya build gagal 403 setelah seluruh halaman selesai dirender. Ia juga yang menentukan tenant |
 | `AWCMS_TENANT_ID` | Opsional, dianjurkan. Bukan pemilih tenant — pernyataan yang diverifikasi terhadap token; build gagal bila berbeda |
 
 Seluruhnya dijelaskan di [`.env.example`](../.env.example).
