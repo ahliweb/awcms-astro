@@ -14,27 +14,96 @@ bukan saat request. Repo ini **bukan** rumah layar admin — seluruhnya tinggal 
 `awcms` (§Peran repo ini). Satu-satunya permukaan terautentikasi yang
 direncanakan di sini adalah BFF portal Jualanku (ADR-0014), dan ia belum ada.
 
-## Peran repo ini (berlaku 2 Agustus 2026 — ADR-0020)
+## Peran repo ini (berlaku 8 Agustus 2026 — ADR-0034)
 
-**Repo ini tidak memikul layar admin.** Kalau kamu ke sini untuk membangun
-layar operator platform atau layar internal, kamu berada di repo yang salah:
-`awcms` ADR-0051 memusatkan **seluruh** layar admin — tenant maupun
-owner/internal/platform — di `awcms`, di bawah satu shell `/admin/*`.
+**Fungsi UTAMA repo ini — dan setiap situs yang lahir darinya — adalah HALAMAN
+PUBLIK.** Itu keadaan asalnya dan tetap keadaan utamanya: template ini
+menyatakan nol permukaan terautentikasi, dan `bun test` merah kalau ada rute
+yang menyelinap ke luar dari `output: 'static'` tanpa dinyatakan.
 
-| Repo          | Peran frontend                             | Audiens                                     |
-| ------------- | ------------------------------------------ | ------------------------------------------- |
-| `awcms`       | frontend publik + **SELURUH** admin        | pengunjung, admin tenant, operator platform |
-| `awcms-astro` | situs publik statis + experience layer/BFF | pembaca anonim, pengguna Jualanku           |
+**Selain fungsi utama itu, sebuah situs boleh MENYATAKAN dirinya juga membawa
+halaman admin untuk USER.** Sejak
+[ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md)
+itu diperbolehkan, lewat satu pintu: `permukaanAdmin` di
+[`src/config/site.ts`](src/config/site.ts). Kosong berarti publik saja.
+
+**Admin untuk USER, bukan ADMIN UTAMA.** Ini batasnya, dan ia bukan nuansa.
+Yang boleh tinggal di sini adalah permukaan yang dipakai seorang pengguna
+untuk mengerjakan bagiannya sendiri di situs INI — menulis artikel,
+mengirimnya untuk ditinjau, mengurus profilnya. Yang tidak pernah boleh
+tinggal di sini adalah **admin utama**: layar yang mengelola SISTEM — modul,
+peran, tenant, jejak audit, apa pun yang platform-scoped — dan itu tetap di
+`/admin/*` milik `awcms` (`awcms` ADR-0051).
+
+**`owner` karena itu tidak pernah ada di sini.** Ia super-manajer sistem
+lengkap. Yang boleh dinyatakan hanya peran **di bawah** owner.
+
+| Repo          | Peran frontend                                                     | Audiens                                              |
+| ------------- | ------------------------------------------------------------------- | ----------------------------------------------------- |
+| `awcms`       | frontend publik + **admin utama** sistem lengkap, termasuk `owner`   | pengunjung, admin tenant, operator platform, owner     |
+| `awcms-astro` | **situs publik statis**; opsional admin USER di sebelahnya + BFF     | pembaca anonim, pengguna Jualanku, peran user non-owner |
+
+Empat aturan yang membuat pengecualian itu bukan lubang:
+
+0. **Publik tetap fungsi utamanya.** Menyatakan permukaan admin tidak mengubah
+   situs ini menjadi aplikasi admin dengan brosur publik menempel padanya.
+   `permukaanAdmin.prefiks` karena itu tidak boleh `/`, tidak boleh prefiks
+   locale, dan tidak boleh slug sebuah tab — ketiganya menaruh bagian publik di
+   belakang login, dan situsnya tetap terbangun hijau: seluruh halamannya ada,
+   dan setiap satu di antaranya kini meminta pembacanya masuk lebih dulu.
+
+1. **Ia harus DINYATAKAN, tidak boleh muncul.** Satu berkas rute dengan
+   `export const prerender = false` sudah cukup untuk menegakkan permukaan
+   terautentikasi di domain yang pemiliknya tidak pernah memutuskan untuk
+   memilikinya — dengan build hijau. `tests/peran-situs.test.mjs` menolak rute
+   on-demand yang prefiksnya tidak ada di `permukaanAdmin.prefiks` maupun di
+   prefiks BFF Jualanku ADR-0014.
+2. **Menyatakannya tidak memindahkan satu izin pun.** RBAC/ABAC default-deny
+   `awcms` tetap yang memutuskan setiap permintaan. Deklarasi di sini menggambar
+   tombol; ia tidak memberi apa pun, dan peran yang ditolak `awcms` tetap
+   ditolak dengan tombolnya terpampang. Ini butir ADR-0017 yang ADR-0020
+   pertahankan, dan ia yang membuat ADR-0034 bukan pembalikan ADR-0020:
+   **yang memindahkan risiko adalah gerbang otorisasi, bukan alamat repo tempat
+   tombolnya digambar.**
+3. **`owner` ditolak gerbang, bukan hanya oleh kalimat ini.** `permukaanAdmin.peran`
+   yang memuatnya memerahkan `bun test`.
+4. **Tidak ada fitur yang HANYA ada di sini.** Setiap fitur yang dipakai user di
+   permukaan admin situs ini **wajib juga bisa dikelola `owner`** lewat
+   `/admin/*` milik `awcms`. Aturan ini berlawanan arah dengan butir 3 dan
+   justru karena itu melengkapinya: butir 3 menjaga `owner` tidak bisa MASUK ke
+   sini, butir ini menjaga tidak ada apa pun di sini yang LEPAS dari `owner`.
+   Konsekuensinya menentukan urutan kerja — **`awcms` dulu, selalu.** Fitur yang
+   mendarat di sini lebih dulu adalah fitur yang untuk sementara tidak bisa
+   dimatikan siapa pun.
+
+**Template ini memang dimaksudkan tumbuh menjadi banyak variasi.** Tiap situs
+turunan punya permukaan publiknya sendiri dan, bila dinyatakan, permukaan admin
+user-nya sendiri, sesuai kebutuhan pengelolaan fitur penggunanya. Yang
+bervariasi adalah **bentuk permukaannya**, bukan kumpulan kemampuannya: dua
+situs boleh sangat berbeda dalam apa yang mereka tampilkan dan bagaimana, dan
+keduanya tetap berdiri di atas kemampuan yang sama — yang dimiliki, diizinkan,
+diaudit, dan bisa dicabut oleh `awcms`.
+
+**Satu `awcms`, banyak situs.** Sebuah instans `awcms` boleh memiliki banyak
+repo situs sekaligus, masing-masing dengan halaman publiknya sendiri dan
+opsional halaman admin user-nya sendiri; semuanya tetap merujuk `awcms` yang
+sama sebagai **backend** dan sebagai **admin utama (`owner`)**. Repo yang sedang
+kamu sunting karena itu bukan "sistemnya" — ia satu wajah dari satu sistem.
+Jangan pernah menulis kode yang mengandaikan situs ini satu-satunya, dan jangan
+menyalin sebuah kemampuan ke beberapa situs: kemampuan yang dipakai lebih dari
+satu situs tinggal di `awcms` SEKALI. Dua salinan adalah dua tempat yang harus
+ditambal, dan yang kedua biasanya tidak ikut ditambal.
 
 Aturan sebelumnya (ADR-0017, 31 Juli 2026) menaruh layar owner/internal di sini.
-Ia **di-supersede** — bukan karena jalurnya buntu, melainkan karena memindahkan
-layar tidak pernah menjadi kontrol keamanan yang diklaimkan: izin tidak ikut
-pindah, jadi risikonya juga tidak. Alasan lengkapnya di
-[ADR-0020](docs/adr/0020-layar-admin-kembali-ke-awcms.md).
+Ia **di-supersede** ADR-0020 — bukan karena jalurnya buntu, melainkan karena
+memindahkan layar tidak pernah menjadi kontrol keamanan yang diklaimkan. Batas
+itu **tidak dicabut** ADR-0034: yang dibuka hanya admin SITUS untuk peran
+non-owner; admin SISTEM tetap milik `awcms`.
 
-Satu permukaan terautentikasi tetap direncanakan di sini, dan ia bukan admin:
-**BFF portal Jualanku** (ADR-0014, `awcms` ADR-0045). Empat aturan berikut
-mengikatnya — dipindahkan utuh dari ADR-0017 karena keempatnya menyangkut
+Satu permukaan terautentikasi lain tetap direncanakan di sini, dan ia bukan
+admin: **BFF portal Jualanku** (ADR-0014, `awcms` ADR-0045). Empat aturan
+berikut mengikat **setiap** permukaan terautentikasi di repo ini — BFF maupun
+admin situs — dan dipindahkan utuh dari ADR-0017 karena keempatnya menyangkut
 permukaan terautentikasi apa pun, bukan khusus layar admin:
 
 1. **`awcms` tetap system of record.** Repo ini tanpa basis data; datanya datang
@@ -132,8 +201,24 @@ sengaja yang belum tercatat di `awcms-family-compatibility.yaml`.
   dan lapisan rendernya tidak berubah sedikit pun saat pindah ke API.
 - **Empat aturan di `src/lib/content.ts` tidak boleh dilonggarkan**: kumpulan
   slug ditentukan locale default, `isFallback` dihitung adapter, urutan dari
-  field urutan, dan hanya `status = 'published'` yang masuk build. Masing-masing
-  menjaga satu cacat spesifik tetap mustahil; alasannya ditulis di berkas itu.
+  field yang dinyatakan, dan hanya post yang awcms sendiri sajikan publik yang
+  masuk build. Masing-masing menjaga satu cacat spesifik tetap mustahil;
+  alasannya ditulis di berkas itu.
+- **Urutan seksi datang dari field EKSPLISIT, dan field mana adalah milik
+  seksinya** (ADR-0033). `urutanSeksi: "manual"` membaca `urutan` yang ditulis
+  redaksi; `"terbaru"` membaca `publishedAt` menurun, paritas dengan
+  `ORDER BY published_at DESC` pada rute publik awcms. Keduanya berakhir pada
+  slug sumber sebagai pemecah seri — comparator yang mengembalikan 0 menyerahkan
+  pasangannya pada urutan yang kebetulan dikembalikan API, dan itu persis yang
+  aturan ini larang. Jangan mengurutkan dari nilai yang dibaca post TERJEMAHAN:
+  seksi yang sama akan berjalan dalam urutan berbeda di setiap bahasa.
+- **`publishedDate` dan `updatedDate` adalah dua klaim, dibaca dari SATU baris
+  awcms** (ADR-0033). Keduanya pernah dilipat menjadi `publishedAt ?? updatedAt`
+  di bawah satu nama, sehingga `dateModified` membeku di tanggal terbit
+  selamanya dan tidak ada satu halaman pun yang bisa melaporkan koreksi. Jangan
+  memasangkan tanggal terbit post sumber dengan tanggal ubah terjemahannya:
+  hasilnya `dateModified` mendahului `datePublished` pada konten yang sah, dan
+  crawler membuang blok yang menyatakan itu.
 - **Diam-diam memotong data adalah kegagalan, bukan optimasi.** Adapter
   menyusuri SELURUH daftar dengan cursor keyset; batas halaman bukan batas
   konten. Kalau sesuatu menghalangi kelengkapan — cursor yang tidak maju,

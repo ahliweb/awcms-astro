@@ -197,6 +197,32 @@ function jsonLdDi(nama, isi) {
   return hasil;
 }
 
+/**
+ * Setiap simpul `Article`/`NewsArticle` di dalam struktur JSON-LD, sedalam apa
+ * pun.
+ *
+ * Sedalam apa pun, karena halaman ini membungkus skemanya dalam `@graph` dan
+ * sebuah pemindai yang hanya melihat akar akan melewatkan seluruhnya —
+ * melaporkan nol pelanggaran atas nol simpul yang diperiksa, yang terbaca
+ * persis seperti lulus.
+ */
+function artikelDiJsonLd(simpul, keluaran = []) {
+  if (Array.isArray(simpul)) {
+    for (const anak of simpul) artikelDiJsonLd(anak, keluaran);
+    return keluaran;
+  }
+
+  if (!simpul || typeof simpul !== "object") return keluaran;
+
+  if (simpul["@type"] === "Article" || simpul["@type"] === "NewsArticle") {
+    keluaran.push(simpul);
+  }
+
+  for (const nilai of Object.values(simpul)) artikelDiJsonLd(nilai, keluaran);
+
+  return keluaran;
+}
+
 /** Setiap nilai `image`/`url` di dalam struktur JSON-LD, sedalam apa pun. */
 function gambarDiJsonLd(simpul, keluaran = []) {
   if (Array.isArray(simpul)) {
@@ -318,6 +344,116 @@ function auditKeluaran(halaman, { localeDefault, locales, namespaceKey }) {
         dipakai.set(judul, nama);
         judulPerLocale.set(locale, dipakai);
       }
+    }
+
+    // -- klaim artikel di JSON-LD --------------------------------------------
+    //
+    // Setiap nilai di sini dibaca MESIN dan tidak pernah manusia, jadi tidak
+    // satu pun dari cacatnya terlihat di halaman: sebuah `datePublished` yang
+    // sebenarnya tanggal ubah tampak persis seperti yang benar. Sebelum
+    // ADR-0033 kedua tanggal memang dipasang dari SATU nilai — tidak ada satu
+    // halaman pun yang bisa melaporkan koreksi — dan tidak ada gerbang di sini
+    // yang pernah membaca `Article`, jadi keadaan itu bisa kembali diam-diam.
+    for (const artikel of jsonLdDi(nama, isi).flatMap((blok) => artikelDiJsonLd(blok))) {
+      const jenis = artikel["@type"];
+
+      const stempel = {};
+
+      for (const kunci of ["datePublished", "dateModified"]) {
+        const nilai = artikel[kunci];
+
+        if (typeof nilai !== "string" || nilai.trim() === "") {
+          langgar("json-ld", nama, `${jenis} tanpa ${kunci}`);
+          continue;
+        }
+
+        if (Number.isNaN(Date.parse(nilai))) {
+          langgar("json-ld", nama, `${jenis} ber-${kunci} yang bukan tanggal: ${nilai}`);
+          continue;
+        }
+
+        stempel[kunci] = Date.parse(nilai);
+      }
+
+      // Urutan yang terbalik bukan sekadar aneh: crawler membuang blok yang
+      // menyatakan sebuah artikel diubah SEBELUM ia terbit, sehingga seluruh
+      // data terstruktur halaman itu hilang tanpa jejak di mana pun.
+      if (
+        stempel.datePublished !== undefined &&
+        stempel.dateModified !== undefined &&
+        stempel.dateModified < stempel.datePublished
+      ) {
+        langgar(
+          "json-ld",
+          nama,
+          `${jenis} menyatakan dateModified (${artikel.dateModified}) ` +
+            `mendahului datePublished (${artikel.datePublished})`
+        );
+      }
+
+      // `author` wajib ada dan wajib punya nama yang terbaca. `NewsArticle`
+      // tanpa penulis lebih miskin daripada `Article` yang digantikannya, dan
+      // rujukan `@id` tanpa `name` inline terbaca sebagai tanpa penulis oleh
+      // pembaca yang tidak menyelesaikan rujukan.
+      const penulis = artikel.author;
+      const namaPenulis =
+        penulis && typeof penulis === "object" && !Array.isArray(penulis)
+          ? penulis.name
+          : undefined;
+
+      if (typeof namaPenulis !== "string" || namaPenulis.trim() === "") {
+        langgar("json-ld", nama, `${jenis} tanpa author.name yang terbaca`);
+      }
+    }
+
+    // -- pasangan tanggal Open Graph -----------------------------------------
+    //
+    // Permukaan KEDUA yang membawa kedua tanggal, dan ia bukan JSON-LD, jadi
+    // gerbang di atas tidak bisa melihatnya. Keduanya pernah dipasang dari SATU
+    // nilai di sini, dan pemasangannya hidup di `.astro` — yang tidak dijangkau
+    // `astro check` maupun tes mana pun. Tanpa gerbang ini, pelipatan yang
+    // ADR-0033 tutup bisa dipasang kembali dengan kelima gerbang tetap hijau.
+    const ogTanggal = {};
+
+    for (const kunci of ["published_time", "modified_time"]) {
+      const nilai = isi.match(
+        new RegExp(
+          `<meta[^>]+property=["']article:${kunci}["'][^>]+content=["']([^"']*)["']`,
+          "i"
+        )
+      )?.[1];
+
+      if (nilai === undefined) continue;
+
+      if (nilai.trim() === "" || Number.isNaN(Date.parse(nilai))) {
+        langgar("og", nama, `article:${kunci} bukan tanggal: ${JSON.stringify(nilai)}`);
+        continue;
+      }
+
+      ogTanggal[kunci] = Date.parse(nilai);
+    }
+
+    const ogAda = Object.keys(ogTanggal).length;
+
+    if (ogAda === 1) {
+      langgar(
+        "og",
+        nama,
+        "memasang salah satu dari article:published_time / article:modified_time saja — " +
+          "keduanya berpasangan, dan yang sendirian terbaca sebagai artikel tanpa riwayat"
+      );
+    }
+
+    if (
+      ogTanggal.published_time !== undefined &&
+      ogTanggal.modified_time !== undefined &&
+      ogTanggal.modified_time < ogTanggal.published_time
+    ) {
+      langgar(
+        "og",
+        nama,
+        "article:modified_time mendahului article:published_time"
+      );
     }
 
     // -- aset yang dijanjikan metadata ---------------------------------------
@@ -847,7 +983,8 @@ if (existsSync(KELUARAN)) {
 } else {
   catatan.push(
     `keluaran: ${KELUARAN} belum ada — SELURUH gerbang keluaran DILEWATI ` +
-      "(SEO, hreflang, aset dijanjikan, tautan mati, sitemap, nama key bocor)."
+      "(SEO, klaim artikel JSON-LD, tanggal Open Graph, hreflang, aset " +
+      "dijanjikan, tautan mati, sitemap, nama key bocor)."
   );
   catatan.push(
     "  Ia lahir dari `bun run build`, yang butuh sumber konten awcms. Di repo " +

@@ -3,7 +3,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumb from '../Breadcrumb.astro';
 import DisclaimerNote from '../DisclaimerNote.astro';
 import Ilustrasi from '../Ilustrasi.astro';
-import { getLocaleFromPath, getSiteUrl, localePath, siteConfig, tabTitleKey, type TabSlug } from '../../config/site';
+import { getLocaleFromPath, getSiteUrl, localePath, siteConfig, tabTitleKey, urutanSeksiTab, type TabSlug } from '../../config/site';
+import { tanggalPanjang, tanggalMesin } from '../../lib/tanggal';
 import { getArticles } from '../../lib/content';
 import { getArticleVisual, getTabImage } from '../../lib/article-images';
 import { collectionSchema } from '../../lib/schema';
@@ -17,6 +18,13 @@ const { tab } = Astro.props;
 const locale = getLocaleFromPath(Astro.url.pathname);
 
 const articles = await getArticles(tab, locale);
+
+// Seksi berita menampilkan TANGGAL pada kartunya; seksi manual menampilkan
+// nomor urut redaksi. Keduanya membaca hal yang sama: field yang menentukan
+// urutan seksi itu. Sebuah kartu berita bernomor "Artikel 99" — nilai bawaan
+// `urutan` untuk artikel yang tidak pernah dinomori — adalah label yang tidak
+// berarti apa-apa di seksi yang tidak pernah dinomori siapa pun.
+const seksiBerita = urutanSeksiTab(tab) === 'terbaru';
 
 // Label breadcrumb datang dari katalog, bukan dari `tab.toUpperCase()`. Yang
 // terakhir itu tidak pernah diterjemahkan dan menyalahi kapitalisasi bahasa
@@ -83,9 +91,15 @@ const schema = collectionSchema(
           </div>
           <div class="card-content">
             <div class="kartu-baris-atas">
-              <span class="kartu-nomor">
-                {t(locale, 'tab.articleNo')}{entry.data.urutan}
-              </span>
+              {seksiBerita ? (
+                <time class="kartu-nomor" datetime={tanggalMesin(entry.data.publishedDate)}>
+                  {tanggalPanjang(locale, entry.data.publishedDate)}
+                </time>
+              ) : (
+                <span class="kartu-nomor">
+                  {t(locale, 'tab.articleNo')}{entry.data.urutan}
+                </span>
+              )}
             </div>
             <h3 class="card-title">{entry.data.title}</h3>
             <p class="card-desc">{entry.data.description}</p>

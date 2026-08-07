@@ -8,10 +8,11 @@ import FaqAccordion from '../components/FaqAccordion.astro';
 import DisclaimerNote from '../components/DisclaimerNote.astro';
 import TranslationNotice from '../components/TranslationNotice.astro';
 import Ilustrasi from '../components/Ilustrasi.astro';
-import { getLocaleFromPath, getSiteUrl, localePath, localeHtmlLang, siteConfig, tabTitleKey } from '../config/site';
+import { getLocaleFromPath, getSiteUrl, localePath, siteConfig, tabTitleKey } from '../config/site';
+import { tanggalPanjang, tanggalMesin, pernahDiubahSetelahTerbit } from '../lib/tanggal';
 import { getArticleVisual } from '../lib/article-images';
 import { SITE_SOCIAL_IMAGE } from '../lib/social-image';
-import { articleSchema } from '../lib/schema';
+import { articleSchema, tipeArtikelSeksi } from '../lib/schema';
 import { t } from '../lib/po';
 import type { LocalizedArticle } from '../lib/content';
 
@@ -50,15 +51,23 @@ const breadcrumbItems = [
   { name: data.title, url: localePath(locale, `/${data.kategori}/${slug}/`) }
 ];
 
-const dateFormat: Intl.DateTimeFormatOptions = {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-};
+const publishedDate = new Date(data.publishedDate);
+const modifiedDate = new Date(data.updatedDate);
 
-const updatedDateStr = new Date(data.updatedDate).toLocaleDateString(localeHtmlLang[locale], dateFormat);
+const publishedDateStr = tanggalPanjang(locale, publishedDate);
+
+// Baris "diperbarui" hanya tampil bila artikel ini memang pernah diubah
+// SETELAH terbit, dan pembandingnya tanggal — bukan milidetik. `updated_at` di
+// awcms bergerak pada setiap tulis, termasuk transisi status yang menerbitkan
+// artikel itu sendiri, jadi setiap artikel yang baru terbit membawa dua stempel
+// yang berbeda beberapa milidetik. Membandingkan nilai mentah akan memasang
+// "Diperbarui" pada setiap artikel sejak menit pertamanya — sebuah koreksi yang
+// tidak pernah terjadi, di setiap halaman.
+const diperbarui = pernahDiubahSetelahTerbit(publishedDate, modifiedDate);
+const modifiedDateStr = diperbarui ? tanggalPanjang(locale, modifiedDate) : undefined;
+
 const reviewDueDateStr = data.reviewDueDate
-  ? new Date(data.reviewDueDate).toLocaleDateString(localeHtmlLang[locale], dateFormat)
+  ? tanggalPanjang(locale, new Date(data.reviewDueDate))
   : undefined;
 
 const schema = articleSchema({
@@ -70,8 +79,13 @@ const schema = articleSchema({
   imageAlt: kartuShare?.alt ?? t(locale, 'share.imageAlt'),
   imageWidth: kartuShare?.width,
   imageHeight: kartuShare?.height,
-  updatedDate: new Date(data.updatedDate),
+  publishedDate,
+  modifiedDate,
   section: tabName,
+  // Keputusannya milik `src/lib/schema.ts`, bukan baris ini: `.astro` tidak
+  // dijangkau typecheck maupun tes, jadi terner di sini adalah keputusan yang
+  // bisa dibalik tanpa satu gerbang pun berubah warna.
+  tipe: tipeArtikelSeksi(data.kategori),
 });
 ---
 
@@ -83,7 +97,8 @@ const schema = articleSchema({
   shareCard={kartuShare}
   schema={schema}
   articleMeta={{
-    modifiedTime: new Date(data.updatedDate).toISOString(),
+    publishedTime: publishedDate.toISOString(),
+    modifiedTime: modifiedDate.toISOString(),
     section: tabName,
   }}
 >
@@ -117,7 +132,8 @@ const schema = articleSchema({
           pernah tampil, dan `entry: any` membuat typecheck tidak bisa
           mengatakannya. */}
       <div class="artikel-meta">
-        <div>📅 {t(locale, 'artikel.updated')} <strong>{updatedDateStr}</strong></div>
+        <div>📅 {t(locale, 'artikel.diterbitkan')} <strong><time datetime={tanggalMesin(publishedDate)}>{publishedDateStr}</time></strong></div>
+        {modifiedDateStr && <div>✏️ {t(locale, 'artikel.updated')} <strong><time datetime={tanggalMesin(modifiedDate)}>{modifiedDateStr}</time></strong></div>}
         {reviewDueDateStr && <div>🔍 {t(locale, 'artikel.review')} <strong>{reviewDueDateStr}</strong></div>}
         {data.estimasiWaktu && <div>⏱️ {t(locale, 'artikel.estimasi')} <strong>{data.estimasiWaktu}</strong></div>}
       </div>

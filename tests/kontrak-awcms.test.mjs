@@ -135,7 +135,22 @@ describe("tenant diturunkan dari token", () => {
 const fetchAsli = globalThis.fetch;
 
 /** Membangun satu post penuh; `ringkas()` memangkasnya seperti awcms memangkasnya. */
-function buatPost(index, { locale = "id", status = "published", visibility = "public", grup } = {}) {
+function buatPost(
+  index,
+  {
+    locale = "id",
+    status = "published",
+    visibility = "public",
+    grup,
+    // Kedua stempel bisa disetel karena keduanya sekarang KEPUTUSAN, bukan
+    // hiasan fixture: `publishedAt` menentukan apakah artikelnya terbit sama
+    // sekali dan di urutan berapa ia muncul di seksi berita, `updatedAt`
+    // menentukan `dateModified`. Nilai bawaannya tetap seperti sebelumnya
+    // supaya setiap tes lama menguji hal yang sama persis.
+    publishedAt = "2026-07-01T00:00:00.000Z",
+    updatedAt = "2026-07-02T00:00:00.000Z"
+  } = {}
+) {
   return {
     id: `00000000-0000-4000-8000-${String(index).padStart(12, "0")}`,
     title: `Artikel ${index}`,
@@ -148,10 +163,15 @@ function buatPost(index, { locale = "id", status = "published", visibility = "pu
     canonicalUrl: null,
     locale,
     ...(grup === undefined ? {} : { translationGroupId: grup }),
-    publishedAt: "2026-07-01T00:00:00.000Z",
-    updatedAt: "2026-07-02T00:00:00.000Z",
+    publishedAt,
+    updatedAt,
     createdAt: `2026-07-01T00:00:${String(index).padStart(2, "0")}.000Z`
   };
+}
+
+/** ISO untuk `n` menit dari sekarang — dihitung, tidak pernah ditulis harfiah. */
+function menitDariSekarang(n) {
+  return new Date(Date.now() + n * 60 * 1000).toISOString();
 }
 
 function ringkas(post) {
@@ -503,6 +523,344 @@ describe("traversal build feed", () => {
     assert.equal(artikel.length, 1);
     assert.equal(artikel[0].isFallback, false);
     assert.equal(artikel[0].slug, "artikel-0");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Predikat terbit — paritas dengan rute publik awcms sendiri.
+//
+// `awcms` menyajikan `/news/**` dengan `published_at IS NOT NULL AND
+// published_at <= now()` di atas `status`/`visibility`. Build feed yang dipanggil
+// repo ini TIDAK menerapkan predikat itu — `listBlogPostsFullPage` menyaring
+// tenant, `deleted_at`, `status`, dan `locale` saja. Tanpa gerbang di bawah,
+// aturan itu bisa dicabut dari adapter tanpa satu tes pun berubah warna, karena
+// setiap fixture di berkas ini bertanggal masa lalu dan akan selamanya begitu.
+// ---------------------------------------------------------------------------
+
+describe("predikat terbit", () => {
+  let getArticles;
+  let resetContentCacheForTests;
+
+  beforeEach(async () => {
+    process.env.AWCMS_API_URL = "http://awcms.uji";
+    process.env.AWCMS_API_TOKEN = TOKEN;
+    ({ getArticles, resetContentCacheForTests } = await import("../src/lib/content.ts"));
+    resetContentCacheForTests();
+  });
+
+  afterEach(() => {
+    globalThis.fetch = fetchAsli;
+  });
+
+  test("post berstatus published tanpa publishedAt tidak ikut terbit", async () => {
+    // awcms akan menjawab 404 untuk post seperti ini di `/news/{slug}`-nya
+    // sendiri. Menerbitkannya di sini berarti situs statis dan CMS-nya tidak
+    // sepakat tentang apa yang sudah tayang.
+    const posts = [buatPost(0), buatPost(1, { publishedAt: null })];
+    pasangFetchTiruan(posts);
+
+    const artikel = await getArticles("panduan", "id");
+    assert.equal(artikel.length, 1);
+    assert.equal(artikel[0].slug, "artikel-0");
+  });
+
+  test("post terjadwal jauh di masa depan tidak ikut terbit", async () => {
+    const posts = [buatPost(0), buatPost(1, { publishedAt: menitDariSekarang(60 * 24 * 30) })];
+    pasangFetchTiruan(posts);
+
+    const artikel = await getArticles("panduan", "id");
+    assert.equal(artikel.length, 1);
+  });
+
+  test("condong jam beberapa menit TIDAK membuang artikel yang baru terbit", async () => {
+    // Jalur konten normal adalah terbit → webhook → build, berjarak detik, dan
+    // kedua stempel yang dibandingkan datang dari dua mesin: awcms menstempel
+    // `published_at` dari jam BASIS DATA, perbandingan ini berjalan di jam
+    // BUILDER. Tanpa toleransi, builder yang tertinggal semenit membuang artikel
+    // yang baru saja diterbitkan — dan di seksi berita itu kartu PERTAMA.
+    const posts = [buatPost(0, { publishedAt: menitDariSekarang(3) })];
+    pasangFetchTiruan(posts);
+
+    const artikel = await getArticles("panduan", "id");
+    assert.equal(artikel.length, 1);
+  });
+
+  test("NOL post yang bisa terbit MENGGAGALKAN build", async () => {
+    // Penyaring yang hanya bisa mengurangi butuh lantai, alasan yang sama
+    // dengan gerbang nol-dari-N pada media. Tanpa ini: setiap seksi kosong,
+    // beranda mencetak "0 artikel", dan tidak ada yang merah di mana pun.
+    const posts = [buatPost(0, { publishedAt: null }), buatPost(1, { publishedAt: null })];
+    pasangFetchTiruan(posts);
+
+    await assert.rejects(
+      () => getArticles("panduan", "id"),
+      (e) => /NOT ONE of them carries a usable publishedAt/.test(e.message)
+    );
+  });
+
+  test("publishedAt yang tidak bisa diurai MENGGAGALKAN build, bukan menjadi daftar kosong", async () => {
+    // Bedanya menentukan: `false` berarti "belum waktunya terbit", keadaan
+    // normal yang membuang satu artikel. Tanggal yang bukan tanggal berarti
+    // bentuk respons berubah — dan karena setiap perbandingan terhadap `NaN`
+    // bernilai false, memperlakukannya sebagai "belum terbit" akan membuang
+    // SETIAP artikel sekaligus dan terbaca seperti CMS yang masih kosong.
+    const posts = [buatPost(0, { publishedAt: "1785000000" })];
+    pasangFetchTiruan(posts);
+
+    await assert.rejects(
+      () => getArticles("panduan", "id"),
+      (e) => /not a date this build can parse/.test(e.message)
+    );
+  });
+
+  test("kedua tanggal datang dari BARIS yang sama, bukan dari dua baris", async () => {
+    // Pasangan yang salah menghasilkan `dateModified` MENDAHULUI
+    // `datePublished` pada konten yang sepenuhnya normal: artikel sumber yang
+    // baru diterbitkan bulan ini, terjemahannya tidak disentuh sejak bulan lalu.
+    // awcms membaca keduanya dari satu baris; ini membuktikan repo ini ikut.
+    const posts = [
+      buatPost(0, {
+        grup: "grup-1",
+        publishedAt: "2026-08-01T00:00:00.000Z",
+        updatedAt: "2026-08-03T00:00:00.000Z"
+      }),
+      buatPost(1, {
+        locale: "en",
+        grup: "grup-1",
+        publishedAt: "2026-07-10T00:00:00.000Z",
+        updatedAt: "2026-07-12T00:00:00.000Z"
+      })
+    ];
+    pasangFetchTiruan(posts);
+
+    const [en] = await getArticles("panduan", "en");
+
+    assert.equal(en.entry.data.publishedDate.toISOString(), "2026-07-10T00:00:00.000Z");
+    assert.equal(en.entry.data.updatedDate.toISOString(), "2026-07-12T00:00:00.000Z");
+    assert.ok(
+      en.entry.data.publishedDate <= en.entry.data.updatedDate,
+      "dateModified tidak boleh mendahului datePublished"
+    );
+  });
+
+  test("artikel fallback memakai tanggal post sumber, bukan tanggal kosong", async () => {
+    const posts = [
+      buatPost(0, { publishedAt: "2026-08-01T00:00:00.000Z", updatedAt: "2026-08-05T00:00:00.000Z" })
+    ];
+    pasangFetchTiruan(posts);
+
+    const [en] = await getArticles("panduan", "en");
+
+    assert.equal(en.isFallback, true);
+    assert.equal(en.entry.data.publishedDate.toISOString(), "2026-08-01T00:00:00.000Z");
+    assert.equal(en.entry.data.updatedDate.toISOString(), "2026-08-05T00:00:00.000Z");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Urutan seksi.
+//
+// Diuji lewat fungsi murni `urutkanArtikel`, bukan lewat `getArticles`, dan itu
+// disengaja: cabang yang dipilih `getArticles` datang dari `siteConfig.tabs`,
+// setiap tab yang dibawa template ini bernilai "manual", dan repo template tidak
+// punya instans awcms untuk membangun apa pun. Diuji lewat `getArticles`, cabang
+// "terbaru" akan menjadi kode yang tidak pernah dieksekusi di repo yang
+// memilikinya — eksekusi pertamanya terjadi di build produksi sebuah situs.
+// ---------------------------------------------------------------------------
+
+describe("urutan seksi", () => {
+  let urutkanArtikel;
+
+  beforeEach(async () => {
+    ({ urutkanArtikel } = await import("../src/lib/content.ts"));
+  });
+
+  /** Kunci urut minimal; `judul` sengaja dibuat berlawanan arah dengan `terbitSumber`. */
+  const CONTOH = [
+    { urutan: 2, judul: "Anggur", terbit: Date.parse("2026-01-01"), slugSumber: "anggur" },
+    { urutan: 1, judul: "Ceri", terbit: Date.parse("2026-03-01"), slugSumber: "ceri" },
+    { urutan: 3, judul: "Belimbing", terbit: Date.parse("2026-02-01"), slugSumber: "belimbing" }
+  ];
+
+  test('"manual" mengurutkan dari urutan redaksi, bukan dari tanggal', () => {
+    assert.deepEqual(
+      urutkanArtikel(CONTOH, "manual").map((x) => x.slugSumber),
+      ["ceri", "anggur", "belimbing"]
+    );
+  });
+
+  test('"terbaru" mengurutkan dari publishedAt sumber, terbaru lebih dulu', () => {
+    assert.deepEqual(
+      urutkanArtikel(CONTOH, "terbaru").map((x) => x.slugSumber),
+      ["ceri", "belimbing", "anggur"]
+    );
+  });
+
+  test('"terbaru" MENGABAIKAN urutan redaksi sepenuhnya', () => {
+    // Kalau `urutan` masih ikut menentukan, seksi berita akan berhenti berurutan
+    // begitu satu artikel kebetulan membawa nilai `urutan` — dan nilai bawaannya
+    // 99 untuk setiap artikel yang tidak pernah dinomori siapa pun.
+    const dinomori = CONTOH.map((x, i) => ({ ...x, urutan: 10 - i }));
+    assert.deepEqual(
+      urutkanArtikel(dinomori, "terbaru").map((x) => x.slugSumber),
+      ["ceri", "belimbing", "anggur"]
+    );
+  });
+
+  test("seri dipecah secara deterministik di KEDUA cabang", () => {
+    // `Array#sort` stabil, jadi comparator yang mengembalikan 0 menyerahkan
+    // pasangannya pada urutan yang kebetulan dikembalikan API — persis yang
+    // aturan ke-3 larang. Diuji dari dua masukan dengan urutan awal berlawanan:
+    // hasilnya harus sama.
+    const seri = [
+      { urutan: 5, judul: "Sama", terbit: 1000, slugSumber: "beta" },
+      { urutan: 5, judul: "Sama", terbit: 1000, slugSumber: "alfa" }
+    ];
+
+    for (const mode of ["manual", "terbaru"]) {
+      assert.deepEqual(
+        urutkanArtikel(seri, mode).map((x) => x.slugSumber),
+        urutkanArtikel([...seri].reverse(), mode).map((x) => x.slugSumber),
+        `cabang ${mode} tidak deterministik pada seri`
+      );
+    }
+  });
+
+  test('"terbaru" memecah seri dengan slug SUMBER, sehingga setiap locale sama urutannya', () => {
+    // Judul adalah milik terjemahan; slug sumber identik di setiap bahasa.
+    // Memecah seri dengan judul akan menjalankan seksi berita dalam urutan yang
+    // berbeda di Bahasa Indonesia dan di English, tanpa satu pun gerbang melihat.
+    const id = [
+      { urutan: 9, judul: "Zebra", terbit: 2000, slugSumber: "alfa" },
+      { urutan: 9, judul: "Apel", terbit: 2000, slugSumber: "beta" }
+    ];
+    const en = [
+      { urutan: 9, judul: "Apple", terbit: 2000, slugSumber: "alfa" },
+      { urutan: 9, judul: "Zebra", terbit: 2000, slugSumber: "beta" }
+    ];
+
+    assert.deepEqual(
+      urutkanArtikel(id, "terbaru").map((x) => x.slugSumber),
+      urutkanArtikel(en, "terbaru").map((x) => x.slugSumber)
+    );
+  });
+
+  test("masukan tidak dimutasi", () => {
+    const asli = [...CONTOH];
+    urutkanArtikel(CONTOH, "terbaru");
+    assert.deepEqual(CONTOH, asli);
+  });
+});
+
+describe("urutan seksi tersambung ke getArticles", () => {
+  // `urutkanArtikel` di atas diuji sebagai fungsi murni, dan itu meninggalkan
+  // satu celah: SAMBUNGANNYA. `getArticles` boleh berhenti memanggilnya sama
+  // sekali — atau memanggilnya dengan kunci yang salah — dan setiap tes di atas
+  // tetap hijau. Blok ini menutup celah itu lewat jalur yang benar-benar
+  // dipakai halaman.
+  let getArticles;
+  let resetContentCacheForTests;
+
+  beforeEach(async () => {
+    process.env.AWCMS_API_URL = "http://awcms.uji";
+    process.env.AWCMS_API_TOKEN = TOKEN;
+    ({ getArticles, resetContentCacheForTests } = await import("../src/lib/content.ts"));
+    resetContentCacheForTests();
+  });
+
+  afterEach(() => {
+    globalThis.fetch = fetchAsli;
+  });
+
+  test('tab "manual" benar-benar terurut dari `urutan`, bukan dari urutan respons', async () => {
+    // `buatPost(i)` menulis `urutan: i`, jadi feed yang dikembalikan terbalik
+    // harus keluar dalam urutan menaik. Tanpa pengurutan sama sekali, hasilnya
+    // persis urutan respons — dan itu yang tes ini bunuh.
+    const posts = [buatPost(3), buatPost(1), buatPost(2)];
+    pasangFetchTiruan(posts);
+
+    const artikel = await getArticles("panduan", "id");
+    assert.deepEqual(
+      artikel.map((a) => a.entry.data.urutan),
+      [1, 2, 3]
+    );
+  });
+
+  test("tanggal yang DITAMPILKAN kartu ikut menurun di seksi yang diurutkan tanggal", async () => {
+    // Kunci urut dan kolom yang dirender kartu harus kolom yang SAMA. Saat
+    // keduanya berbeda — diurutkan dari tanggal post SUMBER, ditampilkan dari
+    // tanggal TERJEMAHAN — halaman `/en/` menampilkan daftar yang tanggalnya
+    // naik-turun tanpa pola, dan tidak satu pun gerbang bisa melihatnya.
+    //
+    // Diuji lewat `urutkanArtikel` atas kunci yang dirakit `getArticles`
+    // sendiri, karena template ini tidak membawa satu pun tab "terbaru".
+    const { urutkanArtikel } = await import("../src/lib/content.ts");
+
+    const posts = [
+      buatPost(0, { grup: "g0", publishedAt: "2026-08-01T00:00:00.000Z" }),
+      buatPost(1, { locale: "en", grup: "g0", publishedAt: "2026-07-10T00:00:00.000Z" }),
+      buatPost(2, { grup: "g2", publishedAt: "2026-07-20T00:00:00.000Z" }),
+      buatPost(3, { locale: "en", grup: "g2", publishedAt: "2026-08-05T00:00:00.000Z" })
+    ];
+    pasangFetchTiruan(posts);
+
+    const en = await getArticles("panduan", "en");
+
+    const berkunci = en.map((a) => ({
+      urutan: a.entry.data.urutan,
+      judul: a.entry.data.title,
+      terbit: a.entry.data.publishedDate.getTime(),
+      slugSumber: a.slug
+    }));
+
+    const tampil = urutkanArtikel(berkunci, "terbaru").map((x) => x.terbit);
+
+    for (let i = 1; i < tampil.length; i += 1) {
+      assert.ok(
+        tampil[i - 1] >= tampil[i],
+        `tanggal kartu naik pada posisi ${i}: ${new Date(tampil[i - 1]).toISOString()} lalu ${new Date(tampil[i]).toISOString()}`
+      );
+    }
+  });
+
+  test("feed yang tidak memuat satu pun post publik MENGGAGALKAN build", async () => {
+    const posts = [buatPost(0, { status: "draft" }), buatPost(1, { visibility: "private" })];
+    pasangFetchTiruan(posts);
+
+    await assert.rejects(
+      () => getArticles("panduan", "id"),
+      (e) => /NOT ONE of them is both published and public/.test(e.message)
+    );
+  });
+
+  test("gerbang view=full berbicara lebih dulu daripada lantai tanggal", async () => {
+    // Urutan operasi yang ADR-0033 sebut dikunci, dikunci di sini. Bila
+    // assertion `view=full` dipindah ke SESUDAH penyaring tanggal, ia akan
+    // lolos hampa atas daftar kosong dan pesan yang muncul menjadi pesan
+    // lantai — menyalahkan tanggal untuk awcms yang menjawab ringkasan.
+    const posts = [buatPost(0, { publishedAt: null }), buatPost(1, { publishedAt: null })];
+    globalThis.fetch = async () =>
+      Response.json({
+        success: true,
+        data: { posts: posts.map(ringkas), nextCursor: null }
+      });
+
+    await assert.rejects(
+      () => getArticles("panduan", "id"),
+      (e) => /ignored \?view=full/.test(e.message)
+    );
+  });
+});
+
+describe("urutanSeksiTab", () => {
+  test("slug yang tidak menamai tab mana pun jatuh ke manual", async () => {
+    // Ini yang dijadikan alasan bahwa sebuah artikel tidak pernah diam-diam
+    // menjadi NewsArticle saat tab-nya diganti nama atau dihapus.
+    const { urutanSeksiTab } = await import("../src/config/site.ts");
+
+    assert.equal(urutanSeksiTab("tab-yang-tidak-pernah-ada"), "manual");
+    assert.equal(urutanSeksiTab(""), "manual");
+    assert.equal(urutanSeksiTab("panduan"), "manual");
   });
 });
 
