@@ -50,7 +50,12 @@ interface Props {
    * pemanggil mengirim `[]` hanya menyamarkan ketiadaannya sebagai daftar
    * kosong yang disengaja.
    */
-  articleMeta?: { modifiedTime: string; section: string; tags?: string[] };
+  articleMeta?: {
+    publishedTime: string;
+    modifiedTime: string;
+    section: string;
+    tags?: string[];
+  };
   /** Menyembunyikan tombol bagikan; dipakai halaman yang tidak layak dibagikan. */
   hideShare?: boolean;
   /**
@@ -169,7 +174,12 @@ const jsonLd = {
     <meta property="og:site_name" content={siteConfig.name} />
     {articleMeta && (
       <>
-        <meta property="article:published_time" content={articleMeta.modifiedTime} />
+        {/* Dua nilai, bukan satu yang dipasang dua kali. Keduanya pernah
+            dibaca dari `modifiedTime`, sehingga setiap artikel di setiap situs
+            menyatakan bahwa ia tidak pernah diubah sejak terbit — tidak salah
+            secara sintaks, tidak terlihat gerbang mana pun, dan tidak pernah
+            benar untuk artikel yang dikoreksi (ADR-0033). */}
+        <meta property="article:published_time" content={articleMeta.publishedTime} />
         <meta property="article:modified_time" content={articleMeta.modifiedTime} />
         <meta property="article:section" content={articleMeta.section} />
         {(articleMeta.tags ?? []).map((tag: string) => <meta property="article:tag" content={tag} />)}

@@ -67,12 +67,56 @@ export function isLocale(value: string): value is Locale {
  * multilingual.
  */
 export const tabs = [
-  { slug: "panduan", label: "Panduan" },
-  { slug: "layanan", label: "Layanan" },
-  { slug: "informasi", label: "Informasi" }
-] as const;
+  { slug: "panduan", label: "Panduan", urutanSeksi: "manual" },
+  { slug: "layanan", label: "Layanan", urutanSeksi: "manual" },
+  { slug: "informasi", label: "Informasi", urutanSeksi: "manual" }
+] as const satisfies readonly TabDef[];
 
 export type TabSlug = (typeof tabs)[number]["slug"];
+
+/**
+ * How a section is ORDERED, which is also what decides whether it reads as a
+ * reference section or as a news section (ADR-0033).
+ *
+ * - `"manual"` — the editor's `urutan` decides, lowest first. A guide section:
+ *   step 1 before step 2, forever, and a three-year-old page stays at the top
+ *   because that is where it belongs.
+ * - `"terbaru"` — `publishedAt` decides, newest first. This is the ordering
+ *   awcms's own `/news/**` routes use (`ORDER BY published_at DESC`), and the
+ *   only one that makes sense for content whose value decays. `urutan` is
+ *   ignored in such a section: asking an editor to renumber the whole section
+ *   on every publish is asking them to maintain by hand the one thing the
+ *   timestamp already knows.
+ *
+ * A section declared `"terbaru"` also changes what its cards show (a date, not
+ * an article number) and what its articles claim to be (`NewsArticle`, not
+ * `Article`). One declaration, because those three things are one decision.
+ */
+export type UrutanSeksi = "manual" | "terbaru";
+
+/**
+ * The shape of one entry in `tabs`.
+ *
+ * `urutanSeksi` is written out on EVERY tab rather than defaulted when absent,
+ * and that is not verbosity. A heterogeneous `as const` array — the field on
+ * one entry and missing from the others — does not merely read badly, it fails
+ * `astro check`: the element type becomes a union, and `tab.urutanSeksi` is
+ * then a property that does not exist on some members of it.
+ */
+export type TabDef = { slug: string; label: string; urutanSeksi: UrutanSeksi };
+
+/**
+ * How a section is ordered, by slug.
+ *
+ * A slug that names no configured tab falls back to `"manual"`. That is
+ * reachable — `ArtikelLayout` resolves the section from an article's stored
+ * `kategori`, which is a free string in `contentJson` and can name a tab that
+ * was renamed or removed — and `"manual"` is the honest answer for it: an
+ * unknown section is not a news section.
+ */
+export function urutanSeksiTab(slug: string): UrutanSeksi {
+  return tabs.find((tab) => tab.slug === slug)?.urutanSeksi ?? "manual";
+}
 
 /** The PO key carrying a tab's reader-facing name, paired with its fallback. */
 export function tabTitleKey(slug: string): string {

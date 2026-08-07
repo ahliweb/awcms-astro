@@ -61,7 +61,8 @@ Sisi kanan mengacu tabel `awcms_blog_posts` dan modul `blog-content` di awcms.
 | `description` | `excerpt` + `meta_description` | Batas 160 karakter ditegakkan sisi server |
 | nama berkas (slug) | `slug` | Slug tidak diterjemahkan; tetap identik lintas locale |
 | badan markdown | `content_json` + `content_text` | `content_text` dipakai `search_vector` |
-| `updatedDate` | `updated_at` / `published_at` | |
+| `publishedDate` | `published_at` | Wajib ada — adapter menolak membangun post `published` tanpa kolom ini |
+| `updatedDate` | `updated_at` | Bergerak pada SETIAP tulis, termasuk transisi status. Dibaca dari baris yang sama dengan `publishedDate` |
 | `kategori` (tab) | `awcms_blog_terms` bertaksonomi kategori | |
 | `tags[]` | `awcms_blog_terms` + `awcms_blog_post_terms` | |
 | locale folder | `locale` | |
@@ -183,8 +184,9 @@ Aturan yang wajib dipertahankan adapter API:
 
 1. **Kumpulan slug ditentukan locale default.** Query menarik seluruh artikel `locale = 'id'` berstatus `published`, lalu mencari pasangannya lewat `translation_group_id`. Bukan menarik per locale — itu akan membuat jumlah halaman berbeda antar bahasa dan menghidupkan kembali 404 antar bahasa.
 2. **`isFallback` dihitung adapter**, bukan komponen. Komponen hanya membacanya.
-3. **Urutan dari field urutan**, bukan dari urutan yang dikembalikan basis data.
-4. **Hanya `status = 'published'`** yang masuk build. Draft dan scheduled tidak boleh bocor ke statis.
+3. **Urutan dari field yang DINYATAKAN**, bukan dari urutan yang dikembalikan basis data — dan field mana adalah milik seksinya ([ADR-0033](../adr/0033-seksi-berita-urutan-dari-tanggal-dan-dua-tanggal-yang-terpisah.md)). Seksi `urutanSeksi: "manual"` membaca `urutan` redaksi; seksi `"terbaru"` membaca `publishedAt` menurun, paritas dengan `ORDER BY published_at DESC` pada rute publik awcms sendiri. Keduanya berakhir pada slug SUMBER sebagai pemecah seri, karena slug adalah satu-satunya kunci yang unik per artikel sekaligus identik di setiap locale.
+4. **Hanya post yang awcms sendiri sajikan publik** yang masuk build: `status = 'published'`, `visibility = 'public'`, dan `published_at` yang ada. Draft dan scheduled tidak boleh bocor ke statis — dan post `published` tanpa `published_at` dijawab 404 oleh awcms, jadi menerbitkannya di sini membuat dua permukaan tidak sepakat tentang apa yang sudah tayang.
+5. **Tanggal terbit dan tanggal ubah adalah DUA klaim, dibaca dari SATU baris.** Keduanya pernah dilipat menjadi `publishedAt ?? updatedAt`, sehingga `dateModified` membeku di tanggal terbit selamanya. Memasangkan tanggal terbit post sumber dengan tanggal ubah terjemahannya sama rusaknya: ia menghasilkan `dateModified` yang mendahului `datePublished` pada konten yang sah.
 
 ### Envelope dan autentikasi
 

@@ -20,7 +20,18 @@ Yang **tidak** perlu disentuh: `src/lib/`, `src/layouts/`, `src/components/`, `s
 
 ## 2. Tetapkan kontrak sebelum menulis satu artikel pun
 
-- [ ] `src/config/site.ts` — nama, domain, `siteUrl`, daftar locale, navigasi utama beserta urutannya.
+- [ ] `src/config/site.ts` — nama, domain, `siteUrl`, daftar locale, navigasi utama beserta urutannya, dan **`urutanSeksi` untuk setiap tab**.
+- [ ] **Situs berita?** Nyatakan seksinya, jangan hanya menamainya. Sebuah tab bernama `news` yang tetap `urutanSeksi: "manual"` akan terurut menurut ABJAD, karena setiap artikel yang tidak dinomori bernilai `urutan` 99 dan pemecah serinya judul. Yang menyalakan perilaku berita ([ADR-0033](../adr/0033-seksi-berita-urutan-dari-tanggal-dan-dua-tanggal-yang-terpisah.md)):
+
+      ```ts
+      export const tabs = [
+        { slug: "news", label: "News", urutanSeksi: "terbaru" }
+      ] as const satisfies readonly TabDef[];
+      ```
+
+      Satu baris itu mengurutkan seksi dari `publishedAt` menurun, mengganti lencana kartu dari nomor artikel menjadi tanggal, dan membuat artikelnya memancarkan `NewsArticle` alih-alih `Article`. Yang masih harus kamu sediakan sendiri: enam key PO per locale (`home.tab.news.title`/`.desc`, `tab.news.h1`/`.lead`/`.pageTitle`/`.metaDesc` — `bun test` merah tanpa itu), seni seksi berasio 16:9 di `src/assets/` mengikuti konvensi `tab/<tab>`, dan `kategori: "news"` di `contentJson.awcmsAstro` setiap post.
+
+      **Batas yang harus kamu terima sebelum menyalakannya:** indeks seksi merender SELURUH artikelnya dalam satu halaman — paginasi belum ada, dan alasannya ada di §Yang tidak dibangun pada ADR-0033. Begitu juga feed RSS. Untuk situs berita bervolume tinggi, timbang dulu menyajikan `/news/**` dari `awcms` langsung: di sana paginasi, arsip tag, feed, dan pencarian sudah ada, dan terbit langsung tayang tanpa rebuild.
 - [ ] `.env` dari `.env.example` — `AWCMS_API_URL`, `AWCMS_API_TOKEN` (kredensial mesin, ia yang membawa tenant), `AWCMS_TENANT_ID` sebagai asersi. **Konten tidak tinggal di repo ini**: tidak ada `src/content.config.ts` dan tidak ada frontmatter, karena artikel ditarik dari `awcms` saat build (ADR-0018). Skema yang dulu ditegakkan Zod kini tanggung jawab sisi `awcms` — daftar jaminannya di [`integrasi-awcms.md`](integrasi-awcms.md).
 - [ ] `astro.config.mjs` — `site`, `compressHTML: true`, `serialize` sitemap. **Tidak ada pipeline markdown**: konten datang dari `awcms` sebagai blok terstruktur, dan yang merendernya `src/lib/content-blocks.ts`, bukan remark/rehype. Empat setelan lain di berkas itu **jangan disentuh tanpa membaca alasannya**: `output: "static"`, adapter node, `build.inlineStylesheets: "never"`, dan `vite.build.assetsInlineLimit: 0` — dua yang terakhir yang membuat CSP ketat mungkin, dan keduanya gagal secara diam-diam bila dilonggarkan.
 - [ ] `package.json` — `name`, `description`, `homepage`, `repository`, `engines`, dan seluruh skrip.

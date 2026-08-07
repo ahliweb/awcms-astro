@@ -6,11 +6,28 @@
  * sini: tidak ada satu pun properti yang boleh menyiratkan situs ini kanal
  * resmi instansi negara.
  */
-import { siteConfig, getSiteUrl, localeHtmlLang, type Locale } from '../config/site';
+import { siteConfig, getSiteUrl, localeHtmlLang, urutanSeksiTab, type Locale } from '../config/site';
 import { t } from './po';
 import { SITE_SOCIAL_IMAGE, SOCIAL_IMAGE_HEIGHT, SOCIAL_IMAGE_WIDTH } from './social-image';
 
 type Schema = Record<string, unknown>;
+
+/**
+ * Tipe schema.org untuk artikel di sebuah seksi.
+ *
+ * Fungsi murni, di `src/lib/`, dan bukan ekspresi terner di dalam sebuah
+ * `.astro` — karena `.astro` tidak dijangkau `tsc --noEmit` maupun tes mana
+ * pun di repo ini, sehingga keputusan yang tinggal di sana bisa dibalik tanpa
+ * satu gerbang pun berubah warna. Aturan ADR-0030 berlaku pada keputusan ini
+ * seperti pada aturan lainnya (ADR-0033).
+ *
+ * `kategori` yang tidak menamai tab mana pun jatuh ke `Article`, karena
+ * `urutanSeksiTab` menjawab `"manual"` untuknya: seksi yang tidak dikenal
+ * bukan seksi berita.
+ */
+export function tipeArtikelSeksi(kategori: string): 'Article' | 'NewsArticle' {
+  return urutanSeksiTab(kategori) === 'terbaru' ? 'NewsArticle' : 'Article';
+}
 
 const WEBSITE_ID = getSiteUrl('/#website');
 const PUBLISHER_ID = getSiteUrl('/#publisher');
@@ -64,14 +81,52 @@ export interface ArticleSchemaInput {
    */
   imageWidth?: number | null;
   imageHeight?: number | null;
-  updatedDate: Date;
+  /**
+   * Kapan artikel ini TERBIT, dan kapan ia terakhir DIUBAH.
+   *
+   * Keduanya wajib, dan `updatedDate` yang dulu berdiri sendiri di sini sengaja
+   * DIGANTI NAMANYA alih-alih ditemani field baru: satu nilai yang mengisi dua
+   * klaim adalah cacat yang tidak bisa dilihat typecheck, dan menambah field
+   * opsional di sebelahnya akan membiarkan setiap pemanggil lama tetap hijau
+   * sambil terus memancarkan `datePublished` yang sebenarnya tanggal ubah.
+   * Mengganti nama adalah yang memaksa setiap pemanggil dibaca ulang.
+   */
+  publishedDate: Date;
+  modifiedDate: Date;
   section: string;
+  /**
+   * `NewsArticle` untuk seksi ber-`urutanSeksi: "terbaru"`, `Article` untuk
+   * selainnya (ADR-0033).
+   *
+   * Ia datang dari pemanggil dan bukan ditebak dari isinya: yang menentukan
+   * sebuah halaman berita atau bukan adalah seksi tempat ia tinggal, dan itu
+   * konfigurasi situs — bukan sesuatu yang bisa disimpulkan dari judul.
+   */
+  tipe: 'Article' | 'NewsArticle';
 }
 
-/** Artikel panduan. `isAccessibleForFree` menegaskan tidak ada dinding bayar. */
+/**
+ * Artikel. `isAccessibleForFree` menegaskan tidak ada dinding bayar.
+ *
+ * ## `author` adalah ORGANISASI, dan itu keputusan yang ditiru
+ *
+ * Byline di sini adalah nama situs, tidak pernah nama seorang editor — sama
+ * seperti `awcms`, yang memancarkan `authorName` dari nama tenant dan mencatat
+ * alasannya di `structured-data-rendering.ts`: menaruh identitas pengguna
+ * internal di structured data publik membuka permukaan PII baru. Kolom
+ * `authorTenantUserId` memang ada pada baris post, tetapi meresolusinya menjadi
+ * nama butuh permukaan `awcms` KEEMPAT, dan `tests/kontrak-awcms.test.mjs`
+ * mengeraskan daftar tiga permukaan justru supaya penambahan seperti itu merah.
+ *
+ * Ia ditulis INLINE, bukan sebagai rujukan `@id` ke simpul Organization
+ * halaman, karena pembaca structured data yang tidak menyelesaikan `@id` akan
+ * membaca artikel tanpa penulis sama sekali — dan `author` yang kosong pada
+ * `NewsArticle` adalah persis yang membuat tipe itu lebih miskin daripada
+ * `Article` yang digantikannya.
+ */
 export function articleSchema(input: ArticleSchemaInput): Schema {
   return {
-    '@type': 'Article',
+    '@type': input.tipe,
     '@id': `${input.canonicalUrl}#article`,
     mainEntityOfPage: { '@id': input.canonicalUrl },
     headline: input.title.slice(0, 110),
@@ -90,14 +145,19 @@ export function articleSchema(input: ArticleSchemaInput): Schema {
           )
         }
       : {}),
-    // Sumber tanggal hanya satu: `updatedDate`. Repo tidak menyimpan tanggal
-    // terbit terpisah, dan mengarang `datePublished` yang berbeda akan menjadi
-    // klaim yang tidak bisa dipertanggungjawabkan.
-    datePublished: input.updatedDate.toISOString(),
-    dateModified: input.updatedDate.toISOString(),
+    // Dua tanggal, dua kolom `awcms`, dua klaim yang berbeda. Sampai ADR-0033
+    // keduanya diisi SATU nilai — `publishedAt ?? updatedAt` — dengan komentar
+    // di sini yang menyatakan repo tidak menyimpan tanggal terbit terpisah.
+    // Repo memang tidak menyimpannya; `awcms` menyimpannya, dan adapter tinggal
+    // berhenti melipat keduanya. Akibat lipatan itu: tidak ada satu pun halaman
+    // yang pernah melaporkan sebuah koreksi, karena `dateModified` membeku di
+    // tanggal terbit selamanya.
+    datePublished: input.publishedDate.toISOString(),
+    dateModified: input.modifiedDate.toISOString(),
     inLanguage: localeHtmlLang[input.locale],
     articleSection: input.section,
     isPartOf: { '@id': WEBSITE_ID },
+    author: { '@type': 'Organization', name: siteConfig.name },
     publisher: { '@id': PUBLISHER_ID },
     isAccessibleForFree: true,
   };

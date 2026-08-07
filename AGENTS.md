@@ -132,8 +132,24 @@ sengaja yang belum tercatat di `awcms-family-compatibility.yaml`.
   dan lapisan rendernya tidak berubah sedikit pun saat pindah ke API.
 - **Empat aturan di `src/lib/content.ts` tidak boleh dilonggarkan**: kumpulan
   slug ditentukan locale default, `isFallback` dihitung adapter, urutan dari
-  field urutan, dan hanya `status = 'published'` yang masuk build. Masing-masing
-  menjaga satu cacat spesifik tetap mustahil; alasannya ditulis di berkas itu.
+  field yang dinyatakan, dan hanya post yang awcms sendiri sajikan publik yang
+  masuk build. Masing-masing menjaga satu cacat spesifik tetap mustahil;
+  alasannya ditulis di berkas itu.
+- **Urutan seksi datang dari field EKSPLISIT, dan field mana adalah milik
+  seksinya** (ADR-0033). `urutanSeksi: "manual"` membaca `urutan` yang ditulis
+  redaksi; `"terbaru"` membaca `publishedAt` menurun, paritas dengan
+  `ORDER BY published_at DESC` pada rute publik awcms. Keduanya berakhir pada
+  slug sumber sebagai pemecah seri — comparator yang mengembalikan 0 menyerahkan
+  pasangannya pada urutan yang kebetulan dikembalikan API, dan itu persis yang
+  aturan ini larang. Jangan mengurutkan dari nilai yang dibaca post TERJEMAHAN:
+  seksi yang sama akan berjalan dalam urutan berbeda di setiap bahasa.
+- **`publishedDate` dan `updatedDate` adalah dua klaim, dibaca dari SATU baris
+  awcms** (ADR-0033). Keduanya pernah dilipat menjadi `publishedAt ?? updatedAt`
+  di bawah satu nama, sehingga `dateModified` membeku di tanggal terbit
+  selamanya dan tidak ada satu halaman pun yang bisa melaporkan koreksi. Jangan
+  memasangkan tanggal terbit post sumber dengan tanggal ubah terjemahannya:
+  hasilnya `dateModified` mendahului `datePublished` pada konten yang sah, dan
+  crawler membuang blok yang menyatakan itu.
 - **Diam-diam memotong data adalah kegagalan, bukan optimasi.** Adapter
   menyusuri SELURUH daftar dengan cursor keyset; batas halaman bukan batas
   konten. Kalau sesuatu menghalangi kelengkapan — cursor yang tidak maju,

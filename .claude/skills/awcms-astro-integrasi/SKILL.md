@@ -17,6 +17,9 @@ satu-satunya tempat komponen menyentuh hasilnya.
 | Traversal memakai `view=full` **dan** `order=created_at` | Daftar mengembalikan RINGKASAN; `contentJson` `undefined`, badan artikel kosong, seksi kosong, **build tetap hijau** |
 | Seluruh halaman disusuri lewat `nextCursor` | Situs terbit dengan artikel hilang — dan yang hilang justru yang terbaru |
 | Tenant datang dari **token**, tidak pernah dari header | `awcms` menurunkan tenant dari kredensial mesin dan mengabaikan header yang berbeda |
+| Post `published` tanpa `publishedAt` **tidak diterbitkan** | `awcms` menjawab 404 untuk post itu di `/news/**`-nya sendiri; situs statis menerbitkannya — dua permukaan tidak sepakat tentang apa yang tayang |
+| Urutan dari field yang **dinyatakan seksinya**, berakhir pada slug SUMBER | Comparator yang mengembalikan 0 menyerahkan pasangannya pada urutan API. Memecah seri dengan judul membuat seksi berjalan dalam urutan berbeda di setiap bahasa |
+| `publishedDate` dan `updatedDate` dibaca dari **satu baris** | Dipasangkan lintas baris → `dateModified` mendahului `datePublished` pada konten yang sah, dan crawler membuang seluruh bloknya |
 | Diam-diam memotong data = **kegagalan**, bukan optimasi | Lihat seluruh baris di atas |
 
 ## Permukaan — TIGA yang dipanggil, dua yang tidak
@@ -116,7 +119,8 @@ sebuah ADR menyentuh konten publik, media, atau kredensial.
 | --- | --- |
 | ADR-0049/0050 — kredensial mesin + serah-terima sesi BFF | **Sudah diserap.** Tenant dari token, tanpa header tenant |
 | ADR-0056 §B — objek media boleh di-purge, rujukannya jadi inert | **Sudah diserap.** Satu id hilang → placeholder; NOL dari N → build gagal |
-| ADR-0059 — rute konten publik host-resolved `/news/**` | **Bukan pekerjaan kode.** `awcms` kini bisa menyajikan konten publiknya sendiri di domain tenant. Yang dipilih di sini tetap **nol panggilan ke CMS saat pembaca meminta halaman**, bukan bentuk URL-nya |
+| ADR-0059 — rute konten publik host-resolved `/news/**` | **Persimpangan, bukan pekerjaan kode.** `awcms` bisa menyajikan konten publiknya sendiri di domain tenant, lengkap dengan paginasi, arsip tag, feed, dan pencarian. Yang dipilih di sini tetap **nol panggilan ke CMS saat pembaca meminta halaman**, bukan bentuk URL-nya — dan karena keduanya host-resolved, satu domain hanya bisa dilayani salah satunya. Sisi statisnya dibuat benar-benar bisa dipakai untuk berita oleh [ADR-0033](../../../docs/adr/0033-seksi-berita-urutan-dari-tanggal-dan-dua-tanggal-yang-terpisah.md) |
+| Predikat publik `published_at` pada rute berita `awcms` | **Diserap sejak 7 Agustus 2026** (ADR-0033). `IS NOT NULL` ditiru persis; `<= now()` ditiru dengan toleransi condong jam 15 menit, karena kedua stempel datang dari dua mesin dan jalur normalnya terbit → webhook → build. `visibility` sengaja tetap LEBIH KETAT: keluaran statis tidak punya keadaan "hanya lewat tautan langsung" |
 | ADR-0061 — permukaan host-resolved boleh di-cache di tepi | Tidak berlaku: situs ini tidak lewat Varnish, dan tidak punya cabang 404 yang membedakan tenant |
 | ADR-0062 — skill digerbangi terhadap kodenya | **Diserap penuh sejak 5 Agustus 2026.** `bun run audit:dokumen` memeriksa jalur berkas yang disebut berkas ini DAN kutipan `ADR-NNNN` — yang tidak resolve ke `docs/adr/` dan tidak ditandai milik repo lain adalah pelanggaran |
 | ADR-0065 — kontrak konsumen `awcms-astro` dibekukan | **Batas dijaga dua arah.** Tabel bertanda di atas digerbangi di sini (ADR-0030); bentuk respons kelima path-nya dibekukan di sana (subset aditif, closure `$ref`). Saat fixture di sana di-regenerate, adapter di sini ikut berubah — serentak |

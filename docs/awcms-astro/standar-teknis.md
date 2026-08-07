@@ -83,7 +83,7 @@ Yang wajib ada pada skema repo yang menyajikan informasi terikat aturan:
 | Field | Fungsi |
 | --- | --- |
 | `title`, `description` (maks. 160 karakter) | Metadata halaman |
-| `updatedDate`, `reviewDueDate` | Umur informasi; `reviewDueDate` yang terlewat adalah utang konten |
+| `publishedDate`, `updatedDate`, `reviewDueDate` | Umur informasi; `reviewDueDate` yang terlewat adalah utang konten. Dua yang pertama datang dari `awcms` dan **dibaca dari satu baris yang sama** — dilipat menjadi satu nilai, `dateModified` membeku di tanggal terbit selamanya ([ADR-0033](../adr/0033-seksi-berita-urutan-dari-tanggal-dan-dua-tanggal-yang-terpisah.md)) |
 | `cakupan` / level keberlakuan | Memaksa penulis memutuskan sejauh mana informasi berlaku |
 | `sumber` per klaim angka | Setiap nominal terikat ke rujukan yang bisa dicek pembaca |
 | `dasarHukum` | Jenis aturan, nomor, tahun, judul — lengkap |
@@ -92,7 +92,8 @@ Aturan penulisan yang mengikat:
 
 - Yang belum terverifikasi ditulis `TBD` beserta sumber yang harus dicek. **Jangan menebak, jangan menyalin dari pihak ketiga.**
 - Data terstruktur (syarat, langkah, biaya, FAQ) ditulis di frontmatter dan dirender komponen — bukan diketik ulang di badan artikel.
-- Field yang wajib identik antar locale: kategori, urutan, tanggal, level keberlakuan, tag, dan **angka** pada nominal.
+- Field yang wajib identik antar locale: kategori, urutan, level keberlakuan, tag, **angka** pada nominal, dan setiap tanggal yang disebut ISI artikel (tanggal berlaku sebuah aturan, tenggat, masa kedaluwarsa).
+- Yang **tidak** wajib identik, dan sengaja: `publishedDate` dan `updatedDate`. Keduanya milik BARIS `awcms` masing-masing locale — terjemahan yang diterbitkan belakangan memang terbit belakangan, dan memaksanya menyalin tanggal post sumber akan menerbitkan klaim yang tidak pernah terjadi.
 - Terjemahan tidak mengubah angka, nomor peraturan, tingkat kepastian kalimat, atau peringatan.
 
 ## Aset gambar

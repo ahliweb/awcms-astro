@@ -19,10 +19,16 @@
  * 2. **`isFallback` is computed here, never in a component.** A component that
  *    decided this itself would decide it differently on the next page.
  * 3. **Order comes from an explicit order field, never from the order the API
- *    happened to return.** A database's natural order is not stable.
- * 4. **Only `status === 'published'` is ever built.** Drafts and scheduled
- *    posts must not leak into a static output, where they would stay published
- *    until the next build regardless of what the CMS later says.
+ *    happened to return.** A database's natural order is not stable. Which
+ *    field is explicit is a property of the SECTION, not of this file: a guide
+ *    section orders by the editor's `urutan`, a news section orders by
+ *    `publishedAt` descending. Both are named fields read from the SOURCE post,
+ *    and both carry a tiebreaker — see `urutkanArtikel` below, and ADR-0033.
+ * 4. **Only a post that awcms itself would serve publicly is ever built.**
+ *    `status === 'published'`, `visibility === 'public'`, and a `publishedAt`
+ *    that exists. Drafts and scheduled posts must not leak into a static
+ *    output, where they would stay published until the next build regardless
+ *    of what the CMS later says.
  *
  * ## How it reads awcms
  *
@@ -50,7 +56,13 @@
 import { awcmsGet } from "./awcms/client";
 import { resolveObjekMedia, type ObjekMedia } from "./awcms/media";
 import { renderContentBlocks } from "./content-blocks";
-import { defaultLocale, type Locale, type TabSlug } from "../config/site";
+import {
+  defaultLocale,
+  urutanSeksiTab,
+  type Locale,
+  type TabSlug,
+  type UrutanSeksi
+} from "../config/site";
 
 /**
  * What `GET /api/v1/blog/posts` returns for each row — a SUMMARY, and nothing
@@ -150,6 +162,31 @@ export interface LocalizedArticle {
     data: {
       title: string;
       description: string;
+      /**
+       * When this post was PUBLISHED, and never a stand-in for anything else.
+       *
+       * It is non-optional because the adapter refuses to build a post without
+       * it (see `fetchPublishedPosts`), which is what lets every reader take it
+       * as a `Date` rather than checking for `null` at each call site.
+       *
+       * `publishedDate` and `updatedDate` are read from the SAME awcms row —
+       * the one whose words this page shows. Reading one from the source post
+       * and the other from its translation would pair two rows that have no
+       * ordering relationship at all: a source article published in August
+       * whose Indonesian translation was last edited in July would claim
+       * `dateModified` BEFORE `datePublished`, which crawlers discard. awcms
+       * reads both from one row for the same reason.
+       */
+      publishedDate: Date;
+      /**
+       * When this post was last WRITTEN TO in awcms — every write, including a
+       * pure status transition, moves it.
+       *
+       * It used to be `publishedAt ?? updatedAt` under this same name, which
+       * meant the article page's "Diperbarui" line and the JSON-LD's
+       * `dateModified` both showed the PUBLISH date and no page ever reported
+       * a correction. Splitting the two is ADR-0033.
+       */
       updatedDate: Date;
       urutan: number;
       kategori: string;
@@ -220,7 +257,43 @@ const PAGE_SIZE = 50;
  */
 const MAX_PAGES = 400;
 
-let postsCache: Promise<AwcmsBlogPost[]> | undefined;
+/**
+ * A post this build is willing to publish: everything `AwcmsBlogPost` carries,
+ * plus the guarantee that `publishedAt` is a real timestamp.
+ *
+ * The narrowing has to live in a TYPE rather than in a comment, and the cache
+ * below has to carry the narrowed type, because an explicit
+ * `Promise<AwcmsBlogPost[]>` annotation would widen `publishedAt` straight back
+ * to `string | null` for every caller downstream. That matters more than it
+ * looks: the obvious way to silence the resulting error is `publishedAt!` or
+ * `as string`, and **`new Date(null)` is not an Invalid Date — it is
+ * 1970-01-01T00:00:00.000Z**. It serialises fine, it compares fine, and it
+ * publishes every affected article dated 1 January 1970 while sinking it to the
+ * bottom of any newest-first section, with every gate green.
+ */
+type PostTerbit = AwcmsBlogPost & { publishedAt: string };
+
+/**
+ * How far a `publishedAt` may sit in the builder's future and still be built.
+ *
+ * The normal content path is publish → webhook → build, seconds apart
+ * (`.github/workflows/rebuild.yml`), and the two timestamps being compared come
+ * from two different machines: awcms stamps `published_at` from the DATABASE
+ * clock, this comparison runs on the BUILDER clock. Without slack, a builder
+ * whose clock trails by a minute silently drops the article that was just
+ * published — and because Rule 1 makes the default-locale post the source of
+ * the page set, it drops it in every locale at once. In a newest-first section
+ * that article is the FIRST card.
+ *
+ * The check is still worth having as defence in depth against a `published_at`
+ * set outside awcms's own write path, but what it is defending against is a
+ * post dated days or weeks ahead, never one dated ninety seconds ahead. Fifteen
+ * minutes is far above any plausible NTP drift and far below any plausible
+ * editorial embargo.
+ */
+const TOLERANSI_CONDONG_JAM_MS = 15 * 60 * 1000;
+
+let postsCache: Promise<PostTerbit[]> | undefined;
 let mediaCache: Promise<Map<string, ObjekMedia>> | undefined;
 
 /**
@@ -285,23 +358,100 @@ async function fetchMedia(
  * Astro calls `getStaticPaths` for every route, so without memoisation a
  * six-locale, three-tab site would repeat this whole traversal dozens of times.
  */
-async function fetchPublishedPosts(): Promise<AwcmsBlogPost[]> {
+async function fetchPublishedPosts(): Promise<PostTerbit[]> {
   postsCache ??= (async () => {
     const posts = await listPublishedPosts();
 
     // Rule 4, enforced here rather than trusted from the query: a `status`
     // filter is a request, and this is the last place that can tell the
     // difference between "the API honoured it" and "the API ignored it".
-    const visible = posts.filter(
+    //
+    // `visibility === "public"` is deliberately STRICTER than awcms's own
+    // detail route, which also serves `unlisted` so a direct link keeps
+    // working. A static build has no direct-link-only state: everything it
+    // emits is in the sitemap and crawlable, so an unlisted post published
+    // here would stop being unlisted.
+    const terlihat = posts.filter(
       (post) => post.status === "published" && post.visibility === "public"
     );
 
-    assertFeedReturnedFullRows(visible);
-    assertTranslationsArePairable(visible);
-    return visible;
+    // The same floor the publish-date filter gets below, for the same reason
+    // and one step earlier. A feed that answers with rows but none of them
+    // `published`/`public` is a `status` parameter that awcms ignored or a
+    // tenant whose posts are all drafts — both publish an empty site, and
+    // without this the two assertions underneath would then pass vacuously.
+    if (terlihat.length === 0 && posts.length > 0) {
+      throw new Error(
+        `awcms returned ${posts.length} post(s) and NOT ONE of them is both ` +
+          `published and public. Either the status filter was ignored, or ` +
+          `this tenant has nothing published yet. Building anyway would ` +
+          `publish a site whose every section is empty.`
+      );
+    }
+
+    // These two run BEFORE the publish-date filter, over the wider set, and
+    // that ordering is load-bearing. Both assertions pass vacuously on an empty
+    // array — so running them after a filter that can empty the list would turn
+    // "awcms answered with summaries" into "nothing to check", silently.
+    assertFeedReturnedFullRows(terlihat);
+    assertTranslationsArePairable(terlihat);
+
+    const terbit = terlihat.filter(sudahTerbit);
+
+    // A filter that can only ever REMOVE needs a floor, for the same reason
+    // `fetchMedia` has one: one post held back is an editorial state, all of
+    // them held back is not. Zero survivors out of a non-empty published set is
+    // an awcms that does not stamp `published_at`, a clock that is wrong by
+    // more than the tolerance above, or a feed shape that changed — and all
+    // three publish a site with every section empty, with nothing failing.
+    if (terbit.length === 0 && terlihat.length > 0) {
+      throw new Error(
+        `awcms returned ${terlihat.length} published, public post(s) and NOT ` +
+          `ONE of them carries a usable publishedAt. One post held back is an ` +
+          `editorial state and builds fine; all of them held back is not — it ` +
+          `is an awcms that never stamps published_at, a builder clock wrong ` +
+          `by more than ${TOLERANSI_CONDONG_JAM_MS} ms, or a feed whose shape ` +
+          `changed. Building anyway would publish a site whose every section ` +
+          `is empty, with nothing failing anywhere.`
+      );
+    }
+
+    return terbit;
   })();
 
   return postsCache;
+}
+
+/**
+ * Whether awcms would serve this post publicly today — the `published_at` half
+ * of its own public predicate (`published_at IS NOT NULL AND published_at <=
+ * now()`, `public-blog-directory.ts`), mirrored here so a static site and the
+ * CMS's own `/news/**` routes never disagree about what is live.
+ *
+ * An UNPARSEABLE date throws instead of returning `false`. The difference
+ * matters: `false` means "not published yet", which is a normal state that
+ * silently drops one article, while a `publishedAt` that is not a date at all
+ * means the response shape changed underneath this adapter. `Date.parse`
+ * returns `NaN` for those, and every comparison against `NaN` is `false` — so
+ * without this branch a feed that started sending, say, epoch seconds would
+ * drop EVERY article and read as "nothing published yet".
+ */
+function sudahTerbit(post: AwcmsBlogPost): post is PostTerbit {
+  if (post.publishedAt === null || post.publishedAt === undefined) return false;
+
+  const stempel = Date.parse(post.publishedAt);
+
+  if (Number.isNaN(stempel)) {
+    throw new Error(
+      `awcms sent publishedAt=${JSON.stringify(post.publishedAt)} for post ` +
+        `"${post.slug}" (${post.locale}), which is not a date this build can ` +
+        `parse. That is a changed response shape, not an unpublished post — ` +
+        `treating it as "not published yet" would drop every article at once ` +
+        `and read as an empty CMS.`
+    );
+  }
+
+  return stempel <= Date.now() + TOLERANSI_CONDONG_JAM_MS;
 }
 
 /**
@@ -448,10 +598,21 @@ function readBlock(post: AwcmsBlogPost): AwcmsAstroBlock {
  *     chosen by the default-locale post in `getArticles()`; re-reading it from
  *     the translation would let a mistyped category there build a page whose
  *     own breadcrumb points at a different section.
+ *
+ * The two DATES go the other way, and deliberately: both come from `post`, the
+ * row whose words this page shows. They are a matched pair describing one
+ * revision history, and pairing a publish date from one row with a modified
+ * date from another produces `dateModified` earlier than `datePublished` on
+ * perfectly ordinary content — a source article published today whose
+ * translation has not been touched since last month. awcms reads both from one
+ * row (`news-article-seo-metadata.ts`), and so does this.
+ *
+ * Ordering is unaffected by that choice, because ordering never reads these
+ * fields: it reads the SOURCE post directly, in `getArticles`.
  */
 function toArticle(
-  post: AwcmsBlogPost,
-  source: AwcmsBlogPost,
+  post: PostTerbit,
+  source: PostTerbit,
   isFallback: boolean,
   media: Map<string, ObjekMedia>
 ): LocalizedArticle {
@@ -465,7 +626,8 @@ function toArticle(
       data: {
         title: post.title,
         description: post.metaDescription ?? post.excerpt ?? "",
-        updatedDate: new Date(post.publishedAt ?? post.updatedAt),
+        publishedDate: new Date(post.publishedAt),
+        updatedDate: new Date(post.updatedAt),
         urutan: sourceBlock.urutan ?? 99,
         kategori: sourceBlock.kategori ?? "",
         canonicalUrl: post.canonicalUrl ?? undefined,
@@ -563,37 +725,108 @@ export async function getArticles(
       post.locale === defaultLocale && readBlock(post).kategori === tab
   );
 
-  const byGroup = new Map<string, AwcmsBlogPost>();
+  const byGroup = new Map<string, PostTerbit>();
   for (const post of posts) {
     if (post.locale === locale && post.translationGroupId) {
       byGroup.set(post.translationGroupId, post);
     }
   }
 
-  return sources
-    .map((source) => {
-      const translated = source.translationGroupId
-        ? byGroup.get(source.translationGroupId)
-        : undefined;
+  // Rule 3: the keys the section is ordered by are collected HERE, and one of
+  // them — `slugSumber` — cannot be recovered from a `LocalizedArticle` at all.
+  //
+  // `terbit` is deliberately the DISPLAYED article's publish date, not the
+  // source post's. A section index shows a date on every card, so ordering by
+  // a date the card does not show produces a list whose dates run up and down
+  // for no visible reason: on `/en/` an article whose translation landed in
+  // July would sit above one whose translation landed in August, because the
+  // Indonesian originals were published the other way round. The two must be
+  // the same column, and the reader-facing one is the one that has to win.
+  //
+  // The reason `urutan` is read from the SOURCE does not transfer here: a
+  // translator can leave `urutan` blank and silently reorder a whole language,
+  // but `publishedAt` can never be blank — `sudahTerbit` refuses to build a
+  // post without one. What is lost is that two locales may order a section
+  // differently; that is honest, because their publication timelines differ.
+  // What is NOT lost is determinism, which the slug tiebreak still carries.
+  const berkunci = sources.map((source) => {
+    const translated = source.translationGroupId
+      ? byGroup.get(source.translationGroupId)
+      : undefined;
 
-      // Rule 2: the adapter decides fallback, the component only reads it. A
-      // translation that exists but carries a DIFFERENT slug still renders at
-      // the source slug — the slug is the page's identity across locales, and
-      // localising it would break every cross-language link. `toArticle` takes
-      // the source post for exactly that reason.
-      return toArticle(
-        translated ?? source,
-        source,
-        !translated && locale !== defaultLocale,
-        media
-      );
-    })
-    // Rule 3: explicit order field, then title as a stable tiebreaker.
-    .sort(
-      (a, b) =>
-        a.entry.data.urutan - b.entry.data.urutan ||
-        a.entry.data.title.localeCompare(b.entry.data.title)
+    // Rule 2: the adapter decides fallback, the component only reads it. A
+    // translation that exists but carries a DIFFERENT slug still renders at
+    // the source slug — the slug is the page's identity across locales, and
+    // localising it would break every cross-language link. `toArticle` takes
+    // the source post for exactly that reason.
+    const article = toArticle(
+      translated ?? source,
+      source,
+      !translated && locale !== defaultLocale,
+      media
     );
+
+    return {
+      article,
+      urutan: article.entry.data.urutan,
+      judul: article.entry.data.title,
+      terbit: article.entry.data.publishedDate.getTime(),
+      slugSumber: source.slug
+    };
+  });
+
+  return urutkanArtikel(berkunci, urutanSeksiTab(tab)).map(
+    (item) => item.article
+  );
+}
+
+/** The keys a section may be ordered by. Deliberately small — see `urutkanArtikel`. */
+export type KunciUrut = {
+  /** The editor's explicit position, read from the SOURCE post. 99 when unset. */
+  urutan: number;
+  /** The title as DISPLAYED, i.e. the translation's. Only `"manual"` reads it. */
+  judul: string;
+  /** The DISPLAYED article's `publishedAt`, in milliseconds — the date its card shows. */
+  terbit: number;
+  /** The SOURCE post's slug — identical in every locale, which is why it breaks ties. */
+  slugSumber: string;
+};
+
+/**
+ * Rule 3, as a pure function: every section orders by an explicit field, and
+ * WHICH field is a property of the section.
+ *
+ * It is exported and takes plain keys rather than living inline in
+ * `getArticles` for one reason that is not tidiness: `getArticles` reads its
+ * branch from `siteConfig.tabs`, every tab this template ships is `"manual"`,
+ * and a template repo has no awcms instance to build against. Inline, the
+ * `"terbaru"` branch would be code that never executes anywhere in the repo
+ * that owns it — first run in a derived site's production build. Here it is
+ * reachable from `bun test` with four plain objects.
+ *
+ * Both branches END on the SOURCE slug, and that last step is not decoration.
+ * `Array#sort` is stable, so a comparator that returns 0 leaves the pair in
+ * whatever order the API happened to return them — exactly what Rule 3 forbids.
+ * The earlier keys are not enough on their own: `"terbaru"` can tie on the
+ * timestamp (a bulk publish stamps one `now()` across every row it touches),
+ * and `"manual"` can tie on both `urutan` and title at once — an unnumbered
+ * section where every article defaults to 99, with two locales of the same
+ * article carrying the same words. The slug is the one key that is unique per
+ * article AND identical in every locale, so it settles both cases the same way
+ * in every language — which is what keeps a tie from resolving one way in
+ * Indonesian and the other way in English.
+ */
+export function urutkanArtikel<T extends KunciUrut>(
+  items: readonly T[],
+  urutanSeksi: UrutanSeksi
+): T[] {
+  return [...items].sort(
+    (a, b) =>
+      (urutanSeksi === "terbaru"
+        ? b.terbit - a.terbit
+        : a.urutan - b.urutan || a.judul.localeCompare(b.judul)) ||
+      a.slugSumber.localeCompare(b.slugSumber)
+  );
 }
 
 /** One article by slug, or `undefined`. Same rules — it reuses `getArticles`. */

@@ -209,6 +209,13 @@ describe("keluarga keluaran hanya jalan bila ada yang bisa diperiksa", () => {
     // dibedakan dari gerbang yang jalan dan bersih. Nama tiap keluarga wajib
     // ikut disebut, karena itulah satu-satunya jejak yang dibaca manusia.
     expect(keluaran).toContain("SELURUH gerbang keluaran DILEWATI");
+    // Keluarga yang dilewati DISEBUT namanya, dan daftarnya ikut bertambah saat
+    // keluarga baru mendarat. Daftar yang membeku setelah gerbang keenam
+    // ditambahkan berbohong dengan cara yang paling tenang: pembaca menyimpulkan
+    // gerbang yang tidak disebut memang berjalan.
+    for (const keluarga of ["klaim artikel JSON-LD", "tanggal Open Graph"]) {
+      expect(keluaran).toContain(keluarga);
+    }
     expect(keluaran).toContain("SEO");
     expect(keluaran).toContain("nama key bocor");
     expect(keluaran).not.toContain("halaman diperiksa");
@@ -361,6 +368,230 @@ describe("metadata SEO", () => {
 // ---------------------------------------------------------------------------
 // Aset yang dijanjikan metadata
 // ---------------------------------------------------------------------------
+
+describe("klaim artikel di JSON-LD", () => {
+  /** Blok JSON-LD berbentuk `@graph`, sama seperti yang dipancarkan BaseLayout. */
+  const graf = (artikel) =>
+    '<script type="application/ld+json">' +
+    JSON.stringify({
+      "@context": "https://schema.org",
+      "@graph": [
+        { "@type": "WebSite", "@id": "https://contoh.test/#website" },
+        artikel
+      ]
+    }) +
+    "</script>";
+
+  const ARTIKEL = {
+    "@type": "NewsArticle",
+    "@id": "https://contoh.test/news/kabar/#article",
+    headline: "Kabar",
+    datePublished: "2026-08-01T02:00:00.000Z",
+    dateModified: "2026-08-05T09:30:00.000Z",
+    author: { "@type": "Organization", name: "Situs Contoh" }
+  };
+
+  test("artikel yang lengkap hijau", () => {
+    const akar = situs({ "dist/client/index.html": halaman({ kepala: graf(ARTIKEL) }) });
+
+    const { kode, keluaran } = jalankan(akar);
+    if (kode !== 0) console.log(keluaran);
+    expect(kode).toBe(0);
+  });
+
+  test("simpul artikel ditemukan meski bersarang di dalam @graph", () => {
+    // Pemindai yang hanya melihat akar akan melaporkan nol pelanggaran atas nol
+    // simpul — terbaca persis seperti lulus. Kasus ini yang membuktikan
+    // gerbangnya benar-benar sampai ke dalam.
+    const akar = situs({
+      "dist/client/index.html": halaman({
+        kepala: graf({ ...ARTIKEL, author: undefined })
+      })
+    });
+
+    const { kode, keluaran } = jalankan(akar);
+    expect(keluaran).toContain("NewsArticle tanpa author.name yang terbaca");
+    expect(kode).toBe(1);
+  });
+
+  test("dateModified yang mendahului datePublished merah", () => {
+    const akar = situs({
+      "dist/client/index.html": halaman({
+        kepala: graf({
+          ...ARTIKEL,
+          datePublished: "2026-08-05T00:00:00.000Z",
+          dateModified: "2026-07-10T00:00:00.000Z"
+        })
+      })
+    });
+
+    const { kode, keluaran } = jalankan(akar);
+    expect(keluaran).toContain("mendahului datePublished");
+    expect(kode).toBe(1);
+  });
+
+  test("dua tanggal yang IDENTIK tetap hijau — itu keadaan yang sah", () => {
+    // Artikel yang belum pernah dikoreksi memang membawa dua stempel yang sama.
+    // Gerbang ini menjaga URUTAN dan KEBERADAAN, bukan memaksa keduanya berbeda:
+    // aturan yang dilanggar konten yang sah adalah aturan yang akan dilonggarkan
+    // orang berikutnya.
+    const akar = situs({
+      "dist/client/index.html": halaman({
+        kepala: graf({ ...ARTIKEL, dateModified: ARTIKEL.datePublished })
+      })
+    });
+
+    const { kode, keluaran } = jalankan(akar);
+    if (kode !== 0) console.log(keluaran);
+    expect(kode).toBe(0);
+  });
+
+  test("artikel tanpa datePublished merah", () => {
+    const akar = situs({
+      "dist/client/index.html": halaman({
+        kepala: graf({ ...ARTIKEL, datePublished: undefined })
+      })
+    });
+
+    const { kode, keluaran } = jalankan(akar);
+    expect(keluaran).toContain("NewsArticle tanpa datePublished");
+    expect(kode).toBe(1);
+  });
+
+  test("tanggal yang bukan tanggal merah", () => {
+    const akar = situs({
+      "dist/client/index.html": halaman({
+        kepala: graf({ ...ARTIKEL, dateModified: "kemarin" })
+      })
+    });
+
+    const { kode, keluaran } = jalankan(akar);
+    expect(keluaran).toContain("yang bukan tanggal: kemarin");
+    expect(kode).toBe(1);
+  });
+
+  test("author sebagai rujukan @id tanpa nama merah", () => {
+    // Pembaca structured data yang tidak menyelesaikan `@id` membaca artikel ini
+    // sebagai tanpa penulis sama sekali.
+    const akar = situs({
+      "dist/client/index.html": halaman({
+        kepala: graf({ ...ARTIKEL, author: { "@id": "https://contoh.test/#publisher" } })
+      })
+    });
+
+    const { kode, keluaran } = jalankan(akar);
+    expect(keluaran).toContain("tanpa author.name yang terbaca");
+    expect(kode).toBe(1);
+  });
+
+  test("Article biasa dijaga aturan yang sama persis dengan NewsArticle", () => {
+    const akar = situs({
+      "dist/client/index.html": halaman({
+        kepala: graf({ ...ARTIKEL, "@type": "Article", author: undefined })
+      })
+    });
+
+    const { kode, keluaran } = jalankan(akar);
+    expect(keluaran).toContain("Article tanpa author.name yang terbaca");
+    expect(kode).toBe(1);
+  });
+
+  test("halaman tanpa simpul artikel sama sekali tetap hijau", () => {
+    // Halaman seksi dan beranda memancarkan ItemList, bukan Article. Gerbang ini
+    // tidak boleh menuntut mereka membawa tanggal terbit.
+    const akar = situs({
+      "dist/client/index.html": halaman({
+        kepala:
+          '<script type="application/ld+json">' +
+          JSON.stringify({ "@context": "https://schema.org", "@graph": [{ "@type": "ItemList" }] }) +
+          "</script>"
+      })
+    });
+
+    const { kode, keluaran } = jalankan(akar);
+    if (kode !== 0) console.log(keluaran);
+    expect(kode).toBe(0);
+  });
+});
+
+describe("pasangan tanggal Open Graph", () => {
+  const og = (published, modified) =>
+    [
+      published === null
+        ? ""
+        : `<meta property="article:published_time" content="${published}">`,
+      modified === null
+        ? ""
+        : `<meta property="article:modified_time" content="${modified}">`
+    ].join("");
+
+  test("pasangan yang lengkap dan berurutan hijau", () => {
+    const akar = situs({
+      "dist/client/index.html": halaman({
+        kepala: og("2026-08-01T02:00:00.000Z", "2026-08-05T09:30:00.000Z")
+      })
+    });
+
+    const { kode, keluaran } = jalankan(akar);
+    if (kode !== 0) console.log(keluaran);
+    expect(kode).toBe(0);
+  });
+
+  test("halaman tanpa keduanya hijau — bukan setiap halaman itu artikel", () => {
+    const { kode, keluaran } = jalankan(situs());
+    if (kode !== 0) console.log(keluaran);
+    expect(kode).toBe(0);
+  });
+
+  test("hanya published_time saja merah", () => {
+    // Yang sendirian terbaca sebagai artikel tanpa riwayat perubahan.
+    const akar = situs({
+      "dist/client/index.html": halaman({ kepala: og("2026-08-01T02:00:00.000Z", null) })
+    });
+
+    const { kode, keluaran } = jalankan(akar);
+    expect(keluaran).toContain("keduanya berpasangan");
+    expect(kode).toBe(1);
+  });
+
+  test("modified mendahului published merah", () => {
+    // Inilah cacat yang tidak bisa dilihat gerbang JSON-LD: permukaan ini
+    // hidup di `.astro`, yang tidak dijangkau typecheck maupun tes.
+    const akar = situs({
+      "dist/client/index.html": halaman({
+        kepala: og("2026-08-05T00:00:00.000Z", "2026-07-10T00:00:00.000Z")
+      })
+    });
+
+    const { kode, keluaran } = jalankan(akar);
+    expect(keluaran).toContain("article:modified_time mendahului");
+    expect(kode).toBe(1);
+  });
+
+  test("tanggal yang bukan tanggal merah", () => {
+    const akar = situs({
+      "dist/client/index.html": halaman({
+        kepala: og("2026-08-01T02:00:00.000Z", "kemarin")
+      })
+    });
+
+    const { kode, keluaran } = jalankan(akar);
+    expect(keluaran).toContain("article:modified_time bukan tanggal");
+    expect(kode).toBe(1);
+  });
+
+  test("dua nilai IDENTIK hijau — artikel yang belum pernah dikoreksi", () => {
+    const akar = situs({
+      "dist/client/index.html": halaman({
+        kepala: og("2026-08-01T02:00:00.000Z", "2026-08-01T02:00:00.000Z")
+      })
+    });
+
+    const { kode, keluaran } = jalankan(akar);
+    if (kode !== 0) console.log(keluaran);
+    expect(kode).toBe(0);
+  });
+});
 
 describe("aset yang dijanjikan metadata", () => {
   const kartu = (href) =>

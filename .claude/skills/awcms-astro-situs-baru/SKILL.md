@@ -35,7 +35,16 @@ kerangkanya.
 Disengaja. Tampilan terakhir karena ia satu-satunya lapisan yang murah diubah.
 
 1. **`src/config/site.ts`** — nama, `siteUrl`, daftar locale, tab beserta
-   urutannya. Locale yang ditambahkan di sini WAJIB punya katalog PO-nya.
+   urutannya, dan `urutanSeksi` setiap tab. Locale yang ditambahkan di sini
+   WAJIB punya katalog PO-nya.
+
+   **Situs berita:** menamai tab `news` TIDAK cukup. Tanpa
+   `urutanSeksi: "terbaru"` seksi itu terurut menurut abjad — setiap artikel
+   yang tidak dinomori bernilai `urutan` 99 dan pemecah serinya judul, jadi
+   berita terbaru terkubur. Satu kata itu juga yang mengganti lencana kartu
+   menjadi tanggal dan membuat artikelnya memancarkan `NewsArticle`
+   (ADR-0033). Yang belum ada dan harus kamu terima lebih dulu: paginasi dan
+   feed RSS — indeks seksi merender seluruh artikelnya dalam satu halaman.
 2. **`.env`** dari `.env.example` — `AWCMS_API_URL`, `AWCMS_API_TOKEN`
    (kredensial mesin; ia yang membawa tenant), `AWCMS_TENANT_ID` sebagai
    **asersi** yang menggagalkan build saat tidak cocok.
