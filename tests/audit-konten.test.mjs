@@ -951,6 +951,336 @@ describe("sitemap", () => {
 });
 
 // ---------------------------------------------------------------------------
+// Feed Atom (ADR-0035)
+//
+// Keluarga ini menanggung beban yang tidak dimiliki keluarga lain di berkas
+// ini: template menyatakan nol seksi berita, jadi `bun run build` di repo ini
+// tidak akan pernah menghasilkan berkas feed — bahkan seandainya ia punya
+// sumber konten. Fixture di bawah adalah SATU-SATUNYA tempat gerbang feed
+// benar-benar menemukan berkas untuk diperiksa.
+// ---------------------------------------------------------------------------
+
+describe("feed Atom", () => {
+  const ENTRY = [
+    "  <entry>",
+    "    <title>Artikel pertama</title>",
+    "    <id>https://contoh.test/berita/pertama/</id>",
+    '    <link rel="alternate" type="text/html" href="https://contoh.test/berita/pertama/"/>',
+    "    <published>2026-08-01T03:00:00.000Z</published>",
+    "    <updated>2026-08-03T09:00:00.000Z</updated>",
+    '    <summary type="text">Ringkasan artikel pertama.</summary>',
+    "  </entry>"
+  ].join("\n");
+
+  /** Feed sah; tiap kasus merah merusak tepat satu hal darinya. */
+  const feed = ({
+    self = '<link rel="self" type="application/atom+xml" href="https://contoh.test/berita/feed.xml"/>',
+    id = "<id>https://contoh.test/berita/</id>",
+    judul = "<title>Berita — Situs Contoh</title>",
+    updated = "<updated>2026-08-03T09:00:00.000Z</updated>",
+    entry = ENTRY
+  } = {}) =>
+    [
+      '<?xml version="1.0" encoding="utf-8"?>',
+      '<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="id-ID">',
+      `  ${judul}`,
+      `  ${id}`,
+      `  ${self}`,
+      `  ${updated}`,
+      "  <author><name>Situs Contoh</name></author>",
+      entry,
+      "</feed>"
+    ]
+      .filter((baris) => baris.trim() !== "")
+      .join("\n");
+
+  /** Halaman seksi + artikelnya + feed-nya: pohon terkecil yang HIJAU. */
+  const situsBerita = (tambahan = {}) =>
+    situs({
+      "dist/client/berita/index.html": halaman({
+        judul: "Berita",
+        canonical: "https://contoh.test/berita/",
+        alternate: [
+          ["id", "/berita/"],
+          ["x-default", "/berita/"]
+        ],
+        kepala:
+          '<link rel="alternate" type="application/atom+xml" title="Berita — Situs Contoh" href="/berita/feed.xml">'
+      }),
+      "dist/client/berita/pertama/index.html": halaman({
+        judul: "Artikel pertama",
+        canonical: "https://contoh.test/berita/pertama/",
+        alternate: [
+          ["id", "/berita/pertama/"],
+          ["x-default", "/berita/pertama/"]
+        ]
+      }),
+      "dist/client/berita/feed.xml": feed(),
+      ...tambahan
+    });
+
+  test("feed yang sah, diumumkan, dan menunjuk artikel yang terbit hijau", () => {
+    const { kode, keluaran } = jalankan(situsBerita());
+
+    if (kode !== 0) console.log(keluaran);
+    expect(keluaran).toContain("1 feed diperiksa, 1 entry, 1 tautan penemuan-otomatis");
+    expect(kode).toBe(0);
+  });
+
+  test("entry yang menunjuk artikel yang TIDAK terbit merah", () => {
+    // Kelas cacat yang menjadi alasan seluruh keluarga ini ada: sebuah artikel
+    // yang dicabut redaksi hilang dari indeks seksi dan dari sitemap, dan tanpa
+    // gerbang ini ia tetap tinggal di feed menunjuk 404.
+    const akar = situsBerita({
+      "dist/client/berita/feed.xml": feed({
+        entry: ENTRY.replace(/pertama\//g, "dicabut/")
+      })
+    });
+
+    const { keluaran, kode } = jalankan(akar);
+    expect(keluaran).toContain("yang tidak ada di keluaran");
+    expect(kode).toBe(1);
+  });
+
+  test("href relatif merah", () => {
+    const akar = situsBerita({
+      "dist/client/berita/feed.xml": feed({
+        entry: ENTRY.replace('href="https://contoh.test/berita/pertama/"', 'href="/berita/pertama/"')
+      })
+    });
+
+    const { keluaran, kode } = jalankan(akar);
+    expect(keluaran).toContain("href tidak absolut");
+    expect(kode).toBe(1);
+  });
+
+  test("id yang bukan IRI absolut merah", () => {
+    const akar = situsBerita({
+      "dist/client/berita/feed.xml": feed({ id: "<id>/berita/</id>" })
+    });
+
+    const { keluaran, kode } = jalankan(akar);
+    expect(keluaran).toContain("<id> bukan IRI absolut");
+    expect(kode).toBe(1);
+  });
+
+  test("link self yang menunjuk alamat lain merah", () => {
+    const akar = situsBerita({
+      "dist/client/berita/feed.xml": feed({
+        self: '<link rel="self" type="application/atom+xml" href="https://contoh.test/feed.xml"/>'
+      })
+    });
+
+    const { keluaran, kode } = jalankan(akar);
+    expect(keluaran).toContain('<link rel="self"> berbunyi https://contoh.test/feed.xml');
+    expect(kode).toBe(1);
+  });
+
+  test("feed tanpa elemen yang Atom wajibkan merah", () => {
+    const akar = situsBerita({
+      "dist/client/berita/feed.xml": feed({ judul: "", self: "" })
+    });
+
+    const { keluaran, kode } = jalankan(akar);
+    expect(keluaran).toContain("feed tanpa <title>");
+    expect(keluaran).toContain('feed tanpa <link rel="self">');
+    expect(kode).toBe(1);
+  });
+
+  test("feed tanpa satu pun entry merah", () => {
+    const akar = situsBerita({
+      "dist/client/berita/feed.xml": feed({ entry: "" })
+    });
+
+    const { keluaran, kode } = jalankan(akar);
+    expect(keluaran).toContain("feed tanpa satu pun <entry>");
+    expect(kode).toBe(1);
+  });
+
+  test("tanggal yang bukan RFC 3339 merah meski new Date() menerimanya", () => {
+    // `2026-08-03` di-parse JavaScript tanpa keluhan dan menghasilkan tanggal
+    // yang benar. Ia tetap melanggar Atom, dan sebagian pembaca feed membuang
+    // entry-nya diam-diam.
+    const akar = situsBerita({
+      "dist/client/berita/feed.xml": feed({
+        entry: ENTRY.replace(
+          "<published>2026-08-01T03:00:00.000Z</published>",
+          "<published>2026-08-01</published>"
+        )
+      })
+    });
+
+    const { keluaran, kode } = jalankan(akar);
+    expect(keluaran).toContain("<published> bukan RFC 3339");
+    expect(kode).toBe(1);
+  });
+
+  test("entry yang updated-nya mendahului published merah", () => {
+    const akar = situsBerita({
+      "dist/client/berita/feed.xml": feed({
+        updated: "<updated>2026-07-01T00:00:00.000Z</updated>",
+        entry: ENTRY.replace(
+          "<updated>2026-08-03T09:00:00.000Z</updated>",
+          "<updated>2026-07-01T00:00:00.000Z</updated>"
+        )
+      })
+    });
+
+    const { keluaran, kode } = jalankan(akar);
+    expect(keluaran).toContain("<updated> mendahului <published>");
+    expect(kode).toBe(1);
+  });
+
+  test("entry yang tidak terurut dari yang terbaru merah", () => {
+    const kedua = ENTRY.replace(/pertama/g, "kedua")
+      .replace("2026-08-01T03:00:00.000Z", "2026-08-05T03:00:00.000Z")
+      .replace("2026-08-03T09:00:00.000Z", "2026-08-06T09:00:00.000Z");
+
+    const akar = situsBerita({
+      "dist/client/berita/kedua/index.html": halaman({
+        judul: "Artikel kedua",
+        canonical: "https://contoh.test/berita/kedua/",
+        alternate: [
+          ["id", "/berita/kedua/"],
+          ["x-default", "/berita/kedua/"]
+        ]
+      }),
+      "dist/client/berita/feed.xml": feed({
+        updated: "<updated>2026-08-06T09:00:00.000Z</updated>",
+        entry: `${ENTRY}\n${kedua}`
+      })
+    });
+
+    const { keluaran, kode } = jalankan(akar);
+    expect(keluaran).toContain("entry tidak terurut dari yang terbaru");
+    expect(kode).toBe(1);
+  });
+
+  test("updated feed yang bukan entry terbaru — mis. jam build — merah", () => {
+    const akar = situsBerita({
+      "dist/client/berita/feed.xml": feed({
+        updated: "<updated>2026-08-08T12:00:00.000Z</updated>"
+      })
+    });
+
+    const { keluaran, kode } = jalankan(akar);
+    expect(keluaran).toContain("bukan <updated> entry terbaru");
+    expect(kode).toBe(1);
+  });
+
+  test("nama key yang bocor ke judul entry merah", () => {
+    const akar = situsBerita({
+      "src/locales/id/messages.po": 'msgid "tab.berita.title"\nmsgstr "Berita"\n',
+      "dist/client/berita/feed.xml": feed({
+        entry: ENTRY.replace(
+          "<title>Artikel pertama</title>",
+          "<title>tab.berita.title</title>"
+        )
+      })
+    });
+
+    const { keluaran, kode } = jalankan(akar);
+    expect(keluaran).toContain("nama key tampil sebagai teks: tab.berita.title");
+    expect(kode).toBe(1);
+  });
+
+  test("feed yang tidak diumumkan satu halaman pun merah", () => {
+    const akar = situsBerita({
+      "dist/client/berita/index.html": halaman({
+        judul: "Berita",
+        canonical: "https://contoh.test/berita/",
+        alternate: [
+          ["id", "/berita/"],
+          ["x-default", "/berita/"]
+        ]
+      })
+    });
+
+    const { keluaran, kode } = jalankan(akar);
+    expect(keluaran).toContain("tidak diumumkan satu halaman pun");
+    expect(kode).toBe(1);
+  });
+
+  test("tautan feed tanpa title merah", () => {
+    const akar = situsBerita({
+      "dist/client/berita/index.html": halaman({
+        judul: "Berita",
+        canonical: "https://contoh.test/berita/",
+        alternate: [
+          ["id", "/berita/"],
+          ["x-default", "/berita/"]
+        ],
+        kepala:
+          '<link rel="alternate" type="application/atom+xml" href="/berita/feed.xml">'
+      })
+    });
+
+    const { keluaran, kode } = jalankan(akar);
+    expect(keluaran).toContain("tanpa title");
+    expect(kode).toBe(1);
+  });
+
+  test("halaman yang mengumumkan feed yang bukan feed merah", () => {
+    // Gerbang tautan mati tidak bisa melihat ini: berkasnya ADA, ia hanya bukan
+    // feed. Sebuah halaman HTML yang diumumkan sebagai langganan.
+    const akar = situs({
+      "dist/client/index.html": halaman({
+        kepala:
+          '<link rel="alternate" type="application/atom+xml" title="Berita" href="/berita/">'
+      }),
+      "dist/client/berita/index.html": halaman({
+        judul: "Berita",
+        canonical: "https://contoh.test/berita/",
+        alternate: [
+          ["id", "/berita/"],
+          ["x-default", "/berita/"]
+        ]
+      })
+    });
+
+    const { keluaran, kode } = jalankan(akar);
+    expect(keluaran).toContain("yang bukan feed Atom di keluaran");
+    expect(kode).toBe(1);
+  });
+
+  test("berkas .xml yang bukan sitemap dan bukan feed merah", () => {
+    // Ini temuan ADR-0033 apa adanya: berkas .xml bernama lain tidak dibaca
+    // gerbang mana pun. Gerbang yang hanya mencari `feed.xml` akan mengulangi
+    // celah itu pada nama berikutnya.
+    const akar = situs({
+      "dist/client/opensearch.xml": '<?xml version="1.0"?><OpenSearchDescription/>'
+    });
+
+    const { keluaran, kode } = jalankan(akar);
+    expect(keluaran).toContain("tidak ada gerbang");
+    expect(kode).toBe(1);
+  });
+
+  test("feed yang terdaftar di sitemap merah", () => {
+    const akar = situsBerita({
+      "dist/client/sitemap-0.xml":
+        '<?xml version="1.0" encoding="UTF-8"?><urlset>' +
+        "<url><loc>https://contoh.test/berita/feed.xml</loc></url>" +
+        "</urlset>"
+    });
+
+    const { keluaran, kode } = jalankan(akar);
+    expect(keluaran).toContain("terdaftar di sitemap");
+    expect(kode).toBe(1);
+  });
+
+  test("tanpa berkas .xml sama sekali, keluarga ini MENYEBUT bahwa ia dilewati", () => {
+    // Keadaan template ini sendiri. Gerbang yang diam saat tidak menemukan apa
+    // pun tidak bisa dibedakan dari gerbang yang lulus.
+    const { kode, keluaran } = jalankan(situs());
+
+    if (kode !== 0) console.log(keluaran);
+    expect(keluaran).toContain("tidak ada berkas .xml selain sitemap");
+    expect(kode).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Performa — celah 2 (ADR-0028): fetchpriority pada gambar eager
 // ---------------------------------------------------------------------------
 

@@ -30,19 +30,6 @@ export function tanggalPanjang(locale: Locale, nilai: Date): string {
 }
 
 /**
- * Nilai untuk atribut `datetime` sebuah `<time>`.
- *
- * Tanggal saja (`YYYY-MM-DD`), bukan ISO penuh, karena yang ditampilkan di
- * sebelahnya juga tanggal saja — atribut `datetime` yang membawa jam sementara
- * teksnya tidak adalah dua ketelitian berbeda untuk satu klaim. Klaim yang
- * berketelitian penuh tetap ada di JSON-LD dan di `article:published_time`,
- * tempat mesin membacanya.
- *
- * Diturunkan dari komponen tanggal LOKAL, bukan dari `toISOString()`, supaya ia
- * tidak pernah berselisih satu hari dengan teks di sebelahnya — yang persis
- * terjadi pada tanggal terbit sore hari di zona berselisih positif dari UTC.
- */
-/**
  * Apakah artikel ini benar-benar pernah diubah SESUDAH terbit.
  *
  * Perbandingannya KETAT dan atas nilai mentah, dan keduanya bersandar pada satu
@@ -62,6 +49,19 @@ export function pernahDiubahSetelahTerbit(terbit: Date, diubah: Date): boolean {
   return diubah.getTime() > terbit.getTime();
 }
 
+/**
+ * Nilai untuk atribut `datetime` sebuah `<time>`.
+ *
+ * Tanggal saja (`YYYY-MM-DD`), bukan ISO penuh, karena yang ditampilkan di
+ * sebelahnya juga tanggal saja — atribut `datetime` yang membawa jam sementara
+ * teksnya tidak adalah dua ketelitian berbeda untuk satu klaim. Klaim yang
+ * berketelitian penuh tetap ada di JSON-LD, di `article:published_time`, dan di
+ * `<published>`/`<updated>` feed (ADR-0035), tempat mesin membacanya.
+ *
+ * Diturunkan dari komponen tanggal LOKAL, bukan dari `toISOString()`, supaya ia
+ * tidak pernah berselisih satu hari dengan teks di sebelahnya — yang persis
+ * terjadi pada tanggal terbit sore hari di zona berselisih positif dari UTC.
+ */
 export function tanggalMesin(nilai: Date): string {
   const bulan = String(nilai.getMonth() + 1).padStart(2, "0");
   const hari = String(nilai.getDate()).padStart(2, "0");

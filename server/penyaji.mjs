@@ -55,6 +55,14 @@ import { posix } from "node:path";
 
 import compression from "compression";
 
+// Satu-satunya impor dari `src/` di berkas ini, dan ia disengaja: nama berkas
+// feed dipakai rute, tautan penemuan-otomatis, gerbang, DAN header di sini.
+// Menyalinnya ke sini sebagai string kelima akan membuat penyaji memasang tipe
+// feed pada path yang tidak ada lagi, pada hari nama itu berubah — tanpa satu
+// gerbang pun merah. `src/lib/feed.ts` tidak mengimpor apa pun, jadi ia tidak
+// menarik konfigurasi atau `awcms` ke dalam proses penyaji.
+import { NAMA_BERKAS_FEED } from "../src/lib/feed.ts";
+
 /** Prefiks aset ber-hash Astro (`build.assets`, baku `_astro`). */
 const PREFIKS_ASET = "/_astro/";
 
@@ -299,6 +307,39 @@ export function aturanCache(url) {
   return jalurNormal(url).startsWith(PREFIKS_ASET) ? CACHE_ASET : CACHE_HALAMAN;
 }
 
+/** Tipe yang benar untuk sebuah feed Atom, lengkap dengan charset-nya. */
+export const TIPE_FEED = "application/atom+xml; charset=utf-8";
+
+/**
+ * `Content-Type` sebuah berkas feed — dan kenapa ia harus dipasang DI SINI.
+ *
+ * ADR-0033 menunda feed dengan satu alasan yang berbunyi tidak bisa disiasati:
+ * pada build statis, header respons yang ditulis sebuah endpoint dibuang, dan
+ * yang menentukan tipe adalah ekstensi berkas menurut adapter. Bagian pertama
+ * kalimat itu benar dan tetap benar. Bagian keduanya yang tidak lengkap: di
+ * repo ini yang menyajikan berkas adalah berkas ini (ADR-0016), jadi lapisan
+ * yang membuang header itu justru lapisan yang kita miliki.
+ *
+ * Yang dikirim adapter untuk `.xml` adalah `application/xml` — bukan salah,
+ * dan setiap pembaca feed menerimanya. Yang hilang bersamanya bukan
+ * kompatibilitas melainkan pernyataan: `application/xml` tidak memberi tahu
+ * siapa pun bahwa berkas itu langganan, sehingga browser dan perkakas yang
+ * memutuskan dari tipe (tombol "Langganan", pratinjau pembaca feed, klien yang
+ * menyaring `Accept`) memperlakukannya sebagai XML sembarang.
+ *
+ * **Batasnya dinyatakan, bukan disamarkan:** yang menjamin tipe ini hanyalah
+ * penyajian oleh berkas ini. Sebuah situs turunan yang menaruh `dist/client`
+ * di belakang CDN atau host statis orang lain akan kembali mendapat
+ * `application/xml` dari host itu, dan tidak ada yang bisa dilakukan repo ini
+ * soal itu selain mengatakannya. Lihat ADR-0035.
+ *
+ * @param {string} url
+ * @returns {string | undefined} Tipe yang harus dipaksakan, atau `undefined`.
+ */
+export function tipeIsi(url) {
+  return jalurNormal(url).endsWith(`/${NAMA_BERKAS_FEED}`) ? TIPE_FEED : undefined;
+}
+
 /**
  * Memasang header pada respons SEBELUM handler menyentuhnya.
  *
@@ -315,6 +356,13 @@ export function pasangHeader(req, res) {
     res.setHeader(nama, nilai);
   }
   res.setHeader("Cache-Control", aturanCache(req.url ?? "/"));
+
+  // Dipasang SEBELUM handler, sama seperti `Cache-Control` di atasnya, dan
+  // karena alasan yang sama: `send` hanya memasang tipenya sendiri bila belum
+  // ada, jadi nilai yang ditetapkan di sini menang tanpa perlu membungkus
+  // respons atau menunda penulisannya.
+  const tipe = tipeIsi(req.url ?? "/");
+  if (tipe) res.setHeader("Content-Type", tipe);
 
   // Node tidak mengirim `Server` dan tidak pernah mengirim `X-Powered-By`
   // (yang terakhir milik Express, yang tidak dipakai di sini). Keduanya

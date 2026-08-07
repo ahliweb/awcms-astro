@@ -833,6 +833,71 @@ describe("urutan seksi tersambung ke getArticles", () => {
     );
   });
 
+  test("feed seksi dirakit dari kolom awcms yang benar (ADR-0035)", async () => {
+    // `bangunFeedAtom` diuji sebagai fungsi murni di `tests/feed.test.mjs`, dan
+    // itu meninggalkan celah yang persis sama dengan yang blok ini tutup untuk
+    // `urutkanArtikel`: SAMBUNGANNYA. `isiFeed` boleh mengirim URL relatif,
+    // mengirim `updatedAt` sebagai tanggal terbit, atau mengirim `title` mentah
+    // alih-alih `description` — dan setiap tes di berkas itu tetap hijau.
+    //
+    // Dijalankan atas tab "panduan" karena template ini tidak membawa satu pun
+    // tab "terbaru"; yang diuji di sini perakitannya, bukan syarat terbitnya —
+    // syarat itu milik `seksiPunyaFeed`, yang diuji terpisah.
+    const { isiFeed } = await import("../src/lib/feed-seksi.ts");
+
+    pasangFetchTiruan([
+      buatPost(1, {
+        publishedAt: "2026-08-01T03:00:00.000Z",
+        updatedAt: "2026-08-04T09:00:00.000Z"
+      })
+    ]);
+
+    const xml = await isiFeed("id", "panduan");
+
+    assert.match(xml, /<feed xmlns="http:\/\/www\.w3\.org\/2005\/Atom"/);
+    // URL absolut, diturunkan dari SITE_URL — bukan path situs.
+    assert.match(xml, /<id>https?:\/\/[^<]*\/panduan\/artikel-1\/<\/id>/);
+    // Kedua stempel dibawa TERPISAH, yang merupakan ADR-0033 dilihat dari sini.
+    assert.ok(xml.includes("<published>2026-08-01T03:00:00.000Z</published>"));
+    assert.ok(xml.includes("<updated>2026-08-04T09:00:00.000Z</updated>"));
+    // Ringkasan datang dari `metaDescription`, bukan dari judul.
+    assert.ok(xml.includes('<summary type="text">Meta 1</summary>'));
+  });
+
+  test("rute feed benar-benar mengeluarkan feed itu, dengan tipe isinya", async () => {
+    // `isiFeed` diuji di atas, dan itu masih meninggalkan enam baris perekat
+    // yang tidak pernah dieksekusi di repo ini: `getStaticPaths` dan `GET` pada
+    // kedua rute. Keduanya hanya berjalan saat `astro build` menemukan seksi
+    // berita — yang tidak pernah terjadi di sini. Dipanggil langsung.
+    const akar = await import("../src/pages/[tab]/feed.xml.ts");
+    const berprefiks = await import("../src/pages/[lang]/[tab]/feed.xml.ts");
+
+    pasangFetchTiruan([buatPost(1)]);
+
+    // Ketiga tab template `"manual"`, jadi kedua rute menerbitkan nol berkas.
+    assert.deepEqual(await akar.getStaticPaths(), []);
+    assert.deepEqual(await berprefiks.getStaticPaths(), []);
+
+    const respons = await akar.GET({ props: { tab: "panduan" } });
+    assert.equal(respons.headers.get("content-type"), "application/atom+xml; charset=utf-8");
+    assert.match(await respons.text(), /<feed xmlns="http:\/\/www\.w3\.org\/2005\/Atom"/);
+
+    const responsEn = await berprefiks.GET({ props: { lang: "en", tab: "panduan" } });
+    assert.match(await responsEn.text(), /xml:lang="en-US"/);
+  });
+
+  test("template ini menerbitkan NOL feed, dan itu keadaan yang ditegakkan", async () => {
+    // Ketiga tab template `"manual"`. Yang dijaga di sini bukan kekosongannya
+    // melainkan bahwa kedua rute feed membaca daftar yang SAMA: sebuah tab yang
+    // kelak dinyatakan `"terbaru"` harus menerbitkan feed di seluruh locale
+    // sekaligus, atau tidak sama sekali.
+    const { daftarFeed } = await import("../src/lib/feed-seksi.ts");
+
+    pasangFetchTiruan([buatPost(1)]);
+
+    assert.deepEqual(await daftarFeed(), []);
+  });
+
   test("gerbang view=full berbicara lebih dulu daripada lantai tanggal", async () => {
     // Urutan operasi yang ADR-0033 sebut dikunci, dikunci di sini. Bila
     // assertion `view=full` dipindah ke SESUDAH penyaring tanggal, ia akan

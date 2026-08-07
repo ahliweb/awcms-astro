@@ -22,7 +22,7 @@ bun run audit:graf      # artefak graphify-out/     — melewati diri bila direk
 | --- | --- |
 | `check` | Tipe, props, impor putus, lockfile milik proyek lain |
 | `bun test` | Paritas katalog PO, kontrak `awcms` (traversal, media, kartu), **permukaan yang dipanggil build**, header + cache penyaji, CSP atas keluaran, **versi toolchain** |
-| `audit:konten` | Rasio gambar terhadap `--ratio-visual`, format dibaca dari ISI berkas, judul/canonical/hreflang, aset yang dijanjikan metadata, tautan mati, sitemap, nama key bocor ke layar |
+| `audit:konten` | Rasio gambar terhadap `--ratio-visual`, format dibaca dari ISI berkas, judul/canonical/hreflang, aset yang dijanjikan metadata, tautan mati, sitemap, **setiap `.xml` di keluaran** (feed Atom sah, atau pelanggaran), nama key bocor ke layar |
 | `audit:dokumen` | Tautan markdown mati, indeks ADR lengkap dua arah, status ADR setuju dengan berkasnya, daftar permukaan kilau, jalur berkas yang disebut dokumen, **kutipan `ADR-NNNN` yang resolve ke berkasnya** |
 | `audit:graf` | Artefak `graphify-out/` terlacak di luar keempat keluaran bersama, laporan yang tidak sepakat dengan `graph.json`, **nama komunitas yang tidak dipilih** (nama berkas, placeholder, kembar, atau berbeda antar-artefak), korpus yang mengabaikan `.graphifyignore` |
 
@@ -152,6 +152,15 @@ ada, hijau saat tidak. Lalu buktikan tesnya bukan hiasan: mutasi barisnya di
 skrip dan pastikan tepat kasus itu yang merah. Dua kali cara itu menemukan
 lubang di tes yang sudah hijau — cabang `image` JSON-LD yang tidak pernah
 diuji, dan satu penyaring skema yang ternyata tidak bisa dimutasi sama sekali.
+
+**Sebuah keluarga yang tidak akan pernah menemukan berkas di sini tetap wajib
+dibuktikan di sini.** Keluarga feed (ADR-0035) memindai `**/*.xml` di keluaran,
+dan template menyatakan nol seksi berita — jadi ia tidak akan pernah menemukan
+satu berkas pun, bahkan seandainya repo ini punya sumber konten. Pohon fixture
+adalah satu-satunya tempat ia berjalan, dan mutasinya adalah satu-satunya bukti
+bahwa ia masih memeriksa sesuatu (16 mutasi, 16 tes berbeda merah). Pola yang
+sama berlaku untuk keluarga berikutnya yang bergantung pada konfigurasi yang
+tidak dipakai template.
 
 ## Menambah pemeriksa ke `audit:dokumen`
 
