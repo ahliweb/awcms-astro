@@ -8,7 +8,9 @@ import FaqAccordion from '../components/FaqAccordion.astro';
 import DisclaimerNote from '../components/DisclaimerNote.astro';
 import TranslationNotice from '../components/TranslationNotice.astro';
 import Ilustrasi from '../components/Ilustrasi.astro';
-import { getLocaleFromPath, getSiteUrl, localePath, siteConfig, tabTitleKey } from '../config/site';
+import { getLocaleFromPath, getSiteUrl, localePath, siteConfig, tabTitleKey, urutanSeksiTab } from '../config/site';
+import { seksiPunyaFeed } from '../lib/feed';
+import { jalurFeed } from '../lib/feed-seksi';
 import { tanggalPanjang, tanggalMesin, pernahDiubahSetelahTerbit } from '../lib/tanggal';
 import { getArticleVisual } from '../lib/article-images';
 import { SITE_SOCIAL_IMAGE } from '../lib/social-image';
@@ -87,6 +89,18 @@ const schema = articleSchema({
   // bisa dibalik tanpa satu gerbang pun berubah warna.
   tipe: tipeArtikelSeksi(data.kategori),
 });
+
+// Feed seksi ini, diumumkan juga dari halaman artikelnya (ADR-0035) — tempat
+// seorang pembaca justru paling mungkin memutuskan untuk berlangganan.
+//
+// Syarat "seksinya berisi artikel" terpenuhi menurut konstruksi di sini: yang
+// merender halaman ini adalah salah satu artikel seksi itu. Angka `1` karena
+// itu bukan perkiraan melainkan batas bawah yang benar-benar diketahui, dan
+// memanggil `getArticles` lagi hanya untuk menghitungnya akan menambah
+// pekerjaan per halaman untuk menjawab pertanyaan yang sudah terjawab.
+const feed = seksiPunyaFeed(urutanSeksiTab(data.kategori), 1)
+  ? { judul: `${tabName} — ${siteConfig.name}`, href: jalurFeed(locale, data.kategori) }
+  : undefined;
 ---
 
 <BaseLayout
@@ -101,6 +115,7 @@ const schema = articleSchema({
     modifiedTime: modifiedDate.toISOString(),
     section: tabName,
   }}
+  feed={feed}
 >
   <article>
     <Breadcrumb items={breadcrumbItems} />

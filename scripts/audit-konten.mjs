@@ -22,9 +22,9 @@
  * Dua keluarga, dengan sumber yang berbeda:
  *
  *   1. **Keluaran build** (`dist/client/**`) — metadata SEO, resiprositas
- *      hreflang, aset yang dijanjikan metadata, tautan mati, sitemap, dan nama
- *      key yang bocor ke layar. Butuh hasil build; tanpa itu keluarga ini
- *      DILEWATI dan mengatakannya.
+ *      hreflang, aset yang dijanjikan metadata, tautan mati, sitemap, feed Atom
+ *      beserta penemuan-otomatisnya, dan nama key yang bocor ke layar. Butuh
+ *      hasil build; tanpa itu keluarga ini DILEWATI dan mengatakannya.
  *   2. **Sumber gambar** (`src/assets/**`, `public/**`) — rasio, format dibaca
  *      dari isi berkas alih-alih ekstensinya, XML SVG, dan ukuran teks
  *      terkecil di dalam SVG. Tidak butuh build, jadi selalu jalan.
@@ -294,6 +294,8 @@ function auditKeluaran(halaman, { localeDefault, locales, namespaceKey }) {
 
   const judulPerLocale = new Map();
   const alternatePerUrl = new Map();
+  /** Path feed → halaman yang mengumumkannya. */
+  const feedDideklarasikan = new Map();
 
   for (const { nama, isi } of halaman) {
     const url = urlDari(nama);
@@ -504,6 +506,44 @@ function auditKeluaran(halaman, { localeDefault, locales, namespaceKey }) {
       }
     }
 
+    // -- penemuan-otomatis feed ----------------------------------------------
+    //
+    // Dikumpulkan di sini, dinilai setelah seluruh halaman terbaca: sebuah
+    // tautan feed hanya bisa dinilai lengkap bila diketahui juga berkas feed
+    // mana saja yang benar-benar ada — dan sebaliknya, berkas feed yang tidak
+    // diumumkan satu halaman pun adalah langganan yang tidak bisa ditemukan
+    // siapa pun tanpa menebak URL-nya.
+    for (const [, atribut] of isi.matchAll(/<link([^>]*\brel=["']alternate["'][^>]*)>/gi)) {
+      if (!/\btype=["']application\/atom\+xml["']/i.test(atribut)) continue;
+
+      const href = atribut.match(/\shref=["']([^"']*)["']/i)?.[1];
+      const judulFeed = atribut.match(/\stitle=["']([^"']*)["']/i)?.[1]?.trim();
+
+      if (!href) {
+        langgar("feed", nama, "tautan penemuan-otomatis feed tanpa href");
+        continue;
+      }
+
+      if (!judulFeed) {
+        // Pembaca feed menampilkan `title` ini sebagai nama langganan. Tanpa
+        // ia, sebagian menampilkan URL mentah dan sebagian menampilkan judul
+        // HALAMAN — jadi dua situs yang berlangganan sama-sama benar bisa
+        // muncul dengan nama yang sama sekali berbeda di daftar yang sama.
+        langgar("feed", nama, `tautan feed ${href} tanpa title`);
+      }
+
+      if (!internal(href)) {
+        langgar("feed", nama, `tautan feed menunjuk luar situs: ${href}`);
+        continue;
+      }
+
+      const jalurFeed = pathDari(href);
+      feedDideklarasikan.set(jalurFeed, [
+        ...(feedDideklarasikan.get(jalurFeed) ?? []),
+        nama
+      ]);
+    }
+
     // -- hreflang ------------------------------------------------------------
     const alternate = [
       ...isi.matchAll(
@@ -561,6 +601,8 @@ function auditKeluaran(halaman, { localeDefault, locales, namespaceKey }) {
 
   // -- sitemap ---------------------------------------------------------------
   const sitemap = [...new Bun.Glob("sitemap*.xml").scanSync(KELUARAN)];
+  /** Setiap `<loc>` apa adanya, TERMASUK yang berakhiran `.xml`. */
+  const locSitemap = new Set();
 
   if (sitemap.length === 0) {
     catatan.push("sitemap: tidak ada berkas sitemap di keluaran — dilewati");
@@ -570,6 +612,12 @@ function auditKeluaran(halaman, { localeDefault, locales, namespaceKey }) {
     for (const nama of sitemap) {
       const isi = readFileSync(`${KELUARAN}/${nama}`, "utf8");
       for (const [, loc] of isi.matchAll(/<loc>([^<]+)<\/loc>/g)) {
+        // Dicatat SEBELUM `continue` di bawah. Baris berikutnya melewati setiap
+        // `.xml` karena sebuah indeks sitemap memang menunjuk sitemap lain —
+        // dan justru itu yang membuat entri feed yang salah tak terlihat di
+        // satu-satunya tempat yang membaca sitemap. Gerbang feed membacanya
+        // dari sini.
+        locSitemap.add(loc);
         if (loc.endsWith(".xml")) continue; // indeks menunjuk sitemap lain
         jumlahLoc += 1;
         if (internal(loc) && !berkasUntuk(pathDari(loc))) {
@@ -581,8 +629,281 @@ function auditKeluaran(halaman, { localeDefault, locales, namespaceKey }) {
     catatan.push(`${jumlahLoc} URL sitemap diperiksa di ${sitemap.length} berkas`);
   }
 
+  auditFeed({ asal, internal, pathDari, namespaceKey, locSitemap, feedDideklarasikan });
   auditPrioritasGambar(halaman);
   auditAnggaranGambar(halaman, { internal, pathDari });
+}
+
+// ---------------------------------------------------------------------------
+// Keluarga feed (ADR-0035)
+// ---------------------------------------------------------------------------
+
+/** Kebalikan `lepasXml` di `src/lib/feed.ts`, untuk lima entitas yang sama. */
+function bacaXml(nilai) {
+  return nilai
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, "&");
+}
+
+/** Isi setiap `<nama>…</nama>` di dalam sebuah potongan XML, sudah dibaca. */
+function elemen(blok, nama) {
+  return [...blok.matchAll(new RegExp(`<${nama}(?:\\s[^>]*)?>([\\s\\S]*?)</${nama}>`, "g"))].map(
+    (m) => bacaXml(m[1]).trim()
+  );
+}
+
+/** Nilai atribut `href` pada `<link>` ber-`rel` tertentu. */
+function hrefLink(blok, rel) {
+  const cocok = blok.match(
+    new RegExp(`<link[^>]*\\brel=["']${rel}["'][^>]*>`, "i")
+  );
+  return cocok ? bacaXml(cocok[0].match(/\shref=["']([^"']*)["']/i)?.[1] ?? "") : undefined;
+}
+
+/**
+ * RFC 3339, yang Atom tuntut — dan bukan "apa pun yang `new Date` mau terima".
+ *
+ * Selisihnya nyata: `new Date("2026-08-08")` sah di JavaScript dan menghasilkan
+ * tanggal yang benar, sementara `2026-08-08` sebagai isi `<updated>` melanggar
+ * Atom dan ditolak sebagian pembaca feed diam-diam — entry-nya hilang dari
+ * daftar tanpa satu pesan pun. Memeriksa hanya "bisa di-parse" akan meluluskan
+ * persis kelas cacat itu.
+ */
+const RFC_3339 = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
+
+/**
+ * Gerbang atas setiap berkas `.xml` di keluaran yang bukan sitemap.
+ *
+ * ## Kenapa keluarga ini ada
+ *
+ * [ADR-0033](../docs/adr/0033-seksi-berita-urutan-dari-tanggal-dan-dua-tanggal-yang-terpisah.md)
+ * menunda feed dan menuliskan alasannya sebagai temuan, bukan sebagai biaya:
+ * **satu-satunya `.xml` yang dibaca gerbang mana pun adalah `sitemap*.xml`**,
+ * dan bahkan gerbang itu melewati setiap `<loc>` berakhiran `.xml` tanpa suara.
+ * Pemindai halaman hanya mengambil `**\/*.html`. Sebuah feed yang menunjuk
+ * artikel yang tidak terbit, memuat nama key mentah, atau membawa URL relatif
+ * — ilegal di Atom maupun RSS — akan lolos SELURUH gerbang dengan build hijau.
+ * Berkas ini yang menutupnya.
+ *
+ * ## Kenapa ia memindai `**\/*.xml` dan bukan `**\/feed.xml`
+ *
+ * Karena yang ditemukan ADR-0033 bukan "feed tidak diperiksa" melainkan
+ * "**berkas `.xml` bernama lain tidak dibaca siapa pun**". Gerbang yang hanya
+ * mencari `feed.xml` akan mengulangi celah itu pada nama berikutnya. Setiap
+ * `.xml` yang bukan sitemap karena itu WAJIB berupa feed Atom yang sah, atau
+ * dilaporkan sebagai berkas yang tidak dibaca gerbang mana pun — yang merupakan
+ * temuannya sendiri, bukan kelalaian yang didiamkan.
+ */
+function auditFeed({ asal, internal, pathDari, namespaceKey, locSitemap, feedDideklarasikan }) {
+  const berkas = [...new Bun.Glob("**/*.xml").scanSync(KELUARAN)].filter(
+    (nama) => !/^sitemap[^/]*\.xml$/.test(nama)
+  );
+
+  const ditemukan = new Set();
+  let jumlahEntry = 0;
+
+  for (const nama of berkas) {
+    const isi = readFileSync(`${KELUARAN}/${nama}`, "utf8");
+    const url = urlDari(nama);
+    const urlPenuh = `${asal}${url}`;
+
+    if (!/<feed[^>]*\bxmlns=["']http:\/\/www\.w3\.org\/2005\/Atom["']/.test(isi)) {
+      langgar(
+        "feed",
+        nama,
+        "berkas .xml yang bukan sitemap dan bukan feed Atom — tidak ada gerbang " +
+          "di repo ini yang bisa membacanya. Jadikan ia feed Atom, atau beri ia " +
+          "gerbangnya sendiri sebelum menerbitkannya (ADR-0030)."
+      );
+      continue;
+    }
+
+    ditemukan.add(url);
+
+    const entryMentah = [...isi.matchAll(/<entry>([\s\S]*?)<\/entry>/g)].map((m) => m[1]);
+    // Kepala feed adalah berkasnya TANPA entry. Tanpa pemisahan ini, `<title>`
+    // feed dan `<title>` entry pertama tidak bisa dibedakan sama sekali, dan
+    // sebuah feed yang kehilangan judulnya sendiri akan lulus karena entry-nya
+    // punya judul.
+    const kepala = isi.replace(/<entry>[\s\S]*?<\/entry>/g, "");
+
+    // -- kelengkapan yang Atom WAJIBKAN pada feed ------------------------------
+    for (const wajib of ["id", "title", "updated"]) {
+      if (elemen(kepala, wajib).filter(Boolean).length === 0) {
+        langgar("feed", nama, `feed tanpa <${wajib}> — Atom mewajibkannya`);
+      }
+    }
+
+    const diri = hrefLink(kepala, "self");
+    if (!diri) {
+      langgar("feed", nama, 'feed tanpa <link rel="self">');
+    } else if (diri !== urlPenuh) {
+      // Sebuah agregator memakai `rel="self"` untuk menyimpan alamat langganan.
+      // Yang salah di sini tidak merusak berkas ini; ia mengirim setiap
+      // pelanggan baru ke alamat lain — yang mungkin tidak ada.
+      langgar("feed", nama, `<link rel="self"> berbunyi ${diri}, seharusnya ${urlPenuh}`);
+    }
+
+    if (entryMentah.length === 0) {
+      langgar(
+        "feed",
+        nama,
+        "feed tanpa satu pun <entry> — seksi kosong tidak menerbitkan berkas feed"
+      );
+    }
+
+    // -- setiap IRI wajib absolut ---------------------------------------------
+    //
+    // Kelas cacat yang ADR-0033 sebut namanya. Ia tidak merusak XML-nya, jadi
+    // tidak ada yang gagal: berkasnya terbit, sebagian pembaca menyelesaikan
+    // URL-nya terhadap `xml:base`, sebagian terhadap URL feed, sebagian
+    // menyerah dan entry-nya menjadi tautan mati di daftar bacaan orang.
+    for (const [, href] of isi.matchAll(/<link[^>]*\shref=["']([^"']*)["']/gi)) {
+      if (!/^https?:\/\//i.test(bacaXml(href))) {
+        langgar("feed", nama, `href tidak absolut: ${href}`);
+      }
+    }
+
+    for (const id of elemen(isi, "id")) {
+      if (!/^[a-z][a-z0-9+.-]*:/i.test(id)) {
+        langgar("feed", nama, `<id> bukan IRI absolut: ${id}`);
+      }
+    }
+
+    // -- entry ------------------------------------------------------------------
+    const stempel = [];
+
+    for (const blok of entryMentah) {
+      jumlahEntry += 1;
+      const judul = elemen(blok, "title")[0] ?? "";
+      const label = judul || "(tanpa judul)";
+
+      for (const wajib of ["id", "title", "updated", "published"]) {
+        if (elemen(blok, wajib).filter(Boolean).length === 0) {
+          langgar("feed", nama, `entry ${label} tanpa <${wajib}>`);
+        }
+      }
+
+      const terbit = elemen(blok, "published")[0];
+      const diubah = elemen(blok, "updated")[0];
+
+      for (const [namaTanggal, nilai] of [
+        ["published", terbit],
+        ["updated", diubah]
+      ]) {
+        if (nilai && !RFC_3339.test(nilai)) {
+          langgar("feed", nama, `entry ${label}: <${namaTanggal}> bukan RFC 3339: ${nilai}`);
+        }
+      }
+
+      if (terbit && diubah && RFC_3339.test(terbit) && RFC_3339.test(diubah)) {
+        const t = Date.parse(terbit);
+        const d = Date.parse(diubah);
+        if (d < t) {
+          langgar("feed", nama, `entry ${label}: <updated> mendahului <published>`);
+        }
+        stempel.push(d);
+      }
+
+      // Tautan entry wajib menunjuk halaman yang BENAR-BENAR ada di keluaran.
+      // Inilah "feed yang menunjuk artikel yang tidak terbit": sebuah artikel
+      // yang dicabut redaksi hilang dari indeks seksinya dan dari sitemap, dan
+      // tanpa gerbang ini ia tetap tinggal di feed — di pembaca setiap orang
+      // yang sudah menerimanya, menunjuk 404.
+      const tujuan = hrefLink(blok, "alternate") ?? elemen(blok, "id")[0];
+      if (tujuan && internal(tujuan) && !berkasUntuk(pathDari(tujuan))) {
+        langgar("feed", nama, `entry ${label} menunjuk ${tujuan} yang tidak ada di keluaran`);
+      }
+
+      // Nama key yang bocor, diperiksa dengan daftar namespace yang sama dengan
+      // halaman HTML. Judul dan ringkasan feed datang dari katalog PO lewat
+      // jalur yang sama, jadi kelas cacatnya identik — yang berbeda hanya bahwa
+      // di sini tidak ada satu pun mata manusia yang akan melihatnya.
+      for (const teks of [judul, ...elemen(blok, "summary")]) {
+        const cocok = /^([a-z][a-zA-Z0-9]*)((?:\.[a-zA-Z0-9]+)+)$/.exec(teks);
+        if (cocok && namespaceKey.has(cocok[1])) {
+          langgar("feed", nama, `nama key tampil sebagai teks: ${teks}`);
+        }
+      }
+    }
+
+    // -- urutan, dan `<updated>` feed -----------------------------------------
+    const menurun = stempel.every((nilai, i) => i === 0 || stempel[i - 1] >= nilai);
+    if (!menurun) {
+      langgar("feed", nama, "entry tidak terurut dari yang terbaru");
+    }
+
+    const updatedFeed = elemen(kepala, "updated")[0];
+    if (updatedFeed && stempel.length > 0) {
+      const terbaru = Math.max(...stempel);
+      if (Date.parse(updatedFeed) !== terbaru) {
+        // Yang paling mungkin terjadi di sini adalah jam build, dan itu
+        // penolakan yang sama dengan `lastmod` sitemap: memberi tahu setiap
+        // pelanggan bahwa seksinya berubah pada tiap deploy membuat mereka
+        // berhenti mempercayai stempelnya sama sekali.
+        langgar(
+          "feed",
+          nama,
+          `<updated> feed (${updatedFeed}) bukan <updated> entry terbaru ` +
+            `(${new Date(terbaru).toISOString()})`
+        );
+      }
+    }
+
+    // -- feed tidak boleh masuk sitemap ---------------------------------------
+    if (locSitemap.has(urlPenuh)) {
+      langgar(
+        "feed",
+        nama,
+        "terdaftar di sitemap. Sitemap mendaftarkan halaman; feed adalah " +
+          "representasi kedua dari halaman seksi yang sudah terdaftar sendiri — " +
+          "dan gerbang sitemap melewati setiap <loc> .xml tanpa suara, sehingga " +
+          "entri yang salah tidak akan terlihat di sana."
+      );
+    }
+
+    // -- feed wajib bisa ditemukan --------------------------------------------
+    if (!feedDideklarasikan.has(url)) {
+      langgar(
+        "feed",
+        nama,
+        "tidak diumumkan satu halaman pun — tanpa <link rel=\"alternate\" " +
+          'type="application/atom+xml"> ia hanya bisa ditemukan dengan menebak URL-nya'
+      );
+    }
+  }
+
+  // -- arah sebaliknya: tautan yang menjanjikan feed yang tidak ada -----------
+  //
+  // Gerbang tautan mati sudah menangkap href yang tidak menyelesaikan ke berkas
+  // apa pun. Yang TIDAK bisa dilihatnya adalah href yang menyelesaikan ke
+  // berkas yang ADA tetapi bukan feed — sebuah halaman HTML, misalnya, yang
+  // diumumkan sebagai langganan.
+  for (const [jalur, halamanPengumum] of feedDideklarasikan) {
+    if (!ditemukan.has(jalur)) {
+      langgar(
+        "feed",
+        halamanPengumum[0],
+        `mengumumkan feed ${jalur} yang bukan feed Atom di keluaran` +
+          (halamanPengumum.length > 1 ? ` (dan ${halamanPengumum.length - 1} halaman lain)` : "")
+      );
+    }
+  }
+
+  if (berkas.length === 0) {
+    catatan.push(
+      "feed: tidak ada berkas .xml selain sitemap di keluaran — dilewati. " +
+        "Template ini menyatakan nol seksi berita, jadi itu keadaan yang benar."
+    );
+  } else {
+    catatan.push(
+      `${ditemukan.size} feed diperiksa, ${jumlahEntry} entry, ` +
+        `${feedDideklarasikan.size} tautan penemuan-otomatis`
+    );
+  }
 }
 
 /**
@@ -984,7 +1305,7 @@ if (existsSync(KELUARAN)) {
   catatan.push(
     `keluaran: ${KELUARAN} belum ada — SELURUH gerbang keluaran DILEWATI ` +
       "(SEO, klaim artikel JSON-LD, tanggal Open Graph, hreflang, aset " +
-      "dijanjikan, tautan mati, sitemap, nama key bocor)."
+      "dijanjikan, tautan mati, sitemap, feed Atom, nama key bocor)."
   );
   catatan.push(
     "  Ia lahir dari `bun run build`, yang butuh sumber konten awcms. Di repo " +

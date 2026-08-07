@@ -8,6 +8,8 @@ import { tanggalPanjang, tanggalMesin } from '../../lib/tanggal';
 import { getArticles } from '../../lib/content';
 import { getArticleVisual, getTabImage } from '../../lib/article-images';
 import { collectionSchema } from '../../lib/schema';
+import { seksiPunyaFeed } from '../../lib/feed';
+import { jalurFeed } from '../../lib/feed-seksi';
 import { t } from '../../lib/po';
 
 interface Props {
@@ -44,6 +46,14 @@ const breadcrumbItems = [
 // di locale berprefiks ia bahkan bukan bahasa yang sedang dibaca.
 const tabVisual = { ...getTabImage(tab), alt: tabLabel };
 
+// Tautan penemuan-otomatis feed, atau `undefined` (ADR-0035). Kedua syaratnya
+// dibaca dari keadaan halaman ini apa adanya — seksi yang diurutkan tanggal DAN
+// benar-benar berisi artikel — sehingga sebuah halaman tidak akan pernah
+// mengumumkan feed yang rutenya tidak menerbitkan berkasnya.
+const feed = seksiPunyaFeed(urutanSeksiTab(tab), articles.length)
+  ? { judul: `${tabLabel} — ${siteConfig.name}`, href: jalurFeed(locale, tab) }
+  : undefined;
+
 const schema = collectionSchema(
   t(locale, `tab.${tab}.h1`, tabLabel),
   description,
@@ -60,6 +70,7 @@ const schema = collectionSchema(
   currentTab={tab}
   canonicalUrl={getSiteUrl(localePath(locale, `/${tab}/`))}
   schema={schema}
+  feed={feed}
 >
   <Breadcrumb items={breadcrumbItems} />
 

@@ -128,7 +128,20 @@ export default defineConfig({
 
   integrations: [
     sitemap({
-      filter: (page) => !page.includes("robots.txt") && !page.includes("/404"),
+      /**
+       * `feed.xml` keluar dari sitemap dengan alasan yang tidak sama dengan
+       * `robots.txt` dan `/404` di sebelahnya, jadi ia layak disebut: sebuah
+       * sitemap mendaftarkan HALAMAN, dan feed bukan halaman — ia representasi
+       * kedua dari halaman seksi yang sudah terdaftar sendiri. Yang membuatnya
+       * berbahaya bila dibiarkan masuk adalah gerbangnya: `audit:konten`
+       * melewati setiap `<loc>` berakhiran `.xml` tanpa suara (ia menganggapnya
+       * indeks sitemap), sehingga entri feed yang salah akan tak terlihat di
+       * satu-satunya tempat yang memeriksa sitemap. Lihat ADR-0035.
+       */
+      filter: (page) =>
+        !page.includes("robots.txt") &&
+        !page.includes("/404") &&
+        !page.endsWith("/feed.xml"),
 
       /**
        * Priority states relative importance WITHIN this site — it is not a

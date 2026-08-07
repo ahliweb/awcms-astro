@@ -40,8 +40,11 @@ import {
   aturanCache,
   buatServer,
   headerKeamanan,
-  jalurNormal
+  jalurNormal,
+  TIPE_FEED,
+  tipeIsi
 } from "../server/penyaji.mjs";
+import { NAMA_BERKAS_FEED } from "../src/lib/feed.ts";
 
 /** Menyalakan `buatServer` pada port ephemeral, memanggilnya, lalu menutupnya. */
 async function lewatServer(handler, jalur, init = {}) {
@@ -100,6 +103,43 @@ describe("penilaian jalur", () => {
     // Adapter menjawabnya 400; yang penting di sini hanya bahwa penilaian
     // header tidak merobohkan proses sebelum permintaan itu sampai ke sana.
     assert.equal(aturanCache("/%E0%A4%A"), CACHE_HALAMAN);
+  });
+});
+
+describe("tipe isi feed (ADR-0035)", () => {
+  test("berkas feed mendapat application/atom+xml", () => {
+    assert.equal(tipeIsi(`/berita/${NAMA_BERKAS_FEED}`), TIPE_FEED);
+    assert.equal(tipeIsi(`/en/berita/${NAMA_BERKAS_FEED}`), TIPE_FEED);
+    assert.equal(tipeIsi(`/berita/${NAMA_BERKAS_FEED}?utm=1`), TIPE_FEED);
+  });
+
+  test("tidak ada yang lain yang tipenya dipaksakan", () => {
+    // Yang dipaksakan di sini MENANG atas penilaian adapter, jadi pola yang
+    // terlalu lebar akan mengirim `application/atom+xml` untuk sitemap — berkas
+    // XML juga, dan bukan langganan.
+    assert.equal(tipeIsi("/"), undefined);
+    assert.equal(tipeIsi("/sitemap-0.xml"), undefined);
+    assert.equal(tipeIsi("/berita/"), undefined);
+    assert.equal(tipeIsi("/berita/feed.xml.html"), undefined);
+  });
+
+  test("path dinormalkan sebelum dinilai", () => {
+    assert.equal(tipeIsi(`/berita/../berita/${NAMA_BERKAS_FEED}`), TIPE_FEED);
+  });
+
+  test("tipe itu benar-benar sampai ke respons", async () => {
+    // Handler tiruan menulis `text/xml`, yang persis dilakukan adapter untuk
+    // sebuah `.xml`. Yang diuji adalah bahwa nilai di `pasangHeader` menang —
+    // tanpa itu seluruh fungsi di atas benar dan tidak berpengaruh apa pun.
+    const respons = await lewatServer(
+      (_req, res) => {
+        res.writeHead(200);
+        res.end("<feed/>");
+      },
+      `/berita/${NAMA_BERKAS_FEED}`
+    );
+
+    assert.equal(respons.headers.get("content-type"), TIPE_FEED);
   });
 });
 

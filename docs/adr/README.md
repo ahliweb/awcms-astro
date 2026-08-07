@@ -37,6 +37,7 @@ menyesuaikan gaya, menambah tes.
 | [0032](0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) | Dua celah terakhir ADR-0028 ditutup: CodeQL dengan cakupan dihitung-dinyatakan, dan CWV lab terkondisi sumber konten | Diterima |
 | [0033](0033-seksi-berita-urutan-dari-tanggal-dan-dua-tanggal-yang-terpisah.md) | Seksi berita: urutan dari `publishedAt`, predikat terbit `awcms` ditiru, dan `datePublished`/`dateModified` berhenti dilipat menjadi satu | Diterima |
 | [0034](0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md) | Publik sebagai fungsi utama; admin USER hanya bila dinyatakan, admin utama (`owner`) tidak pernah | Diterima |
+| [0035](0035-feed-atom-per-seksi-berita-dan-gerbang-atas-xml.md) | Feed Atom per seksi berita, dan gerbang atas SETIAP `.xml` di keluaran | Diterima |
 
 > **Kenapa penomoran mulai dari 0014.** ADR di repo ini melanjutkan urutan repo
 > rujukan yang identitasnya dilepas di [#11](https://github.com/ahliweb/awcms-astro/pull/11);

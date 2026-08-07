@@ -242,25 +242,15 @@ membuatnya tidak perlu `node_modules` sama sekali.
 
 ## Yang belum ada (backlog eksplisit, bukan kelalaian)
 
-- **Feed RSS/Atom dan paginasi untuk seksi berita.** Seksi berita sendiri
-  sudah ada sejak
+- **Paginasi untuk seksi berita.** Seksi berita sendiri sudah ada sejak
   [ADR-0033](docs/adr/0033-seksi-berita-urutan-dari-tanggal-dan-dua-tanggal-yang-terpisah.md):
   sebuah tab menyatakan `urutanSeksi: "terbaru"`, dan seksinya terurut dari
-  `publishedAt` menurun, kartunya bertanggal, artikelnya `NewsArticle`. Dua hal
-  yang belum, dan keduanya ditunda dengan alasan yang diperiksa ke kode, bukan
-  karena kehabisan waktu:
-
-  **Feed** — satu-satunya `.xml` yang dibaca gerbang mana pun di repo ini adalah
-  `sitemap*.xml`, dan bahkan gerbang itu melewati setiap `<loc>` berakhiran
-  `.xml` tanpa suara. Pemindai halaman `audit:konten` hanya mengambil
-  `**/*.html`, jadi berkas feed tidak dibaca siapa pun. Feed yang
-  menunjuk artikel yang tidak terbit, memuat nama key mentah, atau membawa URL
-  relatif (ilegal di RSS) akan lolos SELURUH gerbang dengan build hijau —
-  persis yang [ADR-0030](docs/adr/0030-aturan-tertulis-mendapat-pemeriksanya.md)
-  larang. Menutupnya berarti keluarga gerbang baru, jadi ia butuh ADR-nya
-  sendiri. Ditambah satu batas yang tidak bisa disiasati: header respons
-  endpoint dibuang pada build statis, jadi `Content-Type` ditentukan ekstensi
-  berkas oleh adapter.
+  `publishedAt` menurun, kartunya bertanggal, artikelnya `NewsArticle`.
+  **Feed-nya sudah mendarat juga** sejak
+  [ADR-0035](docs/adr/0035-feed-atom-per-seksi-berita-dan-gerbang-atas-xml.md) —
+  Atom 1.0 di `/{tab}/feed.xml`, beserta keluarga gerbang yang membaca setiap
+  `.xml` di keluaran, yang justru merupakan alasan feed sempat ditunda. Yang
+  tersisa satu, dan ia ditunda dengan alasan yang diperiksa ke kode:
 
   **Paginasi** — ia mengubah bentuk rute, yang menurut kriteria
   [`docs/adr/README.md`](docs/adr/README.md) sendiri adalah kelas keputusan

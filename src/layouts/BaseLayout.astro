@@ -59,6 +59,19 @@ interface Props {
   /** Menyembunyikan tombol bagikan; dipakai halaman yang tidak layak dibagikan. */
   hideShare?: boolean;
   /**
+   * Tautan penemuan-otomatis ke feed seksi ini, bila seksinya menerbitkan feed
+   * (ADR-0035). Kosong berarti tidak ada tag `rel="alternate"` feed sama sekali
+   * — keadaan bawaan template, yang menyatakan nol seksi berita.
+   *
+   * Ia dikirim sebagai objek yang sudah berisi `href` DAN judulnya, dengan
+   * alasan yang sama seperti `shareCard`: selama keduanya terpisah, keduanya
+   * bisa datang dari seksi yang berbeda. Pembaca feed menampilkan `title` ini
+   * di daftar langganan, jadi judul yang menyebut seksi lain adalah langganan
+   * yang salah nama — dan tidak satu pun gerbang bisa melihatnya, karena kedua
+   * atribut ada dan keduanya masuk akal dibaca sendiri.
+   */
+  feed?: { judul: string; href: string } | undefined;
+  /**
    * Halaman yang tidak boleh masuk indeks (404). Selain memasang `noindex`,
    * canonical dan hreflang ikut dilepas: halaman 404 Bahasa Indonesia disajikan
    * host sebagai `/404.html`, bukan `/404/`, sehingga alternate-nya akan
@@ -84,6 +97,7 @@ const {
   hideShare = false,
   noindex = false,
   langSwitchPath,
+  feed,
 } = Astro.props;
 
 // Nama situs datang dari konfigurasi, bukan dari kode. Versi sebelumnya
@@ -144,6 +158,13 @@ const jsonLd = {
         `defaultLocale` tanpa menyentuh baris ini akan mengarahkan crawler ke
         bahasa yang bukan bahasa sumbernya. */}
     {!noindex && <link rel="alternate" hreflang="x-default" href={getSiteUrl(swapLocalePath(pathname, defaultLocale))} />}
+
+    {/* Penemuan-otomatis feed (ADR-0035). Ia SENGAJA tidak membawa `hreflang`:
+        gerbang resiprositas di `audit:konten` mengumpulkan setiap
+        `rel="alternate"` yang ber-hreflang dan menuntut pasangannya membalas,
+        dan sebuah feed bukan terjemahan halaman ini. Yang membedakan keduanya
+        bagi perayap adalah `type`, bukan `rel`. */}
+    {feed && <link rel="alternate" type="application/atom+xml" title={feed.judul} href={feed.href} />}
 
     {/* Open Graph / Facebook.
 
