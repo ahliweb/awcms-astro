@@ -21,6 +21,7 @@ Yang **tidak** perlu disentuh: `src/lib/`, `src/layouts/`, `src/components/`, `s
 ## 2. Tetapkan kontrak sebelum menulis satu artikel pun
 
 - [ ] `src/config/site.ts` — nama, domain, `siteUrl`, daftar locale, navigasi utama beserta urutannya, dan **`urutanSeksi` untuk setiap tab**.
+- [ ] **Putuskan: situs ini publik saja, atau publik + admin user?** Bawaannya publik saja (`permukaanAdmin` kosong), dan itu jawaban yang benar untuk hampir semua situs. Bila situsmu butuh permukaan tempat penulis atau peninjau mengerjakan bagiannya sendiri, nyatakan di `permukaanAdmin` — prefiks rute DAN kode peran, keduanya sekaligus. Tiga hal yang akan memerahkan `bun test` bila terlewat ([ADR-0034](../adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md)): `owner` di daftar peran (admin utama tetap milik `awcms`), prefiks yang menelan permukaan publik (`/`, prefiks locale, atau slug tab), dan rute `prerender = false` yang prefiksnya tidak dinyatakan. Ingat juga biayanya: sesi, CSRF, cache yang wajib dipisah, dan seluruh postur ADR-0019 kini berlaku di jalur yang membawa kredensial.
 - [ ] **Situs berita?** Nyatakan seksinya, jangan hanya menamainya. Sebuah tab bernama `news` yang tetap `urutanSeksi: "manual"` akan terurut menurut ABJAD, karena setiap artikel yang tidak dinomori bernilai `urutan` 99 dan pemecah serinya judul. Yang menyalakan perilaku berita ([ADR-0033](../adr/0033-seksi-berita-urutan-dari-tanggal-dan-dua-tanggal-yang-terpisah.md)):
 
       ```ts

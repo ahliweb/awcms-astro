@@ -118,6 +118,93 @@ export function urutanSeksiTab(slug: string): UrutanSeksi {
   return tabs.find((tab) => tab.slug === slug)?.urutanSeksi ?? "manual";
 }
 
+/**
+ * The USER-level admin surface this site carries — **empty by default**.
+ *
+ * A site built from this template is a PUBLIC site. It may also carry an admin
+ * surface, and only if it SAYS SO here: an admin surface that appears because
+ * someone added a route is exactly the failure this declaration exists to
+ * prevent — a login form on a domain whose owner never decided to have one, on
+ * a repo whose whole premise is that the container never talks to a database.
+ *
+ * ## Admin for a USER, never the MAIN admin
+ *
+ * That distinction is the whole rule, not a nuance of it. What may live here is
+ * a surface a signed-in USER uses to do their own work on THIS site — write a
+ * post, submit it for review, manage their own profile. What may never live
+ * here is the main admin console: the screens that manage the SYSTEM — modules,
+ * roles, tenants, audit trail, anything platform-scoped — which stay in awcms's
+ * own `/admin/*` (ADR-0034, awcms ADR-0051).
+ *
+ * `peran` therefore lists awcms role codes BELOW the owner. **`owner` is
+ * refused**, and the refusal is mechanical rather than advisory: the owner is
+ * the full-system super manager, and a site that could sign one in here would
+ * be a second door to the whole platform, drawn on a template.
+ *
+ * ## What declaring it does NOT do
+ *
+ * It does not move a single permission. awcms's default-deny RBAC/ABAC still
+ * decides every request, and the surface here is never a looser second path —
+ * the rule ADR-0017 wrote and ADR-0020 kept. Declaring a role here draws a
+ * button; it does not grant anything, and a role that awcms refuses is refused
+ * with the button on screen.
+ *
+ * ## Nothing here may exist ONLY here
+ *
+ * Every feature a user reaches through this surface must ALSO be manageable by
+ * `owner` in awcms's `/admin/*`. It is the mirror of the rule above and it
+ * closes the same door from the other side: the refusal of `owner` stops the
+ * platform being reachable FROM here, and this stops anything here escaping the
+ * place that is supposed to hold full control. A derived site that grew a
+ * capability nobody could see, audit, or switch off would be that second door,
+ * entered backwards.
+ *
+ * So the surface here is a PROJECTION of what awcms already does — the data,
+ * the permission decision, and the audit trail all stay there — and the work
+ * order follows from it: **awcms first, always.** A feature that lands here
+ * before its owner screen exists is a feature nobody can turn off.
+ *
+ * ## The public site stays the PRIMARY function
+ *
+ * Declaring this does not turn the site into an admin app with a public
+ * brochure attached. The public pages remain what this site is for, and the
+ * admin surface sits BESIDE them — which is why `prefiks` may never be `/`,
+ * never a locale prefix, and never a tab slug. Any of those would put a public
+ * section behind a login, and the site would still build green: the pages are
+ * all there, and every one of them now asks the reader to sign in.
+ *
+ * `tests/peran-situs.test.mjs` refuses all three.
+ *
+ * ## Both fields move together
+ *
+ * A half-declaration — routes with no roles, or roles with no routes — is a
+ * misconfiguration rather than a smaller version of the feature, and the same
+ * test refuses it. Routes without roles is an authenticated surface nobody may
+ * enter; roles without routes is a permission grant that leads nowhere, which
+ * reads like a surface that exists.
+ */
+export const permukaanAdmin = {
+  /** Route prefixes allowed to opt out of static rendering, e.g. `["/redaksi"]`. */
+  prefiks: [] as readonly string[],
+  /** awcms role codes allowed in. Never `owner`. */
+  peran: [] as readonly string[]
+};
+
+/**
+ * The one role code that may never appear in `permukaanAdmin.peran`.
+ *
+ * Stated as a constant so the gate and the docblock above cannot drift apart,
+ * and matched case-insensitively because awcms stores it as `role_code`
+ * (`sql/085_awcms_platform_scoped_permissions.sql` and friends) while a site
+ * config is hand-written.
+ */
+export const PERAN_DILARANG = "owner" as const;
+
+/** True when this site is public-only — the template's own state. */
+export function situsPublikSaja(): boolean {
+  return permukaanAdmin.prefiks.length === 0 && permukaanAdmin.peran.length === 0;
+}
+
 /** The PO key carrying a tab's reader-facing name, paired with its fallback. */
 export function tabTitleKey(slug: string): string {
   return `home.tab.${slug}.title`;

@@ -48,6 +48,14 @@ Disengaja. Tampilan terakhir karena ia satu-satunya lapisan yang murah diubah.
 2. **`.env`** dari `.env.example` — `AWCMS_API_URL`, `AWCMS_API_TOKEN`
    (kredensial mesin; ia yang membawa tenant), `AWCMS_TENANT_ID` sebagai
    **asersi** yang menggagalkan build saat tidak cocok.
+   **Situs ini publik saja, kecuali kamu menyatakan sebaliknya.**
+   `permukaanAdmin` kosong adalah bawaannya. Sebuah situs boleh membawa
+   permukaan admin untuk **user** (penulis, peninjau) di SEBELAH halaman
+   publiknya — bukan menggantikannya, jadi prefiksnya tidak boleh `/`, prefiks
+   locale, atau slug tab. `owner` ditolak gerbang: admin utama tetap di
+   `/admin/*` milik `awcms` (ADR-0034). Menyatakannya tidak memindahkan satu
+   izin pun — yang memutuskan tetap `awcms`.
+
 3. **Konten** ditulis di panel admin `awcms`, **bukan** di repo ini. Tidak ada
    `src/content.config.ts` dan tidak ada frontmatter (ADR-0018).
 4. **Ilustrasi** di `src/assets/`: `hero`, `tab/<tab>`, `artikel/<tab>/<slug>`,

@@ -6,6 +6,14 @@ Template keluarga AWCMS untuk **situs publik statis di atas Astro**, dengan
 Pembaca mendapat berkas statis; redaksi mendapat panel admin. Tidak ada yang
 menunggu basis data, dan CMS tidak pernah menghadap internet publik.
 
+**Fungsi utamanya halaman publik, dan itu bawaannya.** Sebuah situs boleh
+menyatakan dirinya juga membawa permukaan admin untuk **user** — penulis,
+peninjau, kontributor — di sebelah halaman publiknya, lewat `permukaanAdmin` di
+[`src/config/site.ts`](src/config/site.ts). Yang tidak pernah tinggal di sini
+adalah **admin utama**: `owner` dan setiap layar yang mengelola sistem tetap di
+`/admin/*` milik `awcms`. Aturannya, beserta gerbangnya, di
+[ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md).
+
 ## Posisi di keluarga AWCMS
 
 | Template          | Mode                   | Basis data | Dipakai untuk                                            | Status                |
