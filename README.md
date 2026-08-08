@@ -259,8 +259,18 @@ membuatnya tidak perlu `node_modules` sama sekali.
   **Feed-nya sudah mendarat juga** sejak
   [ADR-0035](docs/adr/0035-feed-atom-per-seksi-berita-dan-gerbang-atas-xml.md) —
   Atom 1.0 di `/{tab}/feed.xml`, beserta keluarga gerbang yang membaca setiap
-  `.xml` di keluaran, yang justru merupakan alasan feed sempat ditunda. Yang
-  tersisa satu, dan ia ditunda dengan alasan yang diperiksa ke kode:
+  `.xml` di keluaran, yang justru merupakan alasan feed sempat ditunda. Dan sejak
+  [ADR-0036](docs/adr/0036-news-adalah-kosakata-repo-ini-dan-sebuah-tab-yang-memikulnya.md)
+  prefiks **`/news/` adalah kosakata repo ini** — sebuah situs berita menamai
+  tabnya `news`, dan `/blog/` tetap milik `awcms`. Yang tersisa dua, dan keduanya
+  ditunda dengan alasan yang diperiksa ke kode:
+
+  **Arsip kategori/tag di `/news/`** — repo ini belum punya taksonomi sama
+  sekali: tidak ada model kategori maupun tag di
+  [`src/lib/content.ts`](src/lib/content.ts), dan seksi ditentukan oleh tab,
+  bukan oleh term. ADR-0036 §5 menyatakannya terbuka alih-alih menjanjikan
+  paritas dengan empat rute `awcms` yang sedang dipensiunkan di sana.
+
 
   **Paginasi** — ia mengubah bentuk rute, yang menurut kriteria
   [`docs/adr/README.md`](docs/adr/README.md) sendiri adalah kelas keputusan
