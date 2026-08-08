@@ -156,26 +156,48 @@ membayarnya sekali — adapter kontennya ditulis untuk daftar ringkasan, lalu
 ditulis ulang saat `awcms` mengirimkan build feed (ADR-0018), dan versi
 pertamanya menerbitkan situs yang setiap artikelnya kosong dengan build hijau.
 
-## Di mana pekerjaan boleh mendarat (berlaku 31 Juli 2026)
+## Di mana pekerjaan boleh mendarat (berlaku 2 Agustus 2026)
 
-`ahliweb/awcms-mini` dan `ahliweb/awcms-micro` **dibekukan sebagai REFERENSI**.
-Sementara ini keduanya tidak dikembangkan: dibaca boleh, disalin polanya boleh,
-di-port keluar boleh — **mengirim perubahan ke sana tidak.** Pekerjaan mendarat
-langsung di `awcms-astro` dan `awcms`.
+**Keluarga AWCMS adalah dua repo, dan hanya dua** (`awcms` ADR-0055):
 
-Konsekuensi yang paling mudah terlewat, dan alasan aturan ini ditulis di sini
-alih-alih hanya diucapkan: `awcms/AGENTS.md` mensyaratkan **"fitur fondasi
-diuji lebih dulu di awcms-mini, baru di-port"**, dan menyatakan `awcms` "bukan
-tempat merintis fitur fondasi dari nol". Selama pembekuan ini berlaku, jalur itu
-**tidak bisa ditempuh** — tidak ada hulu yang menerima perubahan. Fitur fondasi
-karena itu dirintis langsung di `awcms`, dan syarat yang digantikannya (review
-keamanan untuk modul auth/access, ADR, gate `family:conformance:check`) tetap
-berlaku penuh. Menghapus satu rute bukan menghapus penjagaannya.
+| Repo                  | Peran                                                                                                                            |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `ahliweb/awcms`       | **System of record** — seluruh permukaan otorisasi, seluruh API, dan seluruh layar admin **SISTEM** (`awcms` ADR-0051 + ADR-0070) |
+| `ahliweb/awcms-astro` | **Halaman publik sebagai fungsi utama**, dan **permukaan admin USER** bila situsnya menyatakannya ([ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md), `awcms` ADR-0070) |
 
-Pembekuan ini **sementara**. Saat dicabut, keputusan pertama yang harus diambil
-adalah bagaimana perubahan yang sudah mendarat di `awcms` dipulangkan ke hulu —
-karena setiap fitur fondasi yang dirintis selama pembekuan adalah divergence
-sengaja yang belum tercatat di `awcms-family-compatibility.yaml`.
+Pasangan keduanya adalah **pengganti multiguna** dari ketiga template lama —
+bukan salah satunya sendirian.
+
+**`ahliweb/awcms-mini` dan `ahliweb/awcms-micro` adalah ARSIP.** Bukan standar,
+bukan sumber port, bukan template keluarga. Boleh dibaca sebagai referensi
+sejarah — sama seperti membaca commit lama — tetapi **tidak ada pekerjaan yang
+dijadwalkan "di-port dari" sana**, dan tidak ada yang dijadwalkan "di-port
+keluar" ke sana. Kemampuan yang diinginkan **dibangun** di repo yang memilikinya,
+dengan ADR-nya sendiri.
+
+> **Ini menggantikan pembekuan 31 Juli 2026, dan tiga kalimatnya yang sudah
+> tidak berlaku layak disebut supaya tidak dipakai lagi:**
+>
+> - "di-port keluar boleh" — jalur itu **ditutup** `awcms` ADR-0055 §1, yang
+>   men-supersede `awcms` ADR-0047.
+> - "pembekuan ini **sementara**" — ia tidak sementara. Tidak ada rencana
+>   pencabutan, dan tidak ada repatriasi ke hulu yang menunggu diputuskan.
+> - "`awcms/AGENTS.md` mensyaratkan fitur fondasi diuji dulu di `awcms-mini`" —
+>   aturan mini-first **dicabut**, bukan ditangguhkan (`awcms` ADR-0055 §1).
+>   Fitur fondasi dirintis langsung di `awcms`, dan itu kini jalur yang benar
+>   alih-alih pengecualian.
+>
+> Yang **tetap** berlaku dari aturan lama: menghapus satu rute bukan menghapus
+> penjagaannya. Review keamanan untuk modul auth/access, ADR untuk perubahan
+> standar, dan gate `family:conformance:check` di sana semuanya utuh.
+
+**Selisih antar-repo dicatat, bukan diingat.** Sebuah keputusan di sini yang
+menyimpang dari kontrak `awcms` masuk ke `awcms-family-compatibility.yaml` sana
+sebagai entri ber-`owner` dan ber-`reviewDate` (`awcms` ADR-0068). Repo ini tidak
+bisa menulisnya sendiri — yang bisa dilakukan di sini adalah **menyatakan
+selisihnya di ADR-nya dan mengatakan bahwa ia perlu dicatat di sana**, persis
+yang [ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md)
+§Hubungan lakukan dan yang `awcms` ADR-0070 jawab.
 
 ## Alur kerja wajib
 

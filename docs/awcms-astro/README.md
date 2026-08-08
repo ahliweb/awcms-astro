@@ -16,15 +16,26 @@ Positioning ini ditetapkan ADR-0012 repo rujukan.
 
 | Template | Mode | Basis data | Kapan dipakai | Status |
 | --- | --- | --- | --- | --- |
-| **`awcms-astro`** | Statis murni (SSG) | Tidak ada | Situs informasi publik, profil, dokumentasi, portal panduan. Konten dikelola lewat repo dan review | **Dikembangkan** |
-| `awcms` | Online-first, superset ERP/SaaS | PostgreSQL | Back-office, ERP, multi-tenant | **Dikembangkan** |
-| `awcms-micro` | Online penuh, ramping | PostgreSQL | Website/e-commerce yang butuh konten dinamis sejak awal | Referensi (dibekukan 31 Juli 2026) |
-| `awcms-mini` | Hybrid offline-first | PostgreSQL | Operasional lapangan dengan koneksi tidak dapat diandalkan | Referensi (dibekukan 31 Juli 2026) |
+| **`awcms-astro`** | Statis murni (SSG) | Tidak ada | **Halaman publik** (fungsi utama) + **permukaan admin USER** bila situsnya menyatakannya | **Dikembangkan** |
+| `awcms` | Online-first, superset ERP/SaaS | PostgreSQL | Back-office, ERP, multi-tenant, **seluruh layar admin SISTEM** | **Dikembangkan** |
+| `awcms-micro` | Online penuh, ramping | PostgreSQL | Website/e-commerce yang butuh konten dinamis sejak awal | **Arsip** (2 Agustus 2026) |
+| `awcms-mini` | Hybrid offline-first | PostgreSQL | Operasional lapangan dengan koneksi tidak dapat diandalkan | **Arsip** (2 Agustus 2026) |
 
-Dua baris terbawah masih menyatakan **kapan sebuah template cocok dipakai** —
-itu tidak berubah. Yang berubah adalah ke mana perubahan boleh dikirim: sejak
-31 Juli 2026 hanya `awcms-astro` dan `awcms` yang dikembangkan. Diagram di bawah
-karena itu menggambarkan jalur perpindahan yang tersedia, bukan repo yang aktif.
+**Dua baris teratas adalah seluruh keluarga yang dikembangkan, dan pasangan
+keduanya adalah pengganti multiguna ketiga template lama** — bukan salah satunya
+sendirian. Pembagian layarnya bukan menurut audiens melainkan menurut **apa yang
+dikelola**: admin SISTEM (modul, peran, tenant, jejak audit, apa pun lintas-tenant)
+di `awcms`; permukaan admin USER (menulis artikel, mengajukan tinjauan, profil
+sendiri) boleh di sini bila situsnya menyatakannya lewat `permukaanAdmin`, dengan
+peran `owner` ditolak gerbang ([ADR-0034](../adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md),
+`awcms` ADR-0070).
+
+Dua baris terbawah masih menyatakan **kapan sebuah template dahulu cocok
+dipakai** — itu tetap benar sebagai deskripsi. Yang berubah adalah statusnya:
+sejak 2 Agustus 2026 (`awcms` ADR-0055) keduanya **arsip**, bukan sekadar beku.
+Boleh dibaca sebagai referensi sejarah; tidak ada pekerjaan yang dijadwalkan
+di-port dari sana maupun keluar ke sana. Diagram di bawah karena itu
+menggambarkan jalur perpindahan yang **pernah** tersedia, bukan repo yang aktif.
 
 ```mermaid
 flowchart LR

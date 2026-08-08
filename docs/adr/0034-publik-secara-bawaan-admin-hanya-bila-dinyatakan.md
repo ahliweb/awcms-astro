@@ -212,12 +212,24 @@ boleh di-seed ke role tenant. Selama itu berlaku, permukaan USER di sini tidak
 bisa menjadi jalur yang lebih longgar — ia tunduk pada gerbang yang sama, dan
 `owner` tidak bisa lewat sama sekali.
 
-> **Yang harus dilakukan di sisi sana, dan belum:** selisih ini pantas dicatat
-> sebagai divergence keluarga di `awcms-family-compatibility.yaml` milik `awcms`,
-> mengikuti pola `awcms` ADR-0068 — dengan pemilik dan `reviewDate`, sehingga ia
-> kembali ke meja alih-alih ditemukan ulang sebagai temuan. Repo ini tidak bisa
-> menulisnya sendiri; yang bisa dilakukan di sini adalah tidak berpura-pura
-> selisih itu tidak ada.
+> **Yang harus dilakukan di sisi sana — SUDAH, pada 8 Agustus 2026.** Selisih ini
+> pantas dicatat sebagai divergence keluarga di `awcms-family-compatibility.yaml`
+> milik `awcms`, mengikuti pola `awcms` ADR-0068 — dengan pemilik dan
+> `reviewDate`, sehingga ia kembali ke meja alih-alih ditemukan ulang sebagai
+> temuan. Repo ini tidak bisa menulisnya sendiri; yang bisa dilakukan di sini
+> adalah tidak berpura-pura selisih itu tidak ada.
+>
+> **`awcms` menjawabnya dengan ADR-0070** ("Peran keluarga: `awcms-astro`
+> memikul halaman publik dan permukaan admin USER"), yang **MEMPERSEMPIT**
+> ADR-0051 di sana alih-alih men-supersede-nya: sumbu pembagian layar bergeser
+> dari AUDIENS menjadi **apa yang dikelola**, admin SISTEM tetap di sana, dan
+> ketiga gerbang pengganti ADR-0051 tidak dilonggarkan sedikit pun. Entri
+> `admin-user-surface-in-awcms-astro` masuk manifest keluarganya dengan
+> `reviewDate` 2027-02-04 — dan yang ditinjau pada tanggal itu bukan apakah
+> admin USER boleh di sini, melainkan **apakah batasnya masih di tempat yang
+> sama**. Ketegangan di §ini karena itu berhenti menjadi selisih yang tidak
+> tercatat di mana pun, dan menjadi selisih yang punya berkas, pemilik, dan
+> tanggal.
 
 ## Konsekuensi
 
