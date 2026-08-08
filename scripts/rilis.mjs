@@ -160,16 +160,6 @@ execSync('bun test', { stdio: 'inherit' });
 console.log('Menjalankan bun audit ...');
 execSync('bun audit --audit-level=low', { stdio: 'inherit' });
 
-// ── SBOM rilis (ADR-0031) ────────────────────────────────────────────────────
-// SSDF PS.2 / celah 9 ADR-0028: konsumen hilir menjawab "apakah rilis ini
-// terdampak advisory X" dari tag-nya, tanpa membangun ulang. Ditulis SEBELUM
-// commit rilis sehingga sbom.cdx.json ikut di dalam tag, dan deterministik
-// (tanpa timestamp) sehingga siapa pun bisa memverifikasi SBOM sebuah tag
-// memang diturunkan dari bun.lock di sebelahnya. `tests/sbom.test.mjs` menjaga
-// generatornya benar DAN baris ini tidak hilang diam-diam.
-console.log('Menulis sbom.cdx.json (CycloneDX, dari bun.lock) ...');
-execSync('bun run sbom', { stdio: 'inherit' });
-
 // ── Lipat changeset ke CHANGELOG.md ──────────────────────────────────────────
 // Tanggal lokal, bukan UTC: merilis malam hari WIB akan tercatat mundur sehari
 // bila memakai toISOString().
@@ -222,6 +212,25 @@ for (const f of pending) fs.unlinkSync(`.changesets/${f}`);
 
 pkg.version = next;
 fs.writeFileSync('package.json', `${JSON.stringify(pkg, null, 2)}\n`);
+
+// ── SBOM rilis (ADR-0031) ────────────────────────────────────────────────────
+// SSDF PS.2 / celah 9 ADR-0028: konsumen hilir menjawab "apakah rilis ini
+// terdampak advisory X" dari tag-nya, tanpa membangun ulang. Ditulis SEBELUM
+// commit rilis sehingga sbom.cdx.json ikut di dalam tag, dan deterministik
+// (tanpa timestamp) sehingga siapa pun bisa memverifikasi SBOM sebuah tag
+// memang diturunkan dari bun.lock di sebelahnya. `tests/sbom.test.mjs` menjaga
+// generatornya benar DAN baris ini tidak hilang diam-diam.
+//
+// SESUDAH `package.json` dinaikkan, bukan sebelum — dan urutan itu bukan selera.
+// `sbom.mjs` membaca versi dari `package.json`, jadi menjalankannya lebih dulu
+// menaruh `pkg:npm/awcms-astro@<versi LAMA>` di dalam tag versi BARU: sebuah
+// SBOM yang menamai dirinya versi yang tagnya tidak pernah ada. Cacat itu tidak
+// terlihat sampai perilis benar-benar dijalankan, dan perilis ini tidak pernah
+// dijalankan sekali pun sejak ADR-0031 ditulis. Keduanya tetap sebelum commit
+// rilis, jadi syarat ADR-0031 utuh.
+console.log('Menulis sbom.cdx.json (CycloneDX, dari bun.lock) ...');
+execSync('bun run sbom', { stdio: 'inherit' });
+
 
 // Tidak ada lockfile yang perlu disentuh di sini. `package-lock.json` dulu
 // menyimpan versi proyek di DUA tempat, dan keduanya hanyut diam-diam setiap

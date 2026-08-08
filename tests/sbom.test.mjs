@@ -167,3 +167,49 @@ describe("sbom.cdx.json yang ter-commit, bila sudah lahir", () => {
     assert.equal(isi.metadata.component.name, pkg.name);
   });
 });
+
+describe("SBOM ditulis SESUDAH versi dinaikkan (ADR-0031)", () => {
+  const perilis = readFileSync("scripts/rilis.mjs", "utf8");
+
+  /**
+   * Cacat yang ditutupnya, dan ia sudah benar-benar terjadi sekali.
+   *
+   * `sbom.mjs` membaca versi dari `package.json`. Selama enam minggu perilis
+   * menjalankannya SEBELUM menaikkan versi, sehingga SBOM yang masuk tag
+   * `vX.Y.Z` menamai dirinya versi SEBELUMNYA — versi yang, untuk rilis pertama,
+   * tidak pernah punya tag sama sekali. Konsumen hilir yang menjawab "apakah
+   * rilis ini terdampak advisory X" dari tag-nya (persis tujuan ADR-0031)
+   * mendapat artefak yang tidak cocok dengan tag tempat ia ditemukan.
+   *
+   * Yang membuatnya bertahan selama itu: perilis tidak pernah dijalankan
+   * sekali pun sejak ADR-0031 ditulis, jadi tidak ada satu pun SBOM nyata untuk
+   * dibandingkan dengan tagnya. Gerbang ini menggantikan pengamatan itu.
+   */
+  test("`bun run sbom` dipanggil setelah `pkg.version = next`", () => {
+    const naikVersi = perilis.indexOf("pkg.version = next");
+    const tulisSbom = perilis.indexOf("bun run sbom");
+
+    assert.notEqual(naikVersi, -1, "scripts/rilis.mjs tidak lagi menaikkan pkg.version.");
+    assert.notEqual(tulisSbom, -1, "scripts/rilis.mjs tidak lagi menulis SBOM.");
+    assert.ok(
+      naikVersi < tulisSbom,
+      "`bun run sbom` dipanggil SEBELUM `pkg.version = next`. SBOM akan menamai " +
+        "dirinya versi lama di dalam tag versi baru — persis cacat yang membuat " +
+        "rilis pertama menghasilkan `pkg:npm/awcms-astro@0.1.0` di tag v0.2.0."
+    );
+  });
+
+  test("keduanya tetap SEBELUM commit rilis, syarat ADR-0031 utuh", () => {
+    const tulisSbom = perilis.indexOf("bun run sbom");
+    // Baris yang benar-benar meng-commit, bukan baris yang MENCETAK perintahnya
+    // untuk disalin manusia — keduanya memuat teks `git commit`.
+    const commitRilis = perilis.indexOf("execSync(`git commit");
+
+    assert.notEqual(commitRilis, -1, "scripts/rilis.mjs tidak lagi membuat commit rilis.");
+    assert.ok(
+      tulisSbom < commitRilis,
+      "SBOM ditulis SESUDAH commit rilis, jadi ia tidak ikut di dalam tag — " +
+        "syarat ADR-0031 yang paling dasar."
+    );
+  });
+});
