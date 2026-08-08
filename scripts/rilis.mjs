@@ -76,19 +76,44 @@ if (!apply) {
 }
 
 // ── Verifikasi sebelum menulis apa pun ───────────────────────────────────────
-console.log('\nMenjalankan bun run build ...');
-execSync('bun run build', { stdio: 'inherit' });
-// Setelah build, bukan sebelum: gerbang keluaran audit konten membaca
-// `dist/client`, dan tanpa hasil build ia melewati dirinya sendiri. Menjalankan
-// keduanya dalam urutan ini adalah satu-satunya cara rilis benar-benar
-// memeriksa apa yang akan terbit, bukan hanya sumber gambarnya.
+// Build menuntut sumber konten yang hidup, dan `AWCMS_API_URL` KOSONG adalah
+// keadaan normal untuk repo TEMPLATE ini sendiri — sebuah SITUS yang dibangun
+// darinya selalu mengisinya. `.github/workflows/ci.yml` sudah memutuskan apa
+// yang benar untuk keadaan itu, beserta alasan menolak dua alternatifnya:
+// membiarkan build gagal selamanya membuat merah permanen berhenti dibaca, dan
+// memberi build sebuah awcms tiruan membuat gerbangnya lulus tanpa pernah
+// membuktikan template ini bisa bicara dengan sumber kontennya. Perilis
+// mengikuti keputusan yang sama, bukan keputusan kedua.
 //
-// Tanpa syarat, tidak lagi `if (pkg.scripts?.audit)`: penjagaan itu ada saat
-// gerbangnya belum ditulis, dan sebuah pemeriksaan bersyarat atas keberadaan
-// dirinya sendiri adalah pemeriksaan yang hilang begitu seseorang menamai
-// ulang script-nya.
-console.log('Menjalankan bun run audit:konten ...');
-execSync('bun run audit:konten', { stdio: 'inherit' });
+// Sampai baris ini ada, perilis menuntut sesuatu yang repo template ini secara
+// struktural TIDAK BISA penuhi — CI melewatinya, perilis tidak — dan selisih itu
+// adalah alasan puluhan changeset menumpuk tanpa satu pun rilis.
+const sumberKonten = (process.env.AWCMS_API_URL ?? '').trim();
+
+if (sumberKonten) {
+  console.log('\nAWCMS_API_URL terisi — menjalankan bun run build ...');
+  execSync('bun run build', { stdio: 'inherit' });
+  // Setelah build, bukan sebelum: gerbang keluaran audit konten membaca
+  // `dist/client`, dan tanpa hasil build ia melewati dirinya sendiri.
+  // Menjalankan keduanya dalam urutan ini adalah satu-satunya cara rilis
+  // benar-benar memeriksa apa yang akan terbit, bukan hanya sumber gambarnya.
+  console.log('Menjalankan bun run audit:konten ...');
+  execSync('bun run audit:konten', { stdio: 'inherit' });
+} else {
+  // Dinyatakan keras, dan ikut masuk catatan rilis di bawah. Sebuah gerbang yang
+  // dilewati diam-diam adalah gerbang yang dibaca sebagai gerbang yang lulus —
+  // dan pembacanya adalah orang yang menarik tag ini enam bulan lagi.
+  console.log('\n' + '='.repeat(72));
+  console.log('AWCMS_API_URL KOSONG — build integrasi DILEWATI, bukan LULUS.');
+  console.log('Konsekuensinya, tiga gerbang tidak berjalan pada rilis ini:');
+  console.log('  - bun run build         (template tak punya sumber konten)');
+  console.log('  - bun run audit:konten  (membaca dist/client, yang tak ada)');
+  console.log('  - lapis penyaji + CSP di bun test (keduanya self-skip tanpa dist)');
+  console.log('Ini normal untuk repo TEMPLATE. Sebuah SITUS mengisi AWCMS_API_URL,');
+  console.log('jadi di sana ketiganya selalu berjalan. Fakta ini ditulis ke');
+  console.log('CHANGELOG.md supaya tidak hilang bersama keluaran terminal ini.');
+  console.log('='.repeat(72) + '\n');
+}
 
 // SEBELUM changeset dilipat, dan itu bukan urutan yang bebas dipilih: tautan
 // relatif di `.changesets/` ditulis dari sudut pandang direktori itu, jadi
@@ -135,16 +160,6 @@ execSync('bun test', { stdio: 'inherit' });
 console.log('Menjalankan bun audit ...');
 execSync('bun audit --audit-level=low', { stdio: 'inherit' });
 
-// ── SBOM rilis (ADR-0031) ────────────────────────────────────────────────────
-// SSDF PS.2 / celah 9 ADR-0028: konsumen hilir menjawab "apakah rilis ini
-// terdampak advisory X" dari tag-nya, tanpa membangun ulang. Ditulis SEBELUM
-// commit rilis sehingga sbom.cdx.json ikut di dalam tag, dan deterministik
-// (tanpa timestamp) sehingga siapa pun bisa memverifikasi SBOM sebuah tag
-// memang diturunkan dari bun.lock di sebelahnya. `tests/sbom.test.mjs` menjaga
-// generatornya benar DAN baris ini tidak hilang diam-diam.
-console.log('Menulis sbom.cdx.json (CycloneDX, dari bun.lock) ...');
-execSync('bun run sbom', { stdio: 'inherit' });
-
 // ── Lipat changeset ke CHANGELOG.md ──────────────────────────────────────────
 // Tanggal lokal, bukan UTC: merilis malam hari WIB akan tercatat mundur sehari
 // bila memakai toISOString().
@@ -181,13 +196,41 @@ if (changelog.includes(`\n## [${next}]`)) {
 const marker = '\n## [';
 const ketemu = changelog.indexOf(marker);
 const at = ketemu === -1 ? changelog.length : ketemu;
-const entry = `\n## [${next}] — ${today}\n\n${body || '_Tidak ada changeset; lihat riwayat git._'}\n`;
+// Catatan integrasi masuk ke catatan rilis, bukan hanya ke terminal: yang
+// membaca CHANGELOG enam bulan lagi tidak punya akses ke keluaran perilis.
+const catatanIntegrasi = sumberKonten
+  ? ''
+  : '> **Build integrasi tidak berjalan pada rilis ini.** `AWCMS_API_URL` kosong,\n' +
+    '> yang normal untuk repo template ini sendiri — jadi `bun run build`,\n' +
+    '> `bun run audit:konten`, dan lapis penyaji/CSP di `bun test` DILEWATI, bukan\n' +
+    '> lulus. Sebuah situs yang dibangun dari template ini mengisi variabel itu dan\n' +
+    '> menjalankan ketiganya.\n\n';
+const entry = `\n## [${next}] — ${today}\n\n${catatanIntegrasi}${body || '_Tidak ada changeset; lihat riwayat git._'}\n`;
 fs.writeFileSync('CHANGELOG.md', changelog.slice(0, at) + entry + changelog.slice(at));
 
 for (const f of pending) fs.unlinkSync(`.changesets/${f}`);
 
 pkg.version = next;
 fs.writeFileSync('package.json', `${JSON.stringify(pkg, null, 2)}\n`);
+
+// ── SBOM rilis (ADR-0031) ────────────────────────────────────────────────────
+// SSDF PS.2 / celah 9 ADR-0028: konsumen hilir menjawab "apakah rilis ini
+// terdampak advisory X" dari tag-nya, tanpa membangun ulang. Ditulis SEBELUM
+// commit rilis sehingga sbom.cdx.json ikut di dalam tag, dan deterministik
+// (tanpa timestamp) sehingga siapa pun bisa memverifikasi SBOM sebuah tag
+// memang diturunkan dari bun.lock di sebelahnya. `tests/sbom.test.mjs` menjaga
+// generatornya benar DAN baris ini tidak hilang diam-diam.
+//
+// SESUDAH `package.json` dinaikkan, bukan sebelum — dan urutan itu bukan selera.
+// `sbom.mjs` membaca versi dari `package.json`, jadi menjalankannya lebih dulu
+// menaruh `pkg:npm/awcms-astro@<versi LAMA>` di dalam tag versi BARU: sebuah
+// SBOM yang menamai dirinya versi yang tagnya tidak pernah ada. Cacat itu tidak
+// terlihat sampai perilis benar-benar dijalankan, dan perilis ini tidak pernah
+// dijalankan sekali pun sejak ADR-0031 ditulis. Keduanya tetap sebelum commit
+// rilis, jadi syarat ADR-0031 utuh.
+console.log('Menulis sbom.cdx.json (CycloneDX, dari bun.lock) ...');
+execSync('bun run sbom', { stdio: 'inherit' });
+
 
 // Tidak ada lockfile yang perlu disentuh di sini. `package-lock.json` dulu
 // menyimpan versi proyek di DUA tempat, dan keduanya hanyut diam-diam setiap

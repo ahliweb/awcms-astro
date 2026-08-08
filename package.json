@@ -1,7 +1,7 @@
 {
   "name": "awcms-astro",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": false,
   "description": "AWCMS family template for public static sites on Astro, integrated with ahliweb/awcms as its content backend.",
   "homepage": "https://github.com/ahliweb/awcms-astro",
