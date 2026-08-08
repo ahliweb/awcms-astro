@@ -16,12 +16,21 @@ adalah **admin utama**: `owner` dan setiap layar yang mengelola sistem tetap di
 
 ## Posisi di keluarga AWCMS
 
-| Template          | Mode                   | Basis data | Dipakai untuk                                            | Status                |
-| ----------------- | ---------------------- | ---------- | -------------------------------------------------------- | --------------------- |
-| **`awcms-astro`** | Statis (SSG)           | Tidak ada  | Situs informasi publik, profil, dokumentasi, portal       | **Dikembangkan**      |
-| `awcms`           | Online-first, superset | PostgreSQL | Back-office, ERP, multi-tenant — **backend repo ini**     | **Dikembangkan**      |
-| `awcms-micro`     | Online penuh, ramping  | PostgreSQL | Website/e-commerce yang dinamis sejak awal                | Referensi (dibekukan) |
-| `awcms-mini`      | Hybrid offline-first   | PostgreSQL | Operasional lapangan dengan koneksi tak dapat diandalkan  | Referensi (dibekukan) |
+| Template          | Mode                   | Basis data | Dipakai untuk                                                                   | Status           |
+| ----------------- | ---------------------- | ---------- | --------------------------------------------------------------------------------- | ---------------- |
+| **`awcms-astro`** | Statis (SSG)           | Tidak ada  | **Halaman publik** (fungsi utama) + **permukaan admin USER** bila dinyatakan       | **Dikembangkan** |
+| `awcms`           | Online-first, superset | PostgreSQL | Back-office, ERP, multi-tenant, seluruh layar admin SISTEM — **backend repo ini**  | **Dikembangkan** |
+| `awcms-micro`     | Online penuh, ramping  | PostgreSQL | —                                                                                  | **Arsip**        |
+| `awcms-mini`      | Hybrid offline-first   | PostgreSQL | —                                                                                  | **Arsip**        |
+
+Dua baris pertama adalah seluruh keluarga yang dikembangkan, dan **pasangan
+keduanya** adalah pengganti multiguna dari ketiga template lama — bukan salah
+satunya sendirian. Pembagian layarnya bukan menurut audiens melainkan menurut
+**apa yang dikelola**: admin SISTEM (modul, peran, tenant, jejak audit) di
+`awcms`, permukaan admin USER (menulis artikel, mengajukan tinjauan, profil
+sendiri) boleh di sini bila situsnya menyatakannya lewat `permukaanAdmin`
+([ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md),
+`awcms` ADR-0070). Peran `owner` ditolak gerbang di sini.
 
 Repo ini sempat **ditahan** dari 2 sampai 4 Agustus 2026 sampai fondasi `awcms`
 selesai (ADR-0021). Penahanan itu berakhir karena kedua indikator yang ia tulis
@@ -32,12 +41,13 @@ ini akan ditulis ulang bila `awcms` berubah?** Bila ya, ia butuh instans `awcms`
 untuk dibuktikan sebelum mendarat — dan "endpoint-nya sudah ada" bukan jawaban
 "tidak" ([ADR-0023](docs/adr/0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md)).
 
-Sejak **31 Juli 2026** hanya dua repo yang dikembangkan: repo ini dan `awcms`.
-`awcms-micro` dan `awcms-mini` dibekukan sebagai referensi — boleh dibaca dan
-di-port keluar, tidak menerima perubahan. Konsekuensinya bagi alur kerja ada di
-[`AGENTS.md`](AGENTS.md#di-mana-pekerjaan-boleh-mendarat-berlaku-31-juli-2026);
-yang terpenting, jalur "fitur fondasi diuji di `awcms-mini` dulu" tidak bisa
-ditempuh selama pembekuan berlaku.
+Sejak **2 Agustus 2026** (`awcms` ADR-0055) hanya dua repo yang dikembangkan:
+repo ini dan `awcms`. `awcms-micro` dan `awcms-mini` adalah **arsip** — boleh
+dibaca sebagai referensi sejarah, tetapi tidak ada pekerjaan yang dijadwalkan
+di-port dari sana maupun keluar ke sana, dan jalur "fitur fondasi diuji di
+`awcms-mini` dulu" **dicabut**, bukan ditangguhkan. Konsekuensinya bagi alur
+kerja ada di
+[`AGENTS.md`](AGENTS.md#di-mana-pekerjaan-boleh-mendarat-berlaku-2-agustus-2026).
 
 Repo ini adalah **implementasi rujukan** standar `awcms-astro`. Standarnya
 sendiri lahir dari `web-lalulintasmelayani.com`, situs enam bahasa yang sudah
