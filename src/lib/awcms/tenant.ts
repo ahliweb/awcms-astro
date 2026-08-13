@@ -38,10 +38,28 @@
  * This file does not — and should not — ask awcms to confirm it. awcms
  * `GET /api/v1/auth/session` refuses machine credentials with the same 401 an
  * unknown token gets (ADR-0049, anti-oracle), and an endpoint built to answer
- * it would mean widening this token beyond `["blog_content.posts.read"]`. A
- * leaked build token must not be able to read the platform's posture. The
- * uuid comes from a human reading awcms's `/admin/tenants` screen, where the
- * platform tenant carries a `platform` badge.
+ * it would mean widening this token beyond the two READ keys it is issued with
+ * (`blog_content.posts.read` and `media_library.media.read`). A leaked build
+ * token must not be able to read the platform's posture. The uuid comes from a
+ * human reading awcms's `/admin/tenants` screen, where the platform tenant
+ * carries a `platform` badge.
+ *
+ * ## WHOSE service account it is issued against (awcms ADR-0093)
+ *
+ * The site tenant's own. A machine credential inherits the `principal_kind` of
+ * its service account, and nothing in awcms's issuance path stops that account
+ * from being a DELEGATED tenant user: the service-account picker lists every
+ * tenant user without filtering the kind. The mistake is therefore made by the
+ * site tenant's own admin, never by the agency — a delegated actor cannot write
+ * anything in `identity_access`, issuing included (awcms ADR-0090). Since awcms
+ * ADR-0093 a delegated actor whose
+ * partner is no longer `active` is refused `403 PARTNER_SUSPENDED` at the
+ * chokepoint, per request, while the grant row that conferred the access stays
+ * exactly where it was. Such a build stops on the day the partnership is
+ * suspended, reads precisely like a revoked token, and leaves nothing visibly
+ * missing for whoever goes looking. This file cannot check it — the token
+ * carries the tenant, not the principal kind — so it is written here as the
+ * rule it is.
  *
  * ## What this is NOT
  *
@@ -106,9 +124,12 @@ export function resolveTenant(
     throw new TenantNotConfiguredError(
       "AWCMS_API_TOKEN is not set. Since awcms ADR-0049 this single variable " +
         "carries BOTH the credential and the tenant, so a build has nothing to " +
-        "read and no tenant to read it for. Issue one with " +
-        "POST /api/v1/access/machine-credentials, scoped to " +
-        "blog_content.posts.read and nothing else.",
+        "read and no tenant to read it for. Issue one from awcms's " +
+        "/admin/machine-credentials screen, scoped to exactly TWO permission " +
+        "keys: blog_content.posts.read and media_library.media.read. The " +
+        "second is what the last step of the build reads, so a token without " +
+        "it fails 403 after every page has already rendered. Issue it in the " +
+        "READ class — with no write action at all (awcms ADR-0092).",
     );
   }
 
@@ -119,7 +140,7 @@ export function resolveTenant(
         "token: sessions expire, a password reset revokes every session of " +
         "that identity, and an MFA step-up rotates the token — each of which " +
         "would kill this build at a moment nobody can predict. Issue a machine " +
-        "credential with POST /api/v1/access/machine-credentials instead.",
+        "credential from awcms's /admin/machine-credentials screen instead.",
     );
   }
 

@@ -150,10 +150,13 @@ bukan latar belakang; masing-masing mengubah layar yang akan kamu gambar:
 | **Aktor terdelegasi hanya MEMBACA di `identity_access`** (ADR-0090) | Yang ditolak 403 adalah otoritas access-control — memberi peran, membuat grup, menyetel kebijakan — **bukan** setiap layar terautentikasi. Gerbangnya menyebut satu modul dan hanya satu. Layar "urus profilmu sendiri" hidup di modul `profile_identity` dan tidak terkena. Jangan menulis pesan error untuk penolakan yang tidak akan datang, dan jangan lupa menulisnya untuk yang akan |
 | **Atribusi dua sisi** (ADR-0091) | Tindakan mencatat siapa yang bertindak DAN atas nama siapa. Jangan menampilkannya sebagai satu nama |
 | **Tenant `suspended` atau `inactive` → `403 TENANT_SUSPENDED`**, dan entitlement yang kurang → `403 ENTITLEMENT_REQUIRED` (ADR-0073, ADR-0084) | Keduanya diputuskan **sebelum** izin dicari. Layar yang menerjemahkannya menjadi "sesi kadaluwarsa, silakan login ulang" mengirim orang berputar-putar |
+| **Partner yang di-suspend berhenti menjangkau → `403 PARTNER_SUSPENDED`** (ADR-0093), dan grant yang memberinya akses **tetap ada** | Penolakan ketiga dengan bentuk yang sama, dan yang paling membingungkan untuk didiagnosis: baris grant-nya masih di sana, jadi layar mana pun yang menampilkan "akses yang diberikan" akan menunjukkan akses yang sudah tidak berlaku. Keberlakuan **dihitung**, tidak disimpan — jangan menyalin `status` ke sisi ini dan menyimpulkan darinya |
+| **Seorang subjek data dijawab PER TENANT** (ADR-0094): ekspor dan penghapusan adalah dua otoritas terpisah, dan penghapusan berpasangan maker/checker | **Jangan merancang tombol "lupakan saya di mana-mana"** — ia tidak ada dan sengaja tidak ada, karena tiap tenant adalah pengendali data yang terpisah. Permintaan seorang pengguna dijawab di tenant tempat ia bertanya, dan permukaannya `/admin/subject-requests` di `awcms`, bukan di sini |
 
-Seluruh baris di atas adalah keadaan `awcms` per 13 Agustus 2026. **Periksa
-ulang sebelum membangun** — daftar ini akan menua, dan tidak ada gerbang di repo
-ini yang bisa memberitahumu kapan.
+Seluruh baris di atas adalah keadaan `awcms` per **13 Agustus 2026 malam** —
+dua baris terakhirnya mendarat sesudah sinkronisasi sebelumnya pada hari yang
+sama. **Periksa ulang sebelum membangun**: daftar ini akan menua, dan tidak ada
+gerbang di repo ini yang bisa memberitahumu kapan.
 
 ## 6. Yang tidak pernah dibangun di sini
 
@@ -164,6 +167,14 @@ Bukan karena sulit, melainkan karena ia mengelola SISTEM:
 - **Layar peran, izin, grup pengguna, atau kebijakan ABAC.** Katalognya tinggal
   di sana, dan menggambar tombolnya di sini tidak memindahkan satu izin pun —
   ia hanya membuat orang mengira izinnya berpindah.
+- **Layar permintaan subjek data** — ekspor per-subjek, penghapusan, atau
+  persetujuannya. Ekspor adalah **pengungkapan** paling terkonsentrasi yang
+  sistem ini bisa hasilkan, penghapusan tak bisa dibalik dan berpasangan
+  maker/checker lewat registry SoD, dan keduanya digerbangi izin yang berbeda
+  (`awcms` ADR-0094). Permukaannya sudah ada di sana — `/admin/subject-requests`
+  — dan laporannya sengaja **tidak** punya URL: ia dirender ke halaman dan tidak
+  ke mana-mana lagi. Sebuah proyeksi di sini akan memberinya umur di luar sesi
+  yang diotorisasi dan diaudit.
 - **Apa pun yang berbau "peran partner" atau "scope partner".** Di `awcms`
   sebuah partner adalah **tenant biasa** dan jangkauannya adalah DATA, bukan
   permission (ADR-0089). Kosakata izin keluarga tidak tumbuh untuk itu, dan

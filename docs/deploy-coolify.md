@@ -209,17 +209,25 @@ Artinya kegagalan rebuild **sunyi bagi pembaca**, dan karena itu perlu dilihat
 di tempat lain: dasbor Coolify untuk log build, dan jejak audit awcms untuk
 apakah consumer-nya berhasil mengirim atau masuk dead-letter.
 
-**Dua sebab yang paling mudah salah didiagnosis**, karena keduanya sama-sama
+**Tiga sebab yang paling mudah salah didiagnosis**, karena ketiganya sama-sama
 403 dan sama-sama terbaca seperti token yang dicabut — padahal yang harus
-dikerjakan berlawanan:
+dikerjakan berbeda-beda:
 
 | Yang terlihat di log build | Sebabnya | Diperbaiki di mana |
 | --- | --- | --- |
 | `403 TENANT_SUSPENDED` | Tenant berstatus `suspended` **atau** `inactive` di awcms. Sejak `awcms` ADR-0073 penolakannya mengenai kredensial mesin juga, dan ia diputuskan **sebelum** izin dicari — memperluas scope token tidak mengubah apa pun | **Di `awcms`.** Ini keadaan tenant; tidak ada yang bisa dilakukan dari repo situs |
+| `403 PARTNER_SUSPENDED` | Token build diterbitkan atas akun layanan yang merupakan **tenant user terdelegasi** milik sebuah partner, dan kemitraan itu kini tidak `active` (`awcms` ADR-0093). Penolakannya di chokepoint, per permintaan, dan grant yang memberi akses **tetap ada** — jadi tidak ada yang tampak hilang saat dilihat | **Di `awcms`**, dua jalan: pulihkan partnernya, atau — yang benar untuk situs yang bukan milik agensi — terbitkan ulang token atas akun layanan milik tenant SITUS lewat `/admin/machine-credentials` |
 | `403` pada langkah TERAKHIR build, setelah setiap halaman selesai dirender | Token kurang `media_library.media.read`. `scripts/asal-media.mjs` berjalan paling akhir, jadi kegagalannya terbaca seperti deployment rusak alih-alih izin kurang | **Di repo situs.** Terbitkan ulang token dengan **dua** kunci — lihat `.env.example` |
 
-Keduanya menghasilkan build gagal **total** — nol berkas terbit — sehingga
+Ketiganya menghasilkan build gagal **total** — nol berkas terbit — sehingga
 situs tetap tayang dengan konten lama, dan itulah yang membuatnya sunyi.
+
+**Menerbitkan dan MENCABUT token itu kini sebuah layar**, bukan panggilan API
+yang harus diingat seseorang di bawah tekanan: `/admin/machine-credentials` di
+awcms (sejak 13 Agustus 2026). Plaintext token hanya muncul **sekali**, pada
+respons penerbitannya — memuat ulang halamannya menghanguskan kredensial yang
+lalu harus dicabut. Yang perlu diketahui operator situs: token bocor dicabut di
+sana dalam satu tindakan, dan build berikutnya gagal seketika alih-alih diam.
 
 ## Rollback
 
