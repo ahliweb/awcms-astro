@@ -10,9 +10,16 @@ yang terlihat pembaca.
 Template keluarga AWCMS di Astro dengan
 [`ahliweb/awcms`](https://github.com/ahliweb/awcms) sebagai backend konten dan
 system of record. Situs publiknya **statis**: konten ditarik saat **build**,
-bukan saat request. Repo ini **bukan** rumah layar admin — seluruhnya tinggal di
-`awcms` (§Peran repo ini). Satu-satunya permukaan terautentikasi yang
-direncanakan di sini adalah BFF portal Jualanku (ADR-0014), dan ia belum ada.
+bukan saat request. Yang tinggal seluruhnya di `awcms` adalah layar admin
+**SISTEM** — modul, peran, tenant, jejak audit, apa pun yang lintas-tenant —
+bukan setiap layar yang meminta pembacanya masuk (§Peran repo ini).
+
+Permukaan terautentikasi yang direncanakan di sini karena itu ada **dua pintu**,
+dan keduanya belum ada kodenya: BFF portal Jualanku (ADR-0014), dan permukaan
+admin USER yang sebuah situs nyatakan lewat `permukaanAdmin`
+([ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md)).
+Template ini sendiri menyatakan nol permukaan terautentikasi, dan `bun test`
+yang membuktikannya.
 
 ## Peran repo ini (berlaku 8 Agustus 2026 — ADR-0034)
 
@@ -33,17 +40,25 @@ untuk mengerjakan bagiannya sendiri di situs INI — menulis artikel,
 mengirimnya untuk ditinjau, mengurus profilnya. Yang tidak pernah boleh
 tinggal di sini adalah **admin utama**: layar yang mengelola SISTEM — modul,
 peran, tenant, jejak audit, apa pun yang platform-scoped — dan itu tetap di
-`/admin/*` milik `awcms` (`awcms` ADR-0051).
+`/admin/*` milik `awcms` (`awcms` ADR-0051 **sebagaimana dipersempit** `awcms`
+ADR-0070).
 
 **`owner` karena itu tidak pernah ada di sini.** Ia super-manajer sistem
 lengkap. Yang boleh dinyatakan hanya peran **di bawah** owner.
 
-| Repo          | Peran frontend                                                     | Audiens                                              |
-| ------------- | ------------------------------------------------------------------- | ----------------------------------------------------- |
-| `awcms`       | frontend publik + **admin utama** sistem lengkap, termasuk `owner`   | pengunjung, admin tenant, operator platform, owner     |
-| `awcms-astro` | **situs publik statis**; opsional admin USER di sebelahnya + BFF     | pembaca anonim, pengguna Jualanku, peran user non-owner |
+Kolom kedua tabel di bawah adalah **apa yang dikelola**, bukan siapa yang
+memakainya. Sumbu itu dipilih `awcms` ADR-0070 justru untuk menggantikan sumbu
+audiens, dan bedanya menentukan: seorang `owner` yang menulis artikel sedang
+melakukan pekerjaan USER, sementara seorang penulis yang bisa menyunting daftar
+peran tidak — apa pun nama jabatannya.
 
-Empat aturan yang membuat pengecualian itu bukan lubang:
+| Repo          | Peran frontend                                                     | Apa yang dikelola di sana                                |
+| ------------- | ------------------------------------------------------------------- | --------------------------------------------------------- |
+| `awcms`       | frontend publik + **admin utama** sistem lengkap, termasuk `owner`   | SISTEM: modul, peran, tenant, jejak audit, apa pun lintas-tenant |
+| `awcms-astro` | **halaman publik sebagai fungsi utama**; opsional admin USER di sebelahnya + BFF | isi SATU situs: menulis, mengajukan tinjauan, profil sendiri |
+
+Lima aturan yang membuat pengecualian itu bukan lubang — bernomor dari 0 karena
+yang pertama bukan syarat tambahan melainkan keadaan yang keempat lainnya jaga:
 
 0. **Publik tetap fungsi utamanya.** Menyatakan permukaan admin tidak mengubah
    situs ini menjadi aplikasi admin dengan brosur publik menempel padanya.
@@ -116,10 +131,34 @@ permukaan terautentikasi apa pun, bukan khusus layar admin:
 4. Setiap penambahan di permukaan terautentikasi dinilai sebagai **permukaan
    keamanan**, bukan sekadar halaman.
 
+Butir 4 punya satu akibat yang pantas disebut namanya, karena ia berbentuk
+premis yang gugur alih-alih aturan yang dilanggar: **alasan resmi repo ini tidak
+mengirim `Cross-Origin-Opener-Policy` dan `Cross-Origin-Resource-Policy` adalah
+"tidak punya sesi untuk dipagari"** (`awcms` ADR-0069, dicatat sebagai
+divergence keluarga ber-`reviewDate` 2027-02-04). Situs pertama yang menyalakan
+`permukaanAdmin` membatalkan premis itu, dan bersamanya alasan penolakan SRI —
+"tidak ada sumber daya lintas-origin". Keduanya wajib ditinjau ulang di
+[`server/penyaji.mjs`](server/penyaji.mjs) sebelum permukaan itu tayang. Repo
+template ini tidak bisa menggerbanginya: ia tidak punya situs yang menyalakannya,
+dan menuliskannya sebagai "digerbangi" akan menjadi klaim yang tidak bisa
+dipertanggungjawabkan.
+
 Dua kontrak yang dulu memblokir permukaan itu — header tenant dan kredensial
 mesin yang bisa dipegang BFF — **sudah mendarat** di `awcms` (ADR-0049 dan
 ADR-0050, 1 Agustus 2026). Yang belum: implementasinya di sini, dengan
 prasyarat di [`04-kesiapan.md`](docs/awcms-astro/jualanku/04-kesiapan.md).
+
+**Dan kontrak sesi itu bergerak lagi sejak 12 Agustus 2026, jadi jangan
+membangun di atas ingatan.** Perubahan `awcms` yang menentukan bentuk permukaan
+mana pun yang meminta orang masuk: satu manusia kini punya SATU kredensial
+untuk banyak tenant dan penghitung lockout-nya **global** (ADR-0085, ADR-0086),
+faktor MFA pindah ke principal sehingga reset oleh admin tenant lain ikut
+mematikan authenticator pengguna situs ini (ADR-0087), dan login tanpa tenant
+terpilih dijawab `409` beserta token seleksi berumur pendek alih-alih sesi
+(ADR-0088). Dua endpoint pemilihan/perpindahan tenant itu **di luar** kontrak
+konsumen beku `awcms` ADR-0065 — memanggilnya berarti menyepakati kontraknya
+lebih dulu di sana, bukan menambahkannya di sini. Sesi hasil serah-terima
+(`handoff`) — persis mekanisme BFF ADR-0050 — **dilarang** berpindah tenant.
 
 ## Satu uji sebelum memulai apa pun (berlaku 4 Agustus 2026 — ADR-0027)
 
@@ -163,10 +202,32 @@ pertamanya menerbitkan situs yang setiap artikelnya kosong dengan build hijau.
 | Repo                  | Peran                                                                                                                            |
 | --------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | `ahliweb/awcms`       | **System of record** — seluruh permukaan otorisasi, seluruh API, dan seluruh layar admin **SISTEM** (`awcms` ADR-0051 + ADR-0070) |
-| `ahliweb/awcms-astro` | **Halaman publik sebagai fungsi utama**, dan **permukaan admin USER** bila situsnya menyatakannya ([ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md), `awcms` ADR-0070) |
+| `ahliweb/awcms-astro` | **Halaman publik sebagai fungsi utama**, dan **permukaan admin USER** bila situsnya menyatakannya ([ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md), `awcms` ADR-0070); tetap experience layer + BFF, dan **tak pernah sumber kebenaran** |
 
 Pasangan keduanya adalah **pengganti multiguna** dari ketiga template lama —
 bukan salah satunya sendirian.
+
+**Kosakata URL publik dibelah, satu keluarga rute per repo** — dan pembelahan
+itu berlaku dua arah, jadi ia juga aturan tentang apa yang TIDAK boleh dibangun
+di sini:
+
+| Kosakata   | Repo yang melayani | Bentuknya di sana                                                                       |
+| ---------- | ------------------ | ----------------------------------------------------------------------------------------- |
+| `/blog/**` | `ahliweb/awcms`    | `/blog/{tenantCode}/**`, path-scoped dengan kode tenant di dalam path                     |
+| `/news/**` | repo ini           | sebuah **tab** ber-slug `news` yang menyatakan `urutanSeksi: "terbaru"` — bukan keluarga rute baru |
+
+Jangan membangun `/blog/**` di sini, dan jangan mengandaikan `awcms` masih
+melayani `/news/**`: keempat rutenya **dihapus** di sana pada 8 Agustus 2026 dan
+kini 301 ke `/blog/{tenantCode}/**` — **kecuali** untuk tenant ber-`legacyTenantRouteEnabled: false`, yang sudah mematikan seluruh permukaan konten publiknya dan karena itu tetap dijawab 404 alih-alih diberi 301 menuju 404 yang pasti (`awcms` ADR-0071 §4 butir 3)
+([ADR-0036](docs/adr/0036-news-adalah-kosakata-repo-ini-dan-sebuah-tab-yang-memikulnya.md),
+`awcms` ADR-0071 yang men-supersede `awcms` ADR-0059). Yang dibelah adalah
+**URL**, bukan kepemilikan konten: modulnya sama, layar pengelolanya sama, dan
+repo ini tetap tidak menyimpan satu pun artikel.
+
+`news` di sini **bukan** kata yang dipesan — ia slug tab yang dipilih situs, dan
+template ini tidak membawanya. Gerbangnya
+[`tests/kosakata-news.test.mjs`](tests/kosakata-news.test.mjs): sebuah tab
+ber-slug `news` yang dibiarkan `urutanSeksi: "manual"` memerahkan `bun test`.
 
 **`ahliweb/awcms-mini` dan `ahliweb/awcms-micro` adalah ARSIP.** Bukan standar,
 bukan sumber port, bukan template keluarga. Boleh dibaca sebagai referensi
@@ -260,6 +321,25 @@ yang [ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.m
   yang berbeda. Yang dijaga assertion itu bukan "build menebak tenant" —
   melainkan token tenant lain yang terpasang di situs ini, yang tampak persis
   seperti build yang sehat.
+- **Satu penolakan awcms diputuskan SEBELUM izin dicari, jadi memperluas scope
+  token tidak menolong sama sekali.** `403 TENANT_SUSPENDED` (dengan
+  `matchedPolicy: "tenant_suspended"`) mengenai tenant ber-status `suspended`
+  **maupun** `inactive`, dan sejak `awcms` ADR-0073 ia berlaku untuk kredensial
+  mesin juga — bukan hanya sesi manusia. Ia menggagalkan build **total** — nol
+  berkas terbit — dan terbaca persis seperti token yang dicabut. Bedanya
+  menentukan apa yang harus dikerjakan: token dicabut diperbaiki dengan
+  menerbitkan token baru, sementara penolakan ini tidak bisa diperbaiki dari
+  repo ini sama sekali. `403 ENTITLEMENT_REQUIRED` (`awcms` ADR-0084) punya
+  bentuk yang sama tetapi **belum bisa mengenai build ini**: entitlement
+  diputuskan per modul, dan tidak satu pun modul di balik ketiga permukaan yang
+  dipanggil build mendeklarasikannya.
+- **Permukaan KEEMPAT keluar dari kontrak sampai sisi awcms menyepakatinya.**
+  `awcms` ADR-0065 membekukan bentuk respons permukaan yang repo ini panggil,
+  dan daftarnya diturunkan dengan mem-grep repo ini — bukan dari ingatan. Karena
+  itu menambah satu panggilan `/api/v1/...` di sini memerahkan
+  [`tests/kontrak-awcms.test.mjs`](tests/kontrak-awcms.test.mjs), dan itu
+  bekerja sebagaimana mestinya: permukaan yang belum dibekukan di sana adalah
+  permukaan yang bentuknya boleh berubah tanpa CI mana pun berbunyi.
 
 ### Keamanan
 
@@ -519,13 +599,35 @@ aturan yang jelas-jelas manual.
 Aturan di dokumen ini sebagian besar memetakan ke kontrol yang sudah punya nama
 di luar sana. Petanya — beserta **daftar celah yang jujur** — ada di
 [`docs/awcms-astro/standar-performa-dan-keamanan.md`](docs/awcms-astro/standar-performa-dan-keamanan.md).
-Tiga hal yang perlu diketahui sebelum menyentuh header, cache, atau anggaran
+Empat hal yang perlu diketahui sebelum menyentuh header, cache, atau anggaran
 performa:
 
-- **Edisi OWASP disamakan dengan `awcms`** (Top 10 2021, ASVS 4.0.3). Naik edisi
-  adalah keputusan tingkat keluarga, bukan tingkat repo — dua matriks pada dua
-  edisi berbeda tidak bisa dijumlahkan, dan selisih penomorannya akan dibaca
+- **Edisi standar disamakan dengan `awcms`**, dan bukan hanya OWASP: Top 10
+  2021, ASVS 4.0.3, API Security 2023, ISO/IEC 27001:2022, NIST SSDF v1.1 —
+  **kelimanya** dipin `awcms` ADR-0068 §A dengan tanggal tinjau bersama
+  2027-02-04. ISO/IEC 25010:2023 dipakai kedua repo sebagai model mutu produk
+  tetapi **tidak** termasuk pin itu; ia tidak punya tanggal tinjau keluarga, dan
+  menagihkannya ke `awcms` berarti menagih janji yang tidak pernah dibuat. Naik
+  edisi adalah keputusan tingkat keluarga, bukan tingkat repo — dua matriks pada
+  dua edisi berbeda tidak bisa dijumlahkan, dan selisih penomorannya akan dibaca
   sebagai celah kontrol.
+- **Selisih repo ini dari `awcms` dicatat di manifest keluarganya, dan jumlahnya
+  LIMA** — bukan dua, dan bukan hanya yang lahir di sini. Ketiga yang sudah
+  dikenal: HSTS tanpa `includeSubDomains` (ADR-0029 di sini), COOP/CORP yang
+  tidak dikirim (`awcms` ADR-0069), dan permukaan admin USER (`awcms` ADR-0070).
+  **Dua yang belum pernah disebut di repo ini.** Yang pertama
+  `owasp-edition-pin-owned-here`: pin edisi OWASP dipegang `awcms` justru karena
+  ADR-0028 di sini menyatakan secara tertulis bahwa repo ini mengikuti edisi
+  sana, sehingga naik edisi menuntut ADR di sana — bukan suntingan tabel di
+  sini. Yang kedua `astro-files-not-type-checked` —
+  `awcms` kehilangan type-check berkas `.astro`-nya karena berada di TypeScript
+  7.x, dan catatan divergence-nya menyandarkan diri secara eksplisit pada
+  kenyataan bahwa repo ini masih di `^6.0.3`. Itu bukan trivia versi: ia
+  menjadikan pin TypeScript di sini syarat hidupnya gerbang `astro check`, dan
+  karena itu ia kini punya ADR-nya sendiri
+  ([ADR-0037](docs/adr/0037-pin-typescript-6-adalah-syarat-hidupnya-gerbang-astro-check.md)).
+  Kelimanya ber-`reviewDate` 2027-02-04, satu kohort, supaya seluruh postur
+  keluarga ditinjau dalam satu duduk.
 - **Target performa adalah Core Web Vitals pada p75**: LCP ≤ 2,5 detik, INP ≤ 200
   milidetik, CLS ≤ 0,1. INP menggantikan FID sejak Maret 2024 — dokumen yang
   masih menyebut FID sudah basi, bukan sedang memakai alternatif. **Sejak
@@ -535,9 +637,11 @@ performa:
   TBT ≤ 200 ms dipakai sebagai proksinya — dan p75 kunjungan NYATA tetap tidak
   diukur karena RUM ditolak; keduanya ditulis apa adanya alih-alih dibiarkan
   tampak terjaga. Jangan menulis "memenuhi Core Web Vitals" dari hasil lab.
-- **Kesembilan celah kini tertutup** (enam pada 4 Agustus 2026; SBOM, analisis
-  statik, dan Core Web Vitals lab menyusul 5 Agustus — ADR-0031/ADR-0032),
-  **dan baris yang tertutup TETAP di tabel.**
+- **Kesepuluh celah kini tertutup** (enam pada 4 Agustus 2026; SBOM, analisis
+  statik, dan Core Web Vitals lab menyusul 5 Agustus — ADR-0031/ADR-0032; yang
+  kesepuluh ditemukan dan ditutup 6 Agustus 2026, dan ia bukan kontrol yang
+  hilang melainkan dua pemeriksa yang tidak pernah dieksekusi di repo tempat
+  keduanya ditulis), **dan baris yang tertutup TETAP di tabel.**
   Tiap satunya menyebut pemeriksanya, dan baris yang tertutup TETAP di tabel:
   dihapus, ia akan diusulkan lagi sebagai temuan baru, dan pemeriksanya akan
   dilonggarkan oleh orang yang tidak tahu kenapa ia ada. Menutup sebuah celah
@@ -587,7 +691,21 @@ performa:
 - [ ] Keluaran build tidak membawa gaya maupun skrip di dalam HTML-nya.
       `bun test` setelah `bun run build` menjalankan `tests/keluaran-csp.test.mjs`
       atas `dist/client/` — tanpa hasil build, gerbang itu MELEWATI dirinya dan
-      mengatakannya. Melihat "59 pass" tanpa membaca barisnya bukan pembuktian.
+      mengatakannya. Membaca ringkasan `N pass` tanpa membaca baris yang
+      dilewati bukan pembuktian; angkanya hijau justru karena gerbangnya tidak
+      jalan.
+- [ ] Menyentuh `src/config/site.ts` berarti membaca ulang dua gerbang yang
+      menjaga PERAN repo ini, karena keduanya menilai konfigurasi dan bukan
+      prosa: `tests/peran-situs.test.mjs` (ADR-0034 — `owner` ditolak, prefiks
+      yang menelan permukaan publik ditolak, deklarasi separuh ditolak, dan
+      setiap rute `prerender = false` wajib berada di bawah prefiks yang
+      dinyatakan) dan `tests/kosakata-news.test.mjs` (ADR-0036 — tab ber-slug
+      `news` wajib `urutanSeksi: "terbaru"`).
+- [ ] Menambah panggilan ke `awcms` berarti menyepakati kontraknya di SANA lebih
+      dulu. `tests/kontrak-awcms.test.mjs` mengeraskan permukaan yang dipanggil
+      build menjadi tepat tiga dan menuntutnya sama dua arah dengan tabel
+      bertanda di skill integrasi; permukaan keempat memerahkannya sampai
+      `awcms` membekukan bentuk responsnya (`awcms` ADR-0065).
 - [ ] Variabel env baru terdokumentasi di `.env.example`, termasuk variabel
       RUNTIME yang dibaca `server/penyaji.mjs`.
 - [ ] Dokumen yang menjelaskan perilaku yang berubah ikut diperbarui.
@@ -606,6 +724,14 @@ memutuskan pola **static-by-default dengan rute on-demand** — adapter dipasang
 landing), serta `/_portal-api/**` yang menyatakan `export const prerender = false`.
 Rancangannya di [`docs/awcms-astro/jualanku/`](docs/awcms-astro/jualanku/README.md).
 
+**Dan sejak ADR-0034 ada KELAS KEDUA rute on-demand yang sah**, dengan bentuk
+yang sama persis: prefiks yang dinyatakan situs di `permukaanAdmin.prefiks`.
+`tests/peran-situs.test.mjs` menerima keduanya dan **hanya** keduanya — sebuah
+rute `prerender = false` yang prefiksnya tidak ada di salah satu dari dua daftar
+itu memerahkan `bun test`. Itu yang membuat "publik secara bawaan" menjadi
+keadaan yang ditegakkan alih-alih kebiasaan: menambahkan satu berkas rute
+terautentikasi tidak bisa lagi terjadi tanpa seseorang menuliskannya.
+
 Tiga hal yang perlu dibaca sebelum menyentuh area itu:
 
 - **Belum ada implementasinya.** Rute portal dan `_portal-api` belum ada, dan
@@ -618,5 +744,8 @@ Tiga hal yang perlu dibaca sebelum menyentuh area itu:
 - **BFF tidak memutuskan apa pun yang punya konsekuensi bisnis.** Kepemilikan,
   entitlement, dan transisi status diputuskan `awcms`. Aturan yang hanya hidup di
   repo ini adalah aturan yang tidak ada.
-- **Aksesibilitas permukaan Jualanku bertarget WCAG 2.2 AA**, naik dari 2.1 AA di
-  atas. Aturan lain di dokumen ini tetap berlaku penuh.
+- **Setiap permukaan TERAUTENTIKASI bertarget WCAG 2.2 AA**, naik dari 2.1 AA di
+  atas — BFF Jualanku (ADR-0014) maupun permukaan admin USER yang sebuah situs
+  nyatakan lewat `permukaanAdmin` (ADR-0034). Yang menentukan bukan nama
+  permukaannya melainkan adanya kontrol, formulir, dan fokus yang berpindah.
+  Aturan lain di dokumen ini tetap berlaku penuh.

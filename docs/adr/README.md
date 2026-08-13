@@ -22,7 +22,7 @@ menyesuaikan gaya, menambah tes.
 | [0017](0017-peran-admin-owner-internal.md) | Repo ini memikul halaman admin OWNER/INTERNAL | Digantikan [ADR-0020](0020-layar-admin-kembali-ke-awcms.md) |
 | [0018](0018-kontrak-build-token-mesin-dan-traversal-konten.md) | Kontrak build terhadap `awcms`: tenant dari token mesin, traversal cursor, gerbang terjemahan | Diterima |
 | [0019](0019-csp-ketat-dikirim-penyaji.md) | CSP ketat dikirim penyaji; skrip tidak lagi tinggal di dalam HTML | Diterima |
-| [0020](0020-layar-admin-kembali-ke-awcms.md) | Layar admin kembali ke `awcms`; repo ini murni publik + BFF | Diterima |
+| [0020](0020-layar-admin-kembali-ke-awcms.md) | Layar admin kembali ke `awcms`; repo ini murni publik + BFF — **dipersempit** [ADR-0034](0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md) menjadi layar admin SISTEM saja | Diterima |
 | [0021](0021-tahan-pengembangan-menunggu-fondasi-awcms.md) | Pengembangan repo ini ditahan sampai fondasi `awcms` selesai | Digantikan [ADR-0027](0027-penahanan-adr-0021-selesai.md) |
 | [0022](0022-situs-menerbitkan-tenant-default-awcms.md) | Situs ini menerbitkan tenant DEFAULT (owner) `awcms` | Diterima |
 | [0023](0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md) | Penahanan ADR-0021 dipersempit: pekerjaan yang tidak membutuhkan `awcms` boleh mendarat | Diterima |
@@ -39,6 +39,7 @@ menyesuaikan gaya, menambah tes.
 | [0034](0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md) | Publik sebagai fungsi utama; admin USER hanya bila dinyatakan, admin utama (`owner`) tidak pernah | Diterima |
 | [0035](0035-feed-atom-per-seksi-berita-dan-gerbang-atas-xml.md) | Feed Atom per seksi berita, dan gerbang atas SETIAP `.xml` di keluaran | Diterima |
 | [0036](0036-news-adalah-kosakata-repo-ini-dan-sebuah-tab-yang-memikulnya.md) | `/news/` adalah kosakata URL repo ini dan `/blog/` kosakata `awcms`; bentuknya sebuah tab bernama `news` ber-`urutanSeksi: "terbaru"`, bukan keluarga rute baru | Diterima |
+| [0037](0037-pin-typescript-6-adalah-syarat-hidupnya-gerbang-astro-check.md) | Pin TypeScript 6.x adalah syarat hidupnya gerbang `astro check`; menaikkannya keputusan tingkat keluarga, dan gerbangnya mendarat bersamanya | Diterima |
 
 > **Kenapa penomoran mulai dari 0014.** ADR di repo ini melanjutkan urutan repo
 > rujukan yang identitasnya dilepas di [#11](https://github.com/ahliweb/awcms-astro/pull/11);

@@ -47,7 +47,7 @@ flowchart TB
 | `src/content.config.ts` | Diganti kontrak API + validasi sisi server |
 | `src/content/*.md` | Migrasi sekali jalan ke `awcms_blog_posts` |
 | `src/data/*.ts` | Menjadi taxonomy/term atau tetap statis — lihat di bawah |
-| `astro.config.mjs` | `output: 'static'` **tetap**; adapter server dipasang dan hanya rute privat memakai `prerender = false` (ADR-0014 repo rujukan). Runtime sudah Bun sejak ADR-0015 repo rujukan |
+| `astro.config.mjs` | `output: 'static'` **tetap**; adapter server dipasang dan hanya rute yang prefiksnya DINYATAKAN memakai `prerender = false` ([ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md) untuk BFF Jualanku, [ADR-0034](../adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md) untuk `permukaanAdmin`). "Privat" saja bukan lagi syarat yang cukup: `tests/peran-situs.test.mjs` menolak rute on-demand yang prefiksnya tidak ada di salah satu dari dua daftar itu. Runtime sudah Bun sejak [ADR-0015](../adr/0015-runtime-bun-menutup-divergence-keluarga.md) |
 
 ## Pemetaan model data
 
@@ -192,6 +192,16 @@ Aturan yang wajib dipertahankan adapter API:
 
 awcms memakai envelope `{ success, data }` / `{ success: false, error }`. Tenant **selalu** diresolusi sisi server dari sesi — tidak pernah dari nilai yang dikirim klien. Build statis menarik data lewat kredensial build-time yang hanya boleh membaca, tidak pernah lewat kunci yang tertanam di keluaran.
 
+"Hanya boleh membaca" adalah sifat **token yang kita terbitkan**, bukan lagi sifat kelasnya: sejak `awcms` ADR-0092 (13 Agustus 2026) kredensial mesin boleh menulis, dengan plafon aksi di kode, keterikatan CIDR, dan umur maksimum 30 hari. Token build repo ini diterbitkan tanpa satu pun aksi tulis, dan menjaganya begitu kini keputusan yang harus dipertahankan.
+
+### Satu penolakan yang tidak bisa diperbaiki dari sini
+
+`403 TENANT_SUSPENDED` (`matchedPolicy: "tenant_suspended"`) mengenai tenant berstatus `suspended` **atau** `inactive`, dan sejak `awcms` ADR-0073 ia berlaku untuk kredensial mesin — bukan hanya sesi manusia. Ia diputuskan **sebelum** izin dicari, sehingga memperluas scope token tidak mengubah apa pun; build gagal total, nol berkas terbit.
+
+Bedanya dengan token cacat menentukan apa yang harus dikerjakan: token cacat diperbaiki dengan menerbitkan token baru, sedangkan penolakan ini adalah keadaan **tenant** dan hanya bisa diselesaikan di `awcms`.
+
+**`403 ENTITLEMENT_REQUIRED` belum bisa mengenai build ini**, dan itu perlu ditulis supaya tidak ditebak dua arah. Entitlement diputuskan per MODUL (`awcms` ADR-0084), dan satu-satunya modul `awcms` yang mendeklarasikan `requiresEntitlement` hari ini adalah `tenant_domain` — untuk `custom_domain`, yang ada di paket DEFAULT sehingga tidak menolak siapa pun. Build ini hanya memanggil `blog_content` dan `media_library`. Ia disebut di sini karena **bentuk** penolakannya sama persis — di atas pembacaan grant, tak tersentuh scope token — bukan karena ia sudah bisa muncul di log.
+
 ## Urutan migrasi
 
 ```mermaid
@@ -229,3 +239,20 @@ Perpindahan sumber data tidak memindahkan tanggung jawab presentasi:
 | `site-search` | Pencarian — hanya bila jumlah artikel sudah melampaui apa yang bisa dijelajahi navigasi |
 | `theming` | Preferensi tema per tenant, menyambung rantai theming di [design system](ui-ux-design-system.md#theming) |
 | `comments`, `form-drafts` | **Tidak dipakai** — bertentangan dengan larangan mengumpulkan data pembaca. Aktifkan hanya lewat ADR baru |
+
+## Layar `/admin/*` awcms — dan kenapa daftarnya ada di sini
+
+[ADR-0034](../adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md) §4 mewajibkan setiap fitur di permukaan admin USER sebuah situs **juga** bisa dikelola `owner` lewat `/admin/*` milik `awcms`, dan menyatakan terus terang bahwa aturan itu **tidak bisa diverifikasi mesin dari repo ini**: katalog permission dan registry layarnya tinggal di sana. Yang bisa dilakukan di sini adalah menyediakan bahannya, supaya penilaiannya tidak dilakukan dari ingatan.
+
+Per 13 Agustus 2026 `awcms` menyajikan **38 berkas layar `/admin/*` tingkat atas** — salah satunya `index.astro`, yaitu `/admin` sendiri — dari **40 berkas layar** seluruhnya; dua di antaranya bersarang (`modules/[moduleKey].astro` dan `tenant/domains.astro`). Yang **relevan** sebagai pengelola sebuah permukaan admin USER, artinya fitur di baliknya sudah bisa dimatikan `owner` hari ini:
+
+| Layar `awcms` | Menjadi pengelola bagi |
+| --- | --- |
+| `/admin/blog`, `/admin/blog-pages` | menulis dan menyunting artikel/halaman |
+| `/admin/blog-taxonomy`, `/admin/blog-presentation`, `/admin/blog-settings` | kategori/tag, tampilan seksi, setelan penerbitan |
+| `/admin/approvals` | mengajukan tinjauan dan menyetujuinya |
+| `/admin/media` | unggahan gambar dan kartu share |
+| `/admin/profiles`, `/admin/registrations`, `/admin/invitations` | profil pengguna, pendaftaran, undangan |
+| `/admin/comments` | komentar — hanya bila sebuah situs mengaktifkannya lewat ADR-nya sendiri |
+
+Sisanya adalah admin **SISTEM** dan **tidak boleh punya proyeksi di sini**, seberapa pun mudahnya digambar: `/admin/modules`, `/admin/roles`, `/admin/users`, `/admin/user-groups`, `/admin/abac-policies`, `/admin/tenants`, `/admin/audit-trail`, `/admin/domain-events`, `/admin/security`, `/admin/machine-credentials`, `/admin/partners`, `/admin/partner-registry`, `/admin/idn-regions`, `/admin/data-lifecycle`, `/admin/sync`, `/admin/tenant/domains`, dan seluruh layar platform lain. Ukurannya bukan siapa yang memakainya melainkan apa yang diubahnya — bila layarnya mengubah sesuatu **di luar isi satu situs**, ia milik `awcms` (`awcms` ADR-0070 §1).

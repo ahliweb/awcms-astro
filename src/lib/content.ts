@@ -425,8 +425,9 @@ async function fetchPublishedPosts(): Promise<PostTerbit[]> {
 /**
  * Whether awcms would serve this post publicly today — the `published_at` half
  * of its own public predicate (`published_at IS NOT NULL AND published_at <=
- * now()`, `public-blog-directory.ts`), mirrored here so a static site and the
- * CMS's own `/news/**` routes never disagree about what is live.
+ * now()`, `public-blog-directory.ts`), mirrored here so a static site and
+ * awcms's own public `/blog/{tenantCode}/**` routes never disagree about what is
+ * live.
  *
  * An UNPARSEABLE date throws instead of returning `false`. The difference
  * matters: `false` means "not published yet", which is a normal state that

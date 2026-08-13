@@ -21,7 +21,7 @@ bun run audit:graf      # artefak graphify-out/     — melewati diri bila direk
 | Gerbang | Kelas cacat |
 | --- | --- |
 | `check` | Tipe, props, impor putus, lockfile milik proyek lain |
-| `bun test` | Paritas katalog PO, kontrak `awcms` (traversal, media, kartu), **permukaan yang dipanggil build**, header + cache penyaji, CSP atas keluaran, **versi toolchain** |
+| `bun test` | 19 berkas. Paritas katalog PO; kontrak `awcms` (traversal, media, kartu) dan **permukaan yang dipanggil build**; **PERAN repo** (`tests/peran-situs.test.mjs`, ADR-0034); **kosakata `news`** (`tests/kosakata-news.test.mjs`, ADR-0036); feed Atom (`tests/feed.test.mjs`, ADR-0035); dua tanggal terpisah (`tests/tanggal.test.mjs`, ADR-0033); header + cache penyaji; CSP atas keluaran; **versi toolchain** termasuk pin TypeScript (ADR-0037); SBOM; CWV lab; analisis statik; schema; seni lokal; renderer blok; rilis terkondisi; plus tiga meta-tes yang menjalankan ulang ketiga skrip audit atas repo ini DAN atas pohon fixture |
 | `audit:konten` | Rasio gambar terhadap `--ratio-visual`, format dibaca dari ISI berkas, judul/canonical/hreflang, aset yang dijanjikan metadata, tautan mati, sitemap, **setiap `.xml` di keluaran** (feed Atom sah, atau pelanggaran), nama key bocor ke layar |
 | `audit:dokumen` | Tautan markdown mati, indeks ADR lengkap dua arah, status ADR setuju dengan berkasnya, daftar permukaan kilau, jalur berkas yang disebut dokumen, **kutipan `ADR-NNNN` yang resolve ke berkasnya** |
 | `audit:graf` | Artefak `graphify-out/` terlacak di luar keempat keluaran bersama, laporan yang tidak sepakat dengan `graph.json`, **nama komunitas yang tidak dipilih** (nama berkas, placeholder, kembar, atau berbeda antar-artefak), korpus yang mengabaikan `.graphifyignore` |
@@ -41,9 +41,10 @@ bun run audit:graf      # artefak graphify-out/     — melewati diri bila direk
 - **URL eksternal dan anchor** di `audit:dokumen` — yang pertama butuh jaringan
   (gerbang yang merah karena situs pihak ketiga mati akan diabaikan orang), yang
   kedua berarti menebak slugifikasi heading GitHub.
-- **PROSA.** Empat dari lima gerbang `audit:dokumen` membaca STRUKTUR — tautan,
-  tabel indeks, blok bertanda, span kode. Sebuah kalimat biasa yang menyatakan
-  sesuatu yang tidak ada lolos seluruhnya, dan itu bukan hipotesis: gerbang
+- **PROSA.** Keenam gerbang `audit:dokumen` membaca STRUKTUR — tautan, tabel
+  indeks dua arah, kolom status, blok bertanda, span kode, dan kutipan
+  `ADR-NNNN`. Tidak satu pun membaca kalimat. Sebuah kalimat biasa yang
+  menyatakan sesuatu yang tidak ada lolos seluruhnya, dan itu bukan hipotesis: gerbang
   permukaan kilau menghapus `.wilayah-filter-btn` dari tabel bertanda pada 3
   Agustus 2026, dan **salinannya di paragraf tiga puluh baris di atas tabel itu
   bertahan sampai 4 Agustus**. Nama yang sama, dokumen yang sama, gerbang yang
@@ -175,6 +176,9 @@ Dua jebakan yang sudah ditemukan:
   Draf pertama pemeriksaan "pengecualian yang membusuk" ditaruh di skrip dan
   membuat 10 dari 25 tes merah — bukti langsung ia berhenti benar di luar repo
   ini, yaitu keadaan setiap situs turunan template ini. Ia pindah ke tesnya.
+  (Angka 10-dari-25 itu **historis**, dari hari kejadiannya; berkas tesnya kini
+  32 tes. Ia tidak disegarkan karena yang diceritakan peristiwanya, bukan
+  keadaan hari ini.)
 - **Pengecualian wajib menyebut MILIK SIAPA.** `JALUR_DIKECUALIKAN` memuat jalur
   milik `awcms` dan repo rujukan; "belum dibuat" bukan alasan yang sah — itu
   justru yang gerbang ini cari.

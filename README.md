@@ -4,7 +4,9 @@ Template keluarga AWCMS untuk **situs publik statis di atas Astro**, dengan
 [`ahliweb/awcms`](https://github.com/ahliweb/awcms) sebagai backend kontennya.
 
 Pembaca mendapat berkas statis; redaksi mendapat panel admin. Tidak ada yang
-menunggu basis data, dan CMS tidak pernah menghadap internet publik.
+menunggu basis data, dan **situs ini tidak memanggil awcms saat pembaca meminta
+halaman** — klaimnya itu, bukan bahwa CMS-nya tersembunyi. awcms memang
+menghadap internet: `/blog/{tenantCode}/**` adalah kosakata URL permanennya.
 
 **Fungsi utamanya halaman publik, dan itu bawaannya.** Sebuah situs boleh
 menyatakan dirinya juga membawa permukaan admin untuk **user** — penulis,
@@ -70,8 +72,10 @@ flowchart LR
 Konten ditarik **saat build**, bukan saat request. Konsekuensinya lugas dan
 memang disengaja: situs tetap tayang saat awcms mati, tidak ada basis data dan
 tidak ada panggilan ke awcms saat request, dan konten baru tayang setelah build
-berikutnya — bukan seketika. Kalau butuh seketika, `awcms-micro` template yang
-tepat, bukan ini.
+berikutnya — bukan seketika. Kalau butuh seketika, yang menjawabnya adalah
+permukaan publik **awcms sendiri** (`/blog/{tenantCode}/**`), yang terbit
+langsung tayang tanpa rebuild. Bukan `awcms-micro`: repo itu **arsip** sejak
+2 Agustus 2026 dan tidak boleh direkomendasikan kepada siapa pun.
 
 Yang menyajikan berkas itu adalah **proses Bun**, bukan nginx (ADR-0016) — jadi
 "tanpa runtime" bukan klaim repo ini; klaimnya adalah tanpa basis data dan tanpa
@@ -84,7 +88,7 @@ sejak ADR-0019 — dan kompresi tinggal di
 ([ADR-0029](docs/adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md)) —
 karena HSTS berlaku untuk HOST dan tidak bisa dibatalkan dari sisi situs, jadi
 satu pratinjau lokal yang mengirimkannya akan mengunci setiap proyek lain di
-`localhost` selama setahun. Postur lengkapnya — sembilan celah bernomor yang
+`localhost` selama setahun. Postur lengkapnya — sepuluh celah bernomor yang
 kini seluruhnya tertutup, barisnya tetap di tabel — ada di
 [`docs/awcms-astro/standar-performa-dan-keamanan.md`](docs/awcms-astro/standar-performa-dan-keamanan.md).
 
@@ -122,7 +126,7 @@ satu-satunya lockfile.
 | `bun run dev`            | Server pengembangan Astro (HMR), `http://localhost:4321`        |
 | `bun run check`          | Gerbang lockfile lalu `astro check`                             |
 | `bun run check:lockfile` | Hanya gerbang lockfile — murni baca berkas                      |
-| `bun test`               | Renderer blok, gerbang katalog PO, dan gerbang penyajian        |
+| `bun test`               | 19 berkas gerbang: kontrak `awcms`, peran situs, kosakata `news`, feed, penyaji, CSP keluaran |
 | `bun run audit:konten`   | Gerbang audit: sumber gambar, dan keluaran build bila sudah ada |
 | `bun run audit:dokumen`  | Gerbang dokumen: tautan markdown mati, indeks ADR, daftar permukaan kilau |
 | `bun run audit:graf`     | Gerbang graf: artefak `graphify-out/` yang terlacak, dan nama komunitasnya |
@@ -160,11 +164,28 @@ Jadi konfigurasinya satu variabel:
 
 | Variabel | Peran |
 | --- | --- |
-| `AWCMS_API_TOKEN` | Kredensial **dan** tenant. Wajib kredensial mesin ber-scope `blog_content.posts.read` |
+| `AWCMS_API_TOKEN` | Kredensial **dan** tenant. Wajib kredensial mesin ber-scope **dua kunci**: `blog_content.posts.read` dan `media_library.media.read` |
 | `AWCMS_TENANT_ID` | **Opsional, dianjurkan.** Bukan pemilih — pernyataan yang diverifikasi. Build gagal bila berbeda dari tenant token |
 
 `AWCMS_TENANT_CODE` dan `AWCMS_DEFAULT_TENANT_CODE` sudah tidak ada, dan
 **ditolak** alih-alih diabaikan.
+
+**Kunci kedua bukan opsional, dan bukan untuk gambar saja.** `bun run build`
+berakhir di [`scripts/asal-media.mjs`](scripts/asal-media.mjs), yang menanyakan
+asal media publik kepada awcms supaya penyaji bisa mengirim `img-src` yang
+mengizinkannya. Tanpa `media_library.media.read` panggilan itu dibalas 403 dan
+**build GAGAL** — setelah setiap halaman selesai dirender, sehingga ia terbaca
+seperti deployment yang rusak alih-alih izin yang kurang. Deployment tanpa media
+publik pun tetap membutuhkannya; jawabannya lalu tercatat `configured: false`.
+
+**Dan satu premis lama berhenti berlaku pada 13 Agustus 2026.** Sampai hari itu
+"kredensial mesin tidak bisa menulis" adalah sifat KELASNYA. Sejak awcms
+ADR-0092 ia bukan lagi: kelas tulis ada, dengan plafon aksi `create`/`update` di
+kode, wajib terikat CIDR, ditolak bila alamat pemanggil tidak diketahui, dan
+berumur maksimum 30 hari alih-alih setahun. Token build repo ini **tetap
+baca-saja** — tetapi karena ia diterbitkan tanpa satu pun aksi tulis, yaitu
+properti BARISNYA, bukan properti kelasnya. Menjaganya begitu kini sebuah
+keputusan penerbitan yang harus dipertahankan, bukan jaminan yang diwarisi.
 
 Kenapa penjagaannya berpindah, bukan hilang: rantai lama menjaga "build menebak
 tenant", keadaan yang kini tidak mungkin. Yang mungkin, dan tak terlihat oleh
@@ -269,7 +290,11 @@ membuatnya tidak perlu `node_modules` sama sekali.
   sekali: tidak ada model kategori maupun tag di
   [`src/lib/content.ts`](src/lib/content.ts), dan seksi ditentukan oleh tab,
   bukan oleh term. ADR-0036 §5 menyatakannya terbuka alih-alih menjanjikan
-  paritas dengan empat rute `awcms` yang sedang dipensiunkan di sana.
+  paritas dengan empat rute `awcms` yang kini **sudah dihapus** di sana — sejak
+  8 Agustus 2026 `/news/**` di `awcms` menjawab 301 ke `/blog/{tenantCode}/**`
+  (**kecuali** untuk tenant ber-`legacyTenantRouteEnabled: false`, yang sudah mematikan seluruh permukaan konten publiknya dan karena itu tetap dijawab 404 alih-alih diberi 301 menuju 404 yang pasti (`awcms` ADR-0071 §4 butir 3)),
+  jadi tidak ada lagi paritas yang bisa dikejar. Situs yang benar-benar
+  membutuhkan arsip kategori/tag membawanya lewat ADR-nya sendiri di sini.
 
 
   **Paginasi** — ia mengubah bentuk rute, yang menurut kriteria
@@ -293,9 +318,16 @@ membuatnya tidak perlu `node_modules` sama sekali.
   opsional) tetap keadaan yang didukung, dan halaman tanpa kartu mana pun tidak
   memasang tag gambar sama sekali — pratinjau jatuh ke kartu teks yang rapi.
 - **BFF portal Jualanku (ADR-0014).** `/internal/login`, sesi BFF sisi server,
-  cookie portal, CSRF. Fondasi `awcms`-nya **lengkap**: kontrak sesi
-  (ADR-0049/0050) dan business-scope resolver yang kini punya penyedia
-  (`awcms` ADR-0060 — sebelumnya NO-OP fail-closed). Yang menahannya bukan lagi
+  cookie portal, CSRF. Fondasi `awcms`-nya **lengkap per 4 Agustus 2026**:
+  kontrak sesi (ADR-0049/0050) dan business-scope resolver yang kini punya
+  penyedia (`awcms` ADR-0060 — sebelumnya NO-OP fail-closed). Tanggal itu perlu
+  disebut, karena kontraknya **bertambah lagi** pada 12 Agustus 2026 dan
+  tambahannya menyentuh persis mekanisme yang direncanakan di sini: login tanpa
+  tenant terpilih kini dijawab `409` beserta token seleksi berumur pendek,
+  pemilihan dan perpindahan tenant punya dua endpoint tersendiri yang **di luar**
+  kontrak konsumen beku (`awcms` ADR-0065), dan sesi hasil serah-terima
+  (`handoff`) — bentuk sesi yang ADR-0050 ciptakan untuk BFF ini —
+  **dilarang** berpindah tenant (`awcms` ADR-0088). Yang menahannya bukan lagi
   kontrak yang hilang melainkan uji
   [ADR-0023](docs/adr/0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md): ia
   memanggil `awcms` **di setiap permintaan runtime**, bukan sekali per build,
@@ -334,7 +366,7 @@ membuatnya tidak perlu `node_modules` sama sekali.
 | [`.changesets/README.md`](.changesets/README.md)                                     | Cara menulis catatan perubahan          |
 | [`docs/awcms-astro/README.md`](docs/awcms-astro/README.md)                           | Posisi standar di keluarga AWCMS        |
 | [`docs/awcms-astro/standar-teknis.md`](docs/awcms-astro/standar-teknis.md)           | Aturan teknis yang mengikat             |
-| [`docs/awcms-astro/standar-performa-dan-keamanan.md`](docs/awcms-astro/standar-performa-dan-keamanan.md) | Peta ke OWASP/ASVS/ISO 27001/SSDF + Core Web Vitals, dan sembilan celah bernomor — seluruhnya tertutup, baris tetap di tabel |
+| [`docs/awcms-astro/standar-performa-dan-keamanan.md`](docs/awcms-astro/standar-performa-dan-keamanan.md) | Peta ke OWASP/ASVS/ISO 27001/SSDF + Core Web Vitals, dan sepuluh celah bernomor — seluruhnya tertutup, baris tetap di tabel |
 | [`docs/awcms-astro/ui-ux-design-system.md`](docs/awcms-astro/ui-ux-design-system.md) | Design token, komponen, aksesibilitas   |
 | [`docs/awcms-astro/integrasi-awcms.md`](docs/awcms-astro/integrasi-awcms.md)         | Kontrak integrasi dengan awcms          |
 | [`docs/deploy-coolify.md`](docs/deploy-coolify.md)                                   | Deploy dan rebuild lewat webhook        |

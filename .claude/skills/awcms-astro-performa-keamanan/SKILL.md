@@ -1,6 +1,6 @@
 ---
 name: awcms-astro-performa-keamanan
-description: Pemeriksaan performa dan keamanan awcms-astro terhadap standar yang disebut namanya (OWASP Top 10 2021, ASVS 4.0.3, Secure Headers, ISO 27001 Annex A, NIST SSDF, Core Web Vitals) — apa yang sudah terpenuhi dengan buktinya, sembilan celah bernomor yang seluruhnya tertutup beserta dua batas yang tetap dinyatakan (.astro tak teranalisis statik; CWV diukur lab, bukan kunjungan nyata), dan lima kontrol yang sengaja DITOLAK. Gunakan sebelum rilis, sebelum go-live sebuah situs turunan, saat menyentuh server/penyaji.mjs atau anggaran performa, atau saat menjawab pertanyaan kepatuhan.
+description: Pemeriksaan performa dan keamanan awcms-astro terhadap standar yang disebut namanya (OWASP Top 10 2021, ASVS 4.0.3, Secure Headers, ISO 27001 Annex A, NIST SSDF, Core Web Vitals) — apa yang sudah terpenuhi dengan buktinya, sepuluh celah bernomor yang seluruhnya tertutup beserta dua batas yang tetap dinyatakan (.astro tak teranalisis statik; CWV diukur lab, bukan kunjungan nyata), dan lima kontrol yang sengaja DITOLAK. Gunakan sebelum rilis, sebelum go-live sebuah situs turunan, saat menyentuh server/penyaji.mjs atau anggaran performa, atau saat menjawab pertanyaan kepatuhan.
 ---
 
 # awcms-astro — performa dan keamanan
@@ -20,8 +20,8 @@ bisa digerbangi mesin**.
 
 ```bash
 bun run check          # tipe + lockfile
-bun test               # katalog PO, kontrak awcms, header + cache penyaji, CSP keluaran, versi toolchain
-bun run audit:konten   # sumber gambar; setelah build juga enam gerbang keluaran
+bun test               # katalog PO, kontrak awcms, peran situs, kosakata news, penyaji, CSP keluaran, toolchain
+bun run audit:konten   # sumber gambar; setelah build sembilan keluarga keluaran + dua gerbang performa
 bun run audit:dokumen  # tautan, indeks ADR, permukaan kilau, jalur yang disebut dokumen
 bun run audit:graf     # artefak graphify-out/ — nama komunitas yang benar-benar dipilih
 bun audit --audit-level=low   # kerentanan rantai dependency — WAJIB nol sebelum rilis
@@ -106,11 +106,14 @@ Anggaran: **beranda ≤ 250 KB gambar, halaman konten ≤ 100 KB.** Sejak 4 Agus
 ditimbang hanya gambar yang benar-benar diterbitkan build ini, karena media
 `awcms` tidak ada di sana.
 
-## Sembilan celah — seluruhnya tertutup, dua batas tetap dinyatakan
+## Sepuluh celah — seluruhnya tertutup, dua batas tetap dinyatakan
 
-Kesembilannya (1 HSTS, 2 `fetchpriority`, 3 anggaran gambar, 4 batas waktu
+Kesepuluhnya (1 HSTS, 2 `fetchpriority`, 3 anggaran gambar, 4 batas waktu
 `awcmsGet`, 5 header pembocor, 6 pin SHA/digest, 7 analisis statik, 8 Core Web
-Vitals lab, 9 SBOM rilis) **tetap tercatat di tabel dokumen standar** beserta
+Vitals lab, 9 SBOM rilis, dan **10** pemeriksa celah 2 dan 3 yang tidak pernah
+dieksekusi satu kali pun di repo tempat keduanya ditulis — ditutup 6 Agustus
+2026 oleh `tests/audit-konten.test.mjs` yang menjalankan skripnya atas pohon
+fixture) **tetap tercatat di tabel dokumen standar** beserta
 pemeriksanya masing-masing. Jangan hapus barisnya: dihapus, celahnya akan
 diusulkan lagi sebagai temuan baru enam bulan kemudian, dan pemeriksanya akan
 dilonggarkan oleh orang yang tidak tahu kenapa ia ada.
@@ -140,6 +143,16 @@ ditolak oleh aturan yang sama:
 
 - [ ] Kelima gerbang hijau **setelah** `bun run build`, bukan sebelum.
 - [ ] `bun audit` nol.
+- [ ] **Bila situs itu menyatakan `permukaanAdmin`, checklist ini belum cukup.**
+      Begitu ada satu rute yang meminta pembacanya masuk, ada sesi, ada form,
+      ada CSRF; cache publik dan cache terautentikasi WAJIB dipisah; postur
+      ADR-0019 berlaku di jalur yang membawa kredensial; target aksesibilitas
+      naik ke WCAG 2.2 AA; dan A01/A07/A09 OWASP kembali berlaku. Yang paling
+      mudah terlewat: **dua dari lima kontrol yang ditolak di tabel di bawah
+      ditolak dengan alasan yang berhenti berlaku persis di situs seperti itu**
+      — COOP ("tidak punya sesi untuk dipagari") dan SRI ("tidak ada sumber daya
+      lintas-origin"). Keduanya premis, bukan prinsip. Daftar lengkapnya di
+      [`docs/awcms-astro/permukaan-admin-user.md`](../../../docs/awcms-astro/permukaan-admin-user.md) §3.
 - [ ] `bun run serve`, lalu periksa header yang benar-benar terkirim —
       `curl -sI` dan `curl -s -o /dev/null -D -` harus melaporkan hal yang sama
       (paritas GET/HEAD adalah cacat yang sudah pernah terjadi di sini).
@@ -163,9 +176,22 @@ ditolak oleh aturan yang sama:
 - [`docs/adr/0019-csp-ketat-dikirim-penyaji.md`](../../../docs/adr/0019-csp-ketat-dikirim-penyaji.md)
 - [`docs/adr/0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md`](../../../docs/adr/0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md)
 - [`AGENTS.md`](../../../AGENTS.md) §Keamanan, §Penyajian, §Standar luar
+- [`docs/awcms-astro/permukaan-admin-user.md`](../../../docs/awcms-astro/permukaan-admin-user.md) — apa yang berubah begitu sebuah situs menyatakan permukaan admin USER
 - Di sisi `awcms`: ADR-0068 (pin edisi standar keluarga — Top 10 2021, ASVS
-  4.0.3, ditinjau ulang 2027-02-04 — dan divergence HSTS repo ini tercatat di
-  manifest keluarganya), ADR-0065 (kontrak konsumen `awcms-astro` dibekukan dan
-  digerbangi di sana), skill `awcms-security-hardening` (matriks OWASP/ASVS/ISO
-  yang edisinya disamakan di sini), dan `awcms-performance` (pola akses data —
-  tidak berlaku di repo ini, yang tidak punya basis data)
+  4.0.3, API Security 2023, ISO 27001:2022, SSDF v1.1 — kelimanya ditinjau
+  ulang 2027-02-04; ISO/IEC 25010:2023 dipakai kedua repo tetapi TIDAK termasuk
+  pin itu — dengan **lima** entri divergence, termasuk HSTS
+  repo ini dan `astro-files-not-type-checked` yang menyandarkan diri pada pin
+  TypeScript 6.x di sini), ADR-0065 (kontrak konsumen `awcms-astro` dibekukan dan
+  digerbangi di sana), ADR-0092 (kredensial mesin boleh MENULIS — premis
+  "baca-saja" berhenti menjadi sifat kelas), skill `awcms-security-hardening`
+  (matriks OWASP/ASVS/ISO yang edisinya disamakan di sini), dan
+  `awcms-performance` (pola akses data — tidak berlaku di repo ini, yang tidak
+  punya basis data)
+- **Status ADR-0067 di sisi `awcms` sudah berubah**, dan kalimat keluarga
+  "kedua repo mengukur LAB dan tidak satu pun mengukur lapangan" punya tanggal
+  kedaluwarsa yang sudah diketahui: ADR itu kini `Accepted (belum
+  diimplementasikan)` dengan **Opsi B** diputuskan 8 Agustus 2026 — agregasi di
+  titik masuk, tanpa baris mentah per kunjungan. Begitu ia dibangun, satu repo
+  mengukur lapangan dan repo ini tidak, karena RUM di sini ditolak permanen
+  (ADR-0032 §B)

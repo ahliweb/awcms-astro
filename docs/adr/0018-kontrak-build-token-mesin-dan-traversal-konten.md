@@ -1,6 +1,27 @@
 # ADR-0018 — Kontrak build terhadap awcms: tenant dari token mesin, traversal cursor + hidrasi, dan gerbang terjemahan
 
 - **Status:** Accepted
+- **Dua kalimat di §Konsekuensi berhenti benar, dan badannya sengaja TIDAK
+  disunting** (13 Agustus 2026 — ADR adalah rekaman keputusan pada satu titik
+  waktu):
+  - **"`awcms` ADR-0049 §3 sudah menolak aksi selain `read` untuk kredensial
+    mesin"** benar sampai 12 Agustus 2026. Sejak `awcms`
+    [ADR-0092](https://github.com/ahliweb/awcms/blob/main/docs/adr/0092-machine-credentials-may-write.md)
+    kelas kredensial mesin **boleh menulis**: plafon aksi `create`/`update` di
+    kode (bukan kolom), wajib terikat CIDR, **ditolak bila `clientIp` tidak
+    diketahui**, umur maksimum 30 hari alih-alih 365, dengan sentinel penolakan
+    `machine_credential_write_forbidden`. Setiap kredensial yang terbit sebelum
+    migrasinya tetap baca-saja tanpa backfill. Token build ADR ini karena itu
+    tetap tidak bisa mengubah apa pun — tetapi karena ia diterbitkan **tanpa satu
+    pun aksi tulis**, yaitu properti barisnya, bukan properti kelasnya. Menjaganya
+    di kelas baca kini keputusan penerbitan yang wajib dipertahankan.
+  - **"`allowed_permission_keys` berisi tepat `blog_content.posts.read`"**
+    menjadi kurang satu kunci sejak [ADR-0025](0025-gambar-artikel-dari-media-awcms.md)
+    menambahkan resolusi media: yang benar hari ini **dua** kunci,
+    `blog_content.posts.read` dan `media_library.media.read`. Tanpa yang kedua,
+    `scripts/asal-media.mjs` dibalas 403 dan build gagal setelah setiap halaman
+    selesai dirender. Nilai yang berlaku ada di
+    [`.env.example`](../../.env.example).
 - **Tanggal:** 1 Agustus 2026
 - **Menindaklanjuti:** `awcms` [ADR-0049](https://github.com/ahliweb/awcms/blob/main/docs/adr/0049-machine-credentials-and-session-introspection.md) (kredensial mesin + introspeksi sesi), yang menutup dua kontrak yang ADR-0047 catat sebagai penahan repo ini
 - **Terkait:** [ADR-0014](0014-rendering-campuran-dan-bff-portal.md) (BFF), [ADR-0017](0017-peran-admin-owner-internal.md) (permukaan admin internal — di-supersede [ADR-0020](0020-layar-admin-kembali-ke-awcms.md); kredensial mesin di bawah tidak terpengaruh, ia dipakai token BUILD)

@@ -140,3 +140,52 @@ describe("versi Bun sama di setiap tempat yang memakainya", () => {
     );
   });
 });
+
+/**
+ * Pin TypeScript, dan apa yang diam-diam mati bila ia bergerak sendiri.
+ *
+ * Bentuknya sama dengan gerbang Bun di atas — dua nilai yang wajib bergerak
+ * bersama — tetapi kelas cacatnya lebih sunyi. Menaikkan versi Bun yang tidak
+ * sepakat menghasilkan perilaku runtime yang aneh; menaikkan TypeScript ke 7.x
+ * menghasilkan **gerbang yang berhenti ada**, dengan setiap perintah tetap
+ * hijau dan tabel gerbang mutu tetap berbunyi "Ya".
+ *
+ * `@astrojs/check` menuntut API programatik TypeScript 6.x. `awcms` sudah di
+ * 7.0.2 dan karena itu kehilangan type-check seluruh berkas `.astro`-nya —
+ * tercatat di manifest kompatibilitas keluarganya sebagai divergence
+ * `astro-files-not-type-checked`, yang menyandarkan diri secara eksplisit pada
+ * repo INI masih berada di `^6.0.3` ("which is the only reason its gate runs").
+ *
+ * Alasannya ditulis di ADR-0037, dan pesan gagal di bawah menyebutnya: sebuah
+ * gerbang yang hanya berbunyi "harus ^6" akan dilonggarkan oleh orang
+ * berikutnya yang tidak tahu apa yang ia matikan.
+ */
+describe("pin TypeScript menjaga gerbang astro check tetap ada (ADR-0037)", () => {
+  const SEBAB =
+    "`@astrojs/check` menuntut API programatik TypeScript 6.x. Menaikkannya ke 7.x " +
+    "membuat `astro check` — gerbang `Type check` di rantai `bun run check` — berhenti " +
+    "berjalan, TANPA satu pun perintah berubah merah. Itu keputusan tingkat keluarga " +
+    "(ADR-0037), bukan pemeliharaan dependency: `awcms` sudah kehilangan type-check " +
+    ".astro-nya karena berada di 7.x, dan catatan divergence di sana bersandar pada " +
+    "repo ini masih di 6.x.";
+
+  test("dependencies.typescript tetap di rentang ^6.x", () => {
+    const versi = pkg.dependencies?.typescript;
+
+    assert.ok(versi, `typescript hilang dari dependencies. ${SEBAB}`);
+    assert.match(versi, /^\^6\./, `typescript dipin "${versi}", bukan ^6.x. ${SEBAB}`);
+  });
+
+  test("@astrojs/check masih terpasang — tanpanya pin di atas tidak menjaga apa pun", () => {
+    // Asersi pertama sendirian bisa hijau atas repo yang sudah melepas
+    // pemeriksanya: pin TypeScript-nya benar, dan yang dijaganya tidak ada lagi.
+    // Keduanya karena itu satu paket, persis seperti tag dan digest di atas.
+    assert.ok(
+      pkg.dependencies?.["@astrojs/check"],
+      "`@astrojs/check` tidak lagi terdaftar di dependencies — pin TypeScript ^6.x " +
+        "berhenti menjaga apa pun, dan gerbang `Type check` berhenti ada. Bila " +
+        "pelepasannya disengaja, ia mencabut ADR-0037 dan wajib dicatat sebagai celah " +
+        "di docs/awcms-astro/standar-performa-dan-keamanan.md"
+    );
+  });
+});
