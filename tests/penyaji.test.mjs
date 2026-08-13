@@ -387,6 +387,60 @@ describe.skipIf(!adaArtefak)("artefak produksi menyajikan hasil build", () => {
     assert.ok(keluar.status === 404 || keluar.status === 403, `status ${keluar.status}`);
   });
 
+  test("HSTS menyala di ARTEFAK saat NODE_ENV=production, dan hanya di sana", async () => {
+    // Gerbang ini mengukur BUNDEL, bukan sumber, dan itu seluruh alasannya ada.
+    //
+    // `bun build --target=bun` melipat `process.env.NODE_ENV` bertitik menjadi
+    // literal saat bundling. Artefak yang tayang di produksi 14 Agustus 2026
+    // karena itu memuat `headerKeamanan(produksi = false)`: `NODE_ENV=production`
+    // terpasang di container, respons sungguhan tidak membawa HSTS, dan setiap
+    // gerbang tetap hijau — karena semuanya membaca `server/penyaji.mjs`, tempat
+    // gerbangnya memang masih benar.
+    //
+    // Dua arah, karena satu arah saja adalah cacat yang mahal di kedua sisi:
+    // tanpa asersi PRODUKSI, HSTS hilang diam-diam; tanpa asersi NON-produksi,
+    // satu pratinjau lokal mengunci `localhost` selama setahun (ADR-0029).
+    const port = 43919;
+
+    async function jawabanDengan(nodeEnv) {
+      const proc = Bun.spawn(["bun", ARTEFAK], {
+        env: { ...process.env, NODE_ENV: nodeEnv, PORT: String(port), HOST: "127.0.0.1" },
+        stdout: "pipe",
+        stderr: "pipe"
+      });
+
+      try {
+        for (let i = 0; i < 100; i += 1) {
+          try {
+            const res = await fetch(`http://127.0.0.1:${port}/`);
+            return res.headers.get("strict-transport-security");
+          } catch {
+            await Bun.sleep(50);
+          }
+        }
+        throw new Error(`penyaji tidak menjawab untuk NODE_ENV=${nodeEnv}`);
+      } finally {
+        proc.kill("SIGTERM");
+        await Promise.race([proc.exited, Bun.sleep(3000)]);
+      }
+    }
+
+    assert.equal(
+      await jawabanDengan("production"),
+      HSTS,
+      "artefak produksi tidak mengirim HSTS. Bila `NODE_ENV` dibaca dengan " +
+        "akses BERTITIK di `server/penyaji.mjs`, bundler melipatnya menjadi " +
+        "`false` dan gerbangnya mati di dalam bundel — pakai `process.env[\"NODE_ENV\"]`."
+    );
+
+    assert.equal(
+      await jawabanDengan("development"),
+      null,
+      "artefak mengirim HSTS di luar produksi — satu pratinjau lokal akan " +
+        "mengunci setiap proyek di `localhost` selama setahun (ADR-0029)"
+    );
+  });
+
   test("proses berhenti pada SIGTERM", async () => {
     // Container dihentikan dengan SIGTERM. Proses yang mengabaikannya membuat
     // setiap deploy membayar tenggang paksa Docker.
