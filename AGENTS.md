@@ -21,6 +21,12 @@ admin USER yang sebuah situs nyatakan lewat `permukaanAdmin`
 Template ini sendiri menyatakan nol permukaan terautentikasi, dan `bun test`
 yang membuktikannya.
 
+Dan sebuah layar selalu menggambar sesuatu yang **sudah ada**, jadi ada satu
+pertanyaan yang datang lebih dulu daripada §Peran repo ini: di mana sebuah
+kemampuan baru dibangun. Jawabannya
+[ADR-0038](docs/adr/0038-kebutuhan-backend-menjadi-modul-di-awcms.md) —
+**kebutuhan backend menjadi MODUL di `awcms`**, tidak pernah folder di sini.
+
 ## Peran repo ini (berlaku 8 Agustus 2026 — ADR-0034)
 
 **Fungsi UTAMA repo ini — dan setiap situs yang lahir darinya — adalah HALAMAN
@@ -159,6 +165,42 @@ terpilih dijawab `409` beserta token seleksi berumur pendek alih-alih sesi
 konsumen beku `awcms` ADR-0065 — memanggilnya berarti menyepakati kontraknya
 lebih dulu di sana, bukan menambahkannya di sini. Sesi hasil serah-terima
 (`handoff`) — persis mekanisme BFF ADR-0050 — **dilarang** berpindah tenant.
+
+## Kebutuhan backend menjadi MODUL di `awcms` (berlaku 14 Agustus 2026 — ADR-0038)
+
+§Peran repo ini menjawab **siapa yang boleh punya layar** di sini. Bagian ini
+menjawab pertanyaan yang datang lebih dulu — **di mana sebuah kemampuan
+dibangun** — dan jawabannya satu kalimat:
+[ADR-0038](docs/adr/0038-kebutuhan-backend-menjadi-modul-di-awcms.md) memutuskan
+bahwa **satuan sebuah kebutuhan backend adalah MODUL di `awcms`**: mendarat di
+direktori modul repo itu, terdaftar di registry-nya, lewat admission modul
+(`awcms` [ADR-0012](https://github.com/ahliweb/awcms/blob/main/docs/adr/0012-module-admission-and-trusted-registry-boundary.md)).
+Bukan folder di sini, bukan "servis kecil di sebelah".
+
+Yang membuat alamatnya menentukan: **kewajiban keluarga menempel pada modul,
+bukan pada kode.** Modul membawa deskriptornya, izinnya di katalog, tabelnya di
+bawah RLS, jejak auditnya, deskriptor retensinya, dan sejak `awcms` ADR-0094
+juga deskriptor subjek datanya — kelengkapan yang digerbangi di sana. Tidak satu
+pun kewajiban itu punya tempat menempel pada kode yang tinggal di repo ini.
+
+Sebuah pekerjaan adalah **backend** bila ia menyimpan atau menjadi otoritas atas
+data yang bukan berkas repo ini, memutuskan izin, menjalankan aturan bisnis,
+menyentuh apa pun yang lintas-tenant, atau menyediakan permukaan yang dipanggil
+pihak selain situs ini sendiri. Yang **tetap** di sini dan bukan pengecualian
+melainkan hal yang berbeda: [`server/penyaji.mjs`](server/penyaji.mjs)
+(menyajikan berkas dan mengirim header — tidak memiliki data), pembacaan saat
+build, dan BFF ADR-0014 yang **merangkai** panggilan `awcms` untuk layar situs
+ini sendiri tanpa memiliki satu baris data pun. Cache tulis adalah kepemilikan
+data dengan nama lain.
+
+**Repo ini membaca `awcms`; ia tidak menulis.** Sampai 13 Agustus 2026 itu sifat
+KELAS kredensial mesin; sejak `awcms` ADR-0092 membuka kelas tulis, ia properti
+yang harus dijaga sendiri — di sisi penerbitan token (ADR-0018) dan di sisi kode
+oleh [`tests/tanpa-backend.test.mjs`](tests/tanpa-backend.test.mjs). Gerbang itu
+menolak dependency kelas backend di `package.json`, `fetch` ber-`method` selain
+`GET` di `src/` dan `scripts/`, artefak persistensi, dan hilangnya aturan ini
+dari berkas yang sedang kamu baca. Ia memeriksa **bentuk, bukan niat**: situs
+yang menyimpan datanya di layanan pihak ketiga lewat `GET` lolos seluruhnya.
 
 ## Satu uji sebelum memulai apa pun (berlaku 4 Agustus 2026 — ADR-0027)
 
@@ -333,6 +375,22 @@ yang [ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.m
   bentuk yang sama tetapi **belum bisa mengenai build ini**: entitlement
   diputuskan per modul, dan tidak satu pun modul di balik ketiga permukaan yang
   dipanggil build mendeklarasikannya.
+- **Dan sejak 13 Agustus 2026 ada penolakan kedua yang bentuknya sama, tetapi
+  yang ini BISA mengenai build — bergantung pada siapa yang menerbitkan
+  tokennya.** `403 PARTNER_SUSPENDED` (`matchedPolicy: "partner_suspended"`,
+  `awcms` ADR-0093) menolak setiap aktor **terdelegasi** yang partnernya tidak
+  lagi `active`, dievaluasi di chokepoint pada tiap permintaan. Kredensial mesin
+  mewarisi `principal_kind` akun layanannya, dan tidak ada apa pun di jalur
+  penerbitan `awcms` yang melarang akun layanan itu berupa **tenant user
+  terdelegasi** — pemilih akun layanannya mendaftar setiap tenant user tanpa
+  menyaring jenisnya. Yang memilih pasti admin tenant situs, bukan agensinya
+  sendiri: aktor terdelegasi tidak bisa menulis apa pun di modul
+  `identity_access` (`awcms` ADR-0090), termasuk menerbitkan kredensial. Karena
+  itu aturannya operasional, bukan kode: **terbitkan token
+  build atas akun layanan milik tenant SITUS**, bukan atas aktor terdelegasi
+  seorang partner. Yang kedua berhenti membangun pada hari kemitraannya
+  disuspend, dengan pesan yang terbaca persis seperti token dicabut — dan grant
+  yang memberinya akses tetap ada, jadi tidak ada yang tampak hilang.
 - **Permukaan KEEMPAT keluar dari kontrak sampai sisi awcms menyepakatinya.**
   `awcms` ADR-0065 membekukan bentuk respons permukaan yang repo ini panggil,
   dan daftarnya diturunkan dengan mem-grep repo ini — bukan dari ingatan. Karena
@@ -706,6 +764,12 @@ performa:
       build menjadi tepat tiga dan menuntutnya sama dua arah dengan tabel
       bertanda di skill integrasi; permukaan keempat memerahkannya sampai
       `awcms` membekukan bentuk responsnya (`awcms` ADR-0065).
+- [ ] Menambah dependency berarti bertanya lebih dulu apakah ia membawa
+      kemampuan **backend** — basis data, ORM, framework server, antrean, sesi.
+      Bila ya, kebutuhannya sebuah MODUL di `awcms`, bukan paket di sini
+      ([ADR-0038](docs/adr/0038-kebutuhan-backend-menjadi-modul-di-awcms.md));
+      `tests/tanpa-backend.test.mjs` menolaknya menurut kelas, dan gerbang yang
+      sama menolak jalur TULIS ke `awcms` dari `src/` maupun `scripts/`.
 - [ ] Variabel env baru terdokumentasi di `.env.example`, termasuk variabel
       RUNTIME yang dibaca `server/penyaji.mjs`.
 - [ ] Dokumen yang menjelaskan perilaku yang berubah ikut diperbarui.

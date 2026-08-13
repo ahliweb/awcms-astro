@@ -73,6 +73,15 @@ publik tetap fungsi utamanya
 yang dikelola layarnya**. Bentuk, prasyarat, dan biayanya di
 [`permukaan-admin-user.md`](permukaan-admin-user.md).
 
+Satu pertanyaan lagi yang datang **sebelum** semua itu, dan jawabannya tidak
+pernah "di sini": ke mana sebuah **kebutuhan backend** pergi. Ia menjadi sebuah
+**modul di `awcms`** — lewat admission modul di sana, dengan RLS, katalog izin,
+jejak audit, deskriptor retensi, dan deskriptor subjek datanya
+([ADR-0038](../adr/0038-kebutuhan-backend-menjadi-modul-di-awcms.md)). Sebuah
+situs yang menyimpan pengiriman formulir, langganan, atau keanggotaan tetap
+sepenuhnya kasus yang didukung; yang diputuskan adalah **di repo mana** ia
+dibangun.
+
 Ragu? Mulai dari `awcms-astro`. Perpindahan ke `awcms` terdokumentasi; perjalanan sebaliknya — membongkar basis data yang tidak pernah dibutuhkan — jauh lebih mahal.
 
 ## Divergence yang disengaja dari keluarga

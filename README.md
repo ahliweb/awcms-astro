@@ -34,6 +34,16 @@ sendiri) boleh di sini bila situsnya menyatakannya lewat `permukaanAdmin`
 ([ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md),
 `awcms` ADR-0070). Peran `owner` ditolak gerbang di sini.
 
+Dan pembagian itu punya pasangannya yang menentukan **sebelum** sebuah layar
+digambar: **kebutuhan backend menjadi MODUL di `awcms`**, tidak pernah folder di
+sini ([ADR-0038](docs/adr/0038-kebutuhan-backend-menjadi-modul-di-awcms.md)).
+Formulir kontak yang tersimpan, langganan buletin, direktori anggota — semuanya
+mendarat di sana, lewat admission modul, dengan RLS, katalog izin, jejak audit,
+deskriptor retensi, dan deskriptor subjek datanya. Repo ini **membaca** `awcms`
+dan tidak menulis; keempat batasnya digerbangi
+[`tests/tanpa-backend.test.mjs`](tests/tanpa-backend.test.mjs), termasuk
+dependency yang membawa kemampuan backend masuk lewat satu `bun add`.
+
 Repo ini sempat **ditahan** dari 2 sampai 4 Agustus 2026 sampai fondasi `awcms`
 selesai (ADR-0021). Penahanan itu berakhir karena kedua indikator yang ia tulis
 sendiri terpenuhi — tiap modul `awcms` punya layar, dan §4 `PROJECT_STATE`-nya
@@ -126,7 +136,7 @@ satu-satunya lockfile.
 | `bun run dev`            | Server pengembangan Astro (HMR), `http://localhost:4321`        |
 | `bun run check`          | Gerbang lockfile lalu `astro check`                             |
 | `bun run check:lockfile` | Hanya gerbang lockfile — murni baca berkas                      |
-| `bun test`               | 19 berkas gerbang: kontrak `awcms`, peran situs, kosakata `news`, feed, penyaji, CSP keluaran |
+| `bun test`               | 20 berkas gerbang: kontrak `awcms`, peran situs, tanpa backend, kosakata `news`, feed, penyaji, CSP keluaran |
 | `bun run audit:konten`   | Gerbang audit: sumber gambar, dan keluaran build bila sudah ada |
 | `bun run audit:dokumen`  | Gerbang dokumen: tautan markdown mati, indeks ADR, daftar permukaan kilau |
 | `bun run audit:graf`     | Gerbang graf: artefak `graphify-out/` yang terlacak, dan nama komunitasnya |
@@ -186,6 +196,16 @@ berumur maksimum 30 hari alih-alih setahun. Token build repo ini **tetap
 baca-saja** — tetapi karena ia diterbitkan tanpa satu pun aksi tulis, yaitu
 properti BARISNYA, bukan properti kelasnya. Menjaganya begitu kini sebuah
 keputusan penerbitan yang harus dipertahankan, bukan jaminan yang diwarisi.
+
+**Menerbitkan dan mencabutnya kini sebuah layar**, `/admin/machine-credentials`
+di awcms — dibangun pada hari yang sama, dengan alasan yang lugas: mencabut token
+yang bocor adalah tindakan yang dicari orang di bawah tekanan, dan sampai layar
+itu ada ia sebuah `POST` yang tidak diingat siapa pun. Plaintext token muncul
+**sekali** di respons penerbitannya; memuat ulang halamannya menghanguskan
+kredensial. Dua hal yang harus dipilih benar di sana: kelas **baca** (formulirnya
+kini bisa mencetak kelas tulis juga), dan akun layanan milik tenant **situs ini**
+— bukan aktor terdelegasi seorang partner, yang berhenti membangun pada hari
+kemitraannya disuspend (awcms ADR-0093).
 
 Kenapa penjagaannya berpindah, bukan hilang: rantai lama menjaga "build menebak
 tenant", keadaan yang kini tidak mungkin. Yang mungkin, dan tak terlihat oleh
