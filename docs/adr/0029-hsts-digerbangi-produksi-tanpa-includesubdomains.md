@@ -6,6 +6,26 @@
 - **Terkait:** [ADR-0028](0028-jangkar-standar-performa-dan-keamanan.md) (celah 1 dan 5 yang ditutup di sini), [ADR-0019](0019-csp-ketat-dikirim-penyaji.md) (CSP dikirim penyaji), [ADR-0016](0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md) (penyaji satu-satunya pemilik header)
 - **Sumber pembanding di `awcms`:** `src/lib/security/security-headers.ts` (`buildSecurityHeaders`, Issue #437). Ia **bukan** ADR di sana — postur header `awcms` mendarat lewat issue, jadi tidak ada nomor ADR yang bisa dirujuk. Baris ini ditulis begitu alih-alih menebak sebuah nomor: draf pertama ADR ini mengutip `awcms` ADR-0035, yang ternyata tentang repositioning ERP/SaaS. Itu persis aturan 2 `awcms` [ADR-0062](https://github.com/ahliweb/awcms/blob/main/docs/adr/0062-skills-are-gated-against-the-code-they-describe.md) — kutipan ADR yang pembacanya juga tidak bisa periksa — dan celah yang ADR-0028 catat belum digerbangi di sini.
 
+> **Banner (14 Agustus 2026) — keputusan ini BENAR dan tetap berlaku, tetapi
+> selama delapan hari ia tidak pernah sampai ke pembaca.**
+>
+> Badan ADR ini adalah rekaman dan tidak disunting. Yang ditemukan saat
+> verifikasi deploy produksi pertama: `bun build --target=bun` **melipat**
+> `process.env.NODE_ENV` bertitik menjadi literal saat bundling, sehingga
+> `dist/server/penyaji.mjs` yang tayang memuat `headerKeamanan(produksi = false)`.
+> Container berjalan dengan `NODE_ENV=production`, dan respons sungguhannya tetap
+> **tanpa** `Strict-Transport-Security`.
+>
+> Setiap gerbang hijau selama itu, dan alasannya persis kelas cacat yang repo ini
+> berulang kali tulis aturannya: keduanya membaca `server/penyaji.mjs`, tempat
+> gerbang produksi memang masih benar — bukan **bundel** yang dikirim.
+>
+> Perbaikannya satu bentuk akses (`process.env["NODE_ENV"]`, yang tidak dilipat),
+> dan pemeriksanya menjalankan **artefaknya**: `tests/penyaji.test.mjs`
+> menyalakan `dist/server/penyaji.mjs` dua kali dan menuntut HSTS ada di
+> `production` sekaligus absen di luar itu. Ia berjalan di dalam `docker build`,
+> jadi sebuah image yang kehilangan header keenam berhenti bisa dibangun.
+
 ## Konteks
 
 ### 1. Header keenam yang tidak dipasang di mana pun

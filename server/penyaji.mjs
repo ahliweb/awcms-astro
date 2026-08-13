@@ -270,7 +270,21 @@ const HEADER_PRODUKSI = { ...HEADER_KEAMANAN, "Strict-Transport-Security": HSTS 
  *
  * @param {boolean} [produksi]
  */
-export function headerKeamanan(produksi = process.env.NODE_ENV === "production") {
+export function headerKeamanan(
+  // Akses BRACKET, dan itu bukan gaya penulisan. `bun build --target=bun`
+  // MELIPAT `process.env.NODE_ENV` bertitik menjadi literal saat bundling —
+  // sehingga `dist/server/penyaji.mjs` yang dikirim ke produksi memuat
+  // `headerKeamanan(produksi = false)` dan HSTS tidak akan pernah terkirim,
+  // berapa pun nilai `NODE_ENV` pada container. Itu bukan dugaan: ia ditemukan
+  // pada image produksi tanggal 14 Agustus 2026, dengan `NODE_ENV=production`
+  // di container dan header keenam tetap absen dari respons sungguhan.
+  //
+  // Bentuk bracket, `Bun.env`, dan `globalThis.process.env` ketiganya SELAMAT
+  // dari pelipatan itu; yang bertitik tidak. Gerbangnya membaca bundelnya, dan
+  // ada di `tests/penyaji.test.mjs` — sebuah asersi atas sumber tidak bisa
+  // melihat kelas cacat ini sama sekali.
+  produksi = process.env["NODE_ENV"] === "production"
+) {
   return produksi ? HEADER_PRODUKSI : HEADER_KEAMANAN;
 }
 
