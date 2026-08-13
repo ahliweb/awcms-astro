@@ -19,6 +19,15 @@ Kata **wajib** di dokumen ini berarti pelanggarannya menggagalkan gerbang mutu, 
 
 **Dilarang:** framework UI, framework CSS, library animasi, SDK/widget/piksel pihak ketiga, dan analytics yang melacak individu.
 
+**Selisih versi dengan `awcms`, dinyatakan supaya tidak ditemukan ulang sebagai temuan.** Manifest kompatibilitas keluarga `awcms` mencatat versi yang dipakai **repo itu sendiri**; nilainya bukan kewajiban bagi repo ini, tetapi selisihnya tetap layak diketahui sebelum seseorang menyamakannya "karena rapi":
+
+| Nilai | `awcms` | repo ini | Keadaannya |
+| --- | --- | --- | --- |
+| Bun | `1.3.14` | `1.3.14` | Cocok persis, dan dijaga `tests/versi-toolchain.test.mjs` atas lima nilai di sini |
+| `astro` | `^7.2.0` | `^7.1.4` | Tertinggal satu minor. Bukan keputusan — belum ada yang menaikkannya, dan menaikkannya adalah perubahan KODE yang butuh build hijau untuk dibuktikan, bukan pekerjaan dokumen |
+| `@astrojs/node` | `^11.1.0` | `^11.0.3` | Sama seperti di atas |
+| `typescript` | `^7.0.2` | `^6.0.3` | **Sengaja berbeda, dan mengikat.** Pin 6.x di sini adalah syarat hidupnya gerbang `astro check` — lihat [ADR-0037](../adr/0037-pin-typescript-6-adalah-syarat-hidupnya-gerbang-astro-check.md) |
+
 ## Struktur wajib
 
 ```
@@ -192,7 +201,7 @@ Yang mengikat di sini:
 - `bun audit` wajib nol sebelum rilis.
 - Tautan keluar `target="_blank"` wajib `rel="noopener noreferrer"`.
 
-**Kesembilan celah ADR-0028 kini tertutup** ([ADR-0029](../adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md) untuk HSTS, [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md) untuk pin rantai pasok, [ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md) untuk SBOM rilis, [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) untuk analisis statik dan Core Web Vitals lab, sisanya tanpa perubahan postur) — masing-masing bersama pemeriksanya, dan barisnya TETAP di tabel dokumen standar. Dua penutupan terakhir membawa syarat kejujuran yang tidak boleh hilang: ringkasan run CodeQL menyatakan `.astro` tidak dianalisis, dan hasil Lighthouse adalah angka LAB — bukan p75 kunjungan nyata, yang tetap tidak diukur karena RUM ditolak.
+**Kesepuluh celah ADR-0028 kini tertutup** ([ADR-0029](../adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md) untuk HSTS, [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md) untuk pin rantai pasok, [ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md) untuk SBOM rilis, [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) untuk analisis statik dan Core Web Vitals lab, sisanya tanpa perubahan postur) — masing-masing bersama pemeriksanya, dan barisnya TETAP di tabel dokumen standar. Dua penutupan terakhir membawa syarat kejujuran yang tidak boleh hilang: ringkasan run CodeQL menyatakan `.astro` tidak dianalisis, dan hasil Lighthouse adalah angka LAB — bukan p75 kunjungan nyata, yang tetap tidak diukur karena RUM ditolak.
 
 ## Gerbang mutu
 
@@ -216,6 +225,8 @@ Gerbang standar ini, seluruhnya wajib hijau sebelum pekerjaan dinyatakan selesai
 | Analisis statik | `.github/workflows/codeql.yml` | Kerentanan pada permukaan JS/TS (lib, config, scripts, server, tests) — terjadwal mingguan + pada perubahan. `.astro` TIDAK dianalisis dan ringkasan run menyatakannya; `tests/analisis-statik.test.mjs` menjaga pernyataan itu tidak dihapus | Ya — sejak [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) |
 | Core Web Vitals (lab) | Job `build` CI, `treosh/lighthouse-ci-action` | LCP > 2500 ms, CLS > 0,1, TBT > 200 ms (proksi INP) atas **sampel** `dist/client` (hingga 10 URL, kedalaman 4 — dipilih di `lighthouserc.json`) — hanya berjalan bila situs punya sumber konten; ambang DAN batas cakupannya terpaku ke dokumen lewat `tests/cwv-lab.test.mjs` | Ya — sejak [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md); di template tidak berjalan |
 | Permukaan `awcms` | `bun test` | Jalur `/api/v1/…` yang benar-benar dipanggil `src/`, dibandingkan dua arah dengan tabel bertanda di skill integrasi | Ya — sejak ADR-0030 |
+| **Peran situs** | `bun test` | `owner` di `permukaanAdmin.peran` (apa pun kapitalisasinya), prefiks yang menelan permukaan publik (`/`, prefiks locale, atau slug tab), deklarasi separuh (rute tanpa peran, atau peran tanpa rute), dan setiap rute `prerender = false` yang prefiksnya tidak dinyatakan `permukaanAdmin` maupun BFF Jualanku — dua pemeriksaan terpisah atas KONFIGURASI dan atas KODE, karena keduanya bisa berselisih dan yang menentukan apa yang disajikan adalah kode | Ya — sejak [ADR-0034](../adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md) |
+| **Kosakata `news`** | `bun test` | Tab ber-slug `news` yang dibiarkan `urutanSeksi: "manual"` — sebuah permukaan yang mengaku berita di alamatnya dan membantahnya di setiap detailnya. Gerbangnya tidak menuntut tab itu ada; `news` bukan kata yang dipesan di sini | Ya — sejak [ADR-0036](../adr/0036-news-adalah-kosakata-repo-ini-dan-sebuah-tab-yang-memikulnya.md) |
 | Audit dependency | `bun audit --audit-level=low` | Kerentanan rantai build. Dijalankan CI **dan** perilis | Ya |
 | CI | `.github/workflows/ci.yml` | Seluruhnya yang ada, pada setiap PR | Ya |
 

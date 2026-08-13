@@ -4,10 +4,12 @@ Cara sebuah situs dari template ini tayang, dan cara konten baru di awcms sampai
 ke pembaca tanpa siapa pun menekan tombol.
 
 Server rujukan yang dipakai di sini adalah server Coolify yang dicatat di
-[`ahliweb/serv-dinkesdocker`](https://github.com/ahliweb/serv-dinkesdocker) —
-`awcms`, `awcms-micro`, dan `awcms-mini` sudah berjalan di sana sebagai Coolify
-**Application** (git-build) di belakang Traefik. Situs dari template ini
-mengikuti pola yang sama.
+[`ahliweb/serv-dinkesdocker`](https://github.com/ahliweb/serv-dinkesdocker).
+Yang tetap benar dari sana adalah **polanya** — Coolify **Application**
+(git-build) di belakang Traefik — bukan daftar aplikasi yang dulu
+membuktikannya: `awcms-micro` dan `awcms-mini` adalah **arsip** sejak 2 Agustus
+2026 (`awcms` ADR-0055) dan tidak lagi dipakai sebagai contoh hidup. Situs dari
+template ini mengikuti pola yang sama dengan `awcms`.
 
 ## Rantainya
 
@@ -128,6 +130,23 @@ Pemicu di awcms wajib mengikuti pola dua bagian yang sudah dipakai modul
 2. **Worker terpisah menguras antrean dan memanggil webhook.** Panggilan HTTP-nya
    terjadi di luar transaksi, dengan backoff dan dead-letter.
 
+**Pola itu kini punya preseden ber-ADR di `awcms`, dan namanya sendiri.** Pada
+10 Agustus 2026 `awcms` ADR-0074 memutuskan push notification mendapat outbox
+KEDUA-nya sendiri alih-alih menjadi consumer domain-event — dengan alasan yang
+sama persis dengan alasan di bawah, dan dengan pola lease yang di sana sudah
+terbukti tiga kali: klaim `FOR UPDATE SKIP LOCKED`, lease memakai ulang
+`next_attempt_at` tanpa kolom baru, kirim **di luar** transaksi, finalize per
+baris. Implementasi pemicu rebuild sebaiknya menyalin bentuk itu, bukan
+menemukannya ulang.
+
+**Dan satu syarat baru berlaku sejak hari yang sama:** sebuah tabel antrean baru
+di `awcms` wajib membawa **deskriptor retensi sejak hari pertama** (`awcms`
+ADR-0076). Registry mana yang menampungnya tidak ditentukan penilaian
+penulisnya melainkan oleh siapa yang MENULIS tabel itu — modul atau
+infrastruktur — dan gerbang di sana yang memutuskannya. Sebuah antrean tanpa
+deskriptor retensi akan ditolak review di sisi sana, jadi ia bagian dari
+pekerjaan, bukan pekerjaan susulan.
+
 Pemisahan itu bukan selera. Consumer `domain-event-runtime` menerima `tx` — ia
 berjalan **di dalam** transaksi klaim/finalisasi delivery, dan tipenya menyatakan
 kontrak itu terus terang: aman untuk handler same-process yang DB-only, dan
@@ -189,6 +208,18 @@ pernah benar-benar mati.
 Artinya kegagalan rebuild **sunyi bagi pembaca**, dan karena itu perlu dilihat
 di tempat lain: dasbor Coolify untuk log build, dan jejak audit awcms untuk
 apakah consumer-nya berhasil mengirim atau masuk dead-letter.
+
+**Dua sebab yang paling mudah salah didiagnosis**, karena keduanya sama-sama
+403 dan sama-sama terbaca seperti token yang dicabut — padahal yang harus
+dikerjakan berlawanan:
+
+| Yang terlihat di log build | Sebabnya | Diperbaiki di mana |
+| --- | --- | --- |
+| `403 TENANT_SUSPENDED` | Tenant berstatus `suspended` **atau** `inactive` di awcms. Sejak `awcms` ADR-0073 penolakannya mengenai kredensial mesin juga, dan ia diputuskan **sebelum** izin dicari — memperluas scope token tidak mengubah apa pun | **Di `awcms`.** Ini keadaan tenant; tidak ada yang bisa dilakukan dari repo situs |
+| `403` pada langkah TERAKHIR build, setelah setiap halaman selesai dirender | Token kurang `media_library.media.read`. `scripts/asal-media.mjs` berjalan paling akhir, jadi kegagalannya terbaca seperti deployment rusak alih-alih izin kurang | **Di repo situs.** Terbitkan ulang token dengan **dua** kunci — lihat `.env.example` |
+
+Keduanya menghasilkan build gagal **total** — nol berkas terbit — sehingga
+situs tetap tayang dengan konten lama, dan itulah yang membuatnya sunyi.
 
 ## Rollback
 

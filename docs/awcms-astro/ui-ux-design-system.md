@@ -8,7 +8,7 @@ Pemetaan itu bukan pelengkap. Ia yang membuat perpindahan ke pengelolaan dinamis
 
 Prinsip AWCMS diadaptasi ke konteks situs statis publik. Yang berbeda ditandai.
 
-1. **Terbaca tanpa JavaScript.** Seluruh fungsi inti — navigasi, pengalih bahasa, accordion FAQ, daftar wilayah — bekerja tanpa JS. Berbeda dari back-office AWCMS yang boleh mengandalkan islands.
+1. **Terbaca tanpa JavaScript.** Seluruh fungsi inti — navigasi, pengalih bahasa, accordion FAQ, dan seluruh badan artikel — bekerja tanpa JS. Berbeda dari back-office AWCMS yang boleh mengandalkan islands.
 2. **State eksplisit.** Setiap halaman punya keadaan terisi, kosong, dan fallback yang terlihat. Situs statis tidak punya loading state, tetapi punya **state fallback terjemahan** yang wajib ditandai ke pembaca.
 3. **Aksesibel.** Target WCAG 2.1 AA: kontras cukup di kedua tema, fokus terlihat, navigasi keyboard penuh.
 4. **Ringan.** Pembacanya di jaringan yang tidak dapat diandalkan. Anggaran gambar dan JavaScript diperlakukan sebagai batas, bukan saran.
@@ -44,11 +44,11 @@ Diimplementasikan sebagai CSS custom properties di `:root` pada `src/styles/glob
 
 | Kategori | Token | Nilai | Padanan AWCMS |
 | --- | --- | --- | --- |
-| Font | `--font-sans`, `--font-heading` | Inter, Outfit | `--font-sans` |
+| Font | `--font-sans`, `--font-heading` | `system-ui, -apple-system, …` — `--font-heading` adalah alias `var(--font-sans)`. **Tanpa webfont**: nol `@font-face`, nol origin font | `--font-sans` |
 | Radius | `--radius-sm/md/lg/xl` | 6 · 8 · 12 · 16 px | `--radius-sm/md/lg` |
 | Shadow | `--shadow-sm/md/lg` | elevasi kartu | `--shadow-sm/md/lg` |
 | Lebar | `--max-width` | 1200px | — (kontainer) |
-| Breakpoint | 480 · 640 · 768 · 900 px | media query | `sm/md/lg` |
+| Breakpoint | 400 · 480 · 640 · 768 · 900 px | media query | `sm/md/lg` |
 
 ### Kilau hover
 
@@ -142,7 +142,7 @@ Kolom terakhir menunjukkan padanan yang harus dituju saat integrasi, agar kompon
 - `prefers-reduced-motion: reduce` dihormati.
 - Badan konten yang jatuh ke locale default membawa atribut `lang` yang benar, supaya pembaca layar melafalkannya dengan aturan yang tepat.
 
-Targetnya **WCAG 2.1 AA** untuk permukaan publik dan **WCAG 2.2 AA** untuk permukaan Jualanku bila ia kelak ada ([ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md)). Dua kriteria 2.2 yang paling mungkin menggigit lebih dulu di antarmuka mana pun yang membawa kontrol: **2.4.11 Focus Not Obscured** dan **2.5.8 Target Size (Minimum)** — yang kedua sudah dipenuhi di sini lewat aturan target sentuh 44px di atas, yang pertama belum pernah diuji karena repo ini belum punya elemen melayang mana pun.
+Targetnya **WCAG 2.1 AA** untuk permukaan publik dan **WCAG 2.2 AA** untuk setiap permukaan TERAUTENTIKASI bila ia kelak ada — bukan hanya Jualanku ([ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md)), melainkan juga permukaan admin USER yang sebuah situs nyatakan lewat `permukaanAdmin` ([ADR-0034](../adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md)). Keduanya membawa kontrol, formulir, dan fokus yang berpindah; itu yang menentukan targetnya, bukan nama permukaannya. Dua kriteria 2.2 yang paling mungkin menggigit lebih dulu di antarmuka mana pun yang membawa kontrol: **2.4.11 Focus Not Obscured** dan **2.5.8 Target Size (Minimum)** — yang kedua sudah dipenuhi di sini lewat aturan target sentuh 44px di atas, yang pertama belum pernah diuji karena repo ini belum punya elemen melayang mana pun.
 
 Kontras token warna di repo ini **belum pernah diaudit terukur** (lihat peringatan di §Gap terhadap kosakata AWCMS). Itu satu-satunya butir WCAG di dokumen ini yang tidak bisa dijawab "sudah" — dan ia ditulis begitu alih-alih dibiarkan tampak terjaga.
 

@@ -18,10 +18,23 @@ konsisten. Dipanggil otomatis saat relevan, atau manual lewat `/<nama-skill>`.
 
 ## Empat skill, bukan lima puluh
 
-`awcms` punya 55 skill karena ia punya 21 modul domain. Repo ini punya satu
-tanggung jawab — menerbitkan situs statis dari konten `awcms` — dan skill yang
-memerikan sesuatu yang tidak ada di sini lebih berbahaya daripada skill yang
-tidak ada: pembacanya menganggapnya berlaku.
+`awcms` punya 55 skill karena ia punya 22 modul terdaftar. Repo ini punya satu
+tanggung jawab utama — menerbitkan halaman publik dari konten `awcms` — dan
+skill yang memerikan sesuatu yang tidak ada di sini lebih berbahaya daripada
+skill yang tidak ada: pembacanya menganggapnya berlaku.
+
+Sejak [ADR-0034](../../docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md)
+repo ini punya peran KEDUA — permukaan admin USER bila sebuah situs
+menyatakannya lewat `permukaanAdmin` — dan peran itu **sengaja belum punya
+skill**. Alasannya aturan di atas, diterapkan pada dirinya sendiri: hari ini
+`permukaanAdmin` kosong di template, tidak ada satu rute admin pun, dan tidak
+ada satu baris kode permukaan terautentikasi. Sebuah skill akan memerikan
+prosedur atas kode yang belum ada. Bahannya nyata dan sudah mendarat — sebagai
+DOKUMEN, di
+[`docs/awcms-astro/permukaan-admin-user.md`](../../docs/awcms-astro/permukaan-admin-user.md),
+yang memang tempatnya menerangkan apa yang harus dilakukan situs turunan. Bila
+kelak sebuah situs benar-benar menyalakannya dan prosedurnya terbukti berulang,
+skill kelima lolos batasnya sendiri; hari ini belum.
 
 **Skill baru ditambahkan saat ada prosedur yang benar-benar berulang di repo
 ini**, bukan untuk melengkapi katalog. Yang keempat lolos batas itu karena
@@ -53,8 +66,18 @@ berlawanan dengan koreksi biasa — kalimat "ini belum ada di repo ini" mulai
 benar, lalu barangnya dibangun, dan kalimat itu menua menjadi kebohongan yang
 percaya diri.
 
-Sejak 5 Agustus 2026 ketiga aturan `awcms` ADR-0062 itu berlaku penuh di sini:
+Sejak 5 Agustus 2026 aturan 1–3 `awcms` ADR-0062 berlaku penuh di sini:
 kutipan `ADR-NNNN` kini ikut diperiksa `bun run audit:dokumen` — yang tidak
 resolve ke `docs/adr/` dan tidak ditandai milik repo lain (`awcms`,
 "repo rujukan", atau tautan github di paragraf yang sama) adalah pelanggaran.
 Pekerjaan itu dicatat [ADR-0028](../../docs/adr/0028-jangkar-standar-performa-dan-keamanan.md) §E.
+
+**Aturannya EMPAT, dan yang keempat belum punya pemeriksa di sini.** Aturan 4
+`awcms` ADR-0062 berbunyi "perintah yang disuruh dijalankan harus ada": sebuah
+skill yang menyuruh `bun run <sesuatu>` yang tidak ada di `package.json` adalah
+pelanggaran. Tidak satu pun dari keenam gerbang `audit:dokumen` membaca
+`package.json`, jadi aturan itu **tidak ditegakkan** di repo ini. Hari ini tidak
+ada pelanggarannya — tetapi itu keberuntungan, bukan gerbang, dan menuliskannya
+sebagai "berlaku penuh" akan menjadi persis klaim yang
+[ADR-0030](../../docs/adr/0030-aturan-tertulis-mendapat-pemeriksanya.md) ada
+untuk melawan.

@@ -82,7 +82,7 @@ export type TabSlug = (typeof tabs)[number]["slug"];
  *   step 1 before step 2, forever, and a three-year-old page stays at the top
  *   because that is where it belongs.
  * - `"terbaru"` — `publishedAt` decides, newest first. This is the ordering
- *   awcms's own `/news/**` routes use (`ORDER BY published_at DESC`), and the
+ *   awcms's own public blog routes use (`ORDER BY published_at DESC`), and the
  *   only one that makes sense for content whose value decays. `urutan` is
  *   ignored in such a section: asking an editor to renumber the whole section
  *   on every publish is asking them to maintain by hand the one thing the

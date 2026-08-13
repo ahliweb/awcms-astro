@@ -30,7 +30,7 @@ Yang tetap relevan:
 
 Pemetaan lengkap ke **OWASP Top 10 2021, OWASP ASVS 4.0.3, OWASP Secure Headers Project, ISO/IEC 27001:2022 Annex A, dan NIST SSDF SP 800-218** ada di [`docs/awcms-astro/standar-performa-dan-keamanan.md`](docs/awcms-astro/standar-performa-dan-keamanan.md) ([ADR-0028](docs/adr/0028-jangkar-standar-performa-dan-keamanan.md)).
 
-Dokumen itu memuat **daftar celah**, dan daftar itu sengaja publik: kesembilan celah bernomornya kini tertutup, dan baris yang tertutup tetap di tabel beserta pemeriksanya masing-masing.
+Dokumen itu memuat **daftar celah**, dan daftar itu sengaja publik: kesepuluh celah bernomornya kini tertutup, dan baris yang tertutup tetap di tabel beserta pemeriksanya masing-masing.
 
 Dua batas yang dinyatakan terus terang — bukan celah, melainkan keadaan yang diterima sadar: berkas `.astro` tidak teranalisis statik (CodeQL tidak menguranya, dan ringkasan run menyatakannya), dan Core Web Vitals diukur lab, bukan pada kunjungan nyata (RUM ditolak karena mengumpulkan data pembaca). Melaporkan keduanya lagi tidak menambah informasi; melaporkan **akibat konkret**-nya pada sebuah deployment nyata, menambah.
 

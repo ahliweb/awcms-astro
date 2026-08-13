@@ -1,6 +1,17 @@
 # ADR-0020 — Layar admin owner/internal kembali ke `awcms`; repo ini kembali murni publik + BFF
 
 - **Status:** Accepted
+- **Dipersempit:** [ADR-0034](0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md)
+  (8 Agustus 2026) — kalimat "**Repo ini tidak memikul layar admin**" di
+  §Keputusan berlaku untuk layar admin **SISTEM**. Sebuah situs boleh membawa
+  permukaan admin **USER** bila ia menyatakannya lewat `permukaanAdmin`, dengan
+  `owner` ditolak gerbang. ADR ini **tidak** di-supersede: alasan intinya —
+  memindahkan layar tidak pernah menjadi kontrol keamanan — tidak dibantah, dan
+  tidak satu pun gerbangnya dilonggarkan. `awcms` menjawab dari sisinya dengan
+  [ADR-0070](https://github.com/ahliweb/awcms/blob/main/docs/adr/0070-peran-keluarga-awcms-astro-memikul-publik-dan-admin-user.md),
+  yang mempersempit ADR-0051 di sana dengan cara yang sama. Kalimat di bawah
+  **tidak ditulis ulang**; ia benar pada 2 Agustus 2026, dan menyuntingnya akan
+  memalsukan rekaman.
 - **Tanggal:** 2 Agustus 2026
 - **Men-supersede:** [ADR-0017](0017-peran-admin-owner-internal.md) (repo ini memikul halaman admin owner/internal)
 - **Pasangan di `awcms`:** [ADR-0051](https://github.com/ahliweb/awcms/blob/main/docs/adr/0051-admin-screens-consolidated-in-awcms.md) — keputusan yang sama, diambil di repo yang memiliki datanya, men-supersede `awcms` ADR-0048
