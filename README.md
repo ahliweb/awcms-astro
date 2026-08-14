@@ -1,397 +1,410 @@
+🇬🇧 English (source) · 🇮🇩 [Bahasa Indonesia](README.id.md)
+
 # awcms-astro
 
-Template keluarga AWCMS untuk **situs publik statis di atas Astro**, dengan
-[`ahliweb/awcms`](https://github.com/ahliweb/awcms) sebagai backend kontennya.
+The AWCMS family template for **static public sites on Astro**, with
+[`ahliweb/awcms`](https://github.com/ahliweb/awcms) as its content backend.
 
-Pembaca mendapat berkas statis; redaksi mendapat panel admin. Tidak ada yang
-menunggu basis data, dan **situs ini tidak memanggil awcms saat pembaca meminta
-halaman** — klaimnya itu, bukan bahwa CMS-nya tersembunyi. awcms memang
-menghadap internet: `/blog/{tenantCode}/**` adalah kosakata URL permanennya.
+Readers get static files; editors get an admin panel. Nothing waits on a
+database, and **this site does not call awcms when a reader asks for a page** —
+that is the claim, not that the CMS is hidden. awcms does face the internet:
+`/blog/{tenantCode}/**` is its permanent URL vocabulary.
 
-**Fungsi utamanya halaman publik, dan itu bawaannya.** Sebuah situs boleh
-menyatakan dirinya juga membawa permukaan admin untuk **user** — penulis,
-peninjau, kontributor — di sebelah halaman publiknya, lewat `permukaanAdmin` di
-[`src/config/site.ts`](src/config/site.ts). Yang tidak pernah tinggal di sini
-adalah **admin utama**: `owner` dan setiap layar yang mengelola sistem tetap di
-`/admin/*` milik `awcms`. Aturannya, beserta gerbangnya, di
+**Public pages are its primary function, and that is the default.** A site may
+declare that it also carries an admin surface for **users** — authors,
+reviewers, contributors — beside its public pages, through `permukaanAdmin` in
+[`src/config/site.ts`](src/config/site.ts). What never lives here is the **main
+admin**: `owner` and every screen that manages the system stay in `awcms`'s own
+`/admin/*`. The rule, and its gate, are in
 [ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md).
 
-## Posisi di keluarga AWCMS
+## Position in the AWCMS family
 
-| Template          | Mode                   | Basis data | Dipakai untuk                                                                   | Status           |
-| ----------------- | ---------------------- | ---------- | --------------------------------------------------------------------------------- | ---------------- |
-| **`awcms-astro`** | Statis (SSG)           | Tidak ada  | **Halaman publik** (fungsi utama) + **permukaan admin USER** bila dinyatakan       | **Dikembangkan** |
-| `awcms`           | Online-first, superset | PostgreSQL | Back-office, ERP, multi-tenant, seluruh layar admin SISTEM — **backend repo ini**  | **Dikembangkan** |
-| `awcms-micro`     | Online penuh, ramping  | PostgreSQL | —                                                                                  | **Arsip**        |
-| `awcms-mini`      | Hybrid offline-first   | PostgreSQL | —                                                                                  | **Arsip**        |
+| Template          | Mode                    | Database   | Used for                                                                          | Status          |
+| ----------------- | ----------------------- | ---------- | --------------------------------------------------------------------------------- | --------------- |
+| **`awcms-astro`** | Static (SSG)            | None       | **Public pages** (primary function) + a **USER admin surface** when declared       | **Developed**   |
+| `awcms`           | Online-first, superset  | PostgreSQL | Back-office, ERP, multi-tenant, every SYSTEM admin screen — **this repo's backend** | **Developed**   |
+| `awcms-micro`     | Fully online, lean      | PostgreSQL | —                                                                                  | **Archive**     |
+| `awcms-mini`      | Offline-first hybrid    | PostgreSQL | —                                                                                  | **Archive**     |
 
-Dua baris pertama adalah seluruh keluarga yang dikembangkan, dan **pasangan
-keduanya** adalah pengganti multiguna dari ketiga template lama — bukan salah
-satunya sendirian. Pembagian layarnya bukan menurut audiens melainkan menurut
-**apa yang dikelola**: admin SISTEM (modul, peran, tenant, jejak audit) di
-`awcms`, permukaan admin USER (menulis artikel, mengajukan tinjauan, profil
-sendiri) boleh di sini bila situsnya menyatakannya lewat `permukaanAdmin`
+The first two rows are the whole developed family, and **the pair of them** is
+the general-purpose replacement for all three of the old templates — not either
+one alone. The split of screens is not by audience but by **what is managed**:
+SYSTEM admin (modules, roles, tenants, audit trail) in `awcms`; a USER admin
+surface (writing an article, submitting it for review, one's own profile) may
+live here when the site declares it through `permukaanAdmin`
 ([ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md),
-`awcms` ADR-0070). Peran `owner` ditolak gerbang di sini.
+`awcms` ADR-0070). The `owner` role is refused by a gate here.
 
-Dan pembagian itu punya pasangannya yang menentukan **sebelum** sebuah layar
-digambar: **kebutuhan backend menjadi MODUL di `awcms`**, tidak pernah folder di
-sini ([ADR-0038](docs/adr/0038-kebutuhan-backend-menjadi-modul-di-awcms.md)).
-Formulir kontak yang tersimpan, langganan buletin, direktori anggota — semuanya
-mendarat di sana, lewat admission modul, dengan RLS, katalog izin, jejak audit,
-deskriptor retensi, dan deskriptor subjek datanya. Repo ini **membaca** `awcms`
-dan tidak menulis; keempat batasnya digerbangi
-[`tests/tanpa-backend.test.mjs`](tests/tanpa-backend.test.mjs), termasuk
-dependency yang membawa kemampuan backend masuk lewat satu `bun add`.
+And that split has a counterpart which decides things **before** any screen is
+drawn: **a backend need becomes a MODULE in `awcms`**, never a folder here
+([ADR-0038](docs/adr/0038-kebutuhan-backend-menjadi-modul-di-awcms.md)). A
+stored contact form, a newsletter subscription, a member directory — all of them
+land there, through module admission, with their RLS, permission catalogue,
+audit trail, retention descriptor, and data-subject descriptor. This repo
+**reads** `awcms` and does not write; all four of its limits are gated by
+[`tests/tanpa-backend.test.mjs`](tests/tanpa-backend.test.mjs), including a
+dependency that would bring backend capability in through a single `bun add`.
 
-Repo ini sempat **ditahan** dari 2 sampai 4 Agustus 2026 sampai fondasi `awcms`
-selesai (ADR-0021). Penahanan itu berakhir karena kedua indikator yang ia tulis
-sendiri terpenuhi — tiap modul `awcms` punya layar, dan §4 `PROJECT_STATE`-nya
-habis ([ADR-0027](docs/adr/0027-penahanan-adr-0021-selesai.md)). Yang
-menggantikannya satu pertanyaan yang tidak akan kedaluwarsa: **apakah perubahan
-ini akan ditulis ulang bila `awcms` berubah?** Bila ya, ia butuh instans `awcms`
-untuk dibuktikan sebelum mendarat — dan "endpoint-nya sudah ada" bukan jawaban
-"tidak" ([ADR-0023](docs/adr/0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md)).
+This repo was **held** from 2 to 4 August 2026 until the `awcms` foundation was
+finished (ADR-0021). That hold ended because both indicators it set for itself
+were met — every `awcms` module has a screen, and §4 of its `PROJECT_STATE` was
+exhausted ([ADR-0027](docs/adr/0027-penahanan-adr-0021-selesai.md)). What
+replaced it is one question that will not expire: **will this change be
+rewritten if `awcms` changes?** If so, it needs an `awcms` instance to be proven
+before it lands — and "the endpoint already exists" is not an answer of "no"
+([ADR-0023](docs/adr/0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md)).
 
-Sejak **2 Agustus 2026** (`awcms` ADR-0055) hanya dua repo yang dikembangkan:
-repo ini dan `awcms`. `awcms-micro` dan `awcms-mini` adalah **arsip** — boleh
-dibaca sebagai referensi sejarah, tetapi tidak ada pekerjaan yang dijadwalkan
-di-port dari sana maupun keluar ke sana, dan jalur "fitur fondasi diuji di
-`awcms-mini` dulu" **dicabut**, bukan ditangguhkan. Konsekuensinya bagi alur
-kerja ada di
-[`AGENTS.md`](AGENTS.md#di-mana-pekerjaan-boleh-mendarat-berlaku-2-agustus-2026).
+Since **2 August 2026** (`awcms` ADR-0055) only two repos are developed: this
+one and `awcms`. `awcms-micro` and `awcms-mini` are **archives** — they may be
+read as historical reference, but no work is scheduled to be ported from them or
+out to them, and the "foundation features are tested in `awcms-mini` first" path
+is **withdrawn**, not suspended. The consequences for the workflow are in
+[`AGENTS.md`](AGENTS.md#where-work-may-land-in-force-2-august-2026).
 
-Repo ini adalah **implementasi rujukan** standar `awcms-astro`. Standarnya
-sendiri lahir dari `web-lalulintasmelayani.com`, situs enam bahasa yang sudah
-berjalan di produksi; dokumen standarnya ikut dibawa ke sini di
+This repo is the **reference implementation** of the `awcms-astro` standard. The
+standard itself came out of `web-lalulintasmelayani.com`, a six-language site
+already running in production; its standard documents came along to
 [`docs/awcms-astro/`](docs/awcms-astro/README.md).
 
-## Cara kerjanya
+## How it works
 
 ```mermaid
 flowchart LR
-  Redaksi["Redaksi"] --> Admin["awcms — panel admin"]
+  Editors["Editors"] --> Admin["awcms — admin panel"]
   Admin --> DB[("PostgreSQL")]
   DB --> API["/api/v1/blog/posts"]
-  API -->|"saat build"| Astro["awcms-astro"]
-  Astro --> Dist["dist/client — berkas statis"]
-  Dist --> Bun["proses Bun — dist/server/penyaji.mjs"]
-  Bun -->|"Traefik"| Pembaca["Pembaca"]
+  API -->|"at build time"| Astro["awcms-astro"]
+  Astro --> Dist["dist/client — static files"]
+  Dist --> Bun["Bun process — dist/server/penyaji.mjs"]
+  Bun -->|"Traefik"| Reader["Reader"]
 ```
 
-Konten ditarik **saat build**, bukan saat request. Konsekuensinya lugas dan
-memang disengaja: situs tetap tayang saat awcms mati, tidak ada basis data dan
-tidak ada panggilan ke awcms saat request, dan konten baru tayang setelah build
-berikutnya — bukan seketika. Kalau butuh seketika, yang menjawabnya adalah
-permukaan publik **awcms sendiri** (`/blog/{tenantCode}/**`), yang terbit
-langsung tayang tanpa rebuild. Bukan `awcms-micro`: repo itu **arsip** sejak
-2 Agustus 2026 dan tidak boleh direkomendasikan kepada siapa pun.
+Content is pulled **at build time**, not at request time. The consequences are
+plain and deliberate: the site stays up while awcms is down, there is no
+database and no call to awcms at request time, and new content appears after the
+next build — not instantly. If instant is what you need, the thing that answers
+it is **awcms's own** public surface (`/blog/{tenantCode}/**`), where publishing
+goes live without a rebuild. Not `awcms-micro`: that repo has been an **archive**
+since 2 August 2026 and must not be recommended to anyone.
 
-Yang menyajikan berkas itu adalah **proses Bun**, bukan nginx (ADR-0016) — jadi
-"tanpa runtime" bukan klaim repo ini; klaimnya adalah tanpa basis data dan tanpa
-panggilan ke CMS saat pembaca meminta halaman. Aturan cache, lima header
-keamanan — termasuk `Content-Security-Policy` ketat dan `Permissions-Policy`
-sejak ADR-0019 — dan kompresi tinggal di
-[`server/penyaji.mjs`](server/penyaji.mjs) dan dijaga
-[`tests/penyaji.test.mjs`](tests/penyaji.test.mjs). Yang keenam,
-`Strict-Transport-Security`, dikirim **hanya di produksi**
+What serves those files is a **Bun process**, not nginx (ADR-0016) — so "no
+runtime" is not this repo's claim; the claim is no database and no call to the
+CMS when a reader asks for a page. Cache rules, five security headers —
+including a strict `Content-Security-Policy` and `Permissions-Policy` since
+ADR-0019 — and compression live in [`server/penyaji.mjs`](server/penyaji.mjs)
+and are guarded by [`tests/penyaji.test.mjs`](tests/penyaji.test.mjs). The
+sixth, `Strict-Transport-Security`, is sent **only in production**
 ([ADR-0029](docs/adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md)) —
-karena HSTS berlaku untuk HOST dan tidak bisa dibatalkan dari sisi situs, jadi
-satu pratinjau lokal yang mengirimkannya akan mengunci setiap proyek lain di
-`localhost` selama setahun. Postur lengkapnya — sepuluh celah bernomor yang
-kini seluruhnya tertutup, barisnya tetap di tabel — ada di
+because HSTS applies to a HOST and cannot be revoked from the site's side, so a
+single local preview that sent it would lock every other project on `localhost`
+for a year. The full posture — ten numbered gaps, now all closed, their rows
+kept in the table — is in
 [`docs/awcms-astro/standar-performa-dan-keamanan.md`](docs/awcms-astro/standar-performa-dan-keamanan.md).
 
-"Build berikutnya" tidak berarti menunggu seseorang menekan tombol: awcms
-memicu rebuild lewat webhook begitu sebuah post terbit, jadi jeda antara redaksi
-menekan *publish* dan pembaca melihatnya adalah lama build, bukan lama seseorang
-teringat. Rantainya di [`docs/deploy-coolify.md`](docs/deploy-coolify.md).
+"The next build" does not mean waiting for someone to press a button: awcms
+triggers a rebuild by webhook the moment a post is published, so the delay
+between an editor pressing *publish* and a reader seeing it is the length of a
+build, not the length of someone remembering. The chain is in
+[`docs/deploy-coolify.md`](docs/deploy-coolify.md).
 
-## Memulai situs baru
+## Starting a new site
 
-Repo ini adalah **template repository** GitHub. Tombol **"Use this template"**
-membuat repo baru berisi seluruh kerangkanya dengan riwayat commit yang bersih —
-bukan fork, jadi situsmu tidak mewarisi 4 tahun commit template.
+This repo is a GitHub **template repository**. The **"Use this template"** button
+creates a new repo with the whole skeleton and a clean commit history — not a
+fork, so your site does not inherit 4 years of template commits.
 
-Yang ikut terbawa dan harus dikosongkan lebih dulu — `.changesets/`,
-`CHANGELOG.md`, `docs/adr/`, identitas di `package.json` — beserta urutan
-langkah setelahnya ada di
-[`checklist-repo-baru.md`](docs/awcms-astro/checklist-repo-baru.md). Urutannya
-disengaja: kontrak lebih dulu, konten berikutnya, tampilan terakhir.
+What comes along and must be emptied first — `.changesets/`, `CHANGELOG.md`,
+`docs/adr/`, the identity in `package.json` — along with the order of the steps
+that follow, is in
+[`checklist-repo-baru.md`](docs/awcms-astro/checklist-repo-baru.md). That order
+is deliberate: contract first, content next, appearance last.
 
-## Menjalankan
+## Running it
 
 ```bash
-cp .env.example .env     # isi AWCMS_API_URL, token, dan tenant
+cp .env.example .env     # fill in AWCMS_API_URL, the token, and the tenant
 bun install
 bun run dev              # http://localhost:4321
 ```
 
-Repo ini **Bun-only** (ADR-0015): Bun adalah runtime sekaligus package manager,
-versinya dipin di `packageManager`/`engines.bun`, dan `bun.lock` adalah
-satu-satunya lockfile.
+This repo is **Bun-only** (ADR-0015): Bun is both the runtime and the package
+manager, its version is pinned in `packageManager`/`engines.bun`, and `bun.lock`
+is the only lockfile.
 
-| Perintah                 | Kegunaan                                                        |
-| ------------------------ | --------------------------------------------------------------- |
-| `bun run dev`            | Server pengembangan Astro (HMR), `http://localhost:4321`        |
-| `bun run check`          | Gerbang lockfile lalu `astro check`                             |
-| `bun run check:lockfile` | Hanya gerbang lockfile — murni baca berkas                      |
-| `bun test`               | 20 berkas gerbang: kontrak `awcms`, peran situs, tanpa backend, kosakata `news`, feed, penyaji, CSP keluaran |
-| `bun run audit:konten`   | Gerbang audit: sumber gambar, dan keluaran build bila sudah ada |
-| `bun run audit:dokumen`  | Gerbang dokumen: tautan markdown mati, indeks ADR, daftar permukaan kilau |
-| `bun run audit:graf`     | Gerbang graf: artefak `graphify-out/` yang terlacak, dan nama komunitasnya |
-| `bun run build`          | `check` → `astro build` → bundel penyaji                        |
-| `bun run build:penyaji`  | Hanya membundel penyaji ke `dist/server/penyaji.mjs`            |
-| `bun run serve`          | Menjalankan penyaji produksi atas hasil build (port 8080)       |
-| `bun run preview`        | Alias `serve` — pratinjau memakai penyaji yang sama dengan prod |
-| `bun run start`          | Alias `serve` — perintah yang dijalankan image                  |
+| Command                     | Purpose                                                          |
+| --------------------------- | ---------------------------------------------------------------- |
+| `bun run dev`               | Astro development server (HMR), `http://localhost:4321`          |
+| `bun run check`             | Lockfile gate, then `astro check`                                |
+| `bun run check:lockfile`    | The lockfile gate alone — pure file reading                      |
+| `bun test`                  | 21 gate files: the `awcms` contract, site roles, no-backend, the `news` vocabulary, feeds, the server, output CSP, translation mirrors |
+| `bun run audit:konten`      | Audit gate: image sources, and the build output when it exists   |
+| `bun run audit:dokumen`     | Document gate: dead markdown links, the ADR index, the shine-surface list |
+| `bun run audit:graf`        | Graph gate: the tracked `graphify-out/` artefacts, and their community names |
+| `bun run audit:translation` | Translation gate: stale Indonesian mirrors, and documents with no mirror ([ADR-0039](docs/adr/0039-english-is-the-source-language.md)) |
+| `bun run docs:i18n:stamp`   | Writes the language banners and the source-hash markers          |
+| `bun run build`             | `check` → `astro build` → bundle the server                      |
+| `bun run build:penyaji`     | Bundle the server alone into `dist/server/penyaji.mjs`           |
+| `bun run serve`             | Run the production server over the build output (port 8080)      |
+| `bun run preview`           | Alias for `serve` — preview uses the same server as production   |
+| `bun run start`             | Alias for `serve` — the command the image runs                   |
 
-`bun run dev` menjalankan server pengembangan Astro, dan server itu **bukan**
-penyaji produksi: ia tidak mengirim lima header keamanan maupun aturan cache di
-[`server/penyaji.mjs`](server/penyaji.mjs). Untuk melihat persis yang dilihat
-pembaca — header, cache, kompresi — jalankan `bun run build && bun run serve`.
-`preview` sengaja dipetakan ke penyaji yang sama supaya "sudah saya cek di
-preview" berarti sesuatu.
+`bun run dev` runs the Astro development server, and that server is **not** the
+production one: it sends neither the five security headers nor the cache rules
+in [`server/penyaji.mjs`](server/penyaji.mjs). To see exactly what a reader sees
+— headers, cache, compression — run `bun run build && bun run serve`. `preview`
+is deliberately mapped to the same server so that "I checked it in preview"
+means something.
 
-Setelah mengubah dependency, regenerasi lockfile penuh:
+After changing a dependency, regenerate the lockfile in full:
 
 ```bash
 rm -rf node_modules bun.lock && bun install
 ```
 
-Di CI dan di dalam image, install selalu `bun install --frozen-lockfile` —
-tanpanya install boleh MEMPERBARUI `bun.lock` diam-diam, dan yang dibangun
-berhenti sama dengan yang di-review.
+In CI and inside the image, installation is always `bun install
+--frozen-lockfile` — without it, an install may quietly UPDATE `bun.lock`, and
+what gets built stops being what was reviewed.
 
-## Tenant: satu variabel, dan satu pernyataan yang diverifikasi
+## Tenant: one variable, and one verified assertion
 
-Satu instans awcms melayani banyak tenant; satu situs `awcms-astro` adalah satu
-tenant. Sejak awcms ADR-0049, **tenant datang dari tokennya**: kredensial build
-adalah kredensial mesin berbentuk `awcmsm_<32 hex tenant>_<rahasia>`, dan awcms
-menurunkan tenant dari sana sebelum melihat header apa pun.
+One awcms instance serves many tenants; one `awcms-astro` site is one tenant.
+Since awcms ADR-0049, **the tenant comes from the token**: the build credential
+is a machine credential shaped `awcmsm_<32 hex tenant>_<secret>`, and awcms
+derives the tenant from it before looking at any header.
 
-Jadi konfigurasinya satu variabel:
+So the configuration is one variable:
 
-| Variabel | Peran |
+| Variable | Role |
 | --- | --- |
-| `AWCMS_API_TOKEN` | Kredensial **dan** tenant. Wajib kredensial mesin ber-scope **dua kunci**: `blog_content.posts.read` dan `media_library.media.read` |
-| `AWCMS_TENANT_ID` | **Opsional, dianjurkan.** Bukan pemilih — pernyataan yang diverifikasi. Build gagal bila berbeda dari tenant token |
+| `AWCMS_API_TOKEN` | The credential **and** the tenant. Must be a machine credential scoped to **two keys**: `blog_content.posts.read` and `media_library.media.read` |
+| `AWCMS_TENANT_ID` | **Optional, recommended.** Not a selector — a verified assertion. The build fails if it differs from the token's tenant |
 
-`AWCMS_TENANT_CODE` dan `AWCMS_DEFAULT_TENANT_CODE` sudah tidak ada, dan
-**ditolak** alih-alih diabaikan.
+`AWCMS_TENANT_CODE` and `AWCMS_DEFAULT_TENANT_CODE` are gone, and are
+**refused** rather than ignored.
 
-**Kunci kedua bukan opsional, dan bukan untuk gambar saja.** `bun run build`
-berakhir di [`scripts/asal-media.mjs`](scripts/asal-media.mjs), yang menanyakan
-asal media publik kepada awcms supaya penyaji bisa mengirim `img-src` yang
-mengizinkannya. Tanpa `media_library.media.read` panggilan itu dibalas 403 dan
-**build GAGAL** — setelah setiap halaman selesai dirender, sehingga ia terbaca
-seperti deployment yang rusak alih-alih izin yang kurang. Deployment tanpa media
-publik pun tetap membutuhkannya; jawabannya lalu tercatat `configured: false`.
+**The second key is not optional, and it is not just for images.** `bun run
+build` ends in [`scripts/asal-media.mjs`](scripts/asal-media.mjs), which asks
+awcms for the origin of public media so the server can send an `img-src` that
+allows it. Without `media_library.media.read` that call is answered 403 and the
+**build FAILS** — after every page has finished rendering, so it reads like a
+broken deployment rather than a missing permission. Even a deployment with no
+public media needs it; the answer is then recorded as `configured: false`.
 
-**Dan satu premis lama berhenti berlaku pada 13 Agustus 2026.** Sampai hari itu
-"kredensial mesin tidak bisa menulis" adalah sifat KELASNYA. Sejak awcms
-ADR-0092 ia bukan lagi: kelas tulis ada, dengan plafon aksi `create`/`update` di
-kode, wajib terikat CIDR, ditolak bila alamat pemanggil tidak diketahui, dan
-berumur maksimum 30 hari alih-alih setahun. Token build repo ini **tetap
-baca-saja** — tetapi karena ia diterbitkan tanpa satu pun aksi tulis, yaitu
-properti BARISNYA, bukan properti kelasnya. Menjaganya begitu kini sebuah
-keputusan penerbitan yang harus dipertahankan, bukan jaminan yang diwarisi.
+**And one old premise stopped holding on 13 August 2026.** Until that day,
+"machine credentials cannot write" was a property of the CLASS. Since awcms
+ADR-0092 it is not: a write class exists, with a `create`/`update` action
+ceiling in code, mandatory CIDR binding, refusal when the caller's address is
+unknown, and a maximum life of 30 days instead of a year. This repo's build
+token is **still read-only** — but because it is issued without a single write
+action, that is a property of the ROW, not of the class. Keeping it that way is
+now an issuing decision that must be maintained, not an inherited guarantee.
 
-**Menerbitkan dan mencabutnya kini sebuah layar**, `/admin/machine-credentials`
-di awcms — dibangun pada hari yang sama, dengan alasan yang lugas: mencabut token
-yang bocor adalah tindakan yang dicari orang di bawah tekanan, dan sampai layar
-itu ada ia sebuah `POST` yang tidak diingat siapa pun. Plaintext token muncul
-**sekali** di respons penerbitannya; memuat ulang halamannya menghanguskan
-kredensial. Dua hal yang harus dipilih benar di sana: kelas **baca** (formulirnya
-kini bisa mencetak kelas tulis juga), dan akun layanan milik tenant **situs ini**
-— bukan aktor terdelegasi seorang partner, yang berhenti membangun pada hari
-kemitraannya disuspend (awcms ADR-0093).
+**Issuing and revoking one is now a screen**, `/admin/machine-credentials` in
+awcms — built the same day, for a plain reason: revoking a leaked token is
+something people reach for under pressure, and until that screen existed it was
+a `POST` nobody remembered. The plaintext token appears **once**, in the issuing
+response; reloading the page burns the credential. Two things must be chosen
+correctly there: the **read** class (the form can now mint a write class too),
+and a service account belonging to **this site's** tenant — not a partner's
+delegated actor, which stops building the day their partnership is suspended
+(awcms ADR-0093).
 
-Kenapa penjagaannya berpindah, bukan hilang: rantai lama menjaga "build menebak
-tenant", keadaan yang kini tidak mungkin. Yang mungkin, dan tak terlihat oleh
-apa pun sebelumnya, adalah **token tenant lain terpasang di situs ini** — build
-hijau, situs penuh, isinya milik orang lain. Rantai tidak bisa melihat itu;
-pernyataan yang diverifikasi bisa. Rinciannya di
-[`src/lib/awcms/tenant.ts`](src/lib/awcms/tenant.ts) dan
+Why the guard moved rather than disappeared: the old chain guarded against "the
+build guesses the tenant", a state that is now impossible. What is possible, and
+was invisible to everything before, is **another tenant's token installed on
+this site** — a green build, a full site, someone else's content. A chain cannot
+see that; a verified assertion can. The details are in
+[`src/lib/awcms/tenant.ts`](src/lib/awcms/tenant.ts) and
 [ADR-0018](docs/adr/0018-kontrak-build-token-mesin-dan-traversal-konten.md).
 
-## Yang membuat template ini berbeda
+## What makes this template different
 
-**Terbaca tanpa JavaScript.** Navigasi, pengalih bahasa, accordion FAQ, dan
-seluruh isi halaman bekerja penuh tanpa JS. Satu-satunya yang butuh JS adalah
-tombol salin tautan — dan tombol itu **disembunyikan** saat JS mati, karena
-tombol yang diam saat diklik lebih buruk daripada tombol yang tidak ada.
+**Readable without JavaScript.** Navigation, the language switcher, the FAQ
+accordion, and the whole body of every page work fully without JS. The only
+thing that needs JS is the copy-link button — and that button is **hidden** when
+JS is off, because a button that does nothing when clicked is worse than a
+button that is not there.
 
-**Multi-locale tanpa halaman pincang.** Kumpulan slug ditentukan satu locale
-sumber, dan locale lain dipasangkan lewat `translationGroupId`. Setiap bahasa
-selalu punya jumlah halaman yang sama, tidak pernah ada 404 antar bahasa, dan
-artikel yang belum diterjemahkan tampil dalam bahasa sumber **disertai
-penanda** — bukan halaman kosong dan bukan nama key mentah.
+**Multi-locale with no lame pages.** The set of slugs is decided by one source
+locale, and other locales are paired to it through `translationGroupId`. Every
+language always has the same number of pages, there is never a 404 between
+languages, and an untranslated article appears in the source language **with a
+marker** — not a blank page, and not a raw key name.
 
-**Tanpa skrip pihak ketiga.** Tidak ada SDK, widget, piksel, atau tombol
-berbagi milik penyedia sosial. Berbagi memakai tautan biasa, jadi tidak ada
-data pembaca yang terkirim sebelum ia sendiri mengeklik.
+**No third-party scripts.** No SDKs, widgets, pixels, or share buttons belonging
+to a social provider. Sharing uses ordinary links, so no reader data is sent
+before the reader clicks.
 
-**Tanpa HTML mentah dari CMS.** Blok konten dirender dari struktur, bukan dari
-field HTML — [`src/lib/content-blocks.ts`](src/lib/content-blocks.ts) menyusun
-setiap elemen dari teks yang sudah di-escape dan tag tetap. Editor tidak bisa
-menyuntikkan markup lewat jalur mana pun, apa pun yang ia ketik.
+**No raw HTML from the CMS.** Content blocks are rendered from structure, not
+from an HTML field — [`src/lib/content-blocks.ts`](src/lib/content-blocks.ts)
+assembles every element from already-escaped text and fixed tags. An editor
+cannot inject markup through any path, whatever they type.
 
-**CSP ketat yang benar-benar dikirim, bukan sekadar "siap CSP".** Penyaji
-memasang `default-src 'self'` dengan `script-src 'self'` dan `style-src 'self'`
-tanpa `'unsafe-inline'` (ADR-0019). Yang membuatnya mungkin: tidak ada satu pun
-gaya maupun skrip di dalam HTML keluaran — pengalih tema tinggal di
-[`public/tema.js`](public/tema.js), dan Astro dilarang menyisipkan bundel kecil
-ke halaman lewat `vite.build.assetsInlineLimit: 0`. Keduanya dijaga
-[`tests/keluaran-csp.test.mjs`](tests/keluaran-csp.test.mjs), yang juga
-membuktikan JS-nya tidak ikut hilang; kebijakannya sendiri dijaga
-[`tests/penyaji.test.mjs`](tests/penyaji.test.mjs). JSON-LD tetap inline dan itu
-bukan kelonggaran: blok data bertipe non-JavaScript tidak pernah dieksekusi,
-jadi `script-src` tidak berlaku atasnya.
+**A strict CSP that is actually sent, not merely "CSP-ready".** The server sets
+`default-src 'self'` with `script-src 'self'` and `style-src 'self'` and no
+`'unsafe-inline'` (ADR-0019). What makes that possible: there is not one style
+or script inside the output HTML — the theme switcher lives in
+[`public/tema.js`](public/tema.js), and Astro is forbidden from inlining small
+bundles into pages by `vite.build.assetsInlineLimit: 0`. Both are guarded by
+[`tests/keluaran-csp.test.mjs`](tests/keluaran-csp.test.mjs), which also proves
+the JS did not vanish with them; the policy itself is guarded by
+[`tests/penyaji.test.mjs`](tests/penyaji.test.mjs). JSON-LD stays inline and
+that is not a loosening: a data block with a non-JavaScript type is never
+executed, so `script-src` does not apply to it.
 
-**Gerbang atas yang TERBIT, bukan atas yang tertulis.**
-[`scripts/audit-konten.mjs`](scripts/audit-konten.mjs) membaca `dist/client/`
-dan menolak enam kelas cacat yang seluruhnya lolos dari build hijau: halaman
-tanpa judul atau deskripsi, kelompok hreflang yang pincang, `og:image` yang
-menunjuk berkas yang tidak pernah diterbitkan build ini, tautan internal yang
-mati, sitemap yang mendaftarkan halaman yang tidak dibangun, dan nama key
-mentah yang tampil sebagai teks kepada pembaca. Yang terakhir bukan hipotesis —
-template ini pernah menerbitkan `translation.notice.label` di kedua bahasa,
-dengan `astro check` bersih. Skrip yang sama memeriksa sumber gambar: rasio
-terhadap `--ratio-visual`, format dibaca dari isi berkas alih-alih ekstensinya,
-XML SVG, dan ukuran teks terkecil di dalamnya.
+**Gates over what is PUBLISHED, not over what is written.**
+[`scripts/audit-konten.mjs`](scripts/audit-konten.mjs) reads `dist/client/` and
+refuses six classes of defect that all survive a green build: a page with no
+title or description, a lame hreflang group, an `og:image` pointing at a file
+this build never published, a dead internal link, a sitemap listing a page that
+was not built, and a raw key name shown to a reader as text. That last one is
+not hypothetical — this template once published `translation.notice.label` in
+both languages, with `astro check` clean. The same script checks image sources:
+ratio against `--ratio-visual`, format read from file contents rather than the
+extension, SVG XML, and the smallest text size inside them.
 
-## Struktur
+## Structure
 
 ```
 src/
-├── components/           # komponen render + views/ (badan halaman lintas locale)
-├── config/site.ts        # locale, tab, identitas situs — satu-satunya berkas konfigurasi
+├── components/           # render components + views/ (page bodies across locales)
+├── config/site.ts        # locales, tabs, site identity — the only configuration file
 ├── layouts/              # BaseLayout (SEO, hreflang, share), ArtikelLayout
 ├── lib/
-│   ├── awcms/client.ts   # SATU-SATUNYA berkas yang bicara ke awcms
-│   ├── awcms/tenant.ts   # tenant dari token + assertion silang
-│   ├── content.ts        # adapter: API → LocalizedArticle (kontrak komponen)
-│   ├── content-blocks.ts # blok terstruktur → HTML, tanpa jalur HTML mentah
-│   ├── po.ts             # katalog string antarmuka
-│   ├── po-parse.ts       # parser PO, dipisah agar bisa diuji tanpa Vite
+│   ├── awcms/client.ts   # the ONLY file that talks to awcms
+│   ├── awcms/tenant.ts   # tenant from the token + cross assertion
+│   ├── content.ts        # adapter: API → LocalizedArticle (the component contract)
+│   ├── content-blocks.ts # structured blocks → HTML, with no raw-HTML path
+│   ├── po.ts             # the interface string catalogue
+│   ├── po-parse.ts       # PO parser, split out so it can be tested without Vite
 │   └── schema.ts         # JSON-LD
 ├── locales/<locale>/messages.po
-├── pages/                # locale default di root, locale lain lewat [lang]/
-└── styles/global.css     # design token + standar interaksi
-public/tema.js            # SATU-SATUNYA JS yang harus jalan sebelum paint (ADR-0019)
-server/penyaji.mjs        # penyaji produksi: header, CSP, cache, kompresi (ADR-0016/0019)
-tests/penyaji.test.mjs    # gerbang penyajian — aturan di atas dibuktikan, bukan diklaim
-tests/keluaran-csp.test.mjs # gerbang keluaran: nol gaya & skrip inline di HTML
-Dockerfile                # build → image Bun non-root, port 8080
+├── pages/                # default locale at the root, other locales through [lang]/
+└── styles/global.css     # design tokens + interaction standards
+public/tema.js            # the ONLY JS that must run before paint (ADR-0019)
+server/penyaji.mjs        # production server: headers, CSP, cache, compression (ADR-0016/0019)
+tests/penyaji.test.mjs    # the serving gate — the rules above are proven, not claimed
+tests/keluaran-csp.test.mjs # output gate: zero inline styles and scripts in the HTML
+Dockerfile                # build → non-root Bun image, port 8080
 ```
 
-Hasil build punya dua bagian: `dist/client/` adalah situsnya, `dist/server/`
-adalah entrypoint adapter beserta penyaji yang sudah dibundel. Image produksi
-hanya membawa `dist/client/` dan `dist/server/penyaji.mjs` — bundel itu yang
-membuatnya tidak perlu `node_modules` sama sekali.
+A build has two parts: `dist/client/` is the site, `dist/server/` is the
+adapter entrypoint together with the bundled server. The production image
+carries only `dist/client/` and `dist/server/penyaji.mjs` — that bundle is what
+lets it need no `node_modules` at all.
 
-## Yang belum ada (backlog eksplisit, bukan kelalaian)
+## What does not exist yet (an explicit backlog, not an oversight)
 
-- **Paginasi untuk seksi berita.** Seksi berita sendiri sudah ada sejak
+- **Pagination for news sections.** The news section itself has existed since
   [ADR-0033](docs/adr/0033-seksi-berita-urutan-dari-tanggal-dan-dua-tanggal-yang-terpisah.md):
-  sebuah tab menyatakan `urutanSeksi: "terbaru"`, dan seksinya terurut dari
-  `publishedAt` menurun, kartunya bertanggal, artikelnya `NewsArticle`.
-  **Feed-nya sudah mendarat juga** sejak
+  a tab declares `urutanSeksi: "terbaru"`, and its section is ordered by
+  `publishedAt` descending, its cards carry dates, its articles are
+  `NewsArticle`. **Its feed has landed too**, since
   [ADR-0035](docs/adr/0035-feed-atom-per-seksi-berita-dan-gerbang-atas-xml.md) —
-  Atom 1.0 di `/{tab}/feed.xml`, beserta keluarga gerbang yang membaca setiap
-  `.xml` di keluaran, yang justru merupakan alasan feed sempat ditunda. Dan sejak
+  Atom 1.0 at `/{tab}/feed.xml`, together with the family of gates that reads
+  every `.xml` in the output, which is precisely why the feed was deferred for a
+  while. And since
   [ADR-0036](docs/adr/0036-news-adalah-kosakata-repo-ini-dan-sebuah-tab-yang-memikulnya.md)
-  prefiks **`/news/` adalah kosakata repo ini** — sebuah situs berita menamai
-  tabnya `news`, dan `/blog/` tetap milik `awcms`. Yang tersisa dua, dan keduanya
-  ditunda dengan alasan yang diperiksa ke kode:
+  the **`/news/` prefix is this repo's vocabulary** — a news site names its tab
+  `news`, and `/blog/` stays `awcms`'s. Two things remain, and both are deferred
+  for reasons checked against the code:
 
-  **Arsip kategori/tag di `/news/`** — repo ini belum punya taksonomi sama
-  sekali: tidak ada model kategori maupun tag di
-  [`src/lib/content.ts`](src/lib/content.ts), dan seksi ditentukan oleh tab,
-  bukan oleh term. ADR-0036 §5 menyatakannya terbuka alih-alih menjanjikan
-  paritas dengan empat rute `awcms` yang kini **sudah dihapus** di sana — sejak
-  8 Agustus 2026 `/news/**` di `awcms` menjawab 301 ke `/blog/{tenantCode}/**`
-  (**kecuali** untuk tenant ber-`legacyTenantRouteEnabled: false`, yang sudah mematikan seluruh permukaan konten publiknya dan karena itu tetap dijawab 404 alih-alih diberi 301 menuju 404 yang pasti (`awcms` ADR-0071 §4 butir 3)),
-  jadi tidak ada lagi paritas yang bisa dikejar. Situs yang benar-benar
-  membutuhkan arsip kategori/tag membawanya lewat ADR-nya sendiri di sini.
+  **Category/tag archives under `/news/`** — this repo has no taxonomy at all:
+  there is no category or tag model in
+  [`src/lib/content.ts`](src/lib/content.ts), and a section is decided by its
+  tab, not by a term. ADR-0036 §5 declares this open rather than promising
+  parity with four `awcms` routes that have since **been removed** there — since
+  8 August 2026 `/news/**` in `awcms` answers 301 to `/blog/{tenantCode}/**`
+  (**except** for a tenant with `legacyTenantRouteEnabled: false`, which has
+  already switched off its whole public content surface and is therefore still
+  answered 404 rather than given a 301 towards a certain 404 (`awcms` ADR-0071
+  §4 item 3)), so there is no parity left to chase. A site that genuinely needs
+  category/tag archives brings them through its own ADR here.
 
+  **Pagination** — it changes the shape of routes, which by the criteria in
+  [`docs/adr/README.md`](docs/adr/README.md) itself is the class of decision
+  that needs an ADR. It also demands a different title per page (the duplicate-
+  title gate reddens the same thing, and its usual escape — `noindex` + a
+  canonical to page one — is absolutely forbidden by the "two colliding signals"
+  gate), an identical page count in every locale so hreflang stays reciprocal,
+  and a Lighthouse sample that shifts with it. **Until that lands, a news
+  section index renders all of its articles on one page** — weigh that before
+  switching on `"terbaru"` for a high-volume site.
 
-  **Paginasi** — ia mengubah bentuk rute, yang menurut kriteria
-  [`docs/adr/README.md`](docs/adr/README.md) sendiri adalah kelas keputusan
-  yang butuh ADR. Ia juga menuntut judul berbeda per halaman (gerbang
-  judul-kembar memerahkan yang sama, dan pelarian bakunya — `noindex` +
-  canonical ke halaman satu — dilarang mutlak oleh gerbang "dua sinyal yang
-  bertabrakan"), jumlah halaman yang identik di setiap locale agar hreflang
-  tetap resiprokal, dan sampel Lighthouse yang ikut bergeser. **Sampai itu
-  mendarat, indeks seksi berita merender seluruh artikelnya dalam satu
-  halaman** — timbang itu sebelum menyalakan `"terbaru"` untuk situs
-  bervolume tinggi.
-
-- **Kartu share yang DIBANGKITKAN per halaman.** Kartu yang *diunggah* sudah
-  bekerja: artikel memakai `seoImageMediaId` (atau `featuredMediaId`) dari
-  `awcms`, lengkap dengan MIME dan ukurannya sendiri
-  ([ADR-0026](docs/adr/0026-kartu-share-per-artikel-dari-media-awcms.md)). Yang
-  belum ada adalah pembangkit yang menormalkan kartu ke 1200×630 dari judul dan
-  seni artikel — ia menambah encoder gambar sebagai dependency build, jadi ia
-  pantas mendapat ADR-nya sendiri. `SITE_SOCIAL_IMAGE` (satu kartu situs,
-  opsional) tetap keadaan yang didukung, dan halaman tanpa kartu mana pun tidak
-  memasang tag gambar sama sekali — pratinjau jatuh ke kartu teks yang rapi.
-- **BFF portal Jualanku (ADR-0014).** `/internal/login`, sesi BFF sisi server,
-  cookie portal, CSRF. Fondasi `awcms`-nya **lengkap per 4 Agustus 2026**:
-  kontrak sesi (ADR-0049/0050) dan business-scope resolver yang kini punya
-  penyedia (`awcms` ADR-0060 — sebelumnya NO-OP fail-closed). Tanggal itu perlu
-  disebut, karena kontraknya **bertambah lagi** pada 12 Agustus 2026 dan
-  tambahannya menyentuh persis mekanisme yang direncanakan di sini: login tanpa
-  tenant terpilih kini dijawab `409` beserta token seleksi berumur pendek,
-  pemilihan dan perpindahan tenant punya dua endpoint tersendiri yang **di luar**
-  kontrak konsumen beku (`awcms` ADR-0065), dan sesi hasil serah-terima
-  (`handoff`) — bentuk sesi yang ADR-0050 ciptakan untuk BFF ini —
-  **dilarang** berpindah tenant (`awcms` ADR-0088). Yang menahannya bukan lagi
-  kontrak yang hilang melainkan uji
-  [ADR-0023](docs/adr/0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md): ia
-  memanggil `awcms` **di setiap permintaan runtime**, bukan sekali per build,
-  jadi bentuknya ditentukan respons `awcms` pada tiap permintaan — dan repo
-  template ini tidak punya instans untuk membuktikannya. Satu prasyarat tersisa
-  di sisi sana juga: bentuk scope merchant Jualanku masih butuh ADR admission-nya
-  sendiri. Prasyarat di repo ini ada di
+- **Share cards GENERATED per page.** Cards that are *uploaded* already work: an
+  article uses `seoImageMediaId` (or `featuredMediaId`) from `awcms`, complete
+  with its own MIME type and dimensions
+  ([ADR-0026](docs/adr/0026-kartu-share-per-artikel-dari-media-awcms.md)). What
+  does not exist is a generator that normalises a card to 1200×630 from the
+  article's title and artwork — it would add an image encoder as a build
+  dependency, so it deserves an ADR of its own. `SITE_SOCIAL_IMAGE` (one
+  optional site-wide card) remains a supported state, and a page with no card at
+  all sets no image tag whatsoever — the preview degrades to a tidy text card.
+- **The Jualanku portal BFF (ADR-0014).** `/internal/login`, a server-side BFF
+  session, portal cookies, CSRF. Its `awcms` foundation has been **complete since
+  4 August 2026**: the session contract (ADR-0049/0050) and a business-scope
+  resolver that now has a provider (`awcms` ADR-0060 — previously a fail-closed
+  NO-OP). That date is worth naming, because the contract **grew again** on 12
+  August 2026 and the additions touch precisely the mechanism planned here: a
+  login with no tenant selected is now answered `409` together with a
+  short-lived selection token, tenant selection and switching have two endpoints
+  of their own which are **outside** the frozen consumer contract (`awcms`
+  ADR-0065), and a handed-over (`handoff`) session — the session shape ADR-0050
+  created for this very BFF — is **forbidden** to switch tenants (`awcms`
+  ADR-0088). What holds it back is no longer a missing contract but the test in
+  [ADR-0023](docs/adr/0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md): it
+  calls `awcms` **on every runtime request**, not once per build, so its shape
+  is decided by `awcms`'s response on each request — and this template repo has
+  no instance to prove it against. One prerequisite remains on that side too:
+  the shape of Jualanku's merchant scope still needs its own admission ADR. The
+  prerequisites in this repo are in
   [`04-kesiapan.md`](docs/awcms-astro/jualanku/04-kesiapan.md).
-- **Filter locale di feed awcms — sudah ADA di awcms, dan justru TIDAK boleh
-  dipakai template ini.** Traversal kontennya sendiri sudah selesai: satu
-  `GET /api/v1/blog/posts?view=full&order=created_at`, disusuri lewat
-  `nextCursor`, tanpa `?locale=` — jadi build menarik SELURUH locale lalu
-  memasangkannya di sini. awcms menutup sisinya pada 2 Agustus 2026
-  ([#346](https://github.com/ahliweb/awcms/pull/346)): `?locale=` cocok-persis
-  (`en` tidak menyapu `en-GB`), absen berarti seluruh locale, dan nilai kosong
-  dibalas 400.
+- **A locale filter on the awcms feed — it already EXISTS in awcms, and is
+  precisely what this template must NOT use.** The content traversal itself is
+  finished: one `GET /api/v1/blog/posts?view=full&order=created_at`, walked
+  through `nextCursor`, with no `?locale=` — so the build pulls EVERY locale and
+  pairs them up here. awcms closed its side on 2 August 2026
+  ([#346](https://github.com/ahliweb/awcms/pull/346)): `?locale=` matches
+  exactly (`en` does not sweep up `en-GB`), absence means every locale, and an
+  empty value is answered 400.
 
-  Yang berubah karena itu bukan "tinggal dipasang", melainkan **arah butirnya**.
-  Template ini menyajikan dua locale (`id` + `en`) dan memasangkannya lewat
-  `translationGroupId`; `?locale=id` akan membuang setiap baris `en`, dan
-  `assertTranslationsArePairable` **tidak akan merah** — yang hilang bukan
-  terjemahan tanpa pasangan, melainkan terjemahan yang tidak pernah ikut
-  terbawa. Situs tetap terbangun hijau, setiap halaman `/en/**` jatuh ke bahasa
-  Indonesia dengan penanda "belum diterjemahkan", dan itu persis pemotongan
-  konten diam-diam yang [`content.ts`](src/lib/content.ts) nyatakan sebagai
-  kegagalan, bukan degradasi. Filternya bernilai hanya untuk deployment yang
-  benar-benar satu locale — dan karena ia menerima satu nilai, dua locale
-  berarti dua traversal, bukan satu yang lebih ramping.
+  What that changes is not "just wire it up" but **the direction of this item**.
+  This template serves two locales (`id` + `en`) and pairs them through
+  `translationGroupId`; `?locale=id` would discard every `en` row, and
+  `assertTranslationsArePairable` **would not go red** — what goes missing is
+  not a translation without a partner, but a translation that was never carried
+  in at all. The site still builds green, every `/en/**` page falls back to
+  Indonesian with a "not yet translated" marker, and that is exactly the silent
+  content truncation [`content.ts`](src/lib/content.ts) declares a failure
+  rather than a degradation. The filter is worth something only for a deployment
+  that genuinely is single-locale — and since it takes one value, two locales
+  mean two traversals, not one leaner one.
 
-## Dokumentasi
+## Documentation
 
-| Dokumen                                                                              | Isi                                     |
+| Document                                                                              | Contents                                |
 | ------------------------------------------------------------------------------------ | --------------------------------------- |
-| [`AGENTS.md`](AGENTS.md)                                                             | Kontrak kerja repo                      |
-| [`CHANGELOG.md`](CHANGELOG.md)                                                       | Riwayat rilis, dilipat dari changeset   |
-| [`.changesets/README.md`](.changesets/README.md)                                     | Cara menulis catatan perubahan          |
-| [`docs/awcms-astro/README.md`](docs/awcms-astro/README.md)                           | Posisi standar di keluarga AWCMS        |
-| [`docs/awcms-astro/standar-teknis.md`](docs/awcms-astro/standar-teknis.md)           | Aturan teknis yang mengikat             |
-| [`docs/awcms-astro/standar-performa-dan-keamanan.md`](docs/awcms-astro/standar-performa-dan-keamanan.md) | Peta ke OWASP/ASVS/ISO 27001/SSDF + Core Web Vitals, dan sepuluh celah bernomor — seluruhnya tertutup, baris tetap di tabel |
-| [`docs/awcms-astro/ui-ux-design-system.md`](docs/awcms-astro/ui-ux-design-system.md) | Design token, komponen, aksesibilitas   |
-| [`docs/awcms-astro/integrasi-awcms.md`](docs/awcms-astro/integrasi-awcms.md)         | Kontrak integrasi dengan awcms          |
-| [`docs/deploy-coolify.md`](docs/deploy-coolify.md)                                   | Deploy dan rebuild lewat webhook        |
-| [`.claude/skills/`](.claude/skills/README.md)                                        | Skill proyek: integrasi, gerbang, situs baru, performa-keamanan |
+| [`AGENTS.md`](AGENTS.md)                                                              | The repo's working contract             |
+| [`CHANGELOG.md`](CHANGELOG.md)                                                        | Release history, folded from changesets |
+| [`.changesets/README.md`](.changesets/README.md)                                      | How to write a change note              |
+| [`docs/awcms-astro/README.md`](docs/awcms-astro/README.md)                            | The standard's position in the AWCMS family |
+| [`docs/awcms-astro/standar-teknis.md`](docs/awcms-astro/standar-teknis.md)            | The binding technical rules             |
+| [`docs/awcms-astro/standar-performa-dan-keamanan.md`](docs/awcms-astro/standar-performa-dan-keamanan.md) | The map to OWASP/ASVS/ISO 27001/SSDF + Core Web Vitals, and ten numbered gaps — all closed, their rows kept in the table |
+| [`docs/awcms-astro/ui-ux-design-system.md`](docs/awcms-astro/ui-ux-design-system.md)  | Design tokens, components, accessibility |
+| [`docs/awcms-astro/integrasi-awcms.md`](docs/awcms-astro/integrasi-awcms.md)          | The integration contract with awcms     |
+| [`docs/deploy-coolify.md`](docs/deploy-coolify.md)                                    | Deploying and rebuilding by webhook     |
+| [`.claude/skills/`](.claude/skills/README.md)                                         | Project skills: integration, gates, new site, performance-security |
 
-## Lisensi
+## Language
+
+English at the bare path is the authoritative source; Indonesian at
+`<name>.id.md` is the mirror, and it records the hash of the English it was
+translated from ([ADR-0039](docs/adr/0039-english-is-the-source-language.md)).
+`bun run audit:translation` fails when a mirror goes stale, and counts the
+documents still awaiting one. This document's mirror is
+[`README.id.md`](README.id.md).
+
+## Licence
 
 [MIT](LICENSE).

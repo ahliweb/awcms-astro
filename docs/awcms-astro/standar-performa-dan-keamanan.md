@@ -155,7 +155,7 @@ fisik di luar cakupan sebuah template.
 | A.8.8 Manajemen kerentanan teknis | `bun audit` di CI + Dependabot; batas peer yang penting ditulis eksplisit di `.github/dependabot.yml` karena `bun install` **memperingatkan** peer mismatch alih-alih menolaknya |
 | A.8.9 Manajemen konfigurasi | Satu tempat konfigurasi (`src/config/site.ts` + `.env`); tiap variabel yang dibaca kode wajib ada di `.env.example` beserta konsekuensi salah isi |
 | A.8.24 Kriptografi | Di luar cakupan repo (TLS milik Traefik, hashing milik `awcms`) |
-| A.8.25 Secure development lifecycle | ADR untuk keputusan; changeset per iterasi; lima gerbang di CI |
+| A.8.25 Secure development lifecycle | ADR untuk keputusan; changeset per iterasi; enam gerbang di CI |
 | A.8.28 Secure coding | [`AGENTS.md`](../../AGENTS.md) §Keamanan, dengan tiap aturan menyebut cacat yang dijaganya |
 | A.8.31 Pemisahan lingkungan | Asersi `AWCMS_TENANT_ID` menggagalkan build saat **token tenant LAIN** terpasang — kelas kesalahan yang kontrol ini ada untuk mencegah, dan satu-satunya yang benar-benar bisa dicegah dari sini. Contoh "token staging di deployment produksi" sengaja tidak dipakai lagi: `awcms` ADR-0083 menghapus `"staging"` dari union profil deployment keluarga, jadi ia menamai lingkungan yang tidak ada |
 | A.5.7 / A.8.16 Threat intelligence & monitoring | **Tidak dipenuhi, dan sebagian sengaja.** Log akses berisi IP pembaca; lihat A09 di atas |
@@ -168,7 +168,7 @@ fisik di luar cakupan sebuah template.
 | PS.2 Sediakan mekanisme verifikasi integritas rilis | Terpenuhi — SBOM CycloneDX deterministik ikut di setiap tag sejak [ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md); regenerasi pada tag yang sama menghasilkan byte identik, jadi SBOM-nya bisa **diverifikasi**, bukan hanya dipercaya |
 | PW.4 Gunakan komponen pihak ketiga yang aman | Terpenuhi — lockfile di-commit, install ter-freeze, audit di CI |
 | PW.7 Review kode | Terpenuhi — PR + CI wajib hijau |
-| PW.8 Uji kode yang dieksekusi | Terpenuhi — lima gerbang, dan tiap gerbang yang **melewati dirinya mengatakannya** |
+| PW.8 Uji kode yang dieksekusi | Terpenuhi — enam gerbang, dan tiap gerbang yang **melewati dirinya mengatakannya** |
 | RV.1 Identifikasi kerentanan secara berkelanjutan | Terpenuhi — Dependabot + `bun audit` + CodeQL terjadwal atas permukaan JS/TS sejak [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md), dengan cakupannya (dan batas `.astro`-nya) dinyatakan di tiap ringkasan run |
 
 ## Performa

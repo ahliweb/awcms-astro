@@ -1,6 +1,6 @@
 ---
 name: awcms-astro-gerbang
-description: Lima gerbang awcms-astro (check, test, audit:konten, audit:dokumen, audit:graf) — apa yang ditangkap masing-masing, apa yang TIDAK, dan aturan bahwa setiap aturan baru wajib membawa pemeriksanya. Gunakan sebelum PR, saat menambah aturan ke dokumen, atau saat sebuah gerbang merah dan sebabnya tidak jelas.
+description: Enam gerbang awcms-astro (check, test, audit:konten, audit:dokumen, audit:graf, audit:translation) — apa yang ditangkap masing-masing, apa yang TIDAK, dan aturan bahwa setiap aturan baru wajib membawa pemeriksanya. Gunakan sebelum PR, saat menambah aturan ke dokumen, atau saat sebuah gerbang merah dan sebabnya tidak jelas.
 ---
 
 # awcms-astro — gerbang

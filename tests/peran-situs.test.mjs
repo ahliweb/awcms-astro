@@ -176,24 +176,49 @@ describe("setiap rute on-demand punya izinnya", () => {
   });
 });
 
+/**
+ * Kontrak kerja dibaca dalam DUA bahasa sejak ADR-0039, jadi kedua berkasnya
+ * diperiksa — masing-masing dalam bahasanya sendiri.
+ *
+ * Kata bahasanya dicari pada PROSA, bukan di mana pun di berkas. Tanpa
+ * pembuangan tautan lebih dulu, `/publik/i` cocok dengan nama berkas
+ * `0034-publik-secara-bawaan-...md` di dalam sebuah tautan — jadi gerbang ini
+ * akan tetap hijau setelah seluruh prosanya dihapus, asalkan tautannya
+ * tertinggal. Ia sempat begitu persis pada hari AGENTS.md diterjemahkan.
+ */
 describe("dokumen menyatakan aturan yang sama dengan kodenya", () => {
-  test("AGENTS.md menyebut bawaan publik DAN larangan owner", () => {
-    // Kontrak kerja adalah yang dibaca agen berikutnya sebelum menyentuh apa
-    // pun. Ia pernah menyuruh membangun layar admin di sini selama satu hari
-    // penuh setelah keputusannya dicabut (ADR-0020 §Konsekuensi), dan
-    // pekerjaan yang lahir dari kalimat itu akan mendarat di repo yang salah.
-    const isi = readFileSync("AGENTS.md", "utf8");
+  const kontrak = [
+    { berkas: "AGENTS.md", bahasa: "Inggris", bawaanPublik: /\bpublic\b/i },
+    { berkas: "AGENTS.id.md", bahasa: "Indonesia", bawaanPublik: /\bpublik\b/i }
+  ];
 
-    assert.match(isi, /publik/i);
-    assert.match(
-      isi,
-      /permukaanAdmin/,
-      "AGENTS.md tidak menyebut `permukaanAdmin`, deklarasi yang menentukan aturan ini"
-    );
-    assert.match(
-      isi,
-      new RegExp(PERAN_DILARANG, "i"),
-      "AGENTS.md tidak menyebut peran yang dilarang"
-    );
-  });
+  for (const { berkas, bahasa, bawaanPublik } of kontrak) {
+    test(`${berkas} menyebut bawaan publik DAN larangan owner`, () => {
+      // Kontrak kerja adalah yang dibaca agen berikutnya sebelum menyentuh apa
+      // pun. Ia pernah menyuruh membangun layar admin di sini selama satu hari
+      // penuh setelah keputusannya dicabut (ADR-0020 §Konsekuensi), dan
+      // pekerjaan yang lahir dari kalimat itu akan mendarat di repo yang salah.
+      const isi = readFileSync(berkas, "utf8");
+
+      // Tautan markdown dibuang: yang harus menyatakan aturannya adalah
+      // kalimatnya, bukan nama berkas yang kebetulan memuat katanya.
+      const prosa = isi.replace(/\[[^\]]*\]\([^)]*\)/g, "");
+
+      assert.match(
+        prosa,
+        bawaanPublik,
+        `${berkas} (${bahasa}) tidak lagi menyatakan bawaan publiknya dalam prosa`
+      );
+      assert.match(
+        isi,
+        /permukaanAdmin/,
+        `${berkas} tidak menyebut \`permukaanAdmin\`, deklarasi yang menentukan aturan ini`
+      );
+      assert.match(
+        isi,
+        new RegExp(PERAN_DILARANG, "i"),
+        `${berkas} tidak menyebut peran yang dilarang`
+      );
+    });
+  }
 });

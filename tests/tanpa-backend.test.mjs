@@ -259,22 +259,40 @@ describe("tidak ada artefak persistensi di repo ini", () => {
   });
 });
 
+/**
+ * Kontrak kerja dibaca dalam DUA bahasa sejak ADR-0039, jadi aturannya diperiksa
+ * di kedua berkas — masing-masing dalam bahasanya sendiri.
+ *
+ * Memeriksa sumber Inggrisnya saja akan membiarkan cermin Indonesia kehilangan
+ * kalimat ini tanpa satu pun gerbang berbunyi, dan cermin itulah yang dibaca
+ * penulis repo ini. Gerbang terjemahan tidak menutupinya: hash menjaga cermin
+ * tetap SEUSIA sumbernya, bukan tetap MEMUAT apa yang sumbernya muat — sebuah
+ * terjemahan yang menjatuhkan satu paragraf lolos dengan hash yang cocok.
+ */
 describe("dokumen menyatakan aturan yang sama dengan kodenya", () => {
-  test("AGENTS.md menyebut bahwa kebutuhan backend menjadi modul di awcms", () => {
-    const isi = readFileSync("AGENTS.md", "utf8");
+  const kontrak = [
+    { berkas: "AGENTS.md", bahasa: "Inggris", aturan: /backend need[\s\S]{0,200}?module/i },
+    { berkas: "AGENTS.id.md", bahasa: "Indonesia", aturan: /kebutuhan backend[\s\S]{0,200}?modul/i }
+  ];
 
-    assert.match(
-      isi,
-      /ADR-0038/,
-      "AGENTS.md tidak menyebut ADR-0038 — kontrak kerja adalah yang dibaca " +
-        "agen berikutnya sebelum menyentuh apa pun"
-    );
-    assert.match(
-      isi,
-      /kebutuhan backend[\s\S]{0,200}?modul/i,
-      "AGENTS.md tidak lagi menyatakan bahwa sebuah kebutuhan backend menjadi " +
-        "MODUL di `awcms`. Tanpa kalimat itu, pekerjaan berikutnya mendarat di " +
-        "repo yang keliru — dan itu sudah pernah terjadi di sini (ADR-0020)"
-    );
-  });
+  for (const { berkas, bahasa, aturan } of kontrak) {
+    test(`${berkas} menyebut bahwa kebutuhan backend menjadi modul di awcms`, () => {
+      const isi = readFileSync(berkas, "utf8");
+
+      assert.match(
+        isi,
+        /ADR-0038/,
+        `${berkas} tidak menyebut ADR-0038 — kontrak kerja adalah yang dibaca ` +
+          "agen berikutnya sebelum menyentuh apa pun"
+      );
+      assert.match(
+        isi,
+        aturan,
+        `${berkas} (${bahasa}) tidak lagi menyatakan bahwa sebuah kebutuhan ` +
+          "backend menjadi MODUL di `awcms`. Tanpa kalimat itu, pekerjaan " +
+          "berikutnya mendarat di repo yang keliru — dan itu sudah pernah " +
+          "terjadi di sini (ADR-0020)"
+      );
+    });
+  }
 });
