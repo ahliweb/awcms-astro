@@ -99,6 +99,15 @@ jobs:
       - name: Audit dokumen (tautan mati, indeks ADR)
         run: bun run audit:dokumen
 
+      # Tetangga `audit:dokumen` dan bukan bagian darinya: yang satu bertanya
+      # apakah sebuah dokumen KONSISTEN, yang ini bertanya apakah cerminnya
+      # SEUSIA sumber Inggrisnya dan dokumen mana yang belum punya cermin sama
+      # sekali (ADR-0039). Menggabungkannya akan menghasilkan gerbang yang hijau
+      # sementara sebagian besar korpus belum diterjemahkan — sebuah dokumen
+      # tanpa cermin tidak punya pasangan untuk menjadi basi.
+      - name: Audit terjemahan (cermin basi, cakupan cermin)
+        run: bun run audit:translation
+
       # Di sini karena ia hanya membaca artefak yang sudah ada di repo: tanpa
       # build, tanpa jaringan, tanpa awcms, dan tanpa graphify terpasang. Ia
       # lahir dari 60 dari 101 label komunitas yang menempel pada komunitas yang

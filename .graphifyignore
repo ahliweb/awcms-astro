@@ -33,3 +33,23 @@
 # — `bun run audit:dokumen` memeriksa tautannya, termasuk aturan bahwa tautan
 # `.changesets/` ditulis dari sudut pandang direktori itu sendiri.
 .changesets/
+
+# Cermin terjemahan `*.id.md` (ADR-0039) — sumbernya yang diindeks, bukan
+# keduanya.
+#
+# Alasannya persis alasan `.changesets/` di atas, dalam bentuknya yang paling
+# murni: sebuah cermin **menceritakan ulang** sumbernya kata demi kata dalam
+# bahasa lain. Mengindeks keduanya memasukkan setiap konsep ke graf dua kali,
+# dan kali ini tanpa satu pun kalimat baru untuk membenarkannya.
+#
+# Akibatnya bukan sekadar graf yang menggembung. Sepasang dokumen yang isinya
+# sama akan membentuk dua komunitas bertetangga yang nyaris tak terbedakan, dan
+# pemberi nama otomatis akan memberi keduanya nama yang sama — yang justru
+# ditolak `bun run audit:graf` aturan 3 ("tidak ada dua komunitas bernama
+# sama"). Jadi tanpa baris ini, terjemahan pertama yang mendarat akan memerahkan
+# gerbang graf pada rebuild berikutnya.
+#
+# Ini POLA GLOB, jadi `audit:graf` melaporkannya sebagai **tidak ditegakkan**
+# alih-alih menjaganya — dan itu memang keadaan yang benar untuk dicetak, bukan
+# yang disembunyikan.
+*.id.md

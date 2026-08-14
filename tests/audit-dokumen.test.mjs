@@ -206,6 +206,79 @@ describe("indeks ADR", () => {
   });
 });
 
+describe("indeks ADR — dwibahasa (ADR-0039)", () => {
+  /**
+   * Cacat yang paling mungkin terjadi saat terjemahan pertama mendarat: nama
+   * `0001-satu.id.md` cocok dengan pola `^\d{4}-.+\.md$`, jadi sebelum
+   * pengecualiannya ada, setiap cermin dituntut punya barisnya sendiri di tabel
+   * — dan gerbang ini memerah pada terjemahan pertama, bukan pada cacat.
+   */
+  test("cermin .id.md BUKAN ADR tersendiri dan tidak dituntut masuk tabel", () => {
+    const akar = pohon({
+      "docs/adr/0001-satu.md": adr("0001"),
+      "docs/adr/0001-satu.id.md": adr("0001"),
+      "docs/adr/README.md": indeks("| [0001](0001-satu.md) | Satu | Diterima |")
+    });
+
+    expect(jalankan(akar).kode).toBe(0);
+  });
+
+  test("kolom status boleh berbahasa Inggris maupun Indonesia", () => {
+    const inggris = pohon({
+      "docs/adr/0001-satu.md": adr("0001"),
+      "docs/adr/0002-dua.md": adr("0002", "Superseded by ADR-0001"),
+      "docs/adr/README.md": indeks(
+        "| [0001](0001-satu.md) | One | Accepted |",
+        "| [0002](0002-dua.md) | Two | Superseded by ADR-0001 |"
+      )
+    });
+    expect(jalankan(inggris).kode).toBe(0);
+
+    // Dan yang salah tetap salah dalam bahasa mana pun: gerbangnya melonggar
+    // pada BAHASA, tidak pada kesesuaian statusnya.
+    const salah = pohon({
+      "docs/adr/0001-satu.md": adr("0001", "Superseded by ADR-0002"),
+      "docs/adr/README.md": indeks("| [0001](0001-satu.md) | One | Accepted |")
+    });
+    expect(jalankan(salah).kode).toBe(1);
+  });
+
+  test("tabel di cermin indeks ikut diperiksa, tidak hanya di sumbernya", () => {
+    // Hash terjemahan menjaga cermin tetap SEUSIA sumbernya; ia tidak menjaga
+    // cermin tetap BENAR terhadap isi docs/adr/. Tanpa pemeriksaan ini, sebuah
+    // cermin yang tertinggal satu keputusan lolos dengan hash yang cocok.
+    const akar = pohon({
+      "docs/adr/0001-satu.md": adr("0001"),
+      "docs/adr/0002-dua.md": adr("0002"),
+      "docs/adr/README.md": indeks(
+        "| [0001](0001-satu.md) | One | Accepted |",
+        "| [0002](0002-dua.md) | Two | Accepted |"
+      ),
+      "docs/adr/README.id.md": indeks(
+        "| [0001](0001-satu.md) | Satu | Diterima |"
+      )
+    });
+    const { kode, keluaran } = jalankan(akar);
+
+    expect(kode).toBe(1);
+    expect(keluaran).toContain("indeks-adr");
+    expect(keluaran).toContain("README.id.md");
+    expect(keluaran).toContain("0002-dua.md");
+  });
+
+  test("cermin indeks yang lengkap lolos", () => {
+    const akar = pohon({
+      "docs/adr/0001-satu.md": adr("0001"),
+      "docs/adr/README.md": indeks("| [0001](0001-satu.md) | One | Accepted |"),
+      "docs/adr/README.id.md": indeks(
+        "| [0001](0001-satu.md) | Satu | Diterima |"
+      )
+    });
+
+    expect(jalankan(akar).kode).toBe(0);
+  });
+});
+
 describe("daftar permukaan kilau", () => {
   /** Fixture minimal: hanya kedua berkas bertanda yang dibaca gerbang ini. */
   function pohonKilau(selectorCss, barisTabel) {
@@ -404,6 +477,37 @@ describe("kutipan ADR", () => {
     });
 
     expect(jalankan(akar).kode).toBe(0);
+  });
+
+  test("penanda milik repo lain juga dikenali dalam bahasa Inggris (ADR-0039)", () => {
+    // "repo rujukan" berbahasa Indonesia. Begitu sebuah dokumen diterjemahkan
+    // ia menulis "reference repo", dan tanpa padanan ini SETIAP kutipan ADR
+    // repo lain di dokumen itu berubah menjadi pelanggaran sekaligus — 325 di
+    // antaranya di repo ini pada hari ADR-0039 mendarat.
+    const akar = pohon({
+      "docs/adr/0001-satu.md": adr("0001"),
+      "docs/adr/README.md": indeks("| [0001](0001-satu.md) | One | Accepted |"),
+      "README.md": "The aspect-ratio rule was born in ADR-0013 of the reference repo."
+    });
+
+    expect(jalankan(akar).kode).toBe(0);
+  });
+
+  test("cermin .id.md yatim tidak menambal nomor ADR yang hilang", () => {
+    // `0042-x.id.md` tanpa `0042-x.md` adalah cermin yatim — ditangkap
+    // `audit:translation`. Yang dijaga di sini: ia tidak boleh membuat kutipan
+    // ADR-0042 lolos di seluruh repo, karena keputusannya memang tidak ada.
+    const akar = pohon({
+      "docs/adr/0001-satu.md": adr("0001"),
+      "docs/adr/0042-hilang.id.md": adr("0042"),
+      "docs/adr/README.md": indeks("| [0001](0001-satu.md) | Satu | Diterima |"),
+      "README.md": "Lihat ADR-0042 untuk alasannya."
+    });
+    const { kode, keluaran } = jalankan(akar);
+
+    expect(kode).toBe(1);
+    expect(keluaran).toContain("kutipan-adr");
+    expect(keluaran).toContain("ADR-0042");
   });
 
   test("penanda di paragraf LAIN tidak menular — jendelanya paragraf, bukan berkas", () => {

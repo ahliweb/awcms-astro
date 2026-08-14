@@ -41,6 +41,7 @@ menyesuaikan gaya, menambah tes.
 | [0036](0036-news-adalah-kosakata-repo-ini-dan-sebuah-tab-yang-memikulnya.md) | `/news/` adalah kosakata URL repo ini dan `/blog/` kosakata `awcms`; bentuknya sebuah tab bernama `news` ber-`urutanSeksi: "terbaru"`, bukan keluarga rute baru | Diterima |
 | [0037](0037-pin-typescript-6-adalah-syarat-hidupnya-gerbang-astro-check.md) | Pin TypeScript 6.x adalah syarat hidupnya gerbang `astro check`; menaikkannya keputusan tingkat keluarga, dan gerbangnya mendarat bersamanya | Diterima |
 | [0038](0038-kebutuhan-backend-menjadi-modul-di-awcms.md) | Satuan sebuah kebutuhan backend adalah MODUL di `awcms`; repo ini membaca dan tidak menulis, dan keempat batasnya digerbangi | Diterima |
+| [0039](0039-english-is-the-source-language.md) | Inggris adalah bahasa sumber di jalur telanjang, Indonesia cerminnya di `<nama>.id.md`; buku besar yang hanya boleh menyusut, dan tiga gerbang yang bergerak lebih dulu | Diterima |
 
 > **Kenapa penomoran mulai dari 0014.** ADR di repo ini melanjutkan urutan repo
 > rujukan yang identitasnya dilepas di [#11](https://github.com/ahliweb/awcms-astro/pull/11);
