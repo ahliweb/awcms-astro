@@ -215,34 +215,44 @@ function statusAdr(isi) {
 }
 
 /**
- * Status di berkas ADR → kata yang harus muncul di kolom Status tabel.
+ * Status di berkas ADR → kata yang boleh muncul di kolom Status tabel.
  *
- * Dipetakan alih-alih dibandingkan mentah karena berkas ADR menulis status
- * dalam bahasa Inggris sementara tabelnya berbahasa Indonesia — itu keadaan
- * yang ada hari ini, dan gerbang yang menuntut keseragaman bahasa akan menolak
- * setiap ADR yang sudah mendarat.
+ * Dipetakan alih-alih dibandingkan mentah karena berkas ADR menulis statusnya
+ * dalam bahasa Inggris sementara tabel boleh menulisnya dalam bahasa mana pun:
+ * sejak ADR-0039 indeks ADR punya DUA berkas — sumber Inggris di
+ * `docs/adr/README.md` dan cermin Indonesia di `docs/adr/README.id.md` — dan
+ * keduanya memikul tabel yang sama dalam bahasanya masing-masing.
+ *
+ * Kedua kata karena itu diterima di kedua berkas, dan itu bukan kelonggaran
+ * yang terlewat. Pertanyaan gerbang ini adalah "status di tabel setuju dengan
+ * status di berkas ADR-nya", bukan "tabel ini berbahasa apa". Bahasa sebuah
+ * berkas dijaga gerbang lain — `audit:translation`, lewat hash sumbernya — dan
+ * menggabungkan dua pertanyaan itu di sini akan membuat keduanya lebih sulit
+ * dibaca tanpa menangkap satu cacat pun lebih banyak.
  */
 const PADANAN = [
-  { awalan: "accepted", kata: "Diterima" },
-  { awalan: "proposed", kata: "Diusulkan" },
-  { awalan: "superseded", kata: "Digantikan" },
-  { awalan: "deprecated", kata: "Usang" },
-  { awalan: "rejected", kata: "Ditolak" }
+  { awalan: "accepted", kata: ["Accepted", "Diterima"] },
+  { awalan: "proposed", kata: ["Proposed", "Diusulkan"] },
+  { awalan: "superseded", kata: ["Superseded", "Digantikan"] },
+  { awalan: "deprecated", kata: ["Deprecated", "Usang"] },
+  { awalan: "rejected", kata: ["Rejected", "Ditolak"] }
 ];
 
-function auditIndeksAdr() {
-  const dirAdr = "docs/adr";
-  const indeks = gabung(dirAdr, "README.md");
-
-  if (!existsSync(gabung(AKAR, dirAdr)) || !existsSync(gabung(AKAR, indeks))) {
-    catatan.push(`adr: ${indeks} tidak ada — gerbang indeks ADR DILEWATI`);
-    return;
-  }
-
-  const berkasAdr = readdirSync(gabung(AKAR, dirAdr))
-    .filter((nama) => /^\d{4}-.+\.md$/.test(nama))
-    .sort();
-
+/**
+ * Periksa SATU berkas indeks terhadap daftar ADR yang benar-benar ada.
+ *
+ * Dipanggil sekali untuk sumber Inggris dan sekali untuk cermin Indonesia. Yang
+ * kedua bukan tambahan yang manis: sebuah cermin yang tabelnya tertinggal satu
+ * keputusan mengirim pembacanya ke daftar yang kurang, dan gerbang terjemahan
+ * tidak akan melihatnya — hash-nya menjaga cermin tetap SEUSIA sumbernya, bukan
+ * tetap BENAR terhadap isi direktori.
+ *
+ * @param {string} indeks jalur berkas indeks, relatif terhadap `AKAR`
+ * @param {string[]} berkasAdr nama berkas ADR yang ada, terurut
+ * @param {Map<string, string>} statusBerkas nama berkas ADR → status di dalamnya
+ * @param {string} dirAdr
+ */
+function auditSatuIndeks(indeks, berkasAdr, statusBerkas, dirAdr) {
   const isiIndeks = readFileSync(gabung(AKAR, indeks), "utf8");
 
   /** @type {Map<string, { nomor: string, status: string }>} */
@@ -281,7 +291,7 @@ function auditIndeksAdr() {
     const dicatat = baris.get(nama);
     if (!dicatat) continue;
 
-    const status = statusAdr(readFileSync(gabung(AKAR, dirAdr, nama), "utf8"));
+    const status = statusBerkas.get(nama) ?? "";
 
     if (status === "") {
       langgar("status-adr", `${dirAdr}/${nama}`, "tanpa baris `- **Status:**`");
@@ -301,7 +311,7 @@ function auditIndeksAdr() {
       continue;
     }
 
-    if (!dicatat.status.includes(padanan.kata)) {
+    if (!padanan.kata.some((kata) => dicatat.status.includes(kata))) {
       langgar(
         "status-adr",
         indeks,
@@ -310,7 +320,42 @@ function auditIndeksAdr() {
     }
   }
 
-  catatan.push(`adr: ${berkasAdr.length} berkas, ${baris.size} baris tabel`);
+  catatan.push(`adr: ${indeks} — ${berkasAdr.length} berkas, ${baris.size} baris tabel`);
+}
+
+function auditIndeksAdr() {
+  const dirAdr = "docs/adr";
+  const indeks = gabung(dirAdr, "README.md");
+
+  if (!existsSync(gabung(AKAR, dirAdr)) || !existsSync(gabung(AKAR, indeks))) {
+    catatan.push(`adr: ${indeks} tidak ada — gerbang indeks ADR DILEWATI`);
+    return;
+  }
+
+  // Cermin `.id.md` BUKAN berkas ADR tersendiri (ADR-0039): `0038-x.id.md`
+  // adalah terjemahan `0038-x.md`, bukan keputusan kedua. Tanpa pengecualian
+  // ini setiap cermin akan dituntut punya barisnya sendiri di tabel, dan
+  // gerbang ini memerah pada terjemahan pertama yang mendarat.
+  const berkasAdr = readdirSync(gabung(AKAR, dirAdr))
+    .filter((nama) => /^\d{4}-.+\.md$/.test(nama) && !nama.endsWith(".id.md"))
+    .sort();
+
+  // Dibaca sekali, dipakai kedua indeks: statusnya milik berkas ADR, bukan milik
+  // tabel yang mencatatnya.
+  /** @type {Map<string, string>} */
+  const statusBerkas = new Map(
+    berkasAdr.map((nama) => [
+      nama,
+      statusAdr(readFileSync(gabung(AKAR, dirAdr, nama), "utf8"))
+    ])
+  );
+
+  const cermin = gabung(dirAdr, "README.id.md");
+  const indeksnya = existsSync(gabung(AKAR, cermin)) ? [indeks, cermin] : [indeks];
+
+  for (const berkas of indeksnya) {
+    auditSatuIndeks(berkas, berkasAdr, statusBerkas, dirAdr);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -500,12 +545,20 @@ function auditJalurDisebut(berkas) {
  * yang menyebut nama repo ini akan menandai kutipan di dekatnya sebagai milik
  * tetangga.
  *
+ * **Penandanya dwibahasa sejak ADR-0039, dan itu wajib.** "repo rujukan" adalah
+ * penanda berbahasa Indonesia; begitu sebuah dokumen diterjemahkan ia menulis
+ * "reference repo", dan tanpa padanan Inggris di sini SETIAP kutipan ADR repo
+ * lain di dokumen itu berubah menjadi pelanggaran sekaligus — 325 di antaranya
+ * pada hari ADR-0039 mendarat. Cacat itu tidak akan terbaca sebagai cacat
+ * bahasa; ia akan terbaca sebagai gerbang yang tiba-tiba benci terjemahan, dan
+ * yang pertama dilonggarkan adalah gerbangnya.
+ *
  * @param {string} jendela
  * @returns {boolean}
  */
 function bertandaMilikRepoLain(jendela) {
   const bersih = jendela.replaceAll("awcms-astro", "");
-  return /awcms|repo rujukan|github\.com/.test(bersih);
+  return /awcms|repo rujukan|reference repo|github\.com/.test(bersih);
 }
 
 function auditKutipanAdr(berkas) {
@@ -516,8 +569,15 @@ function auditKutipanAdr(berkas) {
     return;
   }
 
+  // Cermin `.id.md` tidak menyumbang nomor (ADR-0039). Biasanya ia menyumbang
+  // nomor yang sudah ada dari sumbernya dan tidak mengubah apa pun — kecuali
+  // saat sumbernya HILANG: sebuah `0042-x.id.md` yatim akan membuat kutipan
+  // ADR-0042 lolos di seluruh repo padahal keputusannya tidak ada lagi. Cermin
+  // yatim ditangkap `audit:translation`; yang dijaga di sini hanya bahwa ia
+  // tidak diam-diam menambal lubang yang gerbang ini ada untuk menemukannya.
   const nomorLokal = new Set(
     readdirSync(gabung(AKAR, dirAdr))
+      .filter((nama) => !nama.endsWith(".id.md"))
       .map((nama) => nama.match(/^(\d{4})-.+\.md$/)?.[1])
       .filter(Boolean)
   );
@@ -555,7 +615,7 @@ function auditKutipanAdr(berkas) {
         langgar(
           "kutipan-adr",
           nama,
-          `menyebut ADR-${nomor} yang tidak resolve ke ${dirAdr}/${nomor}-*.md dan tidak ditandai milik repo lain (\`awcms\`, "repo rujukan", atau tautan github di paragraf yang sama)`
+          `menyebut ADR-${nomor} yang tidak resolve ke ${dirAdr}/${nomor}-*.md dan tidak ditandai milik repo lain (\`awcms\`, "repo rujukan"/"reference repo", atau tautan github di paragraf yang sama)`
         );
       }
     }
