@@ -141,7 +141,7 @@ ditolak oleh aturan yang sama:
 
 ## Sebelum go-live sebuah situs turunan
 
-- [ ] Kelima gerbang hijau **setelah** `bun run build`, bukan sebelum.
+- [ ] Keenam gerbang hijau **setelah** `bun run build`, bukan sebelum.
 - [ ] `bun audit` nol.
 - [ ] **Bila situs itu menyatakan `permukaanAdmin`, checklist ini belum cukup.**
       Begitu ada satu rute yang meminta pembacanya masuk, ada sesi, ada form,
