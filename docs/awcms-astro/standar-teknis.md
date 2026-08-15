@@ -1,300 +1,304 @@
-# awcms-astro — Standar Teknis
+🇬🇧 English (source) · 🇮🇩 [Bahasa Indonesia](standar-teknis.id.md)
 
-Aturan teknis yang mengikat setiap repo `awcms-astro`. Ditulis agar bisa dipakai repo lain tanpa membawa isi domain repo rujukan.
+# awcms-astro — Technical Standard
 
-Kata **wajib** di dokumen ini berarti pelanggarannya menggagalkan gerbang mutu, bukan sekadar tidak dianjurkan.
+The technical rules binding every `awcms-astro` repo. Written so another repo can use them without carrying the reference repo's domain contents.
 
-## Stack
+The word **must** in this document means that breaking it fails a quality gate, not merely that it is discouraged.
 
-| Aspek | Keputusan | Alasan |
+## The stack
+
+| Aspect | Decision | Reason |
 | --- | --- | --- |
-| Framework | Astro 7, `output: 'static'` | Nol JavaScript pengiriman default; halaman tetap terbaca penuh tanpa JS |
-| Runtime | Bun `>=1.3.0`, ditegakkan `engines.bun` + `packageManager` | Satu runtime untuk seluruh keluarga AWCMS (ADR-0015); `bun.lock` satu-satunya lockfile |
-| Framework UI | **Tidak ada** | Interaktivitas ditulis DOM vanilla. Tidak ada React/Vue/Svelte |
-| Styling | Satu berkas CSS global + design token | Tanpa framework CSS; token di `:root`, tema gelap lewat `data-theme` |
-| Konten | **Ditarik dari `awcms` saat build** (ADR-0018); standar keluarga menyebut markdown per koleksi per locale | Kontraknya `LocalizedArticle` di `src/lib/content.ts`, bukan frontmatter |
-| i18n | Katalog PO + `t(locale, key)` | Bisa disunting penutur asli tanpa risiko merusak sintaks |
-| Sitemap | `@astrojs/sitemap` dengan `serialize` | `lastmod` dari tanggal konten, bukan waktu build |
-| Gambar | `<img>` di atas URL hasil `import.meta.glob` (ADR-0024); standar keluarga menyebut `astro:assets` | Satu bentuk untuk SVG maupun raster; pemotongan dijaga bingkai CSS + gerbang rasio |
+| Framework | Astro 7, `output: 'static'` | Zero JavaScript shipped by default; pages stay fully readable without JS |
+| Runtime | Bun `>=1.3.0`, enforced by `engines.bun` + `packageManager` | One runtime for the whole AWCMS family (ADR-0015); `bun.lock` the only lockfile |
+| UI framework | **None** | Interactivity is written in vanilla DOM. No React/Vue/Svelte |
+| Styling | One global CSS file + design tokens | No CSS framework; tokens on `:root`, the dark theme through `data-theme` |
+| Content | **Pulled from `awcms` at build time** (ADR-0018); the family standard says markdown per collection per locale | Its contract is `LocalizedArticle` in `src/lib/content.ts`, not frontmatter |
+| i18n | PO catalogues + `t(locale, key)` | Editable by a native speaker with no risk of breaking syntax |
+| Sitemap | `@astrojs/sitemap` with `serialize` | `lastmod` from the content's date, not from the build time |
+| Images | `<img>` over URLs from `import.meta.glob` (ADR-0024); the family standard says `astro:assets` | One shape for SVG and raster alike; cropping is guarded by the CSS frame + the ratio gate |
 
-**Dilarang:** framework UI, framework CSS, library animasi, SDK/widget/piksel pihak ketiga, dan analytics yang melacak individu.
+**Forbidden:** UI frameworks, CSS frameworks, animation libraries, third-party SDKs/widgets/pixels, and analytics that tracks individuals.
 
-**Selisih versi dengan `awcms`, dinyatakan supaya tidak ditemukan ulang sebagai temuan.** Manifest kompatibilitas keluarga `awcms` mencatat versi yang dipakai **repo itu sendiri**; nilainya bukan kewajiban bagi repo ini, tetapi selisihnya tetap layak diketahui sebelum seseorang menyamakannya "karena rapi":
+**Version differences from `awcms`, stated so they are not rediscovered as findings.** The `awcms` family compatibility manifest records the versions **that repo itself** uses; those values are not an obligation for this repo, but the difference is still worth knowing before somebody equalises it "for tidiness":
 
-| Nilai | `awcms` | repo ini | Keadaannya |
+| Value | `awcms` | this repo | Its state |
 | --- | --- | --- | --- |
-| Bun | `1.3.14` | `1.3.14` | Cocok persis, dan dijaga `tests/versi-toolchain.test.mjs` atas lima nilai di sini |
-| `astro` | `^7.2.0` | `^7.1.4` | Tertinggal satu minor. Bukan keputusan — belum ada yang menaikkannya, dan menaikkannya adalah perubahan KODE yang butuh build hijau untuk dibuktikan, bukan pekerjaan dokumen |
-| `@astrojs/node` | `^11.1.0` | `^11.0.3` | Sama seperti di atas |
-| `typescript` | `^7.0.2` | `^6.0.3` | **Sengaja berbeda, dan mengikat.** Pin 6.x di sini adalah syarat hidupnya gerbang `astro check` — lihat [ADR-0037](../adr/0037-pin-typescript-6-adalah-syarat-hidupnya-gerbang-astro-check.md) |
+| Bun | `1.3.14` | `1.3.14` | An exact match, and guarded by `tests/versi-toolchain.test.mjs` over five values here |
+| `astro` | `^7.2.0` | `^7.1.4` | One minor behind. Not a decision — nobody has raised it, and raising it is a CODE change needing a green build to prove, not documentation work |
+| `@astrojs/node` | `^11.1.0` | `^11.0.3` | The same as above |
+| `typescript` | `^7.0.2` | `^6.0.3` | **Deliberately different, and binding.** The 6.x pin here is the condition for the `astro check` gate being alive — see [ADR-0037](../adr/0037-pin-typescript-6-adalah-syarat-hidupnya-gerbang-astro-check.md) |
 
-## Struktur wajib
+## The mandatory structure
 
 ```
 src/
-├── assets/images/        # gambar sumber — di src/, bukan public/, agar dioptimasi
-├── components/           # komponen render; views/ berisi badan halaman lintas locale
-├── config/site.ts        # kontrak situs: locale, navigasi, helper URL
-├── content/<koleksi>/<locale>/*.md
-├── content.config.ts     # kontrak frontmatter
-├── data/                 # sumber tunggal data referensi
-├── layouts/              # BaseLayout (head, SEO, share) + layout konten
-├── lib/                  # akses data & metadata; tidak pernah dipanggil dari markdown
+├── assets/images/        # source images — in src/, not public/, so they are optimised
+├── components/           # render components; views/ holds page bodies shared across locales
+├── config/site.ts        # the site contract: locales, navigation, URL helpers
+├── content/<collection>/<locale>/*.md
+├── content.config.ts     # the frontmatter contract
+├── data/                 # the single source of reference data
+├── layouts/              # BaseLayout (head, SEO, share) + content layouts
+├── lib/                  # data & metadata access; never called from markdown
 ├── locales/<locale>/messages.po
-├── pages/                # route tipis: getStaticPaths + satu komponen view
+├── pages/                # thin routes: getStaticPaths + one view component
 └── styles/global.css
-scripts/                  # gerbang otomatis
+scripts/                  # the automated gates
 docs/{adr,workflows,awcms-astro}/
 .changesets/
 .claude/skills/
 ```
 
-**Di `awcms-astro` sendiri LIMA entri di atas tidak ada, dan itu disengaja.**
-Empat pertama — `content/`, `content.config.ts`, `data/`, dan `assets/images/` —
-adalah bentuk konten-di-repo. Repo ini menariknya dari `awcms` saat build, jadi
-kontrak frontmatter digantikan `src/lib/content.ts` (adapter API →
-`LocalizedArticle`) dan data referensi tinggal di CMS. Yang kelima adalah
-`docs/workflows/`: perannya dipikul `.claude/skills/`, karena prosedur yang bisa
-dijalankan mengalahkan prosedur yang harus dibaca lebih dulu.
+**In `awcms-astro` itself FIVE of the entries above are absent, and that is
+deliberate.** The first four — `content/`, `content.config.ts`, `data/`, and
+`assets/images/` — are the shape of content-in-the-repo. This repo pulls it from
+`awcms` at build time, so the frontmatter contract is replaced by
+`src/lib/content.ts` (the API → `LocalizedArticle` adapter) and its reference data
+lives in the CMS. The fifth is `docs/workflows/`: its role is carried by
+`.claude/skills/`, because a procedure that can be run beats a procedure that has
+to be read first.
 
-Sebagai gantinya ada dua entri yang tidak ada di daftar standar:
-`server/penyaji.mjs` (penyaji produksi sejak
-[ADR-0016](../adr/0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md)) dan
-`tests/` (gerbang yang berjalan lewat `bun test`).
+In their place are two entries not on the standard list:
+`server/penyaji.mjs` (the production server since
+[ADR-0016](../adr/0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md)) and
+`tests/` (the gates that run through `bun test`).
 
-Aturan arahnya satu arah: **konten tidak tahu tentang komponen, komponen tidak mengambil datanya sendiri.**
+The direction rule runs one way: **content knows nothing about components, and components do not fetch their own data.**
 
-- Komponen menerima data lewat props. Dilarang memanggil `getCollection` di dalam komponen presentasi.
-- Berkas di `src/pages/` adalah pembungkus tipis. Badan halaman ditulis sekali di `src/components/views/` dan dipakai ulang seluruh locale.
-- Data referensi (wilayah, kategori, unit) punya **satu sumber** di `src/data/` dan tidak pernah diketik ulang di markdown.
+- Components receive data through props. Calling `getCollection` inside a presentation component is forbidden.
+- Files in `src/pages/` are thin wrappers. A page body is written once in `src/components/views/` and reused across every locale.
+- Reference data (regions, categories, units) has **one source** in `src/data/` and is never retyped in markdown.
 
-## Internasionalisasi
+## Internationalisation
 
-| Aturan | Wajib |
+| Rule | Mandatory |
 | --- | --- |
-| Locale default di root (`/artikel/`); locale lain berawalan kodenya (`/en/artikel/`) | Ya |
-| Locale non-default dibangun dari satu subpohon `src/pages/[lang]/`, bukan folder per bahasa | Ya |
-| Kumpulan slug ditentukan locale default; slug tidak diterjemahkan | Ya |
-| Konten yang belum diterjemahkan jatuh ke locale default disertai penanda yang terlihat pembaca | Ya |
-| String antarmuka hanya dari katalog PO, tidak pernah literal di `.astro` | Ya |
-| Key yang hilang di locale lain jatuh ke katalog default; nama key mentah tidak boleh tampil | Ya |
-| `hreflang` lengkap seluruh locale + `x-default` di setiap halaman yang boleh diindeks | Ya |
-| Key mati dihapus dari seluruh katalog | Ya |
+| The default locale at the root (`/artikel/`); other locales prefixed with their code (`/en/artikel/`) | Yes |
+| Non-default locales built from one `src/pages/[lang]/` subtree, not a folder per language | Yes |
+| The set of slugs decided by the default locale; slugs are not translated | Yes |
+| Untranslated content falls back to the default locale with a marker the reader can see | Yes |
+| Interface strings only from the PO catalogue, never literals in `.astro` | Yes |
+| A key missing in another locale falls back to the default catalogue; a raw key name may not appear | Yes |
+| Complete `hreflang` for every locale + `x-default` on every indexable page | Yes |
+| Dead keys deleted from every catalogue | Yes |
 
-Rantai fallback membuat pelanggaran "belum diterjemahkan" tidak merusak situs — dan justru karena itu, **cakupan terjemahan wajib dilaporkan gerbang audit** agar tetap terlihat.
+The fallback chain means a "not translated yet" violation does not break the site — and precisely for that reason, **translation coverage must be reported by an audit gate** so it stays visible.
 
-## Konten
+## Content
 
-**Di `awcms-astro` konten tidak tinggal di repo.** Ia ditarik dari `awcms` saat build (ADR-0018), jadi kontraknya adalah `LocalizedArticle` di `src/lib/content.ts` — bukan frontmatter, dan tidak ada `content.config.ts` di sini. Yang di bawah ini adalah standar KELUARGA untuk situs yang kontennya markdown-di-repo; ia tetap ditulis karena skema itu yang harus dipenuhi sisi `awcms` agar situs seperti ini punya jaminan yang sama.
+**In `awcms-astro` content does not live in the repo.** It is pulled from `awcms` at build time (ADR-0018), so its contract is `LocalizedArticle` in `src/lib/content.ts` — not frontmatter, and there is no `content.config.ts` here. What follows is the FAMILY standard for a site whose content is markdown-in-the-repo; it is still written down because that schema is what the `awcms` side has to satisfy for a site like this to have the same guarantees.
 
-Yang wajib ada pada skema repo yang menyajikan informasi terikat aturan:
+What a schema must have in a repo serving rule-bound information:
 
-| Field | Fungsi |
+| Field | Function |
 | --- | --- |
-| `title`, `description` (maks. 160 karakter) | Metadata halaman |
-| `publishedDate`, `updatedDate`, `reviewDueDate` | Umur informasi; `reviewDueDate` yang terlewat adalah utang konten. Dua yang pertama datang dari `awcms` dan **dibaca dari satu baris yang sama** — dilipat menjadi satu nilai, `dateModified` membeku di tanggal terbit selamanya ([ADR-0033](../adr/0033-seksi-berita-urutan-dari-tanggal-dan-dua-tanggal-yang-terpisah.md)) |
-| `cakupan` / level keberlakuan | Memaksa penulis memutuskan sejauh mana informasi berlaku |
-| `sumber` per klaim angka | Setiap nominal terikat ke rujukan yang bisa dicek pembaca |
-| `dasarHukum` | Jenis aturan, nomor, tahun, judul — lengkap |
+| `title`, `description` (max. 160 characters) | Page metadata |
+| `publishedDate`, `updatedDate`, `reviewDueDate` | The information's age; a missed `reviewDueDate` is content debt. The first two come from `awcms` and are **read from the same one row** — folded into a single value, `dateModified` freezes at the publication date forever ([ADR-0033](../adr/0033-seksi-berita-urutan-dari-tanggal-dan-dua-tanggal-yang-terpisah.md)) |
+| `cakupan` / the level of applicability | Forces the author to decide how far the information applies |
+| `sumber` per numeric claim | Every figure is bound to a reference a reader can check |
+| `dasarHukum` | The type of regulation, its number, year, and title — complete |
 
-Aturan penulisan yang mengikat:
+Binding writing rules:
 
-- Yang belum terverifikasi ditulis `TBD` beserta sumber yang harus dicek. **Jangan menebak, jangan menyalin dari pihak ketiga.**
-- Data terstruktur (syarat, langkah, biaya, FAQ) ditulis di frontmatter dan dirender komponen — bukan diketik ulang di badan artikel.
-- Field yang wajib identik antar locale: kategori, urutan, level keberlakuan, tag, **angka** pada nominal, dan setiap tanggal yang disebut ISI artikel (tanggal berlaku sebuah aturan, tenggat, masa kedaluwarsa).
-- Yang **tidak** wajib identik, dan sengaja: `publishedDate` dan `updatedDate`. Keduanya milik BARIS `awcms` masing-masing locale — terjemahan yang diterbitkan belakangan memang terbit belakangan, dan memaksanya menyalin tanggal post sumber akan menerbitkan klaim yang tidak pernah terjadi.
-- Terjemahan tidak mengubah angka, nomor peraturan, tingkat kepastian kalimat, atau peringatan.
+- Anything unverified is written `TBD` along with the source to be checked. **Do not guess, do not copy from a third party.**
+- Structured data (requirements, steps, fees, FAQs) is written in the frontmatter and rendered by components — not retyped in the article body.
+- Fields that must be identical across locales: the category, the order, the level of applicability, tags, the **figures** in amounts, and every date named by the article's CONTENTS (a regulation's effective date, a deadline, an expiry).
+- What is **not** required to be identical, deliberately: `publishedDate` and `updatedDate`. Both belong to each locale's own `awcms` ROW — a translation published later genuinely was published later, and forcing it to copy the source post's date would publish a claim that never happened.
+- A translation does not change figures, regulation numbers, the degree of certainty of a sentence, or a warning.
 
-## Aset gambar
+## Image assets
 
-| Aturan | Wajib |
+| Rule | Mandatory |
 | --- | --- |
-| Berkas sumber di `src/assets/`, bukan `public/` | Ya |
-| Satu entitas konten = satu gambar unik, dipetakan terpusat dari slug | Ya |
-| SVG wajib XML valid; `&` telanjang membuat browser diam-diam gagal merender | Ya |
-| **Rasio sumber sama dengan rasio bingkainya** | Ya |
-| **Format dibaca dari isi berkas, bukan ekstensinya** | Ya |
-| **Teks di dalam gambar hanya label topik** — tanpa nominal, tanggal, identitas, dokumen tiruan, atau antarmuka aplikasi | Ya |
-| **Tanpa lambang, logo, atau atribut instansi negara di dalam ilustrasi** | Ya |
-| Teks terkecil di dalam SVG tetap terbaca pada lebar kartu tersempit | Ya |
-| Sumber di-commit apa adanya, tidak dikompresi manual | Ya |
-| `public/` hanya untuk berkas yang butuh URL tetap | Ya |
+| Source files in `src/assets/`, not `public/` | Yes |
+| One content entity = one unique image, mapped centrally from its slug | Yes |
+| SVG must be valid XML; a bare `&` makes a browser fail to render silently | Yes |
+| **The source's ratio equals its frame's ratio** | Yes |
+| **The format is read from the file's contents, not its extension** | Yes |
+| **Text inside an image is only a topic label** — no figures, dates, identities, mocked-up documents, or application interfaces | Yes |
+| **No state institution's emblem, logo, or attributes inside an illustration** | Yes |
+| The smallest text in an SVG stays readable at the narrowest card width | Yes |
+| Sources are committed as they are, not manually compressed | Yes |
+| `public/` only for files needing a fixed URL | Yes |
 
-Empat aturan bertanda tebal lahir dari cacat nyata dan bukan kehati-hatian teoretis; rinciannya di ADR-0013 repo rujukan.
+The four rules in bold were born from real defects rather than theoretical caution; their details are in the reference repo's ADR-0013.
 
-**Dua aturan keluarga yang `awcms-astro` sengaja TIDAK ikuti**, dan yang sampai 4 Agustus 2026 masih tertulis di tabel ini sebagai "wajib" sambil dibantah kodenya sendiri:
+**Two family rules `awcms-astro` deliberately does NOT follow**, and which until 4 August 2026 were still written in this table as "mandatory" while being contradicted by its own code:
 
-| Aturan keluarga | Yang berlaku di `awcms-astro` | Kenapa |
+| The family rule | What applies in `awcms-astro` | Why |
 | --- | --- | --- |
-| Render dengan `<Image>` dari `astro:assets`, tidak pernah `<img>` mentah | `<img>` di atas URL hasil `import.meta.glob` dengan `query: "?url"` | [ADR-0024](../adr/0024-seni-lokal-di-src-assets.md). `astro:assets` mengembalikan `ImageMetadata`, bukan string — ia mengubah bentuk `ArticleVisual` beserta keempat bingkainya, dan memperlakukan SVG berbeda dari raster padahal SVG justru format yang gerbang repo ini ditulis untuk membaca |
-| Potongan ditetapkan lewat `width`/`height`, bukan hanya `object-fit` | Satu `--ratio-visual` untuk seluruh situs; bingkai memotong lewat `object-fit: cover` | Potongan tidak hilang karenanya — ia **dicegah**: `bun run audit:konten` menolak sumber yang bukan `--ratio-visual` sebelum ia sempat terbit |
+| Render with `<Image>` from `astro:assets`, never a raw `<img>` | `<img>` over URLs from `import.meta.glob` with `query: "?url"` | [ADR-0024](../adr/0024-seni-lokal-di-src-assets.md). `astro:assets` returns `ImageMetadata`, not a string — it changes the shape of `ArticleVisual` and all four of its frames, and treats SVG differently from raster while SVG is exactly the format this repo's gates were written to read |
+| Cropping set through `width`/`height`, not only `object-fit` | One `--ratio-visual` for the whole site; frames crop through `object-fit: cover` | Cropping does not disappear because of it — it is **prevented**: `bun run audit:konten` refuses a source that is not `--ratio-visual` before it can be published |
 
-**Biaya yang diterima, dan wajib dibaca sebelum sebuah situs mengisi `src/assets/` dengan foto:** raster tidak di-encode ulang dan **tidak ada `srcset`**, jadi ponsel 360px mengunduh berkas yang sama dengan desktop 1920px. Itu bisa diterima untuk SVG dan untuk gambar artikel yang datang dari media `awcms`; ia berhenti bisa diterima untuk foto raster besar. Anggaran di §Performa adalah tempat pertama kelebihannya terlihat.
+**An accepted cost, and one to read before a site fills `src/assets/` with photographs:** rasters are not re-encoded and there is **no `srcset`**, so a 360px phone downloads the same file as a 1920px desktop. That is acceptable for SVG and for article images coming from `awcms` media; it stops being acceptable for large raster photos. The budget in §Performance is the first place going over shows up.
 
-**Rasio adalah yang paling mudah terlewat.** Bingkai memakai `object-fit: cover`, jadi sumber berasio lain tidak diperkecil — ia dipotong, diam-diam, di setiap ukuran layar. Sumber 1∶1 pada bingkai 16∶9 kehilangan 22% teratas, dan judul gambar hampir selalu ada di sana.
+**The ratio is the easiest thing to miss.** Frames use `object-fit: cover`, so a source at another ratio is not scaled down — it is cropped, silently, at every screen size. A 1∶1 source in a 16∶9 frame loses its top 22%, and an image's title is almost always there.
 
-**Dua aturan isi menuntut mata manusia.** Pemeriksa tidak bisa membaca isi gambar. Katakan itu terus terang di dokumentasi: aturan yang tampak terjaga padahal tidak lebih berbahaya daripada aturan yang jelas-jelas manual.
+**Two content rules require a human eye.** A checker cannot read an image's contents. Say so plainly in the documentation: a rule that looks guarded and is not is more dangerous than a rule that is plainly manual.
 
-## SEO dan share
+## SEO and sharing
 
-Wajib di setiap halaman yang boleh diindeks:
+Mandatory on every indexable page:
 
-- `<title>` unik, `meta description` ≤ 160 karakter dan tidak kosong, tepat satu `<h1>`.
-- `canonical` absolut dengan trailing slash konsisten.
-- `hreflang` seluruh locale + `x-default`.
-- Kartu share, **bila ada**, memasang `og:image:width`, `og:image:height`, `og:image:type`, dan `og:image:alt` yang memerikan gambar **itu** — bukan gambar lain di halaman yang sama. Halaman tanpa kartu tidak memasang tag gambar sama sekali: pratinjau tanpa gambar jatuh ke kartu teks yang rapi, pratinjau dengan gambar rusak tidak jatuh ke mana pun.
-- **MIME dan ukuran kartu ikut dari kartunya, bukan dari konstanta.** Konstanta 1200×630 PNG berlaku untuk **satu** hal: `SITE_SOCIAL_IMAGE`, dan hanya karena `.env.example` mengontrakkannya kepada siapa pun yang mengisinya. Kartu per artikel datang dari media `awcms` dan membawa MIME serta ukurannya sendiri — WebP 1600×900, kemungkinan besar ([ADR-0026](../adr/0026-kartu-share-per-artikel-dari-media-awcms.md)). Memakai konstanta situs untuk gambar yang tidak pernah menandatangani kontrak itu menerbitkan tiga klaim yang salah di setiap halaman artikel, dan scraper yang memercayainya akan me-letterbox kartunya atau membuangnya.
-- Yang **tetap** benar dari aturan lama: hindari SVG sebagai kartu share. Pengunduh pratinjau sosial bukan browser dan dukungan SVG-nya tidak merata. Yang berubah hanya larangan menyeluruh atas WebP — ia dibantah oleh kartu yang benar-benar diunggah editor.
-- `twitter:card` `summary_large_image` bila ada kartu, `summary` bila tidak.
-- Satu blok JSON-LD `@graph` berisi identitas situs, ditambah skema khas halaman.
-- Sitemap dengan `lastmod` dari tanggal konten, bukan waktu build.
-- **Seksi berita** (`urutanSeksi: "terbaru"`) yang berisi artikel menerbitkan feed Atom di `/{tab}/feed.xml`, diumumkan halaman seksi dan halaman artikelnya lewat `<link rel="alternate" type="application/atom+xml">` ber-`title`. Seksi `"manual"` dan seksi berita yang kosong tidak menerbitkan apa pun — alasan keduanya di [ADR-0035](../adr/0035-feed-atom-per-seksi-berita-dan-gerbang-atas-xml.md) §1. Feed **keluar dari sitemap**: sitemap mendaftarkan halaman, dan gerbang sitemap melewati setiap `<loc>` `.xml` tanpa suara.
-- **Setiap berkas `.xml` yang diterbitkan wajib punya gerbangnya.** Yang bukan `sitemap*.xml` diperlakukan sebagai feed Atom dan dituntut sah; yang bukan keduanya adalah pelanggaran. Ini menutup keadaan yang ADR-0033 catat: berkas `.xml` bernama lain tidak dibaca gerbang mana pun, sementara pemindai halaman hanya mengambil `**/*.html`.
+- A unique `<title>`, a `meta description` ≤ 160 characters and not empty, exactly one `<h1>`.
+- An absolute `canonical` with a consistent trailing slash.
+- `hreflang` for every locale + `x-default`.
+- A share card, **when there is one**, sets `og:image:width`, `og:image:height`, `og:image:type`, and an `og:image:alt` describing **that** image — not another image on the same page. A page with no card sets no image tag at all: a preview with no image falls back to a tidy text card, a preview with a broken image falls back to nothing.
+- **A card's MIME type and dimensions come from the card, not from a constant.** The 1200×630 PNG constant applies to **one** thing: `SITE_SOCIAL_IMAGE`, and only because `.env.example` contracts it to whoever fills it in. A per-article card comes from `awcms` media and carries its own MIME type and dimensions — WebP 1600×900, most likely ([ADR-0026](../adr/0026-kartu-share-per-artikel-dari-media-awcms.md)). Using the site constant for an image that never signed that contract publishes three false claims on every article page, and a scraper that trusts them will letterbox the card or discard it.
+- What **stays** true from the old rule: avoid SVG as a share card. Social preview fetchers are not browsers and their SVG support is uneven. What changed is only the blanket ban on WebP — it is contradicted by a card an editor genuinely uploaded.
+- `twitter:card` `summary_large_image` when there is a card, `summary` when there is not.
+- One JSON-LD `@graph` block carrying the site's identity, plus the page-specific schema.
+- A sitemap with `lastmod` from the content's date, not the build time.
+- **A news section** (`urutanSeksi: "terbaru"`) containing articles publishes an Atom feed at `/{tab}/feed.xml`, announced by its section page and article pages through a `<link rel="alternate" type="application/atom+xml">` with a `title`. A `"manual"` section and an empty news section publish nothing — the reasoning for both is in [ADR-0035](../adr/0035-feed-atom-per-seksi-berita-dan-gerbang-atas-xml.md) §1. A feed **leaves the sitemap**: a sitemap lists pages, and the sitemap gate skips every `.xml` `<loc>` without a sound.
+- **Every published `.xml` file must have its gate.** One that is not `sitemap*.xml` is treated as an Atom feed and required to be valid; one that is neither is a violation. This closes the state ADR-0033 recorded: an `.xml` file under another name is read by no gate, while the page scanner only picks up `**/*.html`.
 
-Halaman 404 dikecualikan: `noindex, follow`, tanpa canonical dan hreflang, tanpa tombol bagikan.
+The 404 page is excluded: `noindex, follow`, no canonical and no hreflang, no share buttons.
 
-## Aksesibilitas
+## Accessibility
 
-Target WCAG 2.1 AA. Yang mengikat:
+The WCAG 2.1 AA target. What is binding:
 
-- Skip link ke konten utama adalah elemen pertama di dalam `<body>`, teksnya dari katalog PO.
-- Navigasi dapat dioperasikan penuh dengan keyboard; item aktif ditandai `aria-current`.
-- Kontras cukup pada tema terang dan gelap.
-- `prefers-reduced-motion: reduce` dihormati. Animasi dekoratif **dimatikan**, bukan dipercepat — aturan `*` global hanya memangkas durasi, dan animasi 0,01 md tetap berkedip.
-- Umpan balik hover juga aktif pada `:focus-visible`, sehingga pengguna keyboard tidak mendapat versi yang lebih miskin.
-- Tabel data memakai `th` dengan `scope` benar dan dapat di-scroll horizontal tanpa membuat `body` ikut scroll.
-- **Kontrol yang bergantung pada JavaScript disembunyikan bila API-nya tidak tersedia.** Tombol yang diam saat diklik lebih buruk daripada tombol yang tidak ada.
-- Fungsi inti tetap bekerja tanpa JavaScript.
+- The skip link to the main content is the first element inside `<body>`, its text from the PO catalogue.
+- Navigation is fully keyboard-operable; the active item is marked with `aria-current`.
+- Sufficient contrast in the light and dark themes.
+- `prefers-reduced-motion: reduce` is honoured. Decorative animation is **switched off**, not sped up — the global `*` rule only trims durations, and a 0.01 ms animation still flickers.
+- Hover feedback is also active on `:focus-visible`, so a keyboard user does not get the poorer version.
+- Data tables use `th` with a correct `scope` and can be scrolled horizontally without making `body` scroll too.
+- **A control depending on JavaScript is hidden when its API is unavailable.** A button that stays silent when clicked is worse than a button that is not there.
+- Core functions still work without JavaScript.
 
-## Performa
+## Performance
 
-Target **hasil**, diukur pada p75 kunjungan nyata — Core Web Vitals:
+**Outcome** targets, measured at p75 of real visits — Core Web Vitals:
 
-| Metrik | Ambang | Catatan |
+| Metric | Threshold | Note |
 | --- | --- | --- |
-| LCP — Largest Contentful Paint | ≤ 2,5 detik | Elemen terbesarnya hampir selalu ilustrasi artikel |
-| INP — Interaction to Next Paint | ≤ 200 milidetik | **Menggantikan FID sejak Maret 2024.** Dokumen yang masih menyebut FID basi, bukan sedang memakai alternatif |
-| CLS — Cumulative Layout Shift | ≤ 0,1 | Bingkai memesan ruangnya lewat `aspect-ratio: var(--ratio-visual)`; tidak ada webfont yang bisa menggesernya |
+| LCP — Largest Contentful Paint | ≤ 2.5 seconds | Its largest element is almost always an article illustration |
+| INP — Interaction to Next Paint | ≤ 200 milliseconds | **It replaced FID in March 2024.** A document still naming FID is stale, not using an alternative |
+| CLS — Cumulative Layout Shift | ≤ 0.1 | Frames reserve their space through `aspect-ratio: var(--ratio-visual)`; there is no webfont that could shift it |
 
-**Sejak [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) LCP dan CLS diasersi LAB di CI** — pada tiap PR situs yang punya sumber konten; di repo template langkah itu tidak berjalan. Ketiga batasnya dinyatakan, bukan disembunyikan: lab mengukur halaman, bukan pembaca (p75 kunjungan nyata tetap tidak diukur — RUM ditolak); INP tidak terukur di lab dan diwakili proksinya TBT ≤ 200 ms; dan yang diaudit **sampel** hingga 10 URL kedalaman 4 — batas yang dipilih di `lighthouserc.json`, bukan bawaan lhci yang diam-diam berhenti di 5 URL terdangkal. Ambang dan batas cakupan itu terpaku ke tes lewat `tests/cwv-lab.test.mjs`.
+**Since [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) LCP and CLS are asserted in a LAB in CI** — on every PR of a site that has a content source; in the template repo that step does not run. All three of its limits are stated rather than hidden: a lab measures pages, not readers (p75 of real visits stays unmeasured — RUM is refused); INP is not measurable in a lab and is represented by its TBT ≤ 200 ms proxy; and what is audited is a **sample** of up to 10 URLs at depth 4 — a limit chosen in `lighthouserc.json`, not the lhci default that silently stops at the 5 shallowest URLs. Those thresholds and coverage limits are pinned to the tests through `tests/cwv-lab.test.mjs`.
 
-Cara mencapainya — dan ini yang mengikat:
+How they are achieved — and this is what binds:
 
-- Tidak ada dependency UI besar; interaktivitas memakai DOM vanilla.
-- **Tidak ada webfont.** `--font-sans` adalah `system-ui`: nol permintaan font, nol FOIT/FOUT, nol kontribusi ke CLS. Ia dicatat sebagai keputusan privasi di `src/styles/global.css`; ia juga keputusan performa, dan sebuah situs yang menambahkan font wajib men-self-host-nya di `public/` alih-alih menambah origin ke jalur render kritis.
-- Gambar layar pertama `loading="eager"` + `fetchpriority="high"`; sisanya `loading="lazy"`. Keduanya dibutuhkan dan tidak saling menggantikan: `eager` hanya berarti "jangan tunda", sementara prioritas bawaan sebuah `<img>` tetap **Low** sampai layout membuktikan ia di viewport. Ditegakkan `bun run audit:konten` atas keluaran, jadi `<img>` yang tidak lewat `src/components/Ilustrasi.astro` ikut tertangkap.
-- **Tema dipasang berkas eksternal `public/tema.js` yang dimuat `<script src>` klasik**, bukan skrip inline. Sejak [ADR-0019](../adr/0019-csp-ketat-dikirim-penyaji.md) penyaji mengirim `script-src 'self'` tanpa `'unsafe-inline'`, jadi skrip inline bukan "kurang rapi" — ia mati di browser pembaca. Bundel Astro selalu `type="module"` dan modul selalu ditunda, jadi ia bukan pengganti untuk kasus sebelum-paint.
-- Kompresi respons bukan hanya gzip: `compression` menegosiasikan **Brotli** (RFC 7932) saat browser memintanya, dan Brotli mengalahkan gzip sekitar 15–20% pada HTML.
-- `Cache-Control` dua aturan sesuai RFC 9111: aset ber-hash `immutable` satu tahun, HTML `max-age=0, must-revalidate` sehingga rebuild langsung terlihat pembaca.
-- Anggaran yang terbukti di repo rujukan: **beranda ≤ 250 KB gambar, halaman konten ≤ 100 KB.** Sejak 4 Agustus 2026 ia **diukur** `bun run audit:konten` atas `dist/client`, per halaman. Yang ditimbang hanya gambar yang benar-benar diterbitkan build ini — media `awcms` tidak ada di sana, jadi angka ini menjaga seni lokal dan bukan seluruh berat halaman.
+- No large UI dependency; interactivity uses vanilla DOM.
+- **No webfonts.** `--font-sans` is `system-ui`: zero font requests, zero FOIT/FOUT, zero contribution to CLS. It is recorded as a privacy decision in `src/styles/global.css`; it is also a performance decision, and a site adding a font must self-host it in `public/` rather than adding an origin to the critical render path.
+- A first-screen image is `loading="eager"` + `fetchpriority="high"`; the rest are `loading="lazy"`. Both are needed and do not substitute for each other: `eager` only means "do not defer", while an `<img>`'s default priority stays **Low** until layout proves it is in the viewport. Enforced by `bun run audit:konten` over the output, so an `<img>` that did not go through `src/components/Ilustrasi.astro` is caught too.
+- **The theme is installed by the external file `public/tema.js` loaded through a classic `<script src>`**, not an inline script. Since [ADR-0019](../adr/0019-csp-ketat-dikirim-penyaji.md) the server sends `script-src 'self'` without `'unsafe-inline'`, so an inline script is not "less tidy" — it is dead in a reader's browser. An Astro bundle is always `type="module"` and modules are always deferred, so it is not a substitute for the before-paint case.
+- Response compression is not only gzip: `compression` negotiates **Brotli** (RFC 7932) when a browser asks for it, and Brotli beats gzip by roughly 15–20% on HTML.
+- `Cache-Control` in two rules per RFC 9111: hashed assets `immutable` for a year, HTML `max-age=0, must-revalidate` so a rebuild is immediately visible to a reader.
+- The budgets proven in the reference repo: **home ≤ 250 KB of images, content page ≤ 100 KB.** Since 4 August 2026 they are **measured** by `bun run audit:konten` over `dist/client`, per page. What is weighed is only the images this build actually publishes — `awcms` media are not there, so this figure guards local artwork rather than the whole page weight.
 
-## Keamanan
+## Security
 
-Pemetaan lengkap ke **OWASP Top 10 2021, OWASP ASVS 4.0.3, OWASP Secure Headers Project, ISO/IEC 27001:2022 Annex A, dan NIST SSDF SP 800-218** ada di [`standar-performa-dan-keamanan.md`](standar-performa-dan-keamanan.md) ([ADR-0028](../adr/0028-jangkar-standar-performa-dan-keamanan.md)). Edisi OWASP-nya **disamakan dengan `awcms`**; naik edisi adalah keputusan tingkat keluarga, bukan tingkat repo.
+The full mapping to **OWASP Top 10 2021, OWASP ASVS 4.0.3, the OWASP Secure Headers Project, ISO/IEC 27001:2022 Annex A, and NIST SSDF SP 800-218** is in [`standar-performa-dan-keamanan.md`](standar-performa-dan-keamanan.md) ([ADR-0028](../adr/0028-jangkar-standar-performa-dan-keamanan.md)). Its OWASP editions are **matched to `awcms`**; moving to a new edition is a family-level decision, not a repo-level one.
 
-Yang mengikat di sini:
+What binds here:
 
-- Tidak ada secret, token, atau kredensial di repo. Kredensial build tinggal di `.env`/platform build, tidak pernah ber-prefiks `PUBLIC_`.
-- Tidak ada skrip pihak ketiga, tidak ada pengumpulan data pribadi pembaca. Larangan itu **tidak punya pengecualian "tapi ini untuk keamanan"** — ia yang menolak pelaporan CSP dan RUM.
-- Tidak ada jalur HTML mentah dari CMS. Blok konten disusun dari teks ter-escape dan tag tetap.
-- Header respons ditentukan di **satu** berkas. Kebijakan kedua — di proxy, di `<meta http-equiv>`, di variabel env — adalah cara paling sunyi berakhir tanpa kebijakan sama sekali.
-- `bun audit` wajib nol sebelum rilis.
-- Tautan keluar `target="_blank"` wajib `rel="noopener noreferrer"`.
+- No secret, token, or credential in the repo. Build credentials live in `.env`/the build platform, and are never prefixed `PUBLIC_`.
+- No third-party scripts, and no collection of readers' personal data. That ban **has no "but this is for security" exception** — it is what refuses CSP reporting and RUM.
+- No raw HTML path from the CMS. Content blocks are assembled from escaped text and fixed tags.
+- Response headers are decided in **one** file. A second policy — in a proxy, in `<meta http-equiv>`, in an env variable — is the quietest way to end up with no policy at all.
+- `bun audit` must be zero before a release.
+- An outbound `target="_blank"` link must carry `rel="noopener noreferrer"`.
 
-**Kesepuluh celah ADR-0028 kini tertutup** ([ADR-0029](../adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md) untuk HSTS, [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md) untuk pin rantai pasok, [ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md) untuk SBOM rilis, [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) untuk analisis statik dan Core Web Vitals lab, sisanya tanpa perubahan postur) — masing-masing bersama pemeriksanya, dan barisnya TETAP di tabel dokumen standar. Dua penutupan terakhir membawa syarat kejujuran yang tidak boleh hilang: ringkasan run CodeQL menyatakan `.astro` tidak dianalisis, dan hasil Lighthouse adalah angka LAB — bukan p75 kunjungan nyata, yang tetap tidak diukur karena RUM ditolak.
+**All ten ADR-0028 gaps are now closed** ([ADR-0029](../adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md) for HSTS, [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md) for supply chain pinning, [ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md) for the release SBOM, [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) for static analysis and lab Core Web Vitals, the rest with no posture change) — each with its checker, and its row STAYS in the standards document's table. The last two closures carry an honesty condition that must not be lost: a CodeQL run summary states that `.astro` is not analysed, and a Lighthouse result is a LAB number — not p75 of real visits, which stays unmeasured because RUM is refused.
 
-## Gerbang mutu
+## Quality gates
 
-Gerbang standar ini, seluruhnya wajib hijau sebelum pekerjaan dinyatakan selesai:
+This standard's gates, all of which must be green before work is declared done:
 
-| Gerbang | Perintah | Menangkap | Ada di `awcms-astro`? |
+| Gate | Command | What it catches | Present in `awcms-astro`? |
 | --- | --- | --- | --- |
-| Lockfile | `bun run check:lockfile` | Lockfile milik proyek lain, dependency yang tidak dideklarasi | Ya |
-| Type check | `astro check` (di dalam `bun run build`) | Kesalahan tipe dan props | Ya |
-| Katalog PO | `bun test` | Paritas katalog antar locale, `msgstr` kosong, key yang dipakai kode tetapi tidak pernah ditulis | Ya |
-| Penyajian | `bun test` | Header keamanan termasuk CSP dan Permissions-Policy, aturan cache HTML vs aset, kompresi, halaman 404 | Ya |
-| Keluaran CSP | `bun test` **setelah** `bun run build` | Gaya dan skrip inline di HTML, sumber lintas-origin, JS yang ikut hilang | Ya — melewati dirinya bila `dist/` belum ada |
-| Audit konten — gambar | `bun run audit:konten` | Rasio terhadap `--ratio-visual`, format dibaca dari isi berkas, XML SVG, ukuran teks terkecil di SVG | Ya |
-| Audit konten — keluaran | `bun run audit:konten` **setelah** `bun run build` | Judul/deskripsi/canonical, hreflang pincang, aset yang dijanjikan metadata tetapi tidak diterbitkan, tautan mati, sitemap, nama key yang bocor ke layar | Ya — melewati dirinya bila `dist/` belum ada |
-| Audit konten — feed dan setiap `.xml` | `bun run audit:konten` **setelah** `bun run build` | Setiap `.xml` di keluaran yang bukan `sitemap*.xml` wajib berupa feed Atom yang sah: kelengkapan yang Atom wajibkan, `rel="self"` yang berbunyi alamatnya sendiri, IRI absolut, tanggal RFC 3339, urutan terbaru-dulu, `<updated>` feed = entry terbaru (bukan jam build), entry yang menunjuk halaman yang benar-benar terbit, nama key yang bocor, tautan penemuan-otomatis ber-`title`, dan feed yang tidak masuk sitemap. Berkas `.xml` yang bukan feed **dilaporkan sebagai pelanggaran**, bukan dilewati | Ya — sejak [ADR-0035](../adr/0035-feed-atom-per-seksi-berita-dan-gerbang-atas-xml.md); melewati dirinya bila `dist/` belum ada |
-| Gerbang atas gerbang konten | `bun test` | `scripts/audit-konten.mjs` sendiri: tiap keluarga dibuktikan MERAH-dan-HIJAU atas pohon fixture, **mutation-proven**. Ia menutup keadaan di mana keluarga keluaran — termasuk kedua gerbang performa — tidak pernah dieksekusi di repo template karena `dist/client` tidak pernah ada di sini | Ya — sejak 6 Agustus 2026 (celah 10 di [standar performa dan keamanan](standar-performa-dan-keamanan.md)) |
-| Audit dokumen | `bun run audit:dokumen` | Tautan markdown ke berkas yang tidak ada (diselesaikan dari letak berkasnya, sehingga aturan tautan `.changesets/` ikut terjaga), indeks ADR yang tidak lengkap dua arah, kolom Status yang tidak setuju dengan ADR-nya, daftar permukaan kilau yang menyimpang dari `global.css`, dan kutipan `ADR-NNNN` yang tidak resolve ke berkasnya dan tidak ditandai milik repo lain | Ya |
-| Audit graf | `bun run audit:graf` | Artefak `graphify-out/` yang terlacak di luar keempat keluaran bersama, laporan yang tidak sepakat dengan `graph.json`, nama komunitas yang tidak dipilih (nama berkas, placeholder, kembar, atau berbeda antar-artefak), dan korpus yang mengabaikan `.graphifyignore` | Ya — sejak 4 Agustus 2026; melewati dirinya bila `graphify-out/` tidak ada |
-| Versi toolchain | `bun test` | Lima nilai versi Bun (`packageManager`, `engines.bun`, dua `bun-version` CI, dua tag `Dockerfile`) yang wajib sepakat, plus digest image yang menempel pada tag yang benar | Ya — sejak [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md) |
-| SBOM | `bun test` | Generator `scripts/sbom.mjs` sinkron dengan `bun.lock` (mutation-proven), dan langkah SBOM di perilis tidak hilang diam-diam. Kesegaran `sbom.cdx.json` di pohon kerja SENGAJA tidak digerbangi — SBOM memerikan rilis, bukan pohon kerja | Ya — sejak [ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md) |
-| Analisis statik | `.github/workflows/codeql.yml` | Kerentanan pada permukaan JS/TS (lib, config, scripts, server, tests) — terjadwal mingguan + pada perubahan. `.astro` TIDAK dianalisis dan ringkasan run menyatakannya; `tests/analisis-statik.test.mjs` menjaga pernyataan itu tidak dihapus | Ya — sejak [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) |
-| Core Web Vitals (lab) | Job `build` CI, `treosh/lighthouse-ci-action` | LCP > 2500 ms, CLS > 0,1, TBT > 200 ms (proksi INP) atas **sampel** `dist/client` (hingga 10 URL, kedalaman 4 — dipilih di `lighthouserc.json`) — hanya berjalan bila situs punya sumber konten; ambang DAN batas cakupannya terpaku ke dokumen lewat `tests/cwv-lab.test.mjs` | Ya — sejak [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md); di template tidak berjalan |
-| Permukaan `awcms` | `bun test` | Jalur `/api/v1/…` yang benar-benar dipanggil `src/`, dibandingkan dua arah dengan tabel bertanda di skill integrasi | Ya — sejak ADR-0030 |
-| **Peran situs** | `bun test` | `owner` di `permukaanAdmin.peran` (apa pun kapitalisasinya), prefiks yang menelan permukaan publik (`/`, prefiks locale, atau slug tab), deklarasi separuh (rute tanpa peran, atau peran tanpa rute), dan setiap rute `prerender = false` yang prefiksnya tidak dinyatakan `permukaanAdmin` maupun BFF Jualanku — dua pemeriksaan terpisah atas KONFIGURASI dan atas KODE, karena keduanya bisa berselisih dan yang menentukan apa yang disajikan adalah kode | Ya — sejak [ADR-0034](../adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md) |
-| **Kosakata `news`** | `bun test` | Tab ber-slug `news` yang dibiarkan `urutanSeksi: "manual"` — sebuah permukaan yang mengaku berita di alamatnya dan membantahnya di setiap detailnya. Gerbangnya tidak menuntut tab itu ada; `news` bukan kata yang dipesan di sini | Ya — sejak [ADR-0036](../adr/0036-news-adalah-kosakata-repo-ini-dan-sebuah-tab-yang-memikulnya.md) |
-| Audit dependency | `bun audit --audit-level=low` | Kerentanan rantai build. Dijalankan CI **dan** perilis | Ya |
-| CI | `.github/workflows/ci.yml` | Seluruhnya yang ada, pada setiap PR | Ya |
+| Lockfile | `bun run check:lockfile` | A lockfile belonging to another project, an undeclared dependency | Yes |
+| Type check | `astro check` (inside `bun run build`) | Type and prop errors | Yes |
+| PO catalogues | `bun test` | Catalogue parity across locales, an empty `msgstr`, a key used by the code but never written | Yes |
+| Serving | `bun test` | Security headers including CSP and Permissions-Policy, HTML vs asset cache rules, compression, the 404 page | Yes |
+| CSP output | `bun test` **after** `bun run build` | Inline styles and scripts in the HTML, cross-origin sources, JS that disappeared with them | Yes — skips itself when `dist/` does not exist |
+| Content audit — images | `bun run audit:konten` | The ratio against `--ratio-visual`, the format read from the file contents, SVG XML, the smallest text size in an SVG | Yes |
+| Content audit — output | `bun run audit:konten` **after** `bun run build` | Titles/descriptions/canonicals, lopsided hreflang, an asset promised by metadata but not published, dead links, the sitemap, key names leaking onto the screen | Yes — skips itself when `dist/` does not exist |
+| Content audit — feeds and every `.xml` | `bun run audit:konten` **after** `bun run build` | Every `.xml` in the output that is not `sitemap*.xml` must be a valid Atom feed: the completeness Atom requires, a `rel="self"` stating its own address, absolute IRIs, RFC 3339 dates, newest-first ordering, the feed's `<updated>` = its newest entry (not the build clock), entries pointing at pages that really were published, leaked key names, an auto-discovery link with a `title`, and a feed absent from the sitemap. An `.xml` file that is not a feed is **reported as a violation**, not skipped | Yes — since [ADR-0035](../adr/0035-feed-atom-per-seksi-berita-dan-gerbang-atas-xml.md); skips itself when `dist/` does not exist |
+| A gate over the content gate | `bun test` | `scripts/audit-konten.mjs` itself: every family proven RED-and-GREEN over a fixture tree, **mutation-proven**. It closes the state in which the output families — including both performance gates — were never executed in the template repo because `dist/client` never exists here | Yes — since 6 August 2026 (gap 10 in the [performance and security standard](standar-performa-dan-keamanan.md)) |
+| Document audit | `bun run audit:dokumen` | Markdown links to files that do not exist (resolved from their own file's location, so the `.changesets/` link rule is guarded too), an ADR index incomplete in either direction, a Status column that disagrees with its ADR, a polish-surface list that diverges from `global.css`, and an `ADR-NNNN` citation that neither resolves to its file nor is marked as another repo's | Yes |
+| Translation audit | `bun run audit:translation` | An `.id.md` mirror gone stale against the English source whose hash it records, an orphan mirror whose source is gone, a document with no mirror that is not on the shrink-only ledger, and a ledger entry whose mirror now exists | Yes — since [ADR-0039](../adr/0039-english-is-the-source-language.md) |
+| Graph audit | `bun run audit:graf` | `graphify-out/` artefacts tracked beyond the four shared outputs, a report that disagrees with `graph.json`, community names that were not chosen (a file name, a placeholder, a twin, or differing between artefacts), and a corpus that ignored `.graphifyignore` | Yes — since 4 August 2026; skips itself when `graphify-out/` is absent |
+| Toolchain versions | `bun test` | The five Bun version values (`packageManager`, `engines.bun`, two CI `bun-version`, two `Dockerfile` tags) that must agree, plus the image digest attached to the right tag | Yes — since [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md) |
+| SBOM | `bun test` | The `scripts/sbom.mjs` generator in sync with `bun.lock` (mutation-proven), and the SBOM step in the releaser not disappearing silently. The freshness of `sbom.cdx.json` in the working tree is DELIBERATELY not gated — an SBOM describes a release, not a working tree | Yes — since [ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md) |
+| Static analysis | `.github/workflows/codeql.yml` | Vulnerabilities on the JS/TS surface (lib, config, scripts, server, tests) — scheduled weekly + on changes. `.astro` is NOT analysed and each run summary says so; `tests/analisis-statik.test.mjs` keeps that statement from being deleted | Yes — since [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) |
+| Core Web Vitals (lab) | The CI `build` job, `treosh/lighthouse-ci-action` | LCP > 2500 ms, CLS > 0.1, TBT > 200 ms (the INP proxy) over a **sample** of `dist/client` (up to 10 URLs, depth 4 — chosen in `lighthouserc.json`) — running only when the site has a content source; its thresholds AND its coverage limits are pinned to this document through `tests/cwv-lab.test.mjs` | Yes — since [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md); it does not run in the template |
+| `awcms` surfaces | `bun test` | The `/api/v1/…` paths `src/` actually calls, compared in both directions with the marked table in the integration skill | Yes — since ADR-0030 |
+| **The site's role** | `bun test` | `owner` in `permukaanAdmin.peran` (whatever its capitalisation), a prefix swallowing the public surface (`/`, a locale prefix, or a tab slug), a half declaration (a route with no role, or a role with no route), and every `prerender = false` route whose prefix is declared by neither `permukaanAdmin` nor the Jualanku BFF — two separate checks over the CONFIGURATION and over the CODE, because the two can disagree and what decides what is served is the code | Yes — since [ADR-0034](../adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md) |
+| **The `news` vocabulary** | `bun test` | A tab slugged `news` left on `urutanSeksi: "manual"` — a surface claiming to be news in its address and denying it in every detail. Its gate does not demand that tab exist; `news` is not a reserved word here | Yes — since [ADR-0036](../adr/0036-news-adalah-kosakata-repo-ini-dan-sebuah-tab-yang-memikulnya.md) |
+| Dependency audit | `bun audit --audit-level=low` | Vulnerabilities in the build chain. Run by CI **and** by the releaser | Yes |
+| CI | `.github/workflows/ci.yml` | All of the above, on every PR | Yes |
 
-**Dua aturan gambar tetap manual, dan itu disebut terus terang.** Teks di dalam gambar hanya boleh label topik, dan tidak boleh ada lambang atau atribut instansi negara — termasuk di dalam ilustrasi. Tidak ada pemeriksa yang bisa menilai keduanya. Aturan yang tampak terjaga padahal tidak lebih berbahaya daripada aturan yang jelas-jelas manual.
+**Two image rules stay manual, and that is said plainly.** Text inside an image may only be a topic label, and there may be no state institution's emblem or attributes — including inside an illustration. No checker can judge either. A rule that looks guarded and is not is more dangerous than a rule that is plainly manual.
 
-**Yang masih di repo rujukan** dan belum di-port: aturan konten khas domain (tautan antar dokumen, sinkronisasi daftar skill). Sisa backlog ada di [README repo ini](../../README.md#yang-belum-ada-backlog-eksplisit-bukan-kelalaian).
+**What is still in the reference repo** and not yet ported: domain-specific content rules (links between documents, synchronising the skill list). The remaining backlog is in [this repo's README](../../README.md#what-does-not-exist-yet-an-explicit-backlog-not-an-oversight).
 
-**Aturan baru wajib membawa pemeriksanya.** Aturan yang hanya tertulis di dokumentasi akan dilanggar cepat atau lambat — itu sebabnya gerbang audit ada (ADR-0008 repo rujukan).
+**A new rule must bring its checker.** A rule written only in the documentation will be broken sooner or later — that is why the audit gates exist (the reference repo's ADR-0008).
 
-Melonggarkan pemeriksa agar gerbang hijau adalah pelanggaran, bukan perbaikan. Bila sebuah aturan memang salah, ubah aturannya secara sadar beserta alasannya di dokumentasi.
+Loosening a checker so a gate goes green is a violation, not a fix. If a rule really is wrong, change the rule deliberately and record its reasoning in the documentation.
 
 ## Versioning
 
-`MAJOR.MINOR.PATCH`, tag git `vX.Y.Z` anotatif. Arti tiap tingkat untuk situs informasi didefinisikan di ADR-0009 repo rujukan — semver dirancang untuk library ber-API, jadi artinya perlu ditetapkan ulang.
+`MAJOR.MINOR.PATCH`, with annotated git tags `vX.Y.Z`. What each level means for an information site is defined in the reference repo's ADR-0009 — semver was designed for libraries with an API, so its meaning has to be restated.
 
-Setiap perubahan yang memengaruhi konten publik, struktur, dependency, atau deployment ditulis sebagai changeset **pada iterasi yang sama**, dilipat ke `CHANGELOG.md` saat rilis.
+Every change affecting public content, structure, dependencies, or deployment is written as a changeset **in the same iteration**, and folded into `CHANGELOG.md` at release.
 
-## Graf pengetahuan (`graphify-out/`)
+## The knowledge graph (`graphify-out/`)
 
-Repo ini melacak indeks graf pengetahuan hasil [graphify](https://github.com/safishamsi/graphify): `graph.json` (data graf), `GRAPH_REPORT.md` (laporan), `manifest.json` (dasar `--update`), dan `cost.json`. Ia dilacak karena berguna dibaca ulang oleh orang dan agen yang baru masuk repo — bukan artefak build, melainkan peta.
+This repo tracks the knowledge graph index produced by [graphify](https://github.com/safishamsi/graphify): `graph.json` (the graph data), `GRAPH_REPORT.md` (the report), `manifest.json` (the basis for `--update`), and `cost.json`. It is tracked because it is useful to be re-read by a person or an agent new to the repo — not a build artefact but a map.
 
-**Hanya keempat berkas itu yang terlacak.** Sisanya punya alasan tertulis di `.gitignore` untuk tinggal di luar riwayat: cache spesifik mesin, berkas ber-titik yang selalu intermediate, salinan bertanggal yang menduplikasi artefak hidup di sebelahnya, dan `graph.html` yang berhenti dipancarkan di atas batas node lalu membusuk diam-diam. Ketiga aturan itu ditulis pada 3 Agustus 2026 dan hidup dua hari tanpa pemeriksa; sejak [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md) melarang keadaan itu, `bun run audit:graf` menegakkannya.
+**Only those four files are tracked.** The rest have a written reason in `.gitignore` to stay outside the history: machine-specific caches, dot-files that are always intermediates, dated copies duplicating the live artefact beside them, and `graph.html`, which stops being emitted above a node threshold and then rots silently. Those three rules were written on 3 August 2026 and lived two days with no checker; since [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md) forbids that state, `bun run audit:graf` enforces them.
 
-### Korpus: apa yang diindeks, dan apa yang sengaja tidak
+### The corpus: what is indexed, and what deliberately is not
 
-`.graphifyignore` di akar repo menyempitkan korpus. Sintaksnya sintaks `.gitignore`, dibaca **setelah** `.gitignore`, dan hanya bisa mengecualikan lebih — tidak pernah mengembalikan yang sudah dibuang. Menambah baris di sana selalu aman ke satu arah.
+`.graphifyignore` at the repo root narrows the corpus. Its syntax is `.gitignore` syntax, read **after** `.gitignore`, and it can only exclude more — never restore what has already been discarded. Adding a line there is always safe in one direction.
 
-`.changesets/` dikecualikan, dan alasannya struktural, bukan selera. Ia menyumbang **171 dari 971 node** (18% graf) dengan 139 edge yang menunjuk sesama changeset dan hanya 39 yang menyeberang: banyak node, hampir tanpa jembatan — gumpalan terpisah. Ia menaikkan jumlah komunitas dari 90 ke 101 dalam satu rebuild, menurunkan kohesinya, dan mengubur komunitas yang berarti. Ia juga **menceritakan ulang** dokumen yang dirangkumnya, sehingga isi yang sama masuk graf dua kali dengan kata berbeda — terlihat langsung sebagai konsep kunci kembar di laporan. Yang hilang karenanya: tidak ada. Rasional setiap keputusan tinggal di `docs/adr/`, dan itu tetap diindeks.
+`.changesets/` is excluded, and its reasoning is structural rather than a matter of taste. It contributes **171 of 971 nodes** (18% of the graph) with 139 edges pointing at other changesets and only 39 crossing over: many nodes, almost no bridges — a separate clump. It raised the community count from 90 to 101 in one rebuild, lowered their cohesion, and buried the communities that mean something. It also **retells** the documents it summarises, so the same content enters the graph twice in different words — visible immediately as twin key concepts in the report. What is lost by excluding it: nothing. The rationale of every decision lives in `docs/adr/`, and that is still indexed.
 
-Sebuah rebuild yang dijalankan tanpa `.graphifyignore` memasukkan kembali apa yang dikecualikan. Gerbangnya menangkap itu.
+A rebuild run without `.graphifyignore` puts back what was excluded. Its gate catches that.
 
-### Nama komunitas wajib dipilih, bukan diwarisi
+### A community's name must be chosen, not inherited
 
-graphify menamai komunitas secara otomatis dari **node paling terhubung** di dalamnya (`label_communities_by_hub`). Penamaan itu gratis, deterministik, dan tidak pernah membaca komunitasnya — ia hanya menyalin nama berkas terbesar. Empat aturan mengikat nama yang ikut ter-commit:
+graphify names communities automatically from the **most connected node** inside them (`label_communities_by_hub`). That naming is free, deterministic, and never reads its community — it only copies the biggest file's name. Four rules bind a name that is committed:
 
-1. **Bukan nama berkas.** `client.ts`, `BaseLayout.astro`, `package.json` bukan nama komunitas; itu keluaran penamaan otomatis yang tersedia gratis kapan saja.
-2. **Bukan placeholder `Community N`.** Komunitas tanpa nama adalah lubang di peta.
-3. **Tidak ada dua komunitas bernama sama.** Nama kembar membuat keduanya tak terbedakan oleh setiap konsumen hilir.
-4. **`graph.json` dan `GRAPH_REPORT.md` menyebut nama yang sama** untuk komunitas yang sama.
+1. **Not a file name.** `client.ts`, `BaseLayout.astro`, `package.json` are not community names; they are the output of automatic naming, available free at any time.
+2. **Not a `Community N` placeholder.** A community with no name is a hole in the map.
+3. **No two communities share a name.** Twin names make both indistinguishable to every downstream consumer.
+4. **`graph.json` and `GRAPH_REPORT.md` name the same community the same way.**
 
-Aturan ini ditulis karena pelanggarannya sudah terjadi dan tidak terlihat oleh siapa pun. Pada 4 Agustus 2026, **60 dari 101 label menempel pada komunitas yang salah** — warisan clustering lama yang tak pernah divalidasi. Komunitas 6 bernama `content-blocks.ts` sementara isinya seluruhnya dari [`standar-performa-dan-keamanan.md`](standar-performa-dan-keamanan.md); komunitas 22 bernama `Kontrak BFF /_portal-api/**` sementara pusatnya `Pedoman Perilaku`; tiga komunitas berbeda sama-sama bernama `BaseLayout.astro`.
+These rules were written because their violation had already happened and was seen by nobody. On 4 August 2026, **60 of 101 labels were attached to the wrong community** — a legacy of old clustering that was never validated. Community 6 was named `content-blocks.ts` while its contents came entirely from [`standar-performa-dan-keamanan.md`](standar-performa-dan-keamanan.md); community 22 was named `Kontrak BFF /_portal-api/**` while its centre was `Pedoman Perilaku`; three different communities were all named `BaseLayout.astro`.
 
-Cacatnya tidak terlihat karena artefaknya JSON yang sah di sebelah laporan yang rapi, dan tidak satu pun gerbang lain membaca `graphify-out/`. Nama komunitas bukan hiasan: itu yang dibaca `graphify query` dan siapa pun yang memakai graf ini untuk mencari jalan. **Graf yang salah menamai dirinya sendiri lebih berbahaya daripada tidak ada graf, karena ia menjawab dengan percaya diri.**
+The defect was invisible because its artefact was valid JSON beside a tidy report, and not one other gate read `graphify-out/`. A community name is not decoration: it is what `graphify query` reads, and what anyone using this graph to find their way reads. **A graph that names itself wrongly is more dangerous than no graph, because it answers confidently.**
 
-Penyebab teknisnya sudah ditutup di hulu, di skill graphify: langkah pelabelan kini menulis `.graphify_labels.json.sig` — tanda tangan keanggotaan tiap komunitas — sehingga run berikutnya bisa tahu komunitas mana yang benar-benar berubah. Tanpa sidecar itu graphify jatuh ke membandingkan **jumlah** komunitas, dan setiap run yang mengubah jumlahnya memindahkan seluruh label ke komunitas yang berbeda.
+Its technical cause is closed upstream, in the graphify skill: the labelling step now writes `.graphify_labels.json.sig` — a signature of each community's membership — so the next run can tell which communities really changed. Without that sidecar, graphify falls back to comparing the **number** of communities, and any run that changes that number moves every label onto a different community.
 
-### Kesegaran: dilaporkan, tidak memerahkan gerbang
+### Freshness: reported, not gate-reddening
 
-`bun run audit:graf` mencetak selisih antara `built_at_commit` dan `HEAD`, dan tidak pernah gagal karenanya. Memerahkannya berarti setiap PR yang menyentuh berkas terindeks wajib membawa rebuild bermegabyte — gerbang semahal itu akan dilonggarkan dalam sebulan, persis yang §Gerbang mutu larang. Yang dijaga gerbang ini adalah **kebenaran internal** artefaknya; kapan ia dibangun ulang tetap keputusan sadar, dan catatannya membuat keputusan itu terlihat.
+`bun run audit:graf` prints the gap between `built_at_commit` and `HEAD`, and never fails because of it. Turning it red would mean every PR touching an indexed file has to carry a multi-megabyte rebuild — a gate that expensive would be loosened within a month, exactly what §Quality gates forbids. What this gate guards is the artefact's **internal correctness**; when it is rebuilt stays a deliberate decision, and its note makes that decision visible.
 
-Bangun ulang dengan `/graphify .` (penuh, melabeli ulang seluruh komunitas) atau `/graphify . --update` (inkremental). `graphify cluster-only` **tidak** melabeli ulang: ia memakai kembali label tersimpan dan menamai ulang komunitas yang berubah dengan nama hub — jadi ia bisa menghijaukan kohesi sambil memerahkan gerbang label.
+Rebuild with `/graphify .` (full, relabelling every community) or `/graphify . --update` (incremental). `graphify cluster-only` does **not** relabel: it reuses stored labels and renames changed communities with a hub name — so it can turn cohesion green while turning the label gate red.
 
-## Dokumentasi
+## Documentation
 
-Wajib ada dan wajib sinkron dengan kode:
+Mandatory, and mandatory to stay in sync with the code:
 
-| Berkas | Isi | Ada di `awcms-astro`? |
+| File | Contents | Present in `awcms-astro`? |
 | --- | --- | --- |
-| `AGENTS.md` | Kontrak kerja teknis yang mengikat seluruh standar dan menunjuk dokumen rincinya | Ya |
-| `README.md` | Kenapa situs ini ada, bentuknya, cara menjalankan | Ya |
-| `docs/adr/` | Keputusan beserta alasannya | Ya — indeksnya digerbangi dua arah |
-| `.claude/skills/` | Standar di atas, di-encode menjadi prosedur yang bisa dijalankan agen AI | Ya — empat skill |
-| `docs/ARCHITECTURE.md` | Anatomi setiap folder dan berkas; apa yang sudah ada vs gap | **Tidak.** Perannya dipikul §Struktur README dan docblock tiap berkas |
-| `docs/PROJECT_STATE.md` | Keadaan proyek, utang yang diketahui, titik lanjut | **Tidak.** Perannya dipikul §"Yang belum ada" di README dan §Celah di dokumen standar |
-| `docs/workflows/` | Cara mengerjakan tugas berulang | **Tidak.** Perannya dipikul `.claude/skills/` — prosedur yang bisa dijalankan mengalahkan prosedur yang harus dibaca dulu |
+| `AGENTS.md` | The binding technical working contract that binds every standard and points at its detailed document | Yes |
+| `README.md` | Why this site exists, its shape, how to run it | Yes |
+| `docs/adr/` | Decisions with their reasoning | Yes — its index gated in both directions |
+| `.claude/skills/` | The standards above, encoded as procedures an AI agent can run | Yes — four skills |
+| `docs/ARCHITECTURE.md` | The anatomy of every folder and file; what exists vs the gaps | **No.** Its role is carried by §Structure of the README and each file's docblock |
+| `docs/PROJECT_STATE.md` | The project's state, its known debt, its resumption points | **No.** Its role is carried by §"What does not exist yet" in the README and §Gaps in the standards document |
+| `docs/workflows/` | How to do repeated tasks | **No.** Its role is carried by `.claude/skills/` — a procedure that can be run beats a procedure that has to be read first |
 
-**Tiga baris terakhir sengaja berbunyi "tidak", bukan dihapus.** Sampai 4 Agustus 2026 tabel ini menuntut ketiganya "wajib ada" untuk sebuah repo `awcms-astro` sementara repo rujukan standar ini — repo ini sendiri — tidak membawa satu pun. Sebuah situs turunan yang membacanya akan membuat tiga berkas kosong untuk memuaskan daftar, dan berkas kosong yang wajib adalah cara paling cepat sebuah daftar berhenti dibaca. Yang benar bukan menghapus barisnya, melainkan mengatakan **siapa yang memikul perannya di sini**.
+**The last three rows deliberately read "no" rather than being deleted.** Until 4 August 2026 this table demanded all three as "mandatory" for an `awcms-astro` repo while this standard's reference repo — this repo itself — carried not one of them. A derived site reading it would create three empty files to satisfy the list, and a mandatory empty file is the fastest way for a list to stop being read. What is right is not to delete their rows but to say **who carries their role here**.
 
-Yang ditambahkan sejak: [`standar-performa-dan-keamanan.md`](standar-performa-dan-keamanan.md) — peta ke standar internasional beserta daftar celahnya ([ADR-0028](../adr/0028-jangkar-standar-performa-dan-keamanan.md)).
+Added since: [`standar-performa-dan-keamanan.md`](standar-performa-dan-keamanan.md) — the map to international standards along with its list of gaps ([ADR-0028](../adr/0028-jangkar-standar-performa-dan-keamanan.md)).
 
-Dokumentasi yang menyimpang dari kode lebih berbahaya daripada tidak ada dokumentasi: ia dipercaya. Karena itu **memperbarui dokumen adalah bagian dari iterasi yang sama**, bukan pekerjaan susulan.
+Documentation that diverges from the code is more dangerous than no documentation: it is believed. So **updating the documents is part of the same iteration**, not follow-up work.

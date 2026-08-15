@@ -363,7 +363,23 @@ function auditIndeksAdr() {
 // ---------------------------------------------------------------------------
 
 const CSS_KILAU = "src/styles/global.css";
+
+/**
+ * Berkas dokumen yang memuat tabel bertanda — sumber Inggris DAN cerminnya.
+ *
+ * Keduanya diperiksa, dan itu bukan kelengkapan. `bun run audit:translation`
+ * menjaga cermin tetap SEUSIA sumbernya: hash yang cocok membuktikan ia
+ * diterjemahkan ulang saat sumbernya berubah, bukan bahwa tabelnya memuat baris
+ * yang sama. Sebuah baris yang hilang dari cermin karena itu lolos kedua gerbang
+ * terjemahan, dan pembaca Indonesianya melihat daftar permukaan yang berbeda
+ * dari yang ada di CSS.
+ *
+ * Cermin yang belum ada DILEWATI, bukan dilaporkan: cakupan cermin adalah
+ * pertanyaan `audit:translation`, dan menjawabnya dua kali di dua gerbang
+ * menghasilkan dua pesan untuk satu cacat.
+ */
 const DOK_KILAU = "docs/awcms-astro/ui-ux-design-system.md";
+const DOK_KILAU_CERMIN = "docs/awcms-astro/ui-ux-design-system.id.md";
 
 /** Isi di antara sepasang penanda, atau `undefined` bila penandanya tak lengkap. */
 function antaraPenanda(isi, mulai, selesai) {
@@ -395,7 +411,10 @@ function permukaanDokumen(blok) {
   for (const baris of blok.split("\n")) {
     const kolom = baris.match(/^\|([^|]+)\|/)?.[1]?.trim();
     if (!kolom) continue;
-    if (/^-+$/.test(kolom) || kolom === "Permukaan") continue;
+    // Kepala tabel dilewati dalam KEDUA bahasa: sumbernya menulis "Surface",
+    // cerminnya "Permukaan". Melewatkan salah satunya saja membuat kepala tabel
+    // terbaca sebagai selector dan gerbangnya merah atas berkas yang benar.
+    if (/^-+$/.test(kolom) || kolom === "Permukaan" || kolom === "Surface") continue;
     hasil.push(kolom.replace(/`/g, "").trim());
   }
 
@@ -427,37 +446,50 @@ function auditPermukaanKilau() {
     "/* kilau:permukaan:mulai */",
     "/* kilau:permukaan:selesai */"
   );
-  const blokDok = antaraPenanda(
-    readFileSync(gabung(AKAR, DOK_KILAU), "utf8"),
-    "<!-- kilau:permukaan:mulai -->",
-    "<!-- kilau:permukaan:selesai -->"
-  );
-
-  if (blokCss === undefined || blokDok === undefined) {
+  if (blokCss === undefined) {
     langgar(
       "permukaan-kilau",
-      blokCss === undefined ? CSS_KILAU : DOK_KILAU,
+      CSS_KILAU,
       "penanda `kilau:permukaan:mulai`/`:selesai` tidak lengkap"
     );
     return;
   }
 
   const dariCss = permukaanCss(blokCss);
-  const dariDok = permukaanDokumen(blokDok);
+  const diperiksa = [];
 
-  for (const permukaan of dariCss) {
-    if (!dariDok.includes(permukaan)) {
-      langgar("permukaan-kilau", DOK_KILAU, `\`${permukaan}\` ada di CSS tetapi tidak di tabel`);
+  for (const dok of [DOK_KILAU, DOK_KILAU_CERMIN]) {
+    if (!existsSync(gabung(AKAR, dok))) continue;
+
+    const blokDok = antaraPenanda(
+      readFileSync(gabung(AKAR, dok), "utf8"),
+      "<!-- kilau:permukaan:mulai -->",
+      "<!-- kilau:permukaan:selesai -->"
+    );
+
+    if (blokDok === undefined) {
+      langgar("permukaan-kilau", dok, "penanda `kilau:permukaan:mulai`/`:selesai` tidak lengkap");
+      continue;
     }
+
+    const dariDok = permukaanDokumen(blokDok);
+
+    for (const permukaan of dariCss) {
+      if (!dariDok.includes(permukaan)) {
+        langgar("permukaan-kilau", dok, `\`${permukaan}\` ada di CSS tetapi tidak di tabel`);
+      }
+    }
+
+    for (const permukaan of dariDok) {
+      if (!dariCss.includes(permukaan)) {
+        langgar("permukaan-kilau", dok, `tabel mendaftarkan \`${permukaan}\` yang tidak ada di CSS`);
+      }
+    }
+
+    diperiksa.push(`${dok.split("/").pop()}=${dariDok.length}`);
   }
 
-  for (const permukaan of dariDok) {
-    if (!dariCss.includes(permukaan)) {
-      langgar("permukaan-kilau", DOK_KILAU, `tabel mendaftarkan \`${permukaan}\` yang tidak ada di CSS`);
-    }
-  }
-
-  catatan.push(`kilau: ${dariCss.length} permukaan di CSS, ${dariDok.length} baris tabel`);
+  catatan.push(`kilau: ${dariCss.length} permukaan di CSS, baris tabel ${diperiksa.join(", ")}`);
 }
 
 // ---------------------------------------------------------------------------

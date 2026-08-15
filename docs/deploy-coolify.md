@@ -1,276 +1,273 @@
-# Deploy dan rebuild lewat webhook (Coolify)
+🇬🇧 English (source) · 🇮🇩 [Bahasa Indonesia](deploy-coolify.id.md)
 
-Cara sebuah situs dari template ini tayang, dan cara konten baru di awcms sampai
-ke pembaca tanpa siapa pun menekan tombol.
+# Deploying and rebuilding by webhook (Coolify)
 
-Server rujukan yang dipakai di sini adalah server Coolify yang dicatat di
+How a site from this template goes live, and how new content in awcms reaches
+readers without anybody pressing a button.
+
+The reference server used here is the Coolify server recorded in
 [`ahliweb/serv-dinkesdocker`](https://github.com/ahliweb/serv-dinkesdocker).
-Yang tetap benar dari sana adalah **polanya** — Coolify **Application**
-(git-build) di belakang Traefik — bukan daftar aplikasi yang dulu
-membuktikannya: `awcms-micro` dan `awcms-mini` adalah **arsip** sejak 2 Agustus
-2026 (`awcms` ADR-0055) dan tidak lagi dipakai sebagai contoh hidup. Situs dari
-template ini mengikuti pola yang sama dengan `awcms`.
+What stays true from there is the **pattern** — a Coolify **Application**
+(git-build) behind Traefik — not the list of applications that once proved it:
+`awcms-micro` and `awcms-mini` are **archives** since 2 August 2026
+(`awcms` ADR-0055) and are no longer used as living examples. A site from this
+template follows the same pattern as `awcms`.
 
-## Rantainya
+## The chain
 
 ```mermaid
 flowchart LR
-  Redaksi["Redaksi menerbitkan post"] --> Awcms["awcms"]
-  Awcms -->|"baris antrean, se-transaksi"| Antrean["antrean rebuild"]
-  Antrean -->|"worker, di luar transaksi"| Coolify["Coolify"]
-  Coolify -->|"GET /api/v1/deploy?uuid=…<br/>git pull + docker build"| Build["astro build<br/>menarik konten dari awcms"]
-  Build --> Image["image Bun — menyajikan dist/client"]
-  Image -->|"Traefik"| Pembaca["Pembaca"]
+  Redaksi["The editors publish a post"] --> Awcms["awcms"]
+  Awcms -->|"a queue row, in the same transaction"| Antrean["the rebuild queue"]
+  Antrean -->|"a worker, outside the transaction"| Coolify["Coolify"]
+  Coolify -->|"GET /api/v1/deploy?uuid=…<br/>git pull + docker build"| Build["astro build<br/>pulling content from awcms"]
+  Build --> Image["a Bun image — serving dist/client"]
+  Image -->|"Traefik"| Pembaca["The reader"]
 ```
 
-**GitHub tidak ada di jalur konten.** Repo tidak berubah saat sebuah artikel
-terbit — yang berubah isinya adalah awcms. Coolify membangun ulang commit yang
-sama dan menarik konten terbaru saat build, dan itu memang yang dibutuhkan.
+**GitHub is not in the content path.** The repo does not change when an article
+is published — what changes contents is awcms. Coolify rebuilds the same commit
+and pulls the latest content at build time, and that is exactly what is needed.
 
-Perhatikan siapa memanggil apa: **`/api/v1/deploy`, bukan `/restart`.**
-`/restart` hanya membuat ulang container dari image yang sudah ada — tidak ada
-git pull, tidak ada build, jadi konten baru tidak pernah masuk. Jebakan ini
-sudah didokumentasikan di
+Note who calls what: **`/api/v1/deploy`, not `/restart`.** `/restart` only
+recreates the container from an existing image — no git pull, no build, so new
+content never enters. This trap is already documented in
 [`serv-dinkesdocker` docs/17](https://github.com/ahliweb/serv-dinkesdocker/blob/main/docs/17-simfar-autodeploy.md).
 
-## Konten ditarik saat BUILD, bukan saat runtime
+## Content is pulled at BUILD time, not at runtime
 
-Ini satu hal yang paling sering salah pada deploy pertama, jadi ia ditulis
-lebih dulu.
+This is the single thing most often got wrong on a first deploy, so it is written
+first.
 
-Template ini `output: 'static'`. Konten dari awcms masuk ke HTML saat
-`astro build` berjalan — yaitu di dalam `docker build`. Container yang sudah
-jadi **tidak pernah menghubungi awcms lagi**; ia hanya menyajikan berkas.
+This template is `output: 'static'`. Content from awcms enters the HTML while
+`astro build` runs — that is, inside `docker build`. The finished container
+**never contacts awcms again**; it only serves files.
 
-Sejak [ADR-0016](adr/0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md) yang
-menyajikan berkas itu adalah **proses Bun**, bukan nginx. Yang berubah bagi
-operator hanya dua hal, dan keduanya kecil: perintah start image sekarang
-`bun dist/server/penyaji.mjs`, dan variabel runtime `PORT`/`HOST` dikenali
-(bawaannya `8080`/`0.0.0.0`, dan Coolify tidak perlu mengubahnya). Port,
-healthcheck, dan seluruh konfigurasi aplikasi di Coolify tetap sama.
+Since [ADR-0016](adr/0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md) what
+serves those files is a **Bun process**, not nginx. What changes for an operator
+is only two things, and both are small: the image's start command is now
+`bun dist/server/penyaji.mjs`, and the runtime variables `PORT`/`HOST` are
+recognised (defaulting to `8080`/`0.0.0.0`, which Coolify need not change). The
+port, the healthcheck, and the whole application configuration in Coolify stay
+the same.
 
-Konsekuensinya: di Coolify, setiap variabel awcms wajib dicentang sebagai
-**Build Variable**. Tanpa centang itu ia hanya masuk ke container yang sudah
-jadi, tidak pernah sampai ke `astro build`, dan build gagal dengan
-`AWCMS_API_URL is not set` — bukan menghasilkan situs yang diam-diam kosong.
-Kegagalan itu disengaja; lihat [`src/lib/awcms/client.ts`](../src/lib/awcms/client.ts).
+Its consequence: in Coolify, every awcms variable must be ticked as a **Build
+Variable**. Without that tick it only enters the finished container, never
+reaches `astro build`, and the build fails with `AWCMS_API_URL is not set` —
+rather than producing a site that is silently empty. That failure is deliberate;
+see [`src/lib/awcms/client.ts`](../src/lib/awcms/client.ts).
 
-## Menyiapkan aplikasi di Coolify
+## Setting up the application in Coolify
 
-Buat resource **Application** (git-build), bukan Service:
+Create an **Application** resource (git-build), not a Service:
 
-| Kolom | Nilai |
+| Field | Value |
 | --- | --- |
-| Source | repo situs ini, branch `main` |
+| Source | this site's repo, branch `main` |
 | Build pack | `dockerfile` |
 | Dockerfile location | `/Dockerfile` |
 | Base directory | `/` |
 | Port | `8080` |
-| Domains | domain situs, mis. `https://contoh.example.com` |
-| Health check | **boleh `true`** — lihat catatan di bawah |
+| Domains | the site's domain, e.g. `https://contoh.example.com` |
+| Health check | **may be `true`** — see the note below |
 
-Variabel (semua **Build Variable**, kecuali yang ditandai):
+The variables (all **Build Variables**, except where marked):
 
-| Variabel | Catatan |
+| Variable | Note |
 | --- | --- |
-| `SITE_URL` | Origin absolut. Salah isi tidak menggagalkan build — ia menerbitkan situs yang menunjuk crawler ke tempat lain |
-| `SITE_NAME`, `SITE_DESCRIPTION` | Identitas situs |
-| `SITE_LOCALES` | Prefix locale selain locale default, dipisah koma |
-| `AWCMS_API_URL` | Origin instans awcms |
-| `AWCMS_API_TOKEN` | **Secret.** Kredensial mesin (`awcmsm_…`), scope `blog_content.posts.read` **dan** `media_library.media.read` — yang kedua dipakai `build:asal-media`, dan tanpanya build gagal 403 setelah seluruh halaman selesai dirender. Ia juga yang menentukan tenant |
-| `AWCMS_TENANT_ID` | Opsional, dianjurkan. Bukan pemilih tenant — pernyataan yang diverifikasi terhadap token; build gagal bila berbeda |
+| `SITE_URL` | The absolute origin. Filling it in wrongly does not fail the build — it publishes a site pointing crawlers somewhere else |
+| `SITE_NAME`, `SITE_DESCRIPTION` | The site's identity |
+| `SITE_LOCALES` | The locale prefixes other than the default locale, comma-separated |
+| `AWCMS_API_URL` | The awcms instance's origin |
+| `AWCMS_API_TOKEN` | **A secret.** A machine credential (`awcmsm_…`), scoped `blog_content.posts.read` **and** `media_library.media.read` — the second is used by `build:asal-media`, and without it the build fails with a 403 after every page has finished rendering. It is also what decides the tenant |
+| `AWCMS_TENANT_ID` | Optional, recommended. Not a tenant selector — a statement verified against the token; the build fails if they differ |
 
-Seluruhnya dijelaskan di [`.env.example`](../.env.example).
+All of them are explained in [`.env.example`](../.env.example).
 
-### Health check boleh menyala di sini
+### The health check may be on here
 
-Dua aplikasi lain di server itu terpaksa mematikan `health_check_enabled`:
-awcms-micro karena image-nya tidak punya `curl`/`wget`, dan SIMFAR karena Django
-menolak probe ber-`Host: localhost` dengan `400 DisallowedHost`.
+Two other applications on that server had to switch `health_check_enabled` off:
+awcms-micro because its image has no `curl`/`wget`, and SIMFAR because Django
+refuses a probe with `Host: localhost` with `400 DisallowedHost`.
 
-Image ini tidak kena keduanya — `wget` ada di dalam image `oven/bun` berbasis
-alpine, dan penyaji Bun tidak punya padanan `ALLOWED_HOSTS` yang menolak probe
-ber-`Host: localhost`. Image juga membawa `HEALTHCHECK` sendiri. Biarkan
-menyala.
+This image hits neither — `wget` is present inside the alpine-based `oven/bun`
+image, and the Bun server has no `ALLOWED_HOSTS` equivalent refusing a
+`Host: localhost` probe. The image also carries its own `HEALTHCHECK`. Leave it
+on.
 
-### Token dan riwayat image
+### The token and the image history
 
-`AWCMS_API_TOKEN` masuk sebagai `ARG` yang hanya hidup di stage `build`. Stage
-akhir hanya menyalin `dist/client/` dan `dist/server/penyaji.mjs`, jadi token
-tidak ikut ke image yang dijalankan. Ini diverifikasi, bukan diasumsikan — build
-uji dengan token `token-uji` menghasilkan image yang bersih pada ketiga
-pemeriksaan: `docker history` tidak memuatnya, tidak ada berkas dalam image yang
-memuatnya, dan container runtime tidak punya satu pun variabel `AWCMS_*`.
+`AWCMS_API_TOKEN` enters as an `ARG` that lives only in the `build` stage. The
+final stage copies only `dist/client/` and `dist/server/penyaji.mjs`, so the token
+does not travel into the image that runs. This is verified rather than assumed —
+a test build with the token `token-uji` produced an image that was clean on all
+three checks: `docker history` does not contain it, no file inside the image
+contains it, and the runtime container has not one `AWCMS_*` variable.
 
-Perlu diperiksa ulang setiap kali stage runtime berubah, karena kali ini yang
-disalin bukan hanya berkas statis: `dist/server/penyaji.mjs` adalah bundel
-JavaScript, dan bundel dibuat dari sumber yang dibangun di stage `build`. Yang
-menjaganya tetap bersih adalah bahwa penyaji tidak pernah membaca satu pun
-variabel `AWCMS_*` — ia hanya membaca `PORT` dan `HOST`.
+It needs re-checking whenever the runtime stage changes, because this time what is
+copied is not only static files: `dist/server/penyaji.mjs` is a JavaScript bundle,
+and a bundle is made from sources built in the `build` stage. What keeps it clean
+is that the server never reads a single `AWCMS_*` variable — it only reads `PORT`
+and `HOST`.
 
-Yang tetap benar: token masih terbaca di cache builder pada mesin build. Karena
-itu terbitkan token dengan role tersempit yang bisa membaca konten published
-satu tenant, dan tidak lebih.
+What stays true: the token is still readable in the builder cache on the build
+machine. So issue a token with the narrowest role that can read one tenant's
+published content, and no more.
 
-## Menyiapkan pemicu di awcms
+## Setting up the trigger in awcms
 
-> **Status: kontrak yang disepakati, belum diimplementasikan di awcms.**
-> Sisi `awcms-astro` sudah lengkap dan bisa dipicu hari ini lewat
-> `workflow_dispatch`, jadwal harian, atau `curl` ke endpoint deploy. Yang
-> belum ada adalah pengirimnya di awcms.
+> **Status: an agreed contract, not yet implemented in awcms.**
+> The `awcms-astro` side is complete and can be triggered today through
+> `workflow_dispatch`, the daily schedule, or a `curl` to the deploy endpoint.
+> What does not exist is its sender in awcms.
 
-Pemicu di awcms wajib mengikuti pola dua bagian yang sudah dipakai modul
-`email`, **bukan** consumer `domain-event-runtime`:
+The trigger in awcms must follow the two-part pattern the `email` module already
+uses, **not** a `domain-event-runtime` consumer:
 
-1. **Baris antrean ditulis di dalam transaksi publish.** Persis seperti
-   `enqueueModuleContentPurge` yang sudah dipanggil di jalur publish hari ini —
-   antrean dan perubahan konten commit bersama, sehingga publish yang
-   di-rollback tidak pernah memicu rebuild dan publish yang berhasil tidak
-   pernah kehilangan pemicunya.
-2. **Worker terpisah menguras antrean dan memanggil webhook.** Panggilan HTTP-nya
-   terjadi di luar transaksi, dengan backoff dan dead-letter.
+1. **The queue row is written inside the publish transaction.** Exactly like
+   `enqueueModuleContentPurge`, which is already called on the publish path today
+   — the queue and the content change commit together, so a rolled-back publish
+   never triggers a rebuild and a successful publish never loses its trigger.
+2. **A separate worker drains the queue and calls the webhook.** Its HTTP call
+   happens outside the transaction, with backoff and a dead-letter.
 
-**Pola itu kini punya preseden ber-ADR di `awcms`, dan namanya sendiri.** Pada
-10 Agustus 2026 `awcms` ADR-0074 memutuskan push notification mendapat outbox
-KEDUA-nya sendiri alih-alih menjadi consumer domain-event — dengan alasan yang
-sama persis dengan alasan di bawah, dan dengan pola lease yang di sana sudah
-terbukti tiga kali: klaim `FOR UPDATE SKIP LOCKED`, lease memakai ulang
-`next_attempt_at` tanpa kolom baru, kirim **di luar** transaksi, finalize per
-baris. Implementasi pemicu rebuild sebaiknya menyalin bentuk itu, bukan
-menemukannya ulang.
+**That pattern now has an ADR precedent in `awcms`, and a name of its own.** On
+10 August 2026 `awcms` ADR-0074 decided that push notifications get a SECOND
+outbox of their own rather than becoming a domain-event consumer — with exactly
+the same reasoning as below, and with a lease pattern already proven three times
+over there: a `FOR UPDATE SKIP LOCKED` claim, a lease reusing `next_attempt_at`
+with no new column, sending **outside** the transaction, finalising per row. The
+rebuild trigger implementation should copy that shape rather than rediscover it.
 
-**Dan satu syarat baru berlaku sejak hari yang sama:** sebuah tabel antrean baru
-di `awcms` wajib membawa **deskriptor retensi sejak hari pertama** (`awcms`
-ADR-0076). Registry mana yang menampungnya tidak ditentukan penilaian
-penulisnya melainkan oleh siapa yang MENULIS tabel itu — modul atau
-infrastruktur — dan gerbang di sana yang memutuskannya. Sebuah antrean tanpa
-deskriptor retensi akan ditolak review di sisi sana, jadi ia bagian dari
-pekerjaan, bukan pekerjaan susulan.
+**And one new condition applies from the same day:** a new queue table in `awcms`
+must carry a **retention descriptor from day one** (`awcms` ADR-0076). Which
+registry holds it is not decided by its author's judgement but by who WRITES that
+table — a module or the infrastructure — and the gate over there decides it. A
+queue with no retention descriptor will be refused at review on that side, so it
+is part of the work, not follow-up work.
 
-Pemisahan itu bukan selera. Consumer `domain-event-runtime` menerima `tx` — ia
-berjalan **di dalam** transaksi klaim/finalisasi delivery, dan tipenya menyatakan
-kontrak itu terus terang: aman untuk handler same-process yang DB-only, dan
-consumer out-of-transaction/broker-backed "not built speculatively here".
-Memanggil `fetch` dari sana menahan transaksi basis data terbuka selama
-permintaan jaringan ke Coolify — satu instans awcms yang lambat merespons akan
-menahan koneksi DB, bukan hanya menunda rebuild.
+That separation is not a matter of taste. A `domain-event-runtime` consumer
+receives a `tx` — it runs **inside** the delivery claim/finalise transaction, and
+its type states that contract plainly: safe for same-process DB-only handlers, and
+out-of-transaction/broker-backed consumers "not built speculatively here". Calling
+`fetch` from there holds a database transaction open for the duration of a network
+request to Coolify — one slow-responding awcms instance would hold a DB connection,
+not merely delay a rebuild.
 
-Beberapa post yang terbit berdekatan harus **melebur jadi satu rebuild**. Antrean
-per-tenant, bukan per-post: sepuluh artikel yang terbit dalam satu menit adalah
-satu build, bukan sepuluh.
+Several posts published close together must **coalesce into one rebuild**. The
+queue is per tenant, not per post: ten articles published within one minute are
+one build, not ten.
 
-Variabel yang dibaca worker di sisi awcms:
+The variables the worker reads on the awcms side:
 
-| Variabel | Isi |
+| Variable | Contents |
 | --- | --- |
-| `STATIC_SITE_REBUILD_URL` | URL deploy Coolify lengkap dengan `uuid`, mis. `https://coolify.example.com/api/v1/deploy?uuid=<uuid>` |
-| `STATIC_SITE_REBUILD_TOKEN` | Token API Coolify |
+| `STATIC_SITE_REBUILD_URL` | The full Coolify deploy URL including its `uuid`, e.g. `https://coolify.example.com/api/v1/deploy?uuid=<uuid>` |
+| `STATIC_SITE_REBUILD_TOKEN` | The Coolify API token |
 
-Kosongkan keduanya dan worker menjadi no-op — sebuah deployment awcms yang tidak
-melayani situs statis apa pun berperilaku persis seperti sebelum fitur ini ada.
-Ini pola yang sama dengan penjagaan `EDGE_CACHE_MODE` pada antrean purge: tanpa
-penjaga, setiap publish di setiap deployment menambah baris ke antrean yang tidak
-pernah dikuras siapa pun.
+Leave both empty and the worker becomes a no-op — an awcms deployment serving no
+static site at all behaves exactly as it did before this feature existed. This is
+the same pattern as the `EDGE_CACHE_MODE` guard on the purge queue: without a
+guard, every publish on every deployment adds a row to a queue nobody ever drains.
 
-### Sampai pengirimnya ada
+### Until its sender exists
 
-Situs tetap segar tanpa perubahan apa pun di awcms — jadwal harian di
-`rebuild.yml` sudah menutup kasus terburuk, dan `workflow_dispatch` menutup
-kasus mendesak. Yang belum ada hanyalah kesegaran dalam hitungan menit.
+The site stays fresh with no change at all in awcms — the daily schedule in
+`rebuild.yml` already covers the worst case, and `workflow_dispatch` covers the
+urgent one. What is missing is only freshness within minutes.
 
-## Jaring pengaman dan tombol manual
+## The safety net and the manual button
 
-[`.github/workflows/rebuild.yml`](../.github/workflows/rebuild.yml) memanggil
-endpoint deploy yang sama, untuk dua hal yang tidak dijawab jalur utama:
+[`.github/workflows/rebuild.yml`](../.github/workflows/rebuild.yml) calls the same
+deploy endpoint, for two things the main path does not answer:
 
-- **`workflow_dispatch`** — tombol "rebuild sekarang" tanpa menerbitkan apa pun.
-- **`schedule`** (harian, 02:10 WIB) — jaring pengaman. Webhook bisa hilang:
-  awcms mati saat dispatcher mencoba, token dicabut, consumer di-pause dan lupa
-  dilanjutkan. Tanpa jaring ini situs bisa basi berhari-hari **tanpa satu pun
-  sinyal**, karena tidak ada yang gagal — yang terjadi justru tidak ada yang
-  terjadi.
+- **`workflow_dispatch`** — a "rebuild now" button without publishing anything.
+- **`schedule`** (daily, 02:10 WIB) — the safety net. A webhook can be lost: awcms
+  down when the dispatcher tries, a revoked token, a consumer paused and forgotten.
+  Without this net a site can go stale for days **with not one signal**, because
+  nothing fails — what happens is that nothing happens.
 
-Workflow ini butuh repository variables `COOLIFY_API_URL` dan `COOLIFY_APP_UUID`
-plus secret `COOLIFY_API_TOKEN`. Tanpa itu ia melewati dirinya sendiri dan
-mengatakannya di ringkasan run — sama seperti gerbang build di `ci.yml`.
+This workflow needs the repository variables `COOLIFY_API_URL` and
+`COOLIFY_APP_UUID` plus the secret `COOLIFY_API_TOKEN`. Without them it skips
+itself and says so in its run summary — just like the build gate in `ci.yml`.
 
-`repository_dispatch` bertipe `awcms-content-published` juga diterima, untuk
-deployment yang lebih memilih GitHub sebagai perantara daripada memberi awcms
-kredensial Coolify.
+A `repository_dispatch` of type `awcms-content-published` is also accepted, for a
+deployment that prefers GitHub as the intermediary over giving awcms Coolify
+credentials.
 
-## Kalau build gagal
+## If the build fails
 
-Coolify mempertahankan container sebelumnya saat build baru gagal — situs tetap
-tayang dengan konten lama. Ini sudah terbukti di server itu, pada regresi
-health-check SIMFAR 2026-07-27: deploy gagal 10/10 percobaan dan produksi tidak
-pernah benar-benar mati.
+Coolify keeps the previous container when a new build fails — the site stays live
+with its old content. This is already proven on that server, in the SIMFAR
+health-check regression of 2026-07-27: the deploy failed 10 out of 10 attempts and
+production never actually went down.
 
-Artinya kegagalan rebuild **sunyi bagi pembaca**, dan karena itu perlu dilihat
-di tempat lain: dasbor Coolify untuk log build, dan jejak audit awcms untuk
-apakah consumer-nya berhasil mengirim atau masuk dead-letter.
+That means a failed rebuild is **silent to readers**, and therefore has to be
+looked for elsewhere: the Coolify dashboard for the build log, and the awcms audit
+trail for whether its consumer sent successfully or went to the dead-letter.
 
-**Tiga sebab yang paling mudah salah didiagnosis**, karena ketiganya sama-sama
-403 dan sama-sama terbaca seperti token yang dicabut — padahal yang harus
-dikerjakan berbeda-beda:
+**Three causes that are easiest to misdiagnose**, because all three are a 403 and
+all three read like a revoked token — while what has to be done differs:
 
-| Yang terlihat di log build | Sebabnya | Diperbaiki di mana |
+| What appears in the build log | Its cause | Where it is fixed |
 | --- | --- | --- |
-| `403 TENANT_SUSPENDED` | Tenant berstatus `suspended` **atau** `inactive` di awcms. Sejak `awcms` ADR-0073 penolakannya mengenai kredensial mesin juga, dan ia diputuskan **sebelum** izin dicari — memperluas scope token tidak mengubah apa pun | **Di `awcms`.** Ini keadaan tenant; tidak ada yang bisa dilakukan dari repo situs |
-| `403 PARTNER_SUSPENDED` | Token build diterbitkan atas akun layanan yang merupakan **tenant user terdelegasi** milik sebuah partner, dan kemitraan itu kini tidak `active` (`awcms` ADR-0093). Penolakannya di chokepoint, per permintaan, dan grant yang memberi akses **tetap ada** — jadi tidak ada yang tampak hilang saat dilihat | **Di `awcms`**, dua jalan: pulihkan partnernya, atau — yang benar untuk situs yang bukan milik agensi — terbitkan ulang token atas akun layanan milik tenant SITUS lewat `/admin/machine-credentials` |
-| `403` pada langkah TERAKHIR build, setelah setiap halaman selesai dirender | Token kurang `media_library.media.read`. `scripts/asal-media.mjs` berjalan paling akhir, jadi kegagalannya terbaca seperti deployment rusak alih-alih izin kurang | **Di repo situs.** Terbitkan ulang token dengan **dua** kunci — lihat `.env.example` |
+| `403 TENANT_SUSPENDED` | The tenant has status `suspended` **or** `inactive` in awcms. Since `awcms` ADR-0073 its refusal reaches machine credentials too, and it is decided **before** permissions are looked up — widening a token's scope changes nothing | **In `awcms`.** This is a tenant state; nothing can be done from the site's repo |
+| `403 PARTNER_SUSPENDED` | The build token was issued on a service account that is a **delegated tenant user** of a partner, and that partnership is no longer `active` (`awcms` ADR-0093). Its refusal is at the chokepoint, per request, and the grant giving access **still exists** — so nothing appears to be missing when you look | **In `awcms`**, two ways: restore the partner, or — the right answer for a site that does not belong to an agency — reissue the token on a service account belonging to the SITE's tenant through `/admin/machine-credentials` |
+| A `403` on the LAST build step, after every page has finished rendering | The token lacks `media_library.media.read`. `scripts/asal-media.mjs` runs last, so its failure reads like a broken deployment rather than a missing permission | **In the site's repo.** Reissue the token with **two** keys — see `.env.example` |
 
-Ketiganya menghasilkan build gagal **total** — nol berkas terbit — sehingga
-situs tetap tayang dengan konten lama, dan itulah yang membuatnya sunyi.
+All three produce a **total** build failure — zero files published — so the site
+stays live with its old content, and that is what makes it silent.
 
-**Menerbitkan dan MENCABUT token itu kini sebuah layar**, bukan panggilan API
-yang harus diingat seseorang di bawah tekanan: `/admin/machine-credentials` di
-awcms (sejak 13 Agustus 2026). Plaintext token hanya muncul **sekali**, pada
-respons penerbitannya — memuat ulang halamannya menghanguskan kredensial yang
-lalu harus dicabut. Yang perlu diketahui operator situs: token bocor dicabut di
-sana dalam satu tindakan, dan build berikutnya gagal seketika alih-alih diam.
+**Issuing and REVOKING that token is now a screen**, not an API call somebody has
+to remember under pressure: `/admin/machine-credentials` in awcms (since 13 August
+2026). A token's plaintext appears **once**, in its issuing response — reloading
+that page burns a credential that then has to be revoked. What a site operator
+needs to know: a leaked token is revoked over there in one action, and the next
+build fails immediately rather than staying silent.
 
 ## Rollback
 
-1. Cari tag image sebelumnya di riwayat build aplikasi ini di Coolify, lalu
-   deploy tag itu. Mekanisme yang sama sudah dipakai untuk
+1. Find the previous image tag in this application's build history in Coolify, and
+   deploy that tag. The same mechanism has already been used for
    awcms-micro/awcms/awcms-mini.
-2. Bila penyebabnya konten, bukan kode: perbaiki di awcms lalu terbitkan ulang.
-   Rebuild berikutnya memakai commit yang sama dan konten yang sudah benar.
-3. Pause consumer-nya di awcms bila rebuild berulang justru memperburuk keadaan.
+2. If the cause is content rather than code: fix it in awcms and republish. The
+   next rebuild uses the same commit and the now-correct content.
+3. Pause its consumer in awcms if repeated rebuilds are making things worse.
 
-## Verifikasi setelah deploy
+## Verification after a deploy
 
 ```sh
 curl -sI https://<domain>/ | head -1                    # 200
-curl -s  https://<domain>/sitemap-index.xml | head -3   # sitemap terbangun
-curl -sI https://<domain>/_astro/<berkas>.css | grep -i cache-control
+curl -s  https://<domain>/sitemap-index.xml | head -3   # the sitemap was built
+curl -sI https://<domain>/_astro/<file>.css | grep -i cache-control
 #   -> public, max-age=31536000, immutable
 curl -sI https://<domain>/ | grep -i cache-control
-#   -> public, max-age=0, must-revalidate  (HTML tidak boleh di-cache lama,
-#      atau rebuild yang sukses tetap terlihat seperti belum jalan)
+#   -> public, max-age=0, must-revalidate  (HTML must not be cached long,
+#      or a successful rebuild still looks like it never ran)
 curl -sI https://<domain>/ | grep -iE 'x-content-type-options|x-frame-options|referrer-policy'
 #   -> nosniff / DENY / strict-origin-when-cross-origin
 curl -sI https://<domain>/ | grep -iE 'content-security-policy|permissions-policy'
 #   -> default-src 'self'; script-src 'self'; … base-uri 'none'; … (ADR-0019)
 #   -> geolocation=(), camera=(), microphone=(), payment=()
-curl -sI https://<domain>/tema.js | head -1             # 200 — pengalih tema terbit
-curl -sI https://<domain>/tidak-ada/ | head -1          # 404, bukan 200
+curl -sI https://<domain>/tema.js | head -1             # 200 — the theme switcher is published
+curl -sI https://<domain>/tidak-ada/ | head -1          # 404, not 200
 ```
 
-Dua butir CSP yang layak diperiksa dengan mata setelah deploy pertama sebuah
-situs, karena keduanya gagal tanpa mengubah status HTTP apa pun:
+Two CSP items worth checking by eye after a site's first deploy, because both fail
+without changing any HTTP status:
 
-- **`Content-Security-Policy` muncul sekali, bukan dua kali.** Header kedua dari
-  Traefik tidak menimpa yang pertama — browser menegakkan IRISAN keduanya, dan
-  irisan dua kebijakan yang berbeda hampir selalu lebih ketat daripada yang
-  dimaksudkan siapa pun. Kebijakan situs ini hidup di `server/penyaji.mjs`.
-- **Buka satu halaman artikel dan periksa console browser.** Pelanggaran CSP
-  tidak pernah muncul di `curl`: yang terlihat hanya tombol salin yang diam atau
-  tema yang tidak berganti. `bun test` setelah `bun run build` menangkap kelas
-  ini lebih awal lewat `tests/keluaran-csp.test.mjs`.
+- **`Content-Security-Policy` appears once, not twice.** A second header from
+  Traefik does not overwrite the first — the browser enforces the INTERSECTION of
+  the two, and the intersection of two different policies is almost always
+  stricter than anyone intended. This site's policy lives in
+  `server/penyaji.mjs`.
+- **Open one article page and check the browser console.** A CSP violation never
+  appears in `curl`: what is visible is only a copy button that stays silent or a
+  theme that does not switch. `bun test` after `bun run build` catches this class
+  earlier through `tests/keluaran-csp.test.mjs`.
 
-`curl -sI` mengirim **HEAD**, dan itu sengaja dipakai di sini: penyaji menetapkan
-`Cache-Control` sebelum berkasnya dibuka, jadi HEAD dan GET wajib menjawab hal
-yang sama. Kalau suatu saat HEAD melaporkan `max-age=0` untuk `/_astro/`
-sementara GET melaporkan `immutable`, yang rusak bukan perintah di atas
-melainkan penyajinya — `tests/penyaji.test.mjs` menjaga persis selisih itu.
+`curl -sI` sends a **HEAD**, and that is used here deliberately: the server sets
+`Cache-Control` before the file is opened, so HEAD and GET must answer the same
+thing. If HEAD ever reports `max-age=0` for `/_astro/` while GET reports
+`immutable`, what is broken is not the command above but the server —
+`tests/penyaji.test.mjs` guards exactly that difference.

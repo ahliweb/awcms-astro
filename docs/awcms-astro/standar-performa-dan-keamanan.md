@@ -1,442 +1,429 @@
-# awcms-astro — Standar Performa dan Keamanan
+🇬🇧 English (source) · 🇮🇩 [Bahasa Indonesia](standar-performa-dan-keamanan.id.md)
 
-Peta antara kontrol yang benar-benar berjalan di repo ini dan **standar
-internasional yang menamainya**, beserta daftar celah yang jujur.
+# awcms-astro — Performance and Security Standard
 
-Dokumen ini tidak menambah satu pun aturan baru. Aturannya sudah ada — di
-[`AGENTS.md`](../../AGENTS.md), [`standar-teknis.md`](standar-teknis.md), dan
-dua puluh empat ADR. Yang belum ada adalah **nama luar** bagi aturan-aturan itu, dan
-ketiadaan nama itu punya dua akibat yang nyata:
+The map between the controls that genuinely run in this repo and the
+**international standards that name them**, together with an honest list of gaps.
 
-1. Sebuah situs yang dibangun dari template ini tidak bisa menjawab
-   "kontrol mana yang sudah Anda penuhi?" saat ditanya auditor, pengadaan, atau
-   calon mitra — padahal jawabannya sebagian besar "sudah".
-2. Sebuah celah yang belum ditutup tidak punya tempat untuk **terlihat**.
-   Repo ini sudah menemukan lima dokumen yang menyatakan sesuatu yang tidak ada
+This document adds not one new rule. Its rules already exist — in
+[`AGENTS.md`](../../AGENTS.md), [`standar-teknis.md`](standar-teknis.md), and
+twenty-four ADRs. What did not exist is an **external name** for those rules, and
+that absence has two real consequences:
+
+1. A site built from this template cannot answer "which controls do you meet?"
+   when asked by an auditor, a procurement office, or a prospective partner — even
+   though the answer is mostly "met".
+2. A gap that is not yet closed has nowhere to be **seen**. This repo has already
+   found five documents stating something that does not exist
    ([`awcms-astro-gerbang`](../../.claude/skills/awcms-astro-gerbang/SKILL.md));
-   kebalikannya sama berbahayanya — kontrol yang tidak ada dan tidak pernah
-   dicatat sebagai tidak ada.
+   its opposite is equally dangerous — a control that does not exist and was never
+   recorded as absent.
 
-**Status tiap baris di bawah diverifikasi ke berkas, bukan diasumsikan.** Baris
-yang tidak bisa diverifikasi ditulis `belum diukur`, bukan `terpenuhi`.
+**Each row's state below is verified against files, not assumed.** A row that
+cannot be verified is written `not measured`, not `met`.
 
-## Standar yang diikat
+## The standards that bind
 
-| Standar | Edisi yang dipakai | Mengatur | Mengikat di sini lewat |
+| Standard | Edition used | What it governs | Binding here through |
 | --- | --- | --- | --- |
-| OWASP Top 10 | 2021 | Kategori risiko aplikasi web | Matriks di bawah |
-| OWASP ASVS | 4.0.3 (L1/L2) | Verifikasi kontrol per kategori | V5, V9, V14 di bawah |
-| OWASP Secure Headers Project | berjalan | Header respons HTTP | [`server/penyaji.mjs`](../../server/penyaji.mjs) |
-| ISO/IEC 27001 | 2022, Annex A | Kontrol yang menyentuh kode | Matriks di bawah |
-| NIST SSDF | SP 800-218 v1.1 | Praktik rantai pasok perangkat lunak | `.github/`, `bun.lock`, `Dockerfile` |
-| OWASP API Security Top 10 | 2023 | Risiko khas API | **Tidak berlaku** — repo ini tidak MENYAJIKAN API. Disebut supaya paritas dengan `awcms` bisa dibaca, bukan ditebak |
-| ISO/IEC 25010 | 2023 | Model mutu produk (performa, kompatibilitas, keandalan) | Kompatibilitas/interoperabilitas: gerbang permukaan di §Hubungan dengan `awcms` |
-| Core Web Vitals | LCP · INP · CLS | Performa yang dirasakan pembaca | §Performa |
-| RFC 9111 (+ RFC 5861) | HTTP Caching, `stale-while-revalidate` | Semantik `Cache-Control` | [`tests/penyaji.test.mjs`](../../tests/penyaji.test.mjs) |
-| WCAG | 2.1 AA (2.2 AA untuk setiap permukaan terautentikasi: BFF Jualanku maupun admin USER) | Aksesibilitas | [`standar-teknis.md`](standar-teknis.md#aksesibilitas) |
+| OWASP Top 10 | 2021 | Web application risk categories | The matrix below |
+| OWASP ASVS | 4.0.3 (L1/L2) | Control verification per category | V5, V9, V14 below |
+| OWASP Secure Headers Project | rolling | HTTP response headers | [`server/penyaji.mjs`](../../server/penyaji.mjs) |
+| ISO/IEC 27001 | 2022, Annex A | The controls that touch code | The matrix below |
+| NIST SSDF | SP 800-218 v1.1 | Software supply chain practices | `.github/`, `bun.lock`, `Dockerfile` |
+| OWASP API Security Top 10 | 2023 | API-specific risks | **Not applicable** — this repo does not SERVE an API. Named so that parity with `awcms` can be read rather than guessed |
+| ISO/IEC 25010 | 2023 | The product quality model (performance, compatibility, reliability) | Compatibility/interoperability: the surface gate in §The relationship with `awcms` |
+| Core Web Vitals | LCP · INP · CLS | Performance as a reader feels it | §Performance |
+| RFC 9111 (+ RFC 5861) | HTTP Caching, `stale-while-revalidate` | `Cache-Control` semantics | [`tests/penyaji.test.mjs`](../../tests/penyaji.test.mjs) |
+| WCAG | 2.1 AA (2.2 AA for any authenticated surface: the Jualanku BFF and USER admin alike) | Accessibility | [`standar-teknis.md`](standar-teknis.md#accessibility) |
 
-**Daftar ini sengaja disamakan dengan penilaian `ahliweb/awcms` 4 Agustus 2026** (`docs/awcms/repo-assessment-2026-08-04.md`), yang mengukur dirinya terhadap ISO/IEC 25010, RFC 9111/5861, Core Web Vitals, OWASP Top 10 2021, OWASP API Security Top 10 2023, ASVS 4.0, dan ISO/IEC 27001:2022 Annex A. Dua di antaranya tidak ada di daftar sini sampai hari ini, dan satu (API Security Top 10) tidak berlaku di sini — ia tetap dicatat, karena baris "tidak berlaku, dan ini alasannya" adalah yang membuat dua matriks keluarga bisa dijumlahkan.
+**This list is deliberately matched to the `ahliweb/awcms` assessment of 4 August 2026** (`docs/awcms/repo-assessment-2026-08-04.md`), which measures itself against ISO/IEC 25010, RFC 9111/5861, Core Web Vitals, OWASP Top 10 2021, OWASP API Security Top 10 2023, ASVS 4.0, and ISO/IEC 27001:2022 Annex A. Two of them were absent from this list until today, and one (API Security Top 10) does not apply here — it is still recorded, because a "not applicable, and here is why" row is what makes two family matrices addable.
 
-**RFC 5861 (`stale-while-revalidate`) sengaja TIDAK dipakai.** Ia bernilai bagi cache BERSAMA; situs ini disajikan satu proses Bun di belakang Traefik tanpa cache bersama, sehingga direktif itu hanya akan menambah satu janji yang tak ada yang menepati. Sebuah situs yang menaruh CDN di depannya punya alasan berbeda — dan itu keputusan situs, bukan template.
+**RFC 5861 (`stale-while-revalidate`) is deliberately NOT used.** It is valuable for a SHARED cache; this site is served by one Bun process behind Traefik with no shared cache, so that directive would only add a promise nobody keeps. A site putting a CDN in front has a different reason — and that is the site's decision, not the template's.
 
-**Edisi OWASP Top 10 dan ASVS sengaja disamakan dengan `ahliweb/awcms`** —
-dan sejak 4 Agustus 2026 pin itu punya alamat: `awcms` ADR-0068 menuliskannya
-sebagai keputusan keluarga (Top 10 2021, ASVS 4.0.3, API Security 2023,
-ISO 27001:2022, SSDF v1.1 — kelimanya ditinjau ulang 2027-02-04; ISO/IEC
-25010:2023 dipakai kedua repo tetapi TIDAK termasuk pin itu), menggantikan keadaan sebelumnya di mana pin hanya hidup di skill
-`awcms-security-hardening` tanpa ADR, tanpa tanggal tinjau, tanpa pemilik.
-Berpindah edisi adalah keputusan **tingkat keluarga**: dua repo yang memetakan
-diri ke dua edisi berbeda menghasilkan dua matriks yang tidak bisa dijumlahkan,
-dan yang membacanya akan mengira selisihnya adalah celah. Bila `awcms` naik
-edisi lewat ADR penggantinya, repo ini mengikutinya — bukan mendahuluinya.
+**The OWASP Top 10 and ASVS editions are deliberately matched to `ahliweb/awcms`** —
+and since 4 August 2026 that pin has an address: `awcms` ADR-0068 writes it as a
+family decision (Top 10 2021, ASVS 4.0.3, API Security 2023, ISO 27001:2022,
+SSDF v1.1 — all five reviewed again on 2027-02-04; ISO/IEC 25010:2023 is used by
+both repos but is NOT part of that pin), replacing the earlier state where the pin
+lived only in the `awcms-security-hardening` skill with no ADR, no review date, and
+no owner. Moving to a new edition is a **family-level** decision: two repos mapping
+themselves to two different editions produce two matrices that cannot be added
+together, and whoever reads them will take the difference for a gap. If `awcms`
+moves edition through a superseding ADR, this repo follows — it does not go ahead.
 
-## Header respons — dan satu selisih nyata dari `awcms`
+## Response headers — and one real difference from `awcms`
 
-Yang benar-benar dikirim [`server/penyaji.mjs`](../../server/penyaji.mjs), dan
-dibuktikan [`tests/penyaji.test.mjs`](../../tests/penyaji.test.mjs):
+What [`server/penyaji.mjs`](../../server/penyaji.mjs) actually sends, and what
+[`tests/penyaji.test.mjs`](../../tests/penyaji.test.mjs) proves:
 
-| Header | Nilai di sini | Nilai di `awcms` | Rekomendasi OWASP Secure Headers |
+| Header | Its value here | Its value in `awcms` | The OWASP Secure Headers recommendation |
 | --- | --- | --- | --- |
-| `Content-Security-Policy` | `default-src 'self'`; `script-src`/`style-src` tanpa `'unsafe-inline'`; `img-src` + origin media | sama, plus hash skrip tema dan origin Turnstile bila aktif | Wajib |
-| `X-Content-Type-Options` | `nosniff` | `nosniff` | Wajib |
-| `X-Frame-Options` | `DENY` | `DENY` | Wajib (bersama `frame-ancestors`) |
-| `Referrer-Policy` | `strict-origin-when-cross-origin` | sama | Wajib |
-| `Permissions-Policy` | `geolocation=(), camera=(), microphone=(), payment=()` | sama persis | Wajib |
-| `Strict-Transport-Security` | `max-age=31536000`, digerbangi produksi | `max-age=31536000; includeSubDomains`, digerbangi produksi | Wajib |
-| `Server` / `X-Powered-By` | **dihapus**, dan ketiadaannya diasersi | — | Wajib tidak membocorkan versi |
-| `Cross-Origin-Opener-Policy` | tidak dikirim | `same-origin` (sejak 4 Agustus 2026) | Dianjurkan |
-| `Cross-Origin-Resource-Policy` | tidak dikirim | `same-origin` (sejak 4 Agustus 2026) | Dianjurkan |
+| `Content-Security-Policy` | `default-src 'self'`; `script-src`/`style-src` without `'unsafe-inline'`; `img-src` + the media origin | the same, plus the theme script hash and the Turnstile origin when active | Required |
+| `X-Content-Type-Options` | `nosniff` | `nosniff` | Required |
+| `X-Frame-Options` | `DENY` | `DENY` | Required (along with `frame-ancestors`) |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` | the same | Required |
+| `Permissions-Policy` | `geolocation=(), camera=(), microphone=(), payment=()` | exactly the same | Required |
+| `Strict-Transport-Security` | `max-age=31536000`, gated to production | `max-age=31536000; includeSubDomains`, gated to production | Required |
+| `Server` / `X-Powered-By` | **removed**, and their absence asserted | — | Required not to leak versions |
+| `Cross-Origin-Opener-Policy` | not sent | `same-origin` (since 4 August 2026) | Recommended |
+| `Cross-Origin-Resource-Policy` | not sent | `same-origin` (since 4 August 2026) | Recommended |
 
-Dua baris terakhir adalah selisih baru dan **disengaja di kedua sisi**: `awcms`
-memasang keduanya untuk memagari sesi admin terautentikasinya, dan komentar di
-kodenya sendiri (`src/lib/security/security-headers.ts`) menyatakan alasan itu
-TIDAK menular ke template ini — situs publik statis yang gambarnya justru boleh
-disematkan situs lain, dan yang tidak punya sesi untuk dipagari COOP. Rincian
-penolakannya di §"Yang sengaja TIDAK diadopsi". Sejak 5 Agustus 2026 selisih
-ini **bukan lagi sekadar dua dokumen yang kebetulan sepakat**: `awcms` ADR-0069
-mencatatnya sebagai divergence bernama ber-`reviewDate` 2027-02-04 di manifest
-kompatibilitas keluarganya, satu kohort dengan divergence HSTS repo ini —
-artinya ia kembali ke meja pada tanggal itu alih-alih membusuk, dan tidak ada
-yang akan "memperbaikinya" ke arah paritas tanpa membaca alasannya lebih dulu.
+The last two rows are a new difference and are **deliberate on both sides**:
+`awcms` installs both to fence off its authenticated admin sessions, and a comment
+in its own code (`src/lib/security/security-headers.ts`) states that its reason
+does NOT carry over to this template — a static public site whose images may
+legitimately be embedded by other sites, and which has no session for COOP to fence
+off. The details of its refusal are in §"What is deliberately NOT adopted". Since
+5 August 2026 this difference is **no longer merely two documents that happen to
+agree**: `awcms` ADR-0069 records it as a named divergence with a `reviewDate` of
+2027-02-04 in its family compatibility manifest, in the same cohort as this repo's
+HSTS divergence — meaning it returns to the table on that date rather than rotting,
+and nobody will "fix" it towards parity without reading its reasoning first.
 
-**Sampai 4 Agustus 2026 repo ini mengirim LIMA, dan empat berkas menyebutnya
-"disamakan dengan postur `awcms`".** Kelimanya memang identik nilainya; yang
-tidak identik adalah jumlahnya. Alasan yang terbaca masuk akal — TLS diterminasi
-Traefik, jadi "itu urusan lapisan di depan" — tidak bertahan diperiksa: Traefik
-tidak memasang HSTS tanpa middleware yang dinyatakan, jadi yang terjadi bukan
-"dipasang di tempat lain" melainkan **tidak dipasang di mana pun**.
+**Until 4 August 2026 this repo sent FIVE, and four files called that "matched to
+the `awcms` posture".** Those five are indeed identical in value; what is not
+identical is their count. The reason that reads plausibly — TLS is terminated by
+Traefik, so "that is the front layer's business" — does not survive checking:
+Traefik does not install HSTS without a declared middleware, so what was happening
+was not "installed elsewhere" but **installed nowhere**.
 
 [ADR-0029](../adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md)
-menutupnya. Dua hal di dalamnya yang perlu diketahui sebelum menyentuh baris
-itu:
+closes it. Two things inside it to know before touching that line:
 
-- **Gerbang produksinya bukan kerapian.** HSTS tidak bisa dibatalkan dari sisi
-  situs, dan ia berlaku untuk HOST — bukan untuk situs. Di `localhost` yang
-  terkunci bukan hanya pratinjau ini melainkan setiap proyek lain yang
-  dikembangkan pemilik mesin di `http://localhost:<port>`, selama setahun.
-  Asersi yang menjaganya karena itu **terbalik arah**: yang diuji adalah HSTS
-  TIDAK dikirim di luar produksi.
-- **`includeSubDomains` sengaja tidak ikut, berbeda dari `awcms`.** `awcms` satu
-  deployment yang operatornya tahu subdomainnya; template ini berjalan di domain
-  milik organisasi yang hampir pasti punya layanan lain di subdomain lain, dan
-  direktif itu memaksa semuanya HTTPS-saja selama setahun. Sebuah situs yang
-  subdomainnya memang seluruhnya HTTPS boleh menambahkannya — di penyaji, lalu
-  perbarui tesnya.
+- **Its production gate is not tidiness.** HSTS cannot be cancelled from the
+  site's side, and it applies to a HOST — not to a site. On `localhost` what gets
+  locked is not only this preview but every other project the machine's owner
+  develops at `http://localhost:<port>`, for a year. The assertion guarding it is
+  therefore **inverted**: what is tested is that HSTS is NOT sent outside
+  production.
+- **`includeSubDomains` deliberately does not follow, unlike in `awcms`.** `awcms`
+  is one deployment whose operator knows its subdomains; this template runs on a
+  domain belonging to an organisation that almost certainly has other services on
+  other subdomains, and that directive forces all of them to be HTTPS-only for a
+  year. A site whose subdomains really are all HTTPS may add it — in the server,
+  then update its test.
 
-## OWASP Top 10 (2021) → permukaan repo ini
+## OWASP Top 10 (2021) → this repo's surfaces
 
-Situs dari template ini **statis**: tanpa basis data, tanpa sesi, tanpa form,
-tanpa mutasi. Sebagian besar kategori karena itu tidak berlaku — dan menuliskan
-"tidak berlaku" beserta **alasannya** lebih berguna daripada menghilangkan
-barisnya, karena alasan itulah yang berhenti benar begitu sebuah situs menambah
-permukaan terautentikasi.
+A site from this template is **static**: no database, no sessions, no forms, no
+mutations. Most categories therefore do not apply — and writing "not applicable"
+along with **its reason** is more useful than deleting its row, because it is that
+reason which stops being true the moment a site adds an authenticated surface.
 
-**Pemicunya punya nama, dan ia bisa dibaca dari satu berkas.** Seluruh baris
-"tidak berlaku" di bawah bersandar pada `permukaanAdmin` yang KOSONG di
-[`src/config/site.ts`](../../src/config/site.ts) dan nol rute `prerender = false`.
-Sebuah situs yang menyatakan permukaan admin USER
+**Its trigger has a name, and it can be read from one file.** Every "not
+applicable" row below rests on an EMPTY `permukaanAdmin` in
+[`src/config/site.ts`](../../src/config/site.ts) and zero `prerender = false`
+routes. A site declaring a USER admin surface
 ([ADR-0034](../adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md))
-membatalkan premis itu, dan A01/A07/A09 kembali berlaku bersama CSRF, sesi, dan
-pemisahan cache. Itu berlaku untuk permukaan Jualanku maupun permukaan admin
-USER — nama permukaannya tidak menentukan apa pun; yang menentukan adalah
-apakah ada jalur yang membawa kredensial. Daftar lengkapnya di
+voids that premise, and A01/A07/A09 apply again along with CSRF, sessions, and
+cache separation. That holds for the Jualanku surface and the USER admin surface
+alike — the surface's name decides nothing; what decides is whether there is a
+path carrying credentials. Its full list is in
 [`permukaan-admin-user.md`](permukaan-admin-user.md) §3.
 
-| # | Kategori | Keadaan di sini | Bukti / catatan |
+| # | Category | Its state here | Evidence / note |
 | --- | --- | --- | --- |
-| A01 | Broken Access Control | Tidak berlaku pada permukaan publik | Tidak ada objek per-pengguna. Yang tersisa: kebocoran **antar tenant** saat build — dijaga asersi tenant di [`src/lib/awcms/tenant.ts`](../../src/lib/awcms/tenant.ts) |
-| A02 | Cryptographic Failures | Terpenuhi | TLS milik Traefik; token build tidak pernah masuk keluaran (tanpa prefiks `PUBLIC_`); **HSTS dikirim di produksi** sejak [ADR-0029](../adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md) |
-| A03 | Injection | Terpenuhi | Tidak ada jalur HTML mentah: [`src/lib/content-blocks.ts`](../../src/lib/content-blocks.ts) menyusun tiap elemen dari teks ter-escape dan tag tetap; `set:html` hanya menerima keluarannya. Dijaga [`tests/content-blocks.test.mjs`](../../tests/content-blocks.test.mjs) |
-| A04 | Insecure Design | Terpenuhi | Static-by-default adalah keputusan ber-ADR ([ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md)), bukan default yang kebetulan. Pemotongan konten diam-diam diperlakukan sebagai **kegagalan** di [`src/lib/content.ts`](../../src/lib/content.ts) |
-| A05 | Security Misconfiguration | Terpenuhi | Enam header di produksi, CSP ketat dikirim penyaji ([ADR-0019](../adr/0019-csp-ketat-dikirim-penyaji.md), [ADR-0029](../adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md)); `Server`/`X-Powered-By` dihapus; tanpa secret di repo; image non-root |
-| A06 | Vulnerable Components | Terpenuhi | `bun audit --audit-level=low` di job `check` CI; Dependabot mingguan; `bun install --frozen-lockfile` di CI dan di image; gerbang lockfile `bun run check:lockfile` |
-| A07 | Identification & Auth Failures | Tidak berlaku | Tidak ada login. Kredensial build adalah kredensial **mesin** yang ditolak bila berbentuk token sesi manusia — [`src/lib/awcms/tenant.ts`](../../src/lib/awcms/tenant.ts) |
-| A08 | Software & Data Integrity | Terpenuhi | `bun.lock` di-commit dan digerbangi dua lapis; **action GitHub dipin ke SHA commit dan image dasar dipin ke digest** sejak [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md), dijaga `tests/versi-toolchain.test.mjs`. Yang tersisa dari kategori ini: SBOM rilis (celah 9) |
-| A09 | Logging & Monitoring | Di luar cakupan | Proses penyaji tidak menulis log permintaan dan **tidak boleh** mulai menulisnya tanpa ADR: log akses berisi IP pembaca, dan larangan mengumpulkan data pribadi pembaca berlaku penuh |
-| A10 | SSRF | Tidak berlaku | Satu-satunya URL keluar adalah `AWCMS_API_URL` dari env tepercaya, dipakai hanya saat build. Tidak ada input pembaca yang menjadi URL |
+| A01 | Broken Access Control | Not applicable on the public surface | There is no per-user object. What remains: a leak **between tenants** at build time — guarded by the tenant assertion in [`src/lib/awcms/tenant.ts`](../../src/lib/awcms/tenant.ts) |
+| A02 | Cryptographic Failures | Met | TLS belongs to Traefik; the build token never enters the output (no `PUBLIC_` prefix); **HSTS is sent in production** since [ADR-0029](../adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md) |
+| A03 | Injection | Met | There is no raw HTML path: [`src/lib/content-blocks.ts`](../../src/lib/content-blocks.ts) assembles every element from escaped text and fixed tags; `set:html` only accepts its output. Guarded by [`tests/content-blocks.test.mjs`](../../tests/content-blocks.test.mjs) |
+| A04 | Insecure Design | Met | Static-by-default is an ADR decision ([ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md)), not an accidental default. Silently truncating content is treated as a **failure** in [`src/lib/content.ts`](../../src/lib/content.ts) |
+| A05 | Security Misconfiguration | Met | Six headers in production, a strict CSP sent by the server ([ADR-0019](../adr/0019-csp-ketat-dikirim-penyaji.md), [ADR-0029](../adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md)); `Server`/`X-Powered-By` removed; no secrets in the repo; a non-root image |
+| A06 | Vulnerable Components | Met | `bun audit --audit-level=low` in the CI `check` job; weekly Dependabot; `bun install --frozen-lockfile` in CI and in the image; the `bun run check:lockfile` gate |
+| A07 | Identification & Auth Failures | Not applicable | There is no login. The build credential is a **machine** credential, refused when it takes the shape of a human session token — [`src/lib/awcms/tenant.ts`](../../src/lib/awcms/tenant.ts) |
+| A08 | Software & Data Integrity | Met | `bun.lock` committed and gated in two layers; **GitHub actions pinned to commit SHAs and the base image pinned to a digest** since [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md), guarded by `tests/versi-toolchain.test.mjs`. What remained of this category: the release SBOM (gap 9) |
+| A09 | Logging & Monitoring | Out of scope | The server process writes no request log and **may not** start writing one without an ADR: an access log contains readers' IPs, and the ban on collecting readers' personal data applies in full |
+| A10 | SSRF | Not applicable | The only outbound URL is `AWCMS_API_URL` from a trusted env, used only at build time. No reader input becomes a URL |
 
-## OWASP ASVS 4.0.3 — kategori yang benar-benar punya permukaan di sini
+## OWASP ASVS 4.0.3 — the categories that genuinely have a surface here
 
-| Kategori | Butir yang relevan | Keadaan |
+| Category | The relevant items | State |
 | --- | --- | --- |
-| V5 Validation & Encoding | Output encoding pada tiap sink | Terpenuhi. Astro meng-escape secara bawaan; satu-satunya `set:html` menerima keluaran `renderContentBlocks` dan tidak pernah string dari sumber lain |
-| V9 Communications | TLS di produksi | Terpenuhi — TLS milik Traefik, HSTS dikirim penyaji di produksi (ADR-0029) |
-| V14.4 HTTP Security Headers | CSP, `nosniff`, `Referrer-Policy`, `Permissions-Policy` | Terpenuhi dan **dibuktikan tes**, bukan diperiksa mata |
-| V14.4 | Header yang membocorkan teknologi (`Server`, `X-Powered-By`) | Terpenuhi — dihapus `pasangHeader`, dan ketiadaannya diasersi atas tiga kelas respons |
-| V14.5 Validate HTTP Request Header | Tidak berlaku | Permintaan tidak dipetakan ke berkas oleh kode repo ini — itu milik adapter `@astrojs/node`, dan [`AGENTS.md`](../../AGENTS.md) melarang menulisnya ulang justru karena kelas cacat traversal sudah selesai di sana |
+| V5 Validation & Encoding | Output encoding at every sink | Met. Astro escapes by default; the only `set:html` accepts the output of `renderContentBlocks` and never a string from another source |
+| V9 Communications | TLS in production | Met — TLS belongs to Traefik, HSTS is sent by the server in production (ADR-0029) |
+| V14.4 HTTP Security Headers | CSP, `nosniff`, `Referrer-Policy`, `Permissions-Policy` | Met and **proven by tests**, not checked by eye |
+| V14.4 | Headers leaking technology (`Server`, `X-Powered-By`) | Met — removed by `pasangHeader`, and their absence asserted over three response classes |
+| V14.5 Validate HTTP Request Header | Not applicable | A request is not mapped onto a file by this repo's code — that belongs to the `@astrojs/node` adapter, and [`AGENTS.md`](../../AGENTS.md) forbids rewriting it precisely because the traversal defect class is already solved there |
 
-## ISO/IEC 27001:2022 Annex A — kontrol yang menyentuh kode
+## ISO/IEC 27001:2022 Annex A — the controls that touch code
 
-Hanya kontrol yang bisa dibuktikan dari repo. Kontrol kebijakan, personel, dan
-fisik di luar cakupan sebuah template.
+Only controls that can be proven from the repo. Policy, personnel, and physical
+controls are outside a template's scope.
 
-| Kontrol | Bagaimana dipenuhi di sini |
+| Control | How it is met here |
 | --- | --- |
-| A.8.8 Manajemen kerentanan teknis | `bun audit` di CI + Dependabot; batas peer yang penting ditulis eksplisit di `.github/dependabot.yml` karena `bun install` **memperingatkan** peer mismatch alih-alih menolaknya |
-| A.8.9 Manajemen konfigurasi | Satu tempat konfigurasi (`src/config/site.ts` + `.env`); tiap variabel yang dibaca kode wajib ada di `.env.example` beserta konsekuensi salah isi |
-| A.8.24 Kriptografi | Di luar cakupan repo (TLS milik Traefik, hashing milik `awcms`) |
-| A.8.25 Secure development lifecycle | ADR untuk keputusan; changeset per iterasi; enam gerbang di CI |
-| A.8.28 Secure coding | [`AGENTS.md`](../../AGENTS.md) §Keamanan, dengan tiap aturan menyebut cacat yang dijaganya |
-| A.8.31 Pemisahan lingkungan | Asersi `AWCMS_TENANT_ID` menggagalkan build saat **token tenant LAIN** terpasang — kelas kesalahan yang kontrol ini ada untuk mencegah, dan satu-satunya yang benar-benar bisa dicegah dari sini. Contoh "token staging di deployment produksi" sengaja tidak dipakai lagi: `awcms` ADR-0083 menghapus `"staging"` dari union profil deployment keluarga, jadi ia menamai lingkungan yang tidak ada |
-| A.5.7 / A.8.16 Threat intelligence & monitoring | **Tidak dipenuhi, dan sebagian sengaja.** Log akses berisi IP pembaca; lihat A09 di atas |
+| A.8.8 Technical vulnerability management | `bun audit` in CI + Dependabot; the peer boundaries that matter are written explicitly in `.github/dependabot.yml` because `bun install` **warns** about a peer mismatch rather than refusing it |
+| A.8.9 Configuration management | One configuration place (`src/config/site.ts` + `.env`); every variable the code reads must exist in `.env.example` along with the consequence of filling it in wrongly |
+| A.8.24 Cryptography | Outside the repo's scope (TLS belongs to Traefik, hashing to `awcms`) |
+| A.8.25 Secure development lifecycle | An ADR per decision; a changeset per iteration; six gates in CI |
+| A.8.28 Secure coding | [`AGENTS.md`](../../AGENTS.md) §Security, with every rule naming the defect it guards |
+| A.8.31 Separation of environments | The `AWCMS_TENANT_ID` assertion fails the build when **ANOTHER tenant's token** is installed — the class of mistake this control exists to prevent, and the only one that can genuinely be prevented from here. The example "a staging token in a production deployment" is deliberately no longer used: `awcms` ADR-0083 removed `"staging"` from the family's deployment profile union, so it names an environment that does not exist |
+| A.5.7 / A.8.16 Threat intelligence & monitoring | **Not met, and partly deliberately.** An access log contains readers' IPs; see A09 above |
 
-## NIST SSDF (SP 800-218 v1.1) — praktik yang berlaku untuk template
+## NIST SSDF (SP 800-218 v1.1) — the practices that apply to a template
 
-| Praktik | Keadaan |
+| Practice | State |
 | --- | --- |
-| PS.1 Lindungi seluruh bentuk kode | Terpenuhi — branch protection + review; tidak ada commit langsung ke `main` |
-| PS.2 Sediakan mekanisme verifikasi integritas rilis | Terpenuhi — SBOM CycloneDX deterministik ikut di setiap tag sejak [ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md); regenerasi pada tag yang sama menghasilkan byte identik, jadi SBOM-nya bisa **diverifikasi**, bukan hanya dipercaya |
-| PW.4 Gunakan komponen pihak ketiga yang aman | Terpenuhi — lockfile di-commit, install ter-freeze, audit di CI |
-| PW.7 Review kode | Terpenuhi — PR + CI wajib hijau |
-| PW.8 Uji kode yang dieksekusi | Terpenuhi — enam gerbang, dan tiap gerbang yang **melewati dirinya mengatakannya** |
-| RV.1 Identifikasi kerentanan secara berkelanjutan | Terpenuhi — Dependabot + `bun audit` + CodeQL terjadwal atas permukaan JS/TS sejak [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md), dengan cakupannya (dan batas `.astro`-nya) dinyatakan di tiap ringkasan run |
+| PS.1 Protect all forms of code | Met — branch protection + review; no direct commits to `main` |
+| PS.2 Provide a mechanism for verifying release integrity | Met — a deterministic CycloneDX SBOM travels in every tag since [ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md); regenerating on the same tag produces identical bytes, so its SBOM can be **verified** rather than merely trusted |
+| PW.4 Use secure third-party components | Met — the lockfile committed, installs frozen, an audit in CI |
+| PW.7 Review code | Met — a PR + a mandatory green CI |
+| PW.8 Test executable code | Met — six gates, and every gate that **skips itself says so** |
+| RV.1 Identify vulnerabilities on an ongoing basis | Met — Dependabot + `bun audit` + scheduled CodeQL over the JS/TS surface since [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md), with its coverage (and its `.astro` limit) stated in every run summary |
 
-## Performa
+## Performance
 
-### Target yang sebelumnya tidak pernah ditulis
+### The targets that were never written down
 
-Repo ini punya anggaran gambar (beranda ≤ 250 KB, halaman konten ≤ 100 KB) tetapi
-**tidak satu pun target hasil yang dirasakan pembaca**. Anggaran byte dan
-pengalaman membaca bukan hal yang sama: sebuah halaman bisa memenuhi anggaran
-gambarnya dan tetap punya LCP buruk karena gambar terbesarnya diunduh dengan
-prioritas rendah.
+This repo has image budgets (home ≤ 250 KB, content page ≤ 100 KB) but **not one
+target for the outcome a reader feels**. A byte budget and a reading experience are
+not the same thing: a page can meet its image budget and still have a bad LCP
+because its largest image is downloaded at low priority.
 
-Target Core Web Vitals, diukur pada **p75 kunjungan nyata**, bukan pada satu
-jalankan Lighthouse di laptop pengembang:
+The Core Web Vitals targets, measured at **p75 of real visits**, not on one
+Lighthouse run on a developer's laptop:
 
-| Metrik | Ambang "baik" | Kenapa ia yang dipilih untuk situs ini |
+| Metric | The "good" threshold | Why it is the one chosen for this site |
 | --- | --- | --- |
-| LCP — Largest Contentful Paint | ≤ 2,5 detik | Elemen terbesar di halaman ini hampir selalu ilustrasi artikel; pembacanya di jaringan yang tidak dapat diandalkan |
-| INP — Interaction to Next Paint | ≤ 200 milidetik | Menggantikan FID sejak Maret 2024. Situs ini nyaris tanpa JS, jadi ambang ini seharusnya terpenuhi dengan lapang — dan bila tidak, itu sinyal ada JS yang menyelinap masuk |
-| CLS — Cumulative Layout Shift | ≤ 0,1 | Bingkai gambar sudah `aspect-ratio: var(--ratio-visual)`, jadi ruangnya dipesan sebelum gambar tiba. Yang bisa merusaknya: font yang dimuat belakangan — dan repo ini tidak memuat satu pun |
+| LCP — Largest Contentful Paint | ≤ 2.5 seconds | The largest element on these pages is almost always an article illustration; their readers are on connections that cannot be relied on |
+| INP — Interaction to Next Paint | ≤ 200 milliseconds | It replaced FID in March 2024. This site is very nearly JS-free, so this threshold should be met with room to spare — and if it is not, that is a signal JS has crept in |
+| CLS — Cumulative Layout Shift | ≤ 0.1 | Image frames already carry `aspect-ratio: var(--ratio-visual)`, so their space is reserved before the image arrives. What could break it: a font loaded late — and this repo loads none |
 
-**Sejak [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md)
-LCP dan CLS diasersi LAB di CI** — pada setiap PR sebuah situs yang punya
-sumber konten; di repo template langkah itu tidak berjalan karena tidak ada
-yang bisa dibangun. TIGA batasnya wajib ikut dibaca, dan ketiganya dinyatakan:
-(1) lab mengukur halaman, bukan pembaca — angka p75 kunjungan nyata di tabel
-di atas TETAP tidak diukur karena RUM ditolak; (2) INP tidak terukur di lab
-dan diwakili proksinya, Total Blocking Time ≤ 200 ms; (3) yang diaudit adalah
-**sampel** halaman — hingga 10 URL sampai kedalaman 4, angka yang DIPILIH di
-`lighthouserc.json` (bawaan lhci diam-diam berhenti di 5 URL terdangkal dan
-tidak pernah mencapai halaman artikel berlokal) dan dijaga `tests/cwv-lab.test.mjs`;
-situs yang butuh cakupan lebih menaikkannya di berkas itu.
-**Jangan menulis "memenuhi Core Web Vitals" dari hasil lab.** Rinciannya di
-§Celah baris 8.
+**Since [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md)
+LCP and CLS are asserted in a LAB in CI** — on every PR of a site with a content
+source; in the template repo that step does not run because there is nothing to
+build. THREE of its limits must be read alongside it, and all three are stated:
+(1) a lab measures pages, not readers — the p75-of-real-visits figures in the table
+above are STILL not measured, because RUM is refused; (2) INP is not measurable in
+a lab and is represented by its proxy, Total Blocking Time ≤ 200 ms; (3) what is
+audited is a **sample** of pages — up to 10 URLs to a depth of 4, numbers CHOSEN in
+`lighthouserc.json` (the lhci default silently stops at the 5 shallowest URLs and
+never reaches a localised article page) and guarded by `tests/cwv-lab.test.mjs`; a
+site needing more coverage raises them in that file.
+**Do not write "meets Core Web Vitals" from a lab result.** Details in §Gaps
+row 8.
 
-### Yang sudah benar, dan kenapa
+### What is already right, and why
 
-| Keputusan | Akibat performa | Di mana |
+| Decision | Its performance consequence | Where |
 | --- | --- | --- |
-| Tanpa webfont — `system-ui` sebagai `--font-sans` | Nol permintaan font, nol FOIT/FOUT, nol kontribusi ke CLS. Ia dicatat sebagai keputusan **privasi** di [`src/styles/global.css`](../../src/styles/global.css); ia juga keputusan performa | `src/styles/global.css` |
-| Tanpa framework UI, tanpa framework CSS | JS terkirim mendekati nol pada sebagian besar halaman | [`standar-teknis.md`](standar-teknis.md#stack) |
-| `compressHTML: true` | HTML lebih kecil sebelum kompresi transport | `astro.config.mjs` |
-| Kompresi respons memakai pustaka matang | Bukan hanya gzip: `compression` v1.8 menegosiasikan **Brotli** (RFC 7932) saat browser memintanya, dan Brotli mengalahkan gzip sekitar 15–20% pada HTML | [`server/penyaji.mjs`](../../server/penyaji.mjs) |
-| `Cache-Control` dua aturan | Aset ber-hash `immutable` satu tahun; HTML `max-age=0, must-revalidate` sehingga rebuild langsung terlihat. Keduanya sesuai RFC 9111, dan keduanya **dibuktikan tes** — termasuk paritas GET/HEAD yang pernah membuat `curl -I` melaporkan nilai yang salah | [`tests/penyaji.test.mjs`](../../tests/penyaji.test.mjs) |
-| Konten ditarik saat build | Nol panggilan ke CMS saat pembaca meminta halaman; situs tetap tayang saat `awcms` mati | [ADR-0018](../adr/0018-kontrak-build-token-mesin-dan-traversal-konten.md) |
-| Media di-resolve **sekali per build** | Situs 300 artikel × 2 locale tidak berubah menjadi ratusan permintaan HTTP saat render | [`src/lib/content.ts`](../../src/lib/content.ts) |
+| No webfonts — `system-ui` as `--font-sans` | Zero font requests, zero FOIT/FOUT, zero contribution to CLS. It is recorded as a **privacy** decision in [`src/styles/global.css`](../../src/styles/global.css); it is also a performance decision | `src/styles/global.css` |
+| No UI framework, no CSS framework | JS shipped is near zero on most pages | [`standar-teknis.md`](standar-teknis.md#the-stack) |
+| `compressHTML: true` | Smaller HTML before transport compression | `astro.config.mjs` |
+| Response compression uses a mature library | Not only gzip: `compression` v1.8 negotiates **Brotli** (RFC 7932) when a browser asks for it, and Brotli beats gzip by roughly 15–20% on HTML | [`server/penyaji.mjs`](../../server/penyaji.mjs) |
+| `Cache-Control` in two rules | Hashed assets `immutable` for a year; HTML `max-age=0, must-revalidate` so a rebuild is immediately visible. Both per RFC 9111, and both **proven by tests** — including the GET/HEAD parity that once made `curl -I` report the wrong value | [`tests/penyaji.test.mjs`](../../tests/penyaji.test.mjs) |
+| Content pulled at build time | Zero calls to the CMS when a reader asks for a page; the site stays live when `awcms` is down | [ADR-0018](../adr/0018-kontrak-build-token-mesin-dan-traversal-konten.md) |
+| Media resolved **once per build** | A 300-article × 2-locale site does not turn into hundreds of HTTP requests at render time | [`src/lib/content.ts`](../../src/lib/content.ts) |
 
-### Biaya yang diterima sadar, dan tidak boleh dibaca sebagai kelalaian
+### A knowingly accepted cost, not to be read as an oversight
 
-[ADR-0024](../adr/0024-seni-lokal-di-src-assets.md) memilih `import.meta.glob`
-dengan `query: "?url"` alih-alih `astro:assets`. Konsekuensinya dinyatakan di
-sana dan diulang di sini karena ia biaya **performa**, bukan biaya bentuk kode:
-raster tidak di-encode ulang dan **tidak ada `srcset`**, sehingga sebuah ponsel
-360px mengunduh berkas yang sama dengan desktop 1920px.
+[ADR-0024](../adr/0024-seni-lokal-di-src-assets.md) chose `import.meta.glob` with
+`query: "?url"` over `astro:assets`. Its consequence is stated there and repeated
+here because it is a **performance** cost, not a code-shape cost: rasters are not
+re-encoded and there is **no `srcset`**, so a 360px phone downloads the same file
+as a 1920px desktop.
 
-Yang membuatnya bisa diterima: seni lokal template ini SVG, dan gambar artikel
-datang dari media `awcms` yang menyajikan berkas yang diunggah editor. Yang
-membuatnya **berhenti** bisa diterima: sebuah situs yang mengisi
-`src/assets/` dengan foto raster besar. Situs seperti itu perlu menimbang ulang
-ADR-0024 untuk dirinya sendiri — dan anggaran gambar di
-[`standar-teknis.md`](standar-teknis.md#performa) adalah tempat pertama
-kelebihannya akan terlihat.
+What makes it acceptable: this template's local artwork is SVG, and article images
+come from `awcms` media, which serves the file an editor uploaded. What makes it
+**stop** being acceptable: a site filling `src/assets/` with large raster photos.
+Such a site needs to reweigh ADR-0024 for itself — and the image budget in
+[`standar-teknis.md`](standar-teknis.md#performance) is the first place going over
+will show up.
 
-## Celah: kesepuluhnya ditutup — dan barisnya tetap di sini
+## Gaps: all ten closed — and their rows stay here
 
-Diurutkan menurut akibat, bukan menurut usaha. **Enam ditutup pada 4 Agustus
-2026** — lima di pagi hari, yang keenam (pin rantai pasok) menyusul siangnya
-lewat [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md) — dan
-**tiga berikutnya pada 5 Agustus 2026**: SBOM lewat
-[ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md), analisis
-statik dan Core Web Vitals lab lewat
+Ordered by consequence, not by effort. **Six were closed on 4 August 2026** — five
+in the morning, the sixth (supply chain pinning) following that afternoon through
+[ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md) — and **three more
+on 5 August 2026**: the SBOM through
+[ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md), static analysis
+and lab Core Web Vitals through
 [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) —
-masing-masing bersama pemeriksanya. **Yang kesepuluh ditemukan dan ditutup pada
-6 Agustus 2026**, dan ia bukan kontrol yang hilang melainkan dua baris di tabel
-ini sendiri: pemeriksa celah 2 dan 3 tidak pernah dieksekusi satu kali pun di
-repo tempat ia ditulis. Di repo ini aturan tanpa pemeriksanya adalah aturan yang
-akan dilanggar, dan itu berlaku juga untuk aturan yang datang dari standar luar
-— **dan juga untuk pemeriksa itu sendiri.**
+each with its checker. **The tenth was found and closed on 6 August 2026**, and it
+is not a missing control but two rows in this very table: the checkers for gaps 2
+and 3 had never once been executed in the repo where they were written. In this
+repo a rule without its checker is a rule that will be broken, and that applies to
+a rule coming from an external standard too — **and to a checker itself.**
 
-Baris yang tertutup **tetap di tabel**. Dihapus, ia akan diusulkan lagi sebagai
-temuan baru enam bulan kemudian, dan pemeriksanya akan dilonggarkan oleh orang
-yang tidak tahu kenapa ia ada.
+A closed row **stays in the table**. Deleted, it would be proposed again as a new
+finding six months later, and its checker would be loosened by somebody who does
+not know why it is there.
 
-| # | Celah | Keadaan | Pemeriksa |
+| # | Gap | State | Its checker |
 | --- | --- | --- | --- |
-| 1 | `Strict-Transport-Security` tidak dikirim | **DITUTUP** — [ADR-0029](../adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md): digerbangi produksi, tanpa `includeSubDomains`. **Sempat terbuka kembali tanpa terlihat 6–14 Agustus 2026**: bundler melipat `process.env.NODE_ENV` bertitik, jadi artefak yang tayang memuat `produksi = false` dan header keenam tidak pernah terkirim meski `NODE_ENV=production` terpasang | Tiga asersi di `tests/penyaji.test.mjs` atas SUMBER, **mutation-proven** — arahnya terbalik dan itu yang terpenting: HSTS **tidak** dikirim di luar produksi, dan gerbang yang hanya memeriksa "header ada" akan hijau pada versi yang mengunci setiap `localhost` pengembang selama setahun. Sejak 14 Agustus 2026 ada asersi keempat yang menjalankan **artefaknya** (`dist/server/penyaji.mjs`, dua kali, `production` dan bukan) — dan ia berjalan di dalam `docker build`, karena ketiga asersi pertama membaca sumber, tempat gerbangnya memang selalu benar |
-| 2 | `fetchpriority="high"` tidak ada pada gambar di atas lipatan | **DITUTUP** — [`Ilustrasi.astro`](../../src/components/Ilustrasi.astro) memasangnya saat `hero`. `loading="eager"` saja tidak cukup: prioritas bawaan sebuah `<img>` tetap Low sampai layout membuktikan ia di viewport | Gerbang `performa` di `scripts/audit-konten.mjs`: setiap `<img loading="eager">` di `dist/client` wajib membawa `fetchpriority="high"`. Diperiksa di KELUARAN, sehingga `<img>` yang tidak lewat komponen ikut tertangkap |
-| 3 | Anggaran gambar tidak punya pemeriksa | **DITUTUP** — 250 KB beranda, 100 KB halaman konten, diukur untuk pertama kalinya sejak angka itu ditulis | Gerbang `performa`: menjumlahkan byte gambar yang benar-benar DITERBITKAN build ini, per halaman. Media `awcms` tidak ada di `dist/client` sehingga tidak ikut tertimbang — batas yang disengaja, dan disebut di skripnya |
-| 4 | `awcmsGet` tanpa batas waktu | **DITUTUP** — `AbortSignal.timeout`, bawaan 30 detik, diubah lewat `AWCMS_API_TIMEOUT_MS` | Dua asersi di `tests/kontrak-awcms.test.mjs`, **mutation-proven**: tiruan yang menerima koneksi lalu tidak pernah menjawab (melepas sinyalnya membuat tes itu menggantung, persis cacat aslinya), dan nilai batas cacat yang DITOLAK alih-alih diam-diam jatuh ke bawaan |
-| 5 | Header pembocor teknologi tidak diverifikasi | **DITUTUP** — `Server` dan `X-Powered-By` dihapus `pasangHeader`, bukan sekadar diasersi: "tidak dikirim hari ini" dan "tidak akan dikirim" adalah dua hal berbeda | Asersi negatif atas tiga kelas respons di `tests/penyaji.test.mjs`, **mutation-proven** |
-| 6 | Action GitHub dipin ke tag, image dasar dipin ke tag | **DITUTUP** — [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md): empat action dipin ke SHA commit dengan komentar `# vX.Y.Z` yang Dependabot baca, image dasar dipin ke digest | `tests/versi-toolchain.test.mjs`, **mutation-proven**. Ia menutup kelas cacat yang justru DITAMBAHKAN pin digest: saat tag dan digest sama-sama ada, digest yang dipatuhi Docker dan tag hanya jadi komentar |
-| 7 | Tidak ada analisis statik | **DITUTUP** — [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) §A: `.github/workflows/codeql.yml` terjadwal mingguan + pada perubahan, atas permukaan JS/TS. Syarat kejujurannya persis yang kolom ini resepkan sejak awal: langkah `Nyatakan cakupan` menulis ke ringkasan run berapa berkas dianalisis dan berapa `.astro` TIDAK — dihitung `find` saat run, bukan ditulis tangan | `tests/analisis-statik.test.mjs`: seluruh action ber-SHA + komentar versi, jadwal ada, dan langkah pernyataan cakupan — beserta sebutan `.astro`-nya — tidak bisa dihapus diam-diam |
-| 8 | Core Web Vitals tidak diukur | **DITUTUP** — [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) §B: Lighthouse CI atas **sampel** `dist/client` (hingga 10 URL, kedalaman 4 — batas yang dipilih, bukan bawaan lhci yang diam-diam berhenti di 5 URL terdangkal) di job `build`, terkondisi sumber konten seperti gerbang keluaran lainnya — di repo template ia tidak berjalan, di setiap SITUS ia berjalan pada tiap PR. LCP ≤ 2500 ms dan CLS ≤ 0,1 level `error`; INP tidak terukur di lab, jadi TBT ≤ 200 ms dipakai sebagai proksi dan DISEBUT proksi | `tests/cwv-lab.test.mjs`, berjalan di repo template: ambang `lighthouserc.json` TERPAKU ke angka dokumen ini dan ketiga batas cakupannya (kedalaman, jumlah sampel, blocklist 404) diasersi eksplisit — melonggarkan salah satunya menuntut mengubah tes, yang terlihat di review; langkah CI-nya terkondisi dan dipin SHA |
-| 9 | Tidak ada SBOM pada rilis | **DITUTUP** — [ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md): `scripts/sbom.mjs` menurunkan CycloneDX 1.5 dari `bun.lock` — deterministik, tanpa dependency baru — dan perilis menulisnya SEBELUM commit rilis sehingga `sbom.cdx.json` ikut di dalam tag | `tests/sbom.test.mjs`, **mutation-proven** atas lockfile buatan: paket ber-scope, konversi hash base64→hex, dedup jalur resolusi, dan entri tak dikenal DITOLAK alih-alih dilewati — SBOM yang diam-diam tidak lengkap menjawab "tidak terdampak" dengan percaya diri. Langkah perilisnya diasersi struktural supaya tidak hilang diam-diam |
-| 10 | Pemeriksa celah 2 dan 3 tidak pernah dieksekusi di repo tempat ia ditulis | **DITUTUP** — `tests/audit-konten.test.mjs`. Seluruh keluarga keluaran `scripts/audit-konten.mjs` — termasuk kedua gerbang performa di atas — berada di belakang `if (existsSync("dist/client"))`, dan `dist/client` lahir dari build yang butuh sumber konten. Di repo template itu berarti ~330 baris pemeriksa yang **tidak pernah jalan**: tidak di CI, tidak di `bun test`, tidak di mana pun. Baris 2 dan 3 berbunyi DITUTUP di atas dasar kode yang belum pernah dijalankan siapa pun | 86 kasus atas pohon fixture sungguhan, dijalankan dengan `cwd` fixture sehingga skripnya diuji **apa adanya**, tanpa mode uji yang hanya ada di tes. Tiap gerbang dibuktikan dua arah dan **mutation-proven**: mencabut tuntutan `fetchpriority`, menyamakan anggaran halaman konten dengan anggaran beranda, mencabut dedup `src`, mencabut resiprositas hreflang, mengabaikan namespace katalog, memperlakukan dimensi tak terbaca sebagai lulus, atau menghapus catatan "DILEWATI" — masing-masing memerahkan tes yang berbeda |
+| 1 | `Strict-Transport-Security` not sent | **CLOSED** — [ADR-0029](../adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md): gated to production, without `includeSubDomains`. **It briefly reopened unseen from 6–14 August 2026**: the bundler folded a dotted `process.env.NODE_ENV`, so the artefact that served contained `produksi = false` and the sixth header was never sent even with `NODE_ENV=production` set | Three assertions in `tests/penyaji.test.mjs` over the SOURCE, **mutation-proven** — one runs backwards and that is the important one: HSTS is **not** sent outside production, and a gate that only checks "the header is present" would be green on a version that locks every developer's `localhost` for a year. Since 14 August 2026 there is a fourth assertion running the **artefact** (`dist/server/penyaji.mjs`, twice, `production` and not) — and it runs inside `docker build`, because the first three read the source, where the gate was always correct |
+| 2 | No `fetchpriority="high"` on above-the-fold images | **CLOSED** — [`Ilustrasi.astro`](../../src/components/Ilustrasi.astro) sets it for a `hero`. `loading="eager"` alone is not enough: an `<img>`'s default priority stays Low until layout proves it is in the viewport | The `performa` gate in `scripts/audit-konten.mjs`: every `<img loading="eager">` in `dist/client` must carry `fetchpriority="high"`. Checked in the OUTPUT, so an `<img>` that did not go through the component is caught too |
+| 3 | The image budget had no checker | **CLOSED** — 250 KB for the home page, 100 KB for a content page, measured for the first time since those numbers were written | The `performa` gate: it sums the bytes of the images this build actually PUBLISHES, per page. `awcms` media are not in `dist/client` and so are not weighed — a deliberate limit, named in its script |
+| 4 | `awcmsGet` with no timeout | **CLOSED** — `AbortSignal.timeout`, 30 seconds by default, changed through `AWCMS_API_TIMEOUT_MS` | Two assertions in `tests/kontrak-awcms.test.mjs`, **mutation-proven**: a double that accepts a connection and then never answers (removing its signal makes that test hang, exactly the original defect), and a malformed limit value REFUSED rather than silently falling back to the default |
+| 5 | Technology-leaking headers not verified | **CLOSED** — `Server` and `X-Powered-By` are removed by `pasangHeader`, not merely asserted: "not sent today" and "will not be sent" are two different things | Negative assertions over three response classes in `tests/penyaji.test.mjs`, **mutation-proven** |
+| 6 | GitHub actions pinned to tags, the base image pinned to a tag | **CLOSED** — [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md): four actions pinned to commit SHAs with a `# vX.Y.Z` comment Dependabot reads, the base image pinned to a digest | `tests/versi-toolchain.test.mjs`, **mutation-proven**. It closes the defect class the digest pin itself ADDED: when a tag and a digest are both present, Docker obeys the digest and the tag becomes a comment |
+| 7 | No static analysis | **CLOSED** — [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) §A: `.github/workflows/codeql.yml` scheduled weekly + on changes, over the JS/TS surface. Its honesty condition is exactly what this column prescribed from the start: the `State the coverage` step writes into the run summary how many files were analysed and how many `.astro` were NOT — counted by `find` at run time, not written by hand | `tests/analisis-statik.test.mjs`: every action SHA-pinned + a version comment, the schedule present, and the coverage-statement step — along with its mention of `.astro` — impossible to delete silently |
+| 8 | Core Web Vitals not measured | **CLOSED** — [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) §B: Lighthouse CI over a **sample** of `dist/client` (up to 10 URLs, depth 4 — a chosen limit, not the lhci default that silently stops at the 5 shallowest URLs) in the `build` job, conditioned on a content source like the other output gates — in the template repo it does not run, in every SITE it runs on every PR. LCP ≤ 2500 ms and CLS ≤ 0.1 at `error` level; INP is not measurable in a lab, so TBT ≤ 200 ms is used as a proxy and is CALLED a proxy | `tests/cwv-lab.test.mjs`, running in the template repo: the `lighthouserc.json` thresholds are PINNED to this document's numbers and all three of its coverage limits (depth, sample size, the 404 blocklist) are asserted explicitly — loosening any of them requires changing the test, which is visible in review; its CI step is conditioned and SHA-pinned |
+| 9 | No SBOM on releases | **CLOSED** — [ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md): `scripts/sbom.mjs` derives CycloneDX 1.5 from `bun.lock` — deterministic, with no new dependency — and the releaser writes it BEFORE the release commit so `sbom.cdx.json` travels inside the tag | `tests/sbom.test.mjs`, **mutation-proven** over a synthetic lockfile: scoped packages, base64→hex hash conversion, deduplicated resolution paths, and an unknown entry REFUSED rather than skipped — a silently incomplete SBOM answers "not affected" with confidence. Its release step is asserted structurally so it cannot disappear silently |
+| 10 | The checkers for gaps 2 and 3 had never been executed in the repo where they were written | **CLOSED** — `tests/audit-konten.test.mjs`. Every output family in `scripts/audit-konten.mjs` — including both performance gates above — sits behind `if (existsSync("dist/client"))`, and `dist/client` is born from a build that needs a content source. In the template repo that meant ~330 lines of checker that **never ran**: not in CI, not in `bun test`, nowhere. Rows 2 and 3 read CLOSED on the basis of code nobody had ever run | 86 cases over a real fixture tree, run with the fixture as `cwd` so the script is tested **as it is**, with no test-only mode. Every gate proven both ways and **mutation-proven**: removing the `fetchpriority` requirement, equalising the content-page budget with the home budget, removing `src` deduplication, removing hreflang reciprocity, ignoring the catalogue namespace, treating unreadable dimensions as a pass, or deleting the "SKIPPED" note — each turns a different test red |
 
-**Tidak ada yang terbuka hari ini — dan kalimat itu punya batas yang harus
-ikut dibaca.** Celah 7 dan 8 lama ditahan justru karena penutupan yang mudah
-adalah penutupan yang bohong; keduanya akhirnya ditutup dalam bentuk yang tabel
-ini resepkan sendiri, dengan syarat kejujurannya dijaga tes yang **berjalan di
-repo template** — keberatan lama "gerbang yang tidak bisa dibuktikan di tempat
-ia ditulis akan membusuk" dijawab, bukan diabaikan
+**Nothing is open today — and that sentence has limits that must be read with
+it.** Gaps 7 and 8 were held for a long time precisely because the easy closure is
+a closure that lies; both were eventually closed in the form this table itself
+prescribed, with their honesty conditions guarded by tests that **run in the
+template repo** — the old objection "a gate that cannot be proven where it was
+written will rot" is answered, not ignored
 ([ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md)).
-Batasnya: `.astro` tetap tidak teranalisis statik (dan ringkasan run CodeQL
-mengatakannya pada setiap jalan), p75 kunjungan nyata tetap tidak diukur (RUM
-tetap ditolak — lab mengukur halaman, bukan pembaca), dan kolom Keadaan tabel
-ini tetap **tidak bisa digerbangi mesin**. Sepuluh dari sepuluh bukan
-"selesai selamanya"; ia berarti setiap celah yang DIKETAHUI punya pemeriksa,
-dan temuan berikutnya masuk tabel ini sebagai nomor sebelas — bukan
-menggantikan baris lama.
+Its limits: `.astro` is still not statically analysed (and the CodeQL run summary
+says so on every run), p75 of real visits is still not measured (RUM is still
+refused — a lab measures pages, not readers), and this table's State column still
+**cannot be machine-gated**. Ten out of ten does not mean "finished forever"; it
+means every KNOWN gap has a checker, and the next finding enters this table as
+number eleven — rather than replacing an old row.
 
-**Celah 10 adalah bukti bahwa kalimat itu berlaku untuk tabel ini sendiri.**
-Ia ditemukan pada 6 Agustus 2026 dengan satu pertanyaan yang seharusnya
-ditanyakan pada hari celah 2 dan 3 ditutup — *pemeriksanya sendiri pernah
-dijalankan siapa?* — dan jawabannya "tidak pernah, di repo ini". Dua batasnya
-ikut dinyatakan, karena penutupan yang lebih besar daripada kenyataannya persis
-kelas cacat yang tabel ini lawan:
+**Gap 10 is the proof that this sentence applies to this table itself.** It was
+found on 6 August 2026 with one question that should have been asked the day gaps 2
+and 3 were closed — *who has ever run its checker?* — and the answer was "nobody, in
+this repo". Its two limits are stated too, because a closure larger than its reality
+is precisely the defect class this table fights:
 
-- **Fixture bukan situs.** 86 kasus itu membuktikan LOGIKA gerbangnya atas
-  keluaran buatan yang berbentuk seperti keluaran Astro. Ia tidak membuktikan
-  bahwa `astro build` sungguhan memancarkan bentuk yang sama — itu hanya bisa
-  dibuktikan sebuah SITUS, dan di sana `bun run audit:konten` setelah build
-  memang berjalan pada tiap PR.
-- **Satu baris di skripnya tetap tidak bergerbang, dan itu ditulis di tesnya.**
-  Penyaring `mailto:|tel:|data:|javascript:` tidak bisa dimutasi dari luar —
-  `internal()` sudah menolak skema itu lebih dulu, jadi mencabutnya tidak
-  mengubah satu pun hasil. Tesnya menjaga perilakunya, bukan barisnya, dan
-  selisih itu disebut di sana alih-alih dihitung sebagai cakupan.
+- **A fixture is not a site.** Those 86 cases prove the gate's LOGIC over synthetic
+  output shaped like Astro output. They do not prove that a real `astro build`
+  emits the same shape — only a SITE can prove that, and there
+  `bun run audit:konten` after a build does run on every PR.
+- **One line in its script is still ungated, and that is written in its test.** The
+  `mailto:|tel:|data:|javascript:` filter cannot be mutated from outside —
+  `internal()` already refuses those schemes first, so removing it changes not one
+  result. Its test guards its behaviour rather than its line, and that difference is
+  named there rather than counted as coverage.
 
-Konteks keluarganya, per 5 Agustus 2026: `awcms` **sudah** mengukur Core Web
-Vitals di lab pada hari yang sama (Opsi D ADR-0067 di sana — LCP+CLS halaman
-`/login`, nol data pengunjung), jadi kedua repo kini mengukur LAB dan tidak
-satu pun mengukur lapangan. **Status ADR-0067 di sana kini `Accepted (belum
-diimplementasikan)`**: bagian RUM-nya diputuskan 8 Agustus 2026 — Opsi B,
-agregasi di titik masuk tanpa baris mentah per kunjungan — dan belum dibangun;
-di sini RUM sudah ditolak sebagai postur. Selisih yang tersisa karena itu punya
-tanggal kedaluwarsa yang sudah diketahui: begitu Opsi B mendarat, satu repo
-mengukur lapangan secara agregat dan repo ini tidak.
+Its family context, as of 5 August 2026: `awcms` **already** measured Core Web
+Vitals in a lab that same day (its ADR-0067 Option D — LCP+CLS on the `/login`
+page, zero visitor data), so both repos now measure the LAB and neither measures the
+field. **ADR-0067's status over there is now `Accepted (not yet implemented)`**: its
+RUM part was decided on 8 August 2026 — Option B, aggregation at the entry point
+with no raw row per visit — and has not been built; here RUM is already refused as a
+posture. The remaining difference therefore has a known expiry date: once Option B
+lands, one repo measures the field in aggregate and this one does not.
 
-## Yang sengaja TIDAK diadopsi
+## What is deliberately NOT adopted
 
-Sama pentingnya untuk ditulis: sebuah kontrol yang direkomendasikan standar dan
-**ditolak dengan alasan** tidak akan diusulkan lagi enam bulan kemudian sebagai
-temuan baru.
+Equally important to write down: a control recommended by a standard and
+**refused with its reasoning** will not be proposed again six months later as a new
+finding.
 
-> **Dua dari lima penolakan di bawah ditolak dengan alasan yang punya tanggal
-> kedaluwarsa, dan tanggalnya bukan di kalender.** CORP/COOP ditolak karena repo
-> ini "tidak punya sesi untuk dipagari", dan SRI karena "tidak ada sumber daya
-> lintas-origin". Keduanya **premis, bukan prinsip** — dan premis pertama gugur
-> di situs pertama yang menyalakan `permukaanAdmin`
+> **Two of the five refusals below are refused for reasons that have an expiry
+> date, and that date is not on a calendar.** CORP/COOP is refused because this
+> repo "has no session to fence off", and SRI because "there are no cross-origin
+> resources". Both are **premises, not principles** — and the first falls at the
+> first site that switches on `permukaanAdmin`
 > ([ADR-0034](../adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md)).
-> Situs seperti itu wajib meninjau ulang keduanya sebelum tayang; lihat
-> [`permukaan-admin-user.md`](permukaan-admin-user.md) §3. Yang tiga lainnya —
-> pelaporan CSP, RUM, dan analytics yang melacak individu — ditolak atas
-> **prinsip** (larangan mengumpulkan data pembaca) dan tidak berubah oleh
-> permukaan apa pun.
+> Such a site must re-examine both before going live; see
+> [`permukaan-admin-user.md`](permukaan-admin-user.md) §3. The other three — CSP
+> reporting, RUM, and analytics that tracks individuals — are refused on
+> **principle** (the ban on collecting reader data) and are unchanged by any
+> surface.
 
-- **Pelaporan CSP (`report-to` / `report-uri`).** Ia mengirim laporan berisi URL
-  yang sedang dibuka pembaca ke sebuah pengumpul. Repo ini melarang mengumpulkan
-  data pembaca, dan larangan itu tidak punya pengecualian "tapi ini untuk
-  keamanan". Sebuah situs yang punya pengumpul miliknya sendiri boleh
-  menambahkannya lewat ADR di repo situsnya.
-- **`Cross-Origin-Resource-Policy: same-origin` menyeluruh.** Ia akan memblokir
-  situs lain menyematkan gambar dari situs ini — perilaku yang mungkin diinginkan
-  sebagian situs dan pasti tidak diinginkan sebagian yang lain. Ia bukan default
-  yang aman untuk sebuah **template**, dan menaruhnya di sini berarti memutuskan
-  untuk situs yang belum ada. `awcms` kini mengirimkannya (bersama
-  `Cross-Origin-Opener-Policy`) untuk memagari sesi admin-nya, dan komentar di
-  kodenya sendiri menyatakan alasan itu tidak menular ke sini: repo ini tidak
-  punya sesi untuk dipagari, dan halaman HTML adalah navigasi — yang CORP memang
-  tidak atur. Penolakan ini kini **tercatat di kedua sisi**: `awcms` ADR-0069
-  menjadikannya divergence bernama ber-`reviewDate` 2027-02-04, jadi ia tidak
-  akan diusulkan ulang sebagai temuan enam bulan lagi.
-- **Subresource Integrity.** Tidak ada satu pun sumber daya lintas-origin yang
-  dimuat halaman ini. SRI tanpa sumber daya eksternal adalah atribut yang tidak
-  menjaga apa pun.
-- **Analytics berbasis RUM untuk mengukur Core Web Vitals.** Ia mengumpulkan data
-  pembaca. Celah 8 di atas karena itu ditutup lewat pengukuran **lab** di CI, dan
-  keterbatasannya dinyatakan: lab mengukur halaman, bukan pembaca.
-- **Rate limiting dan WAF.** Milik Traefik/Coolify, bukan milik proses penyaji.
-  Menaruhnya di sini berarti dua tempat yang memutuskan hal yang sama.
+- **CSP reporting (`report-to` / `report-uri`).** It sends a report containing the
+  URL a reader currently has open to a collector. This repo forbids collecting
+  reader data, and that ban has no "but this is for security" exception. A site
+  with a collector of its own may add it through an ADR in that site's repo.
+- **Blanket `Cross-Origin-Resource-Policy: same-origin`.** It would block other
+  sites from embedding images from this one — behaviour some sites may want and
+  others certainly do not. It is not a safe default for a **template**, and putting
+  it here means deciding for a site that does not exist yet. `awcms` now sends it
+  (along with `Cross-Origin-Opener-Policy`) to fence off its admin sessions, and a
+  comment in its own code states that its reason does not carry over here: this repo
+  has no session to fence off, and an HTML page is a navigation — which CORP does
+  not govern. This refusal is now **recorded on both sides**: `awcms` ADR-0069 makes
+  it a named divergence with a `reviewDate` of 2027-02-04, so it will not be
+  proposed again as a finding in six months.
+- **Subresource Integrity.** Not one cross-origin resource is loaded by these
+  pages. SRI without external resources is an attribute that guards nothing.
+- **RUM-based analytics for measuring Core Web Vitals.** It collects reader data.
+  Gap 8 above was therefore closed through **lab** measurement in CI, with its
+  limitations stated: a lab measures pages, not readers.
+- **Rate limiting and a WAF.** They belong to Traefik/Coolify, not to the server
+  process. Putting them here means two places deciding the same thing.
 
-## Hubungannya dengan `ahliweb/awcms`
+## The relationship with `ahliweb/awcms`
 
-> **Dua repo, dua angka — dan selisihnya kini selesai, di kedua sisi.**
-> Penilaian `awcms` 4 Agustus 2026 (`docs/awcms/repo-assessment-2026-08-04.md`
-> §4) mencatat repo ini memanggil **enam** permukaannya; kenyataannya repo ini
-> memanggil **tiga**, dan sejak
-> [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md) daftar di
-> sisi sini diekstrak dari kode dan digerbangi dua arah.
+> **Two repos, two numbers — and the difference is now settled, on both sides.**
+> The `awcms` assessment of 4 August 2026 (`docs/awcms/repo-assessment-2026-08-04.md`
+> §4) recorded this repo as calling **six** of its surfaces; in reality this repo
+> calls **three**, and since
+> [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md) the list on this
+> side is extracted from the code and gated in both directions.
 >
-> `awcms` menjawabnya pada hari yang sama dengan ADR-0065: kontrak konsumen
-> dibekukan di sisi sana (`bun run api:consumer-contract:check`, masuk rantai
-> `check`-nya), dengan daftar yang **diturunkan dari mem-grep repo ini** — tiga
-> path yang benar-benar dipanggil build (`/blog/posts`, `/media/objects`,
-> `/media/public-origin`) dipisah dari dua yang baru DIJANJIKAN ADR
-> (`/auth/session` untuk BFF yang belum ada, `/access/machine-credentials` cara
-> manusia menerbitkan token build — dan sejak 13 Agustus 2026 permukaan itu
-> punya layar `/admin/machine-credentials` di sana, sekaligus bisa menerbitkan
-> kredensial kelas TULIS yang **tidak boleh** dipakai untuk token build),
-> dan `GET /blog/posts/{id}` yang dihapus
-> ADR-0018 tidak ikut dibekukan. (Prosa ADR-0065 menyebut "6 path"; fixture-nya
-> membekukan LIMA — angka di sini mengikuti kode.) Pembekuannya menelusuri
-> closure `$ref` sehingga schema yang dirujuk ikut beku, aturannya subset
-> aditif: menambah field opsional
-> lolos, menghapus atau mengubah tipe merah — di CI `awcms`, sebelum build repo
-> ini sempat rusak. Regenerasi fixture di sana adalah sinyal bahwa repo ini
-> wajib ikut berubah **dalam napas yang sama**.
+> `awcms` answered the same day with ADR-0065: the consumer contract is frozen on
+> its side (`bun run api:consumer-contract:check`, part of its `check` chain), with
+> a list **derived from grepping this repo** — three paths the build genuinely calls
+> (`/blog/posts`, `/media/objects`, `/media/public-origin`) separated from two only
+> PROMISED by an ADR (`/auth/session` for a BFF that does not exist,
+> `/access/machine-credentials`, how a human issues a build token — and since
+> 13 August 2026 that surface has an `/admin/machine-credentials` screen over there,
+> and can also issue WRITE-class credentials that **must not** be used for a build
+> token), while `GET /blog/posts/{id}`, removed by ADR-0018, was not frozen with
+> them. (The ADR-0065 prose says "6 path"; its fixture freezes FIVE — the number
+> here follows the code.) Its freeze walks the `$ref` closure so referenced schemas
+> are frozen too, and its rule is an additive subset: adding an optional field
+> passes, removing one or changing a type is red — in `awcms` CI, before this repo's
+> build can break. A fixture regeneration over there is the signal that this repo
+> must change **in the same breath**.
 
-Repo ini **mengonsumsi** `awcms` dan tidak menyajikan API apa pun, jadi sebagian
-besar kontrol keluarga — RLS, ABAC default-deny, idempotency, audit trail, HMAC
-sinkronisasi — ditegakkan di sana dan tidak punya padanan di sini. Yang
-**bukan** berarti tidak relevan: keputusan `awcms` mengubah apa yang benar di
-sini. Empat baris tengah tabel ini datang dari gelombang ADR 4 Agustus 2026
-sisi sana (0065–0068); tiga baris terbawah dari putaran 5 Agustus 2026, saat
-kedua repo menutup celah lintas-repo terakhirnya masing-masing dan berhenti
-menyimpan versi berbeda dari fakta yang sama.
+This repo **consumes** `awcms` and serves no API at all, so most family controls —
+RLS, default-deny ABAC, idempotency, the audit trail, synchronisation HMAC — are
+enforced there and have no equivalent here. That does **not** mean they are
+irrelevant: an `awcms` decision changes what is true here. The four middle rows of
+this table come from that side's ADR wave of 4 August 2026 (0065–0068); its three
+bottom rows from the round of 5 August 2026, when both repos closed their last
+cross-repo gaps and stopped holding different versions of the same fact.
 
-| Keputusan `awcms` | Akibatnya di repo ini |
+| The `awcms` decision | Its consequence in this repo |
 | --- | --- |
-| ADR-0049/0050 — kredensial mesin + serah-terima sesi BFF | Sudah diserap: tenant dari token, tanpa header tenant ([ADR-0018](../adr/0018-kontrak-build-token-mesin-dan-traversal-konten.md)) |
-| ADR-0071 — kosakata URL publik dibelah; **men-supersede ADR-0059** | **Sudah diserap** ([ADR-0036](../adr/0036-news-adalah-kosakata-repo-ini-dan-sebuah-tab-yang-memikulnya.md)). Baris ini sebelumnya berbunyi "belum diserap" dan memerikan keluarga rute `/news/**` di `awcms` — keempatnya **dihapus** di sana pada 8 Agustus 2026 dan kini 301 ke `/blog/{tenantCode}/**` — **kecuali** untuk tenant ber-`legacyTenantRouteEnabled: false`, yang sudah mematikan seluruh permukaan konten publiknya dan karena itu tetap dijawab 404 alih-alih diberi 301 menuju 404 yang pasti (`awcms` ADR-0071 §4 butir 3). Kosakata kini satu keluarga per repo: `/blog/**` milik `awcms` (path-scoped, kosakata permanennya), `/news/**` milik repo ini berbentuk sebuah tab. Pertanyaan "kapan memakai `awcms-astro` alih-alih permukaan publik `awcms`" tetap nyata dan tetap dijawab [`README.md`](README.md#kapan-memilih-awcms-astro) — yang dipilih di sini adalah **nol panggilan ke CMS saat pembaca meminta halaman**, bukan bentuk URL-nya |
-| ADR-0061 — permukaan host-resolved boleh di-cache di tepi | Tidak berlaku langsung: situs ini tidak melewati Varnish. Yang **berlaku** adalah alasannya — 404 yang bisa di-cache adalah kanal observasi kedua. Repo ini tidak punya cabang 404 yang membedakan tenant, jadi kelas cacat itu tidak bisa terjadi di sini |
-| ADR-0062 — skill digerbangi terhadap kode yang dijelaskannya | **Diserap penuh sejak 5 Agustus 2026.** `bun run audit:dokumen` memeriksa jalur berkas yang disebut `.claude/skills/` persis seperti `docs/`, dan kini juga aturan 2-nya: setiap kutipan `ADR-NNNN` wajib resolve ke berkasnya, kecuali ditandai milik repo lain di paragraf yang sama. Gerbang pertamanya langsung menemukan sebelas kutipan tanpa penanda |
-| ADR-0065 — kontrak konsumen `awcms-astro` dibekukan di sana | **Batas antar-repo kini dijaga dari dua arah.** Sisi sini menggerbangi daftar permukaan yang dipanggil (ADR-0030); sisi sana membekukan bentuknya (lima path + closure `$ref`-nya, subset aditif). Perubahan non-aditif pada permukaan yang dipakai build merah di CI `awcms` lebih dulu — dan regenerasi fixture-nya adalah undangan eksplisit agar repo ini diperbarui serentak |
-| ADR-0067 — pengumpulan Core Web Vitals (`Accepted (belum diimplementasikan)` sejak 8 Agustus 2026) | **Paritas lab tetap, tetapi kalimat "tinggal siapa memikul keputusan lapangan" sudah terjawab — dan jawabannya divergence postur BARU.** `awcms` mendarat Opsi D-nya pada hari yang sama dengan celah 8 di sini (5 Agustus 2026): LCP+CLS diukur di lab, nol data pengunjung, INP tidak diklaim. Pada 8 Agustus 2026 sisi sana **memutuskan Opsi B** — agregasi di titik masuk, bucket per-(tenant, pola rute, hari), tanpa satu pun baris mentah per kunjungan — dan belum membangunnya. Artinya kalimat keluarga "kedua repo mengukur LAB dan tidak satu pun mengukur lapangan" punya **tanggal kedaluwarsa yang sudah diketahui**: begitu Opsi B dibangun, satu repo mengukur lapangan secara agregat dan repo ini tidak, karena RUM di sini **ditolak permanen** ([ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) §B). Selisih itu **belum punya entri** di manifest keluarga sana; ia pantas mendapatkannya saat Opsi B mendarat, dan repo ini tidak bisa menulisnya sendiri |
-| ADR-0068 — postur standar keluarga: edisi dipin, divergence dicatat | **Kalimat "mengikuti edisi `awcms`" akhirnya punya alamat.** Pin edisi (Top 10 2021, ASVS 4.0.3, API Security 2023, ISO 27001:2022, SSDF v1.1 — **lima**, dan ISO/IEC 25010:2023 bukan salah satunya) kini keputusan ber-ADR dengan tanggal tinjau 2027-02-04, dan HSTS tanpa `includeSubDomains` di sini (ADR-0029) tercatat sebagai divergence bernama di `awcms-family-compatibility.yaml` sisi sana — dengan `reviewDate` yang memerahkan CI `awcms` saat jatuh tempo, bukan catatan yang membusuk diam-diam. **Entrinya LIMA, bukan dua**, dan yang kelima belum pernah disebut di repo ini: `astro-files-not-type-checked`. Arahnya berlawanan dari dugaan — `astro check` berjalan **di sini** dan tidak di sana, karena `@astrojs/check` menuntut API programatik TypeScript 6.x sementara `awcms` sudah di 7.0.2. Catatan divergence-nya menyandarkan diri secara eksplisit pada repo ini masih berada di `^6.0.3`, sehingga menaikkan TypeScript di sini **mematikan gerbang `Type check`** dan membatalkan setengah catatan sana sekaligus. Itu kini keputusan ber-ADR di repo ini: [ADR-0037](../adr/0037-pin-typescript-6-adalah-syarat-hidupnya-gerbang-astro-check.md), dengan pemeriksanya di `tests/versi-toolchain.test.mjs` |
-| ADR-0069 — selisih COOP/CORP dicatat sebagai divergence keluarga | **Penolakan CORP di sini berhenti terbaca sebagai kelalaian.** `awcms` mengirim COOP+CORP `same-origin` untuk memagari sesi adminnya; repo ini tidak mengirim keduanya, dan kedua sisi kini menuliskan alasannya: CORP ditolak sebagai keputusan template (memutuskan penyematan gambar untuk situs yang belum ada), COOP tak punya sesi untuk dipagari karena seluruh halaman di sini adalah navigasi publik. Entri `coop-corp-cross-origin-isolation` ber-`reviewDate` 2027-02-04 di manifest sana yang menjaganya kembali ke meja. **Arah paritas tidak diubah**: situs turunan yang butuh keduanya memutuskannya lewat ADR di repo situsnya, bukan dengan menyalin nilai `awcms` ke template ini |
-| Celah C3 sana ditutup — kompresi yang diwarisi kini WAJIB dinyatakan | Selisih kepemilikan tetap ada dan berhenti tak terlihat: penyaji repo ini mengompresi sendiri (Brotli/gzip ter-negosiasi, `server/penyaji.mjs`), sedangkan `awcms` mewarisinya dari Cloudflare — dan `bun run security:readiness` di sana kini menuntut blok bertanda yang menyebut tier pengompresi beserta akibatnya di luar CDN. Yang perlu dibaca situs turunan: kata "terkompresi" berarti dua hal berbeda di dua repo — di sini milik proses yang repo kirim, di sana milik lapisan yang operator sewa |
-| ADR-0070 — peran keluarga: repo ini memikul publik **dan admin USER** | **Permintaan terbuka [ADR-0034](../adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md) §Hubungan akhirnya dijawab.** ADR itu menyatakan ketegangannya dengan `awcms` ADR-0051 ("seluruh layar admin … dibangun di repo `awcms`") lalu menutupnya dengan kalimat "repo ini tidak bisa menulisnya sendiri". `awcms` ADR-0070 **MEMPERSEMPIT** ADR-0051 alih-alih men-supersede-nya: sumbu bergeser dari AUDIENS ke **apa yang dikelola**, admin SISTEM tetap di sana, admin USER boleh di sini bila situsnya menyatakannya, dan **ketiga gerbang pengganti ADR-0051 tidak dilonggarkan sedikit pun**. Entri `admin-user-surface-in-awcms-astro` ber-`reviewDate` 2027-02-04 masuk manifest sana — dan yang ditinjau pada tanggal itu **bukan** apakah admin USER boleh di sini, melainkan apakah **batasnya** masih di tempat yang sama. Yang harus dibaca situs turunan: menyalakan `permukaanAdmin` memikul sesi, CSRF, dan cache yang wajib dipisah — biaya yang dipilih, bukan diwarisi |
-| Aset statis sana sempat keluar TANPA header — dan perbaikannya bentuk penyaji repo ini | **Pola sisi sini diadopsi di sana, dan ia layak dibaca sebagai peringatan.** Pada 10 Agustus 2026 `awcms` menemukan adapter `@astrojs/node` menyusun handler-nya sebagai `staticHandler(req, res, () => appHandler(req, res))` — handler statis jalan **lebih dulu**, dan `appHandler` (satu-satunya yang menjalankan middleware) hanya fallback saat berkasnya tidak ada. Akibatnya setiap berkas `dist/client` di sana keluar tanpa CSP, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, maupun COOP/CORP; terukur pada build nyata, bukan disimpulkan. Perbaikannya memasang header sebagai **LANTAI sebelum mendelegasi** — persis bentuk [`server/penyaji.mjs`](../../server/penyaji.mjs) sejak [ADR-0016](../adr/0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md). **Jangan pernah "menyederhanakan" penyaji di sini dengan memanggil handler adapter langsung**: itu persis cacat yang baru saja dibayar sisi sana, dan ia hijau di setiap gerbang yang tidak mengukur respons sungguhan |
-| ADR-0073 — `suspended` adalah status LAYANAN, bukan status login | **Mode kegagalan build BARU, dan ia bukan pekerjaan kode.** Tenant `suspended` **atau** `inactive` dijawab `403 TENANT_SUSPENDED`, dan penolakannya kini mengenai **kredensial mesin** — bukan hanya sesi manusia. Diputuskan sebelum permission dicari, jadi tidak ada scope token yang memperbaikinya: build gagal total, nol berkas terbit. Diserap sebagai penolakan bernama di [`integrasi-awcms.md`](integrasi-awcms.md) dan [`AGENTS.md`](../../AGENTS.md) §Sumber data, supaya ia tidak salah didiagnosis sebagai token dicabut |
-| ADR-0084 — sebuah entitlement MENOLAK, ia tidak pernah memberi | Bentuk penolakan yang sama (`403 ENTITLEMENT_REQUIRED`, di atas pembacaan grant), tetapi **belum bisa mengenai build ini**: entitlement diputuskan per MODUL, dan satu-satunya modul `awcms` yang mendeklarasikannya hari ini `tenant_domain` (`custom_domain`, di paket DEFAULT). Build ini hanya memanggil `blog_content` dan `media_library`. ADR yang sama menaikkan `moduleDescriptorContractVersion` keluarga ke **3.1.0** lewat field opsional `requiresEntitlement` — penambahan murni, nol pekerjaan di sini |
-| ADR-0083 — template `awcms` men-deploy ke SATU environment | **Kosakata keluarga menyempit.** Anggota `"staging"` **dihapus** dari union profil deployment modul (kini `development \| production \| offline-lan`) — penarikan kemampuan, karena itu MAJOR. Akibatnya di sini murni redaksional dan sudah dikerjakan: dokumen ini tidak lagi menarasikan "token staging" sebagai lingkungan sejajar produksi |
-| ADR-0092 — kredensial mesin boleh MENULIS | **Sebuah premis keamanan repo ini gugur, dan ia dikutip di tiga berkas.** "Kredensial mesin tidak bisa menulis" berhenti menjadi sifat KELAS: plafon aksi `create`/`update` di kode (bukan kolom), wajib terikat CIDR, **ditolak bila `clientIp` tidak diketahui**, umur maksimum 30 hari alih-alih 365. Kredensial yang terbit sebelum migrasinya tetap baca-saja tanpa backfill. Token build repo ini tetap tidak bisa mengubah apa pun — tetapi karena `allowed_write_actions`-nya kosong, yaitu properti **barisnya**. Diserap di [`.env.example`](../../.env.example), banner [ADR-0018](../adr/0018-kontrak-build-token-mesin-dan-traversal-konten.md), dan [`README.md`](../../README.md) |
-| ADR-0093 — partner yang di-suspend BERHENTI menjangkau | **Mode kegagalan build BERSYARAT, dan syaratnya adalah siapa yang menerbitkan token.** `403 PARTNER_SUSPENDED` menolak aktor **terdelegasi** di chokepoint, per permintaan. Kredensial mesin mewarisi `principal_kind` akun layanannya, dan tidak ada apa pun di jalur penerbitan sana yang melarang akun layanan berupa tenant user terdelegasi — bentuk yang muncul saat sebuah agensi membangun situs pelanggannya. Aturannya operasional, bukan kode: terbitkan token build atas akun layanan milik tenant **situs**. Diserap di [`AGENTS.md`](../../AGENTS.md) §Sumber data dan tabel diagnosis [`deploy-coolify.md`](../deploy-coolify.md) |
-| ADR-0094 — seorang subjek data dijawab PER TENANT | **Nol pekerjaan kode, satu kewajiban yang harus dinyatakan.** Situs statis memegang **salinan**: penghapusan atau anonimisasi yang dijalankan di `awcms` tidak menyentuh berkas yang sudah terbit sampai build berikutnya, dan salinan yang sudah tersebar bisa hidup lebih lama (cache CDN, riwayat git `dist/` bila situs meng-commit keluarannya). Yang membuatnya tidak menjadi masalah **hari ini** adalah keputusan, bukan kebetulan: template ini menerbitkan nol data per-orang — `author` JSON-LD `Organization` (digerbangi `tests/schema.test.mjs`) dan `<author>` feed nama situs (keputusan di `src/lib/feed.ts` yang **tidak** digerbangi, dan dikatakan begitu alih-alih diklaim terjaga). Situs yang menambah byline, avatar, atau komentar mengambil kewajibannya, dan jalur penghapusannya berakhir di sebuah **rebuild**. Kontrak deskriptor modul keluarga naik ke **4.0.0** — nol pekerjaan di sini, repo ini tidak mendeklarasikan deskriptor modul |
-| Gelombang ADR 0072–0094 lainnya | **Dibaca seluruhnya, dan tidak relevan bagi jalur build statis** — 0072 (retensi log keputusan), 0074/0077 (outbox, sync pull), 0075 (SSE), 0076 (deskriptor retensi), 0078–0082 (grant, grup pengguna, undangan), 0085–0091 (identitas, lockout, MFA, pemilihan tenant, partner, akses terdelegasi, atribusi). Seluruhnya menyentuh permukaan **terautentikasi**, dan justru karena itu penting bagi peran KEDUA repo ini: akibatnya dicatat di [`permukaan-admin-user.md`](permukaan-admin-user.md) §5, bukan di sini. Diamnya baris ini karena itu berarti "diperiksa dan tidak relevan", bukan "belum diperiksa" |
-| Celah C16 sana ditutup — CodeQL berhenti mengklaim `.astro` | Pola pernyataan cakupan yang [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) §A tetapkan di sini diadopsi di sana: komentar workflow-nya sempat menyebut "TypeScript/Astro source" padahal CodeQL tak punya ekstraktor Astro. Postur keluarga karena itu kini satu kalimat yang sama di dua repo: **`.astro` tidak teranalisis statik di mana pun, dan masing-masing repo mengatakannya di ringkasan run-nya sendiri** — bukan dibiarkan disimpulkan pembaca |
+| ADR-0049/0050 — machine credentials + BFF session handover | Already absorbed: the tenant from the token, with no tenant header ([ADR-0018](../adr/0018-kontrak-build-token-mesin-dan-traversal-konten.md)) |
+| ADR-0071 — the public URL vocabulary split; **superseding ADR-0059** | **Already absorbed** ([ADR-0036](../adr/0036-news-adalah-kosakata-repo-ini-dan-sebuah-tab-yang-memikulnya.md)). This row previously read "not yet absorbed" and described the `/news/**` route family in `awcms` — all four were **deleted** over there on 8 August 2026 and now 301 to `/blog/{tenantCode}/**` — **except** for a tenant with `legacyTenantRouteEnabled: false`, which has already switched off its entire public content surface and is therefore still answered 404 rather than given a 301 towards a certain 404 (`awcms` ADR-0071 §4 item 3). The vocabulary is now one family per repo: `/blog/**` is `awcms`'s (path-scoped, its permanent vocabulary), `/news/**` is this repo's, in the shape of a tab. The question "when to use `awcms-astro` instead of the `awcms` public surface" stays real and is still answered by [`README.md`](README.md#when-to-choose-awcms-astro) — what is chosen here is **zero calls to the CMS when a reader asks for a page**, not a URL shape |
+| ADR-0061 — host-resolved surfaces may be cached at the edge | Not directly applicable: this site does not pass through Varnish. What **does** apply is its reasoning — a cacheable 404 is a second observation channel. This repo has no 404 branch distinguishing tenants, so that defect class cannot occur here |
+| ADR-0062 — skills gated against the code they describe | **Fully absorbed since 5 August 2026.** `bun run audit:dokumen` checks the file paths named by `.claude/skills/` exactly as it checks `docs/`, and now its rule 2 as well: every `ADR-NNNN` citation must resolve to its file, unless marked as another repo's in the same paragraph. Its first run immediately found eleven unmarked citations |
+| ADR-0065 — the `awcms-astro` consumer contract frozen over there | **The inter-repo boundary is now guarded from both directions.** This side gates the list of surfaces called (ADR-0030); that side freezes their shape (five paths + their `$ref` closure, an additive subset). A non-additive change to a surface the build uses is red in `awcms` CI first — and a regeneration of its fixture is an explicit invitation to update this repo simultaneously |
+| ADR-0067 — Core Web Vitals collection (`Accepted (not yet implemented)` since 8 August 2026) | **Lab parity holds, but the sentence "only the field decision remains" is now answered — and its answer is a NEW posture divergence.** `awcms` landed its Option D the same day as gap 8 here (5 August 2026): LCP+CLS measured in a lab, zero visitor data, INP not claimed. On 8 August 2026 that side **decided Option B** — aggregation at the entry point, buckets per (tenant, route pattern, day), with not one raw row per visit — and has not built it. That means the family sentence "both repos measure the LAB and neither measures the field" has a **known expiry date**: once Option B is built, one repo measures the field in aggregate and this one does not, because RUM here is **permanently refused** ([ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) §B). That difference **has no entry yet** in that side's family manifest; it deserves one when Option B lands, and this repo cannot write it itself |
+| ADR-0068 — the family standards posture: editions pinned, divergences recorded | **The sentence "we follow `awcms`'s editions" finally has an address.** The edition pin (Top 10 2021, ASVS 4.0.3, API Security 2023, ISO 27001:2022, SSDF v1.1 — **five**, and ISO/IEC 25010:2023 is not one of them) is now an ADR decision with a review date of 2027-02-04, and HSTS without `includeSubDomains` here (ADR-0029) is recorded as a named divergence in that side's `awcms-family-compatibility.yaml` — with a `reviewDate` that turns `awcms` CI red when it falls due, rather than a note that rots silently. **There are FIVE entries, not two**, and the fifth had never been mentioned in this repo: `astro-files-not-type-checked`. Its direction runs opposite to the assumption — `astro check` runs **here** and not there, because `@astrojs/check` requires the TypeScript 6.x programmatic API while `awcms` is already on 7.0.2. Its divergence note leans explicitly on this repo still being at `^6.0.3`, so raising TypeScript here **kills the `Type check` gate** and voids half of that note at once. That is now an ADR decision in this repo: [ADR-0037](../adr/0037-pin-typescript-6-adalah-syarat-hidupnya-gerbang-astro-check.md), with its checker in `tests/versi-toolchain.test.mjs` |
+| ADR-0069 — the COOP/CORP difference recorded as a family divergence | **The CORP refusal here stops reading as an oversight.** `awcms` sends COOP+CORP `same-origin` to fence off its admin sessions; this repo sends neither, and both sides now write their reasoning: CORP is refused as a template decision (deciding image embedding for a site that does not exist), and COOP has no session to fence off because every page here is public navigation. The `coop-corp-cross-origin-isolation` entry with a `reviewDate` of 2027-02-04 in that manifest is what brings it back to the table. **The direction of parity is not changed**: a derived site needing both decides so through an ADR in its own repo, not by copying the `awcms` values into this template |
+| Its gap C3 closed — inherited compression must now be declared | The ownership difference stays and stops being invisible: this repo's server compresses itself (negotiated Brotli/gzip, `server/penyaji.mjs`), while `awcms` inherits it from Cloudflare — and `bun run security:readiness` over there now requires a marked block naming the compressing tier along with its consequence outside the CDN. What a derived site needs to read: the word "compressed" means two different things in the two repos — here it belongs to a process the repo ships, there to a layer the operator rents |
+| ADR-0070 — the family roles: this repo carries public **and USER admin** | **The open request in [ADR-0034](../adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md) §Relationship is finally answered.** That ADR stated its tension with `awcms` ADR-0051 ("every admin screen … is built in the `awcms` repo") and then closed with "this repo cannot write it itself". `awcms` ADR-0070 **NARROWS** ADR-0051 rather than superseding it: the axis shifts from AUDIENCE to **what is managed**, SYSTEM admin stays there, USER admin may live here when a site declares it, and **none of ADR-0051's three replacement gates is loosened at all**. The entry `admin-user-surface-in-awcms-astro` with a `reviewDate` of 2027-02-04 enters that manifest — and what is reviewed on that date is **not** whether USER admin may live here, but whether its **boundary** is still in the same place. What a derived site must read: switching on `permukaanAdmin` takes on sessions, CSRF, and caches that must be separated — a cost that is chosen, not inherited |
+| Its static assets once went out WITH NO headers — and its fix is this repo's server shape | **A pattern from this side was adopted over there, and it is worth reading as a warning.** On 10 August 2026 `awcms` found the `@astrojs/node` adapter composing its handler as `staticHandler(req, res, () => appHandler(req, res))` — the static handler runs **first**, and `appHandler` (the only one running middleware) is only a fallback for when the file does not exist. As a result every `dist/client` file over there went out with no CSP, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, or COOP/CORP; measured on a real build, not inferred. Its fix installs the headers as a **FLOOR before delegating** — exactly the shape of [`server/penyaji.mjs`](../../server/penyaji.mjs) since [ADR-0016](../adr/0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md). **Never "simplify" the server here by calling the adapter's handler directly**: that is precisely the defect that side has just paid for, and it is green on every gate that does not measure a real response |
+| ADR-0073 — `suspended` is a SERVICE status, not a login status | **A NEW build failure mode, and it is not code work.** A `suspended` **or** `inactive` tenant is answered `403 TENANT_SUSPENDED`, and its refusal now reaches **machine credentials** — not only human sessions. It is decided before permissions are looked up, so no token scope fixes it: the build fails completely, zero files published. Absorbed as a named refusal in [`integrasi-awcms.md`](integrasi-awcms.md) and [`AGENTS.md`](../../AGENTS.md) §Data source, so it is not misdiagnosed as a revoked token |
+| ADR-0084 — an entitlement REFUSES, it never grants | The same refusal shape (`403 ENTITLEMENT_REQUIRED`, above the grant lookup), but it **cannot yet reach this build**: entitlements are decided per MODULE, and the only `awcms` module declaring one today is `tenant_domain` (`custom_domain`, in the DEFAULT package). This build only calls `blog_content` and `media_library`. The same ADR raised the family's `moduleDescriptorContractVersion` to **3.1.0** through the optional `requiresEntitlement` field — a pure addition, zero work here |
+| ADR-0083 — the `awcms` template deploys to ONE environment | **The family vocabulary narrows.** The member `"staging"` was **removed** from the module deployment profile union (now `development \| production \| offline-lan`) — a capability withdrawal, and therefore MAJOR. Its consequence here is purely editorial and already done: this document no longer narrates "a staging token" as an environment on a par with production |
+| ADR-0092 — machine credentials may WRITE | **A security premise of this repo falls, and it is quoted in three files.** "Machine credentials cannot write" stops being a property of the CLASS: an action ceiling of `create`/`update` in code (not a column), mandatory CIDR binding, **refused when `clientIp` is unknown**, a maximum age of 30 days instead of 365. Credentials issued before its migration stay read-only with no backfill. This repo's build token still cannot change anything — but because its `allowed_write_actions` is empty, that is a property of its **row**. Absorbed in [`.env.example`](../../.env.example), the [ADR-0018](../adr/0018-kontrak-build-token-mesin-dan-traversal-konten.md) banner, and [`README.md`](../../README.md) |
+| ADR-0093 — a suspended partner STOPS reaching | **A CONDITIONAL build failure mode, and its condition is who issued the token.** `403 PARTNER_SUSPENDED` refuses a **delegated** actor at the chokepoint, per request. A machine credential inherits the `principal_kind` of its service account, and nothing in that side's issuing path forbids a service account from being a delegated tenant user — the shape that appears when an agency builds its customer's site. The rule is operational, not code: issue the build token on a service account belonging to the **site's** tenant. Absorbed in [`AGENTS.md`](../../AGENTS.md) §Data source and the diagnosis table in [`deploy-coolify.md`](../deploy-coolify.md) |
+| ADR-0094 — a data subject is answered PER TENANT | **Zero code work, one obligation that must be stated.** A static site holds a **copy**: an erasure or anonymisation carried out in `awcms` does not touch an already-published file until the next build, and a copy already distributed can live longer still (CDN caches, the git history of `dist/` if a site commits its output). What keeps that from being a problem **today** is a decision, not a coincidence: this template publishes zero per-person data — the JSON-LD `author` is an `Organization` (gated by `tests/schema.test.mjs`) and the feed's `<author>` is the site name (a decision in `src/lib/feed.ts` that is **not** gated, and is said so rather than claimed guarded). A site that adds a byline, an avatar, or comments takes on that obligation, and its erasure path ends in a **rebuild**. The family module descriptor contract rose to **4.0.0** — zero work here, this repo declares no module descriptor |
+| The rest of the ADR wave 0072–0094 | **Read in full, and not relevant to the static build path** — 0072 (decision log retention), 0074/0077 (the outbox, sync pull), 0075 (SSE), 0076 (retention descriptors), 0078–0082 (grants, user groups, invitations), 0085–0091 (identity, lockout, MFA, tenant selection, partners, delegated access, attribution). All of them touch **authenticated** surfaces, and precisely for that reason they matter to this repo's SECOND role: their consequences are recorded in [`permukaan-admin-user.md`](permukaan-admin-user.md) §5, not here. This row's silence therefore means "examined and not relevant", not "not yet examined" |
+| Its gap C16 closed — CodeQL stops claiming `.astro` | The coverage-statement pattern [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) §A established here was adopted over there: its workflow comment had briefly said "TypeScript/Astro source" while CodeQL has no Astro extractor. The family posture is therefore now one identical sentence in two repos: **`.astro` is statically analysed nowhere, and each repo says so in its own run summary** — rather than leaving a reader to infer it |
 
-Celah `awcms` ADR-0062 itu ditutup 5 Agustus 2026, persis semurah yang
-diperkirakan: gerbangnya memang sudah membaca seluruh markdown repo ini dan
-sudah punya indeks ADR. Pemeriksanya dibuktikan dua arah di
-`tests/audit-dokumen.test.mjs`, dan jalan pertamanya menemukan sebelas kutipan
-yang pembacanya tidak bisa tahu milik siapa. Pekerjaannya tercatat di
+That `awcms` ADR-0062 gap was closed on 5 August 2026, exactly as cheaply as
+expected: its gate already read all of this repo's markdown and already had the ADR
+index. Its checker is proven in both directions in
+`tests/audit-dokumen.test.mjs`, and its first run found eleven citations whose
+reader could not tell whose they were. That work is recorded in
 [ADR-0028](../adr/0028-jangkar-standar-performa-dan-keamanan.md) §E.
 
-## Cara memakai dokumen ini di sebuah situs turunan
+## How to use this document in a derived site
 
-Tiga baris berubah artinya begitu template ini menjadi sebuah situs:
+Three lines change their meaning the moment this template becomes a site:
 
-1. **Setiap "belum diukur" menjadi pertanyaan yang harus dijawab.** Di repo
-   template, gerbang keluaran melewati dirinya karena tidak ada sumber konten.
-   Di sebuah situs itu berarti gerbangnya **tidak berjalan**.
-2. **HSTS sudah dikirim penyaji di produksi** ([ADR-0029](../adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md))
-   — yang menjadi milik situsmu adalah memastikan `NODE_ENV=production`
-   terpasang (image `Dockerfile` menyetelnya; deployment yang tidak lewat image
-   itu menyetelnya sendiri) dan **tidak memasang kebijakan HSTS kedua di
-   Traefik**: dua sumber kebijakan yang saling menimpa adalah cara paling sunyi
-   berakhir tanpa kebijakan. `includeSubDomains` tetap keputusan situsmu, bukan
-   template — alasannya di ADR-0029, dan selisih ini tercatat sebagai divergence
-   bernama di manifest keluarga `awcms` (ADR-0068 §B di sana).
-3. **Setiap permukaan terautentikasi mengubah matriks ini, dan ada DUA pintu
-   menuju ke sana.** Permukaan berkredensial bertarget WCAG 2.2 AA dan membawa
-   kembali seluruh kategori OWASP yang di atas ditulis "tidak berlaku" — A01,
-   A07, dan A09 khususnya — beserta sesi, CSRF, pemisahan cache, dan peninjauan
-   ulang postur COOP/CORP dan SRI. Pintu pertama BFF Jualanku, prasyaratnya di
-   [`jualanku/04-kesiapan.md`](jualanku/04-kesiapan.md); pintu kedua
-   `permukaanAdmin` untuk admin USER, dan seluruh akibatnya di
-   [`permukaan-admin-user.md`](permukaan-admin-user.md). Yang menentukan bukan
-   nama permukaannya melainkan adanya jalur yang membawa kredensial.
+1. **Every "not measured" becomes a question that must be answered.** In the
+   template repo the output gates skip themselves because there is no content
+   source. In a site that means the gate **did not run**.
+2. **HSTS is already sent by the server in production** ([ADR-0029](../adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md))
+   — what becomes your site's is making sure `NODE_ENV=production` is set (the
+   `Dockerfile` image sets it; a deployment not going through that image sets it
+   itself) and **not installing a second HSTS policy in Traefik**: two policy
+   sources overwriting each other is the quietest way to end up with no policy.
+   `includeSubDomains` remains your site's decision, not the template's — its
+   reasoning is in ADR-0029, and this difference is recorded as a named divergence
+   in the `awcms` family manifest (its ADR-0068 §B).
+3. **Every authenticated surface changes this matrix, and there are TWO doors to
+   it.** A credentialed surface targets WCAG 2.2 AA and brings back every OWASP
+   category written "not applicable" above — A01, A07, and A09 in particular —
+   along with sessions, CSRF, cache separation, and a re-examination of the
+   COOP/CORP and SRI posture. The first door is the Jualanku BFF, its prerequisites
+   in [`jualanku/04-kesiapan.md`](jualanku/04-kesiapan.md); the second is
+   `permukaanAdmin` for USER admin, and all of its consequences are in
+   [`permukaan-admin-user.md`](permukaan-admin-user.md). What decides is not the
+   surface's name but the existence of a path carrying credentials.

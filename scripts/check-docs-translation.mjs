@@ -45,20 +45,7 @@ const ROOT = resolve(import.meta.dirname, "..");
  * It starts at 52 — every document in scope on the day the policy landed, since
  * this repo had no mirrored pair before it.
  */
-export const DOCS_AWAITING_MIRROR = [
-  "docs/awcms-astro/checklist-repo-baru.md",
-  "docs/awcms-astro/integrasi-awcms.md",
-  "docs/awcms-astro/jualanku/01-arsitektur-experience.md",
-  "docs/awcms-astro/jualanku/02-kontrak-bff.md",
-  "docs/awcms-astro/jualanku/03-peta-rute-dan-ui.md",
-  "docs/awcms-astro/jualanku/04-kesiapan.md",
-  "docs/awcms-astro/jualanku/README.md",
-  "docs/awcms-astro/permukaan-admin-user.md",
-  "docs/awcms-astro/standar-performa-dan-keamanan.md",
-  "docs/awcms-astro/standar-teknis.md",
-  "docs/awcms-astro/ui-ux-design-system.md",
-  "docs/deploy-coolify.md"
-];
+export const DOCS_AWAITING_MIRROR = [];
 
 /**
  * Every tracked-or-new markdown path, from git.
