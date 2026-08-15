@@ -1,52 +1,54 @@
-# Kebijakan Keamanan
+🇬🇧 English (source) · 🇮🇩 [Bahasa Indonesia](SECURITY.id.md)
 
-## Melaporkan kerentanan
+# Security Policy
 
-**Jangan membuka issue publik untuk kerentanan yang bisa dieksploitasi.**
+## Reporting a vulnerability
 
-Laporkan lewat [GitHub Security Advisory](https://github.com/ahliweb/awcms-astro/security/advisories/new) (jalur privat). Sertakan langkah reproduksi, dampak yang Anda perkirakan, dan versi/commit yang diuji.
+**Do not open a public issue for an exploitable vulnerability.**
 
-Kami menargetkan tanggapan awal dalam **3 hari kerja** dan perbaikan untuk kerentanan yang dikonfirmasi dalam **14 hari kerja**, tergantung tingkat keparahannya.
+Report it through [GitHub Security Advisory](https://github.com/ahliweb/awcms-astro/security/advisories/new) (a private route). Include reproduction steps, the impact you estimate, and the version/commit you tested.
 
-## Permukaan serangan repo ini
+We aim for an initial response within **3 working days** and a fix for a confirmed vulnerability within **14 working days**, depending on its severity.
 
-Keluarannya **statis** (`output: 'static'`): tidak ada basis data, tidak ada autentikasi, dan tidak ada form yang mengirim data ke mana pun. Kelas kerentanan yang biasanya dominan — injeksi SQL, kebocoran sesi, kontrol akses per-pengguna — tidak berlaku di sini.
+## This repo's attack surface
 
-**"Tanpa runtime server" BUKAN bagian dari klaim itu, dan pernah keliru ditulis begitu di sini.** Sejak [ADR-0016](docs/adr/0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md) keluaran build disajikan sebuah proses Bun ([`server/penyaji.mjs`](server/penyaji.mjs)) di belakang Traefik. Proses itu adalah permukaan, dan ia yang memegang seluruh header respons — jadi ia justru bagian yang paling pantas diperiksa, bukan bagian yang tidak ada.
+Its output is **static** (`output: 'static'`): no database, no authentication, and no form that sends data anywhere. The vulnerability classes that usually dominate — SQL injection, session leakage, per-user access control — do not apply here.
 
-Yang tetap relevan:
+**"No server runtime" is NOT part of that claim, and was once mistakenly written here as though it were.** Since [ADR-0016](docs/adr/0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md) the build output is served by a Bun process ([`server/penyaji.mjs`](server/penyaji.mjs)) behind Traefik. That process is a surface, and it is what holds every response header — which makes it the part most deserving of examination, not a part that is absent.
 
-| Area | Risiko |
+What remains relevant:
+
+| Area | Risk |
 | --- | --- |
-| Dependency | Kerentanan transitif pada rantai build. Dijaga `bun audit --audit-level=low` di CI; wajib nol sebelum rilis |
-| Konten dari CMS | Badan artikel datang dari `awcms` sebagai **blok terstruktur**, bukan HTML atau markdown. [`src/lib/content-blocks.ts`](src/lib/content-blocks.ts) menyusun tiap elemen dari teks ter-escape dan tag tetap, jadi tidak ada jalur markup mentah — menambahkan tipe blok `html`/`raw`/`embed` membatalkan seluruh jaminan itu |
-| Penyaji | Header keamanan, CSP, dan aturan cache. Satu-satunya pemilik: `server/penyaji.mjs`; kebijakan kedua di Traefik atau `<meta http-equiv>` adalah cara paling sunyi berakhir tanpa kebijakan sama sekali |
-| Kredensial build | `AWCMS_API_TOKEN` adalah kredensial mesin baca-saja yang membawa tenant-nya. Ia tidak pernah ber-prefiks `PUBLIC_` dan karena itu tidak pernah masuk keluaran; ia **tetap** terbaca di cache builder pada mesin build |
-| Tautan keluar | Tautan `target="_blank"` wajib `rel="noopener noreferrer"` |
-| Aset | SVG di `src/assets/` dapat merujuk sumber daya eksternal; `img-src` di CSP yang membatasinya saat halaman dirender |
-| Pipeline rilis | Skrip build dan rilis punya akses tulis ke repo |
+| Dependencies | Transitive vulnerabilities in the build chain. Guarded by `bun audit --audit-level=low` in CI; must be zero before a release |
+| Content from the CMS | Article bodies come from `awcms` as **structured blocks**, not as HTML or markdown. [`src/lib/content-blocks.ts`](src/lib/content-blocks.ts) assembles every element from escaped text and fixed tags, so there is no raw-markup path — adding an `html`/`raw`/`embed` block type voids that entire guarantee |
+| The server | Security headers, CSP, and cache rules. Its only owner: `server/penyaji.mjs`; a second policy in Traefik or in `<meta http-equiv>` is the quietest way to end up with no policy at all |
+| Build credentials | `AWCMS_API_TOKEN` is a read-only machine credential that carries its tenant. It is never prefixed `PUBLIC_` and therefore never enters the output; it **does** remain readable in the builder cache on the build machine |
+| Outbound links | A `target="_blank"` link must carry `rel="noopener noreferrer"` |
+| Assets | An SVG in `src/assets/` can reference external resources; it is `img-src` in the CSP that constrains it when the page is rendered |
+| Release pipeline | The build and release scripts have write access to the repo |
 
-## Kontrol, dan celahnya
+## Controls, and their gaps
 
-Pemetaan lengkap ke **OWASP Top 10 2021, OWASP ASVS 4.0.3, OWASP Secure Headers Project, ISO/IEC 27001:2022 Annex A, dan NIST SSDF SP 800-218** ada di [`docs/awcms-astro/standar-performa-dan-keamanan.md`](docs/awcms-astro/standar-performa-dan-keamanan.md) ([ADR-0028](docs/adr/0028-jangkar-standar-performa-dan-keamanan.md)).
+The full mapping to **OWASP Top 10 2021, OWASP ASVS 4.0.3, the OWASP Secure Headers Project, ISO/IEC 27001:2022 Annex A, and NIST SSDF SP 800-218** is in [`docs/awcms-astro/standar-performa-dan-keamanan.md`](docs/awcms-astro/standar-performa-dan-keamanan.md) ([ADR-0028](docs/adr/0028-jangkar-standar-performa-dan-keamanan.md)).
 
-Dokumen itu memuat **daftar celah**, dan daftar itu sengaja publik: kesepuluh celah bernomornya kini tertutup, dan baris yang tertutup tetap di tabel beserta pemeriksanya masing-masing.
+That document carries a **list of gaps**, and the list is deliberately public: all ten of its numbered gaps are now closed, and a closed row stays in the table together with its checker.
 
-Dua batas yang dinyatakan terus terang — bukan celah, melainkan keadaan yang diterima sadar: berkas `.astro` tidak teranalisis statik (CodeQL tidak menguranya, dan ringkasan run menyatakannya), dan Core Web Vitals diukur lab, bukan pada kunjungan nyata (RUM ditolak karena mengumpulkan data pembaca). Melaporkan keduanya lagi tidak menambah informasi; melaporkan **akibat konkret**-nya pada sebuah deployment nyata, menambah.
+Two limits are stated plainly — not gaps, but conditions accepted knowingly: `.astro` files are not statically analysed (CodeQL does not parse them, and each run's summary says so), and Core Web Vitals are measured in a lab, not on real visits (RUM is refused because it collects reader data). Reporting either of them again adds no information; reporting its **concrete consequence** on a real deployment does.
 
-Satu batas yang perlu diketahui pelapor: `Strict-Transport-Security` dikirim **hanya saat `NODE_ENV=production`**. Sebuah deployment yang tidak menyetelnya tidak mendapat HSTS dan tidak ada yang mengatakannya — itu diterima sadar di [ADR-0029](docs/adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md), dan `Dockerfile` menyetelnya.
+One limit a reporter should know: `Strict-Transport-Security` is sent **only when `NODE_ENV=production`**. A deployment that does not set it gets no HSTS and nothing says so — that is knowingly accepted in [ADR-0029](docs/adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md), and the `Dockerfile` sets it.
 
-## Aturan yang mengikat
+## Binding rules
 
-- **Tidak ada secret, token, atau kredensial** di kode, commit, issue, atau dokumentasi. Repo ini tidak membutuhkan satu pun untuk berjalan.
-- **Tidak ada skrip, SDK, widget, atau piksel pihak ketiga** — termasuk tombol berbagi resmi milik penyedia sosial. Berbagi memakai tautan `GET` biasa sehingga tidak ada data pembaca yang terkirim sebelum ia sendiri mengeklik.
-- **Tidak ada pengumpulan data pribadi pembaca** (NIK, nomor rangka, nomor mesin, nomor polisi, foto dokumen) lewat form apa pun.
-- **Tidak ada analytics yang melacak individu.**
-- `bun audit` wajib melaporkan nol kerentanan sebelum rilis.
+- **No secret, token, or credential** in code, commits, issues, or documentation. This repo needs none of them to run.
+- **No third-party script, SDK, widget, or pixel** — including the official share buttons of social providers. Sharing uses ordinary `GET` links, so no reader data is sent before the reader clicks it themselves.
+- **No collection of readers' personal data** (national ID, chassis number, engine number, licence plate, photographs of documents) through any form.
+- **No analytics that tracks individuals.**
+- `bun audit` must report zero vulnerabilities before a release.
 
-## Bukan kerentanan keamanan
+## Not a security vulnerability
 
-Hal berikut penting, tetapi bukan laporan keamanan — pakai issue biasa:
+The following matter, but they are not security reports — use an ordinary issue:
 
-- Informasi tarif, syarat, atau alamat yang keliru. Ini **koreksi konten**, dan diprioritaskan lewat jalur di [`SUPPORT.md`](SUPPORT.md).
-- Situs pihak ketiga yang meniru situs ini. Laporkan ke penyedia hosting-nya; kami tidak punya kendali di sana.
+- Incorrect tariff, requirement, or address information. This is a **content correction**, and it is prioritised through the routes in [`SUPPORT.md`](SUPPORT.md).
+- A third-party site impersonating this one. Report it to that site's hosting provider; we have no control there.

@@ -1,41 +1,43 @@
-# Pedoman Perilaku
+🇬🇧 English (source) · 🇮🇩 [Bahasa Indonesia](CODE_OF_CONDUCT.id.md)
 
-## Komitmen
+# Code of Conduct
 
-Repo ini menyusun informasi layanan publik untuk masyarakat Kalimantan Tengah. Kontributornya datang dengan latar berbeda: pengembang, penulis konten, penutur asli bahasa daerah, dan orang yang bekerja di layanan terkait. Semuanya diperlakukan setara.
+## Commitment
 
-Kami berkomitmen menjadikan partisipasi di repo ini bebas dari pelecehan bagi siapa pun, tanpa memandang usia, ukuran tubuh, disabilitas, suku, identitas dan ekspresi gender, tingkat pengalaman, pendidikan, status sosial-ekonomi, kebangsaan, penampilan, ras, agama, atau identitas dan orientasi seksual.
+This repo assembles public service information for the people of Central Kalimantan. Its contributors come from different backgrounds: developers, content writers, native speakers of regional languages, and people working in the related services. All of them are treated as equals.
 
-## Standar
+We are committed to making participation in this repo free of harassment for everyone, regardless of age, body size, disability, ethnicity, gender identity and expression, level of experience, education, socio-economic status, nationality, appearance, race, religion, or sexual identity and orientation.
 
-Perilaku yang diharapkan:
+## Standards
 
-- Menggunakan bahasa yang ramah dan inklusif.
-- Menghormati sudut pandang dan pengalaman yang berbeda.
-- Menerima kritik yang membangun dengan lapang.
-- Mengutamakan yang terbaik bagi pembaca situs, bukan bagi preferensi pribadi.
-- **Menghargai kontribusi penutur asli bahasa daerah sebagai keahlian**, bukan sebagai pekerjaan yang bisa digantikan mesin.
+Expected behaviour:
 
-Perilaku yang tidak dapat diterima:
+- Using welcoming and inclusive language.
+- Respecting differing viewpoints and experiences.
+- Accepting constructive criticism gracefully.
+- Putting what is best for the site's readers first, ahead of personal preference.
+- **Valuing the contribution of native speakers of regional languages as expertise**, not as work a machine could replace.
 
-- Bahasa atau citra seksual, dan perhatian seksual yang tidak diinginkan.
-- Komentar menghina, merendahkan, atau serangan pribadi maupun politis.
-- Pelecehan publik maupun privat.
-- Memublikasikan informasi pribadi orang lain tanpa izin.
-- Perilaku lain yang secara wajar dianggap tidak pantas dalam lingkungan profesional.
+Unacceptable behaviour:
 
-## Tanggung jawab
+- Sexual language or imagery, and unwelcome sexual attention.
+- Insulting or derogatory comments, and personal or political attacks.
+- Public or private harassment.
+- Publishing someone else's private information without permission.
+- Other conduct that would reasonably be considered inappropriate in a professional setting.
 
-Maintainer berwenang dan berkewajiban menghapus, menyunting, atau menolak komentar, commit, kode, issue, dan kontribusi lain yang tidak sejalan dengan Pedoman ini, serta melarang sementara atau permanen kontributor yang perilakunya dianggap tidak pantas.
+## Responsibility
 
-## Cakupan
+Maintainers have the authority and the obligation to remove, edit, or reject comments, commits, code, issues, and other contributions that are not aligned with this Code, and to ban temporarily or permanently any contributor whose behaviour is judged inappropriate.
 
-Berlaku di seluruh ruang proyek dan saat seseorang mewakili proyek ini di ruang publik.
+## Scope
 
-## Penegakan
+It applies across all project spaces, and whenever someone represents this project in a public space.
 
-Laporkan perilaku yang melanggar melalui jalur yang tercantum di [`SUPPORT.md`](SUPPORT.md). Seluruh laporan ditinjau dan diselidiki, dan akan menghasilkan tanggapan yang dianggap perlu dan sesuai keadaan. Maintainer wajib menjaga kerahasiaan pelapor.
+## Enforcement
 
-## Atribusi
+Report behaviour that breaks this Code through the routes listed in [`SUPPORT.md`](SUPPORT.md). Every report is reviewed and investigated, and will produce whatever response is judged necessary and appropriate to the circumstances. Maintainers are obliged to protect the confidentiality of the reporter.
 
-Diadaptasi dari [Contributor Covenant](https://www.contributor-covenant.org) versi 2.1.
+## Attribution
+
+Adapted from the [Contributor Covenant](https://www.contributor-covenant.org) version 2.1.
