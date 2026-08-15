@@ -1,114 +1,122 @@
 ---
 name: awcms-astro-situs-baru
-description: Menurunkan situs baru dari template awcms-astro lewat "Use this template" — apa yang harus dikosongkan sebelum commit pertama, urutan kontrak → konten → tampilan, dan jebakan yang paling sering terjadi. Gunakan saat memulai repo situs baru dari template ini, atau saat sebuah situs turunan berperilaku seperti template-nya.
+description: Deriving a new site from the awcms-astro template through "Use this template" — what must be emptied before the first commit, the order contract → content → presentation, and the traps that happen most often. Use when starting a new site repo from this template, or when a derived site behaves like its template.
 ---
 
-# awcms-astro — menurunkan situs baru
+🇬🇧 English (source) · 🇮🇩 [Bahasa Indonesia](SKILL.id.md)
 
-`ahliweb/awcms-astro` adalah **template repository** GitHub. Tombol **"Use this
-template"** membuat repo baru dengan riwayat commit bersih — bukan fork, jadi
-situsnya tidak mewarisi riwayat template.
+# awcms-astro — deriving a new site
 
-Prosedur lengkap:
+`ahliweb/awcms-astro` is a GitHub **template repository**. The **"Use this
+template"** button creates a new repo with a clean commit history — not a fork,
+so the site does not inherit the template's history.
+
+The full procedure is in
 [`docs/awcms-astro/checklist-repo-baru.md`](../../../docs/awcms-astro/checklist-repo-baru.md).
-Skill ini memuat yang paling sering salah.
+This skill carries what goes wrong most often.
 
-## Yang WAJIB dikosongkan sebelum commit pertama
+## What MUST be emptied before the first commit
 
-Semuanya ikut terbawa, dan semuanya adalah riwayat **template**, bukan riwayat
-situsmu:
+All of it comes along, and all of it is the **template's** history, not your
+site's:
 
-- `.changesets/*.md` — hapus semua kecuali `README.md`.
-- `CHANGELOG.md` — kosongkan.
-- `docs/adr/00*.md` **dan** tabel di `docs/adr/README.md` — mulai penomoranmu
-  sendiri dari `0001`. `bun run audit:dokumen` menuntut keduanya cocok dua arah,
-  jadi menghapus satu tanpa yang lain memerahkan CI.
+- `.changesets/*.md` — delete every one except `README.md`.
+- `CHANGELOG.md` — empty it.
+- `docs/adr/00*.md` **and** the table in `docs/adr/README.md` — start your own
+  numbering from `0001`. `bun run audit:dokumen` demands the two agree in both
+  directions, so deleting one without the other turns CI red.
 - `package.json` — `name`, `description`, `homepage`, `repository`, `version`.
-- `graphify-out/` — artefak analisis repo template.
+- `graphify-out/` — an analysis artefact of the template repo.
 
-Yang **tidak** disentuh: `src/lib/`, `src/layouts/`, `src/components/`,
-`src/styles/global.css`, `scripts/`, `tests/`, `server/`, `.github/`. Itu
-kerangkanya.
+What is **not** touched: `src/lib/`, `src/layouts/`, `src/components/`,
+`src/styles/global.css`, `scripts/`, `tests/`, `server/`, `.github/`. That is
+the skeleton.
 
-## Urutan: kontrak → konten → tampilan
+## The order: contract → content → presentation
 
-Disengaja. Tampilan terakhir karena ia satu-satunya lapisan yang murah diubah.
+Deliberate. Presentation comes last because it is the only layer that is cheap
+to change.
 
-1. **`src/config/site.ts`** — nama, `siteUrl`, daftar locale, tab beserta
-   urutannya, `urutanSeksi` setiap tab, **dan `permukaanAdmin`**. Locale yang
-   ditambahkan di sini WAJIB punya katalog PO-nya.
+1. **`src/config/site.ts`** — name, `siteUrl`, the list of locales, the tabs and
+   their order, the `urutanSeksi` of every tab, **and `permukaanAdmin`**. A
+   locale added here MUST have its PO catalogue.
 
-   **Situs ini publik saja, kecuali kamu menyatakan sebaliknya.**
-   `permukaanAdmin` kosong adalah bawaannya, dan ia konstanta di berkas INI —
-   bukan variabel lingkungan. (Mencarinya di `.env` adalah cara paling cepat
-   berhenti di tengah bootstrap; ia tidak ada di sana, dan tidak akan pernah:
-   keputusan publik-vs-publik+admin setara dengan tab dan locale, jadi tempatnya
-   di kontrak.) Sebuah situs boleh membawa permukaan admin untuk **user**
-   (penulis, peninjau) di SEBELAH halaman publiknya — bukan menggantikannya,
-   jadi prefiksnya tidak boleh `/`, prefiks locale, atau slug tab. `owner`
-   ditolak gerbang: admin utama tetap di `/admin/*` milik `awcms` (ADR-0034).
-   Menyatakannya tidak memindahkan satu izin pun — yang memutuskan tetap
-   `awcms` — dan setiap fitur di sana wajib **juga** bisa dikelola `owner` di
-   sana. Bentuk, prasyarat, dan biayanya:
+   **This site is public only, unless you state otherwise.** An empty
+   `permukaanAdmin` is the default, and it is a constant in THIS file — not an
+   environment variable. (Looking for it in `.env` is the fastest way to stall
+   halfway through a bootstrap; it is not there, and it never will be: the
+   public-vs-public+admin decision ranks with tabs and locales, so it belongs in
+   the contract.) A site may carry an admin surface for **users** (authors,
+   reviewers) ALONGSIDE its public pages — not replacing them, so its prefix may
+   not be `/`, a locale prefix, or a tab slug. `owner` is refused by a gate: the
+   principal admin stays in `awcms`'s own `/admin/*` (ADR-0034). Declaring it
+   moves not one permission — `awcms` still decides — and every feature there
+   must **also** be manageable by an `owner` over there. Its shape,
+   prerequisites, and cost:
    [`permukaan-admin-user.md`](../../../docs/awcms-astro/permukaan-admin-user.md).
 
-   **Situs berita:** menamai tab `news` TIDAK cukup, dan sejak
+   **A news site:** naming a tab `news` is NOT enough, and since
    [ADR-0036](../../../docs/adr/0036-news-adalah-kosakata-repo-ini-dan-sebuah-tab-yang-memikulnya.md)
-   itu **bukan lagi jebakan senyap**: tab ber-slug `news` yang dibiarkan
-   `urutanSeksi: "manual"` memerahkan `bun test` lewat
-   `tests/kosakata-news.test.mjs`, begitu pula dua tab ber-slug `news`. Yang
-   **tetap** senyap adalah seksi berita ber-slug LAIN — `berita`, `kabar`,
-   `press` — karena aturannya soal ALAMAT, bukan isi: `/news/` adalah kosakata
-   URL repo ini, dan gerbangnya menjaga alamat itu tidak berbohong. Tanpa
-   `urutanSeksi: "terbaru"` seksi terurut menurut abjad — setiap artikel yang
-   tidak dinomori bernilai `urutan` 99 dan pemecah serinya judul, jadi berita
-   terbaru terkubur. Satu kata itu juga yang mengganti lencana kartu menjadi
-   tanggal, membuat artikelnya memancarkan `NewsArticle` (ADR-0033), dan
-   menerbitkan **feed Atom** di `/news/feed.xml` per locale, diumumkan halaman
-   seksi dan halaman artikelnya (ADR-0035). Feed-nya tidak bisa dimatikan
-   terpisah — ia bagian dari "seksi ini seksi berita". Yang belum ada dan harus
-   kamu terima lebih dulu: paginasi, untuk halaman MAUPUN feed — indeks seksi
-   dan feed-nya sama-sama memuat seluruh artikel seksi itu.
-2. **`.env`** dari `.env.example` — `AWCMS_API_URL`, `AWCMS_API_TOKEN`
-   (kredensial mesin; ia yang membawa tenant, ber-scope **dua** kunci:
-   `blog_content.posts.read` dan `media_library.media.read`), `AWCMS_TENANT_ID`
-   sebagai **asersi** yang menggagalkan build saat tidak cocok.
+   that is **no longer a silent trap**: a tab slugged `news` left on
+   `urutanSeksi: "manual"` turns `bun test` red through
+   `tests/kosakata-news.test.mjs`, and so do two tabs slugged `news`. What
+   **stays** silent is a news section under any OTHER slug — `berita`, `kabar`,
+   `press` — because the rule is about the ADDRESS, not the contents: `/news/`
+   is this repo's URL vocabulary, and its gate keeps that address from lying.
+   Without `urutanSeksi: "terbaru"` a section sorts alphabetically — every
+   article that is not numbered has `urutan` 99 and the tiebreaker is the title,
+   so the newest news is buried. That one word is also what turns the card badge
+   into a date, makes its articles emit `NewsArticle` (ADR-0033), and publishes
+   an **Atom feed** at `/news/feed.xml` per locale, announced by the section page
+   and by its article pages (ADR-0035). The feed cannot be switched off
+   separately — it is part of "this section is a news section". What does not
+   exist yet, and you have to accept it first: pagination, for the pages AND for
+   the feed — a section index and its feed both carry every article in that
+   section.
+2. **`.env`** from `.env.example` — `AWCMS_API_URL`, `AWCMS_API_TOKEN` (the
+   machine credential; it is what carries the tenant, scoped to **two** keys:
+   `blog_content.posts.read` and `media_library.media.read`), `AWCMS_TENANT_ID`
+   as an **assertion** that fails the build when it does not match.
 
-3. **Konten** ditulis di panel admin `awcms`, **bukan** di repo ini. Tidak ada
-   `src/content.config.ts` dan tidak ada frontmatter (ADR-0018).
-4. **Ilustrasi** di `src/assets/`: `hero`, `tab/<tab>`, `artikel/<tab>/<slug>`,
-   tanpa ekstensi. Tidak ada peta yang harus diisi (ADR-0024). Media `awcms`
-   menang atasnya bila artikelnya punya `featuredMediaId`.
-5. **Tampilan** — token di `:root`, kontras terang **dan** gelap, 360px ke atas.
+3. **Content** is written in the `awcms` admin panel, **not** in this repo.
+   There is no `src/content.config.ts` and there is no frontmatter (ADR-0018).
+4. **Illustrations** in `src/assets/`: `hero`, `tab/<tab>`,
+   `artikel/<tab>/<slug>`, without an extension. There is no map to fill in
+   (ADR-0024). `awcms` media wins over them when the article has a
+   `featuredMediaId`.
+5. **Presentation** — tokens in `:root`, contrast in light **and** dark, 360px
+   and up.
 
-## Jebakan yang paling sering terjadi
+## The traps that happen most often
 
-| Jebakan | Akibat |
+| Trap | Consequence |
 | --- | --- |
-| `SITE_SOCIAL_IMAGE` menunjuk berkas yang belum ada | Pratinjau rusak di setiap halaman, **tanpa satu pun kegagalan build**. Kosong adalah keadaan yang DIDUKUNG |
-| Rasio gambar bukan `--ratio-visual` | Bingkai memakai `object-fit: cover` → sumber DIPOTONG diam-diam, bukan diperkecil. `audit:konten` menolaknya |
-| `AWCMS_TENANT_CODE` diisi | Variabel itu **ditolak**, bukan diabaikan (ADR-0018) |
-| `AWCMS_TENANT_ID` dikosongkan | Sah, tetapi tidak memeriksa apa pun — token tenant lain akan membangun situs penuh berisi artikel milik orang lain, dengan build hijau |
-| String antarmuka ditulis harfiah di `.astro` | Ia tidak pernah diterjemahkan; gerbang katalog PO menangkap key yang hilang, bukan literal yang tak pernah jadi key |
-| Lupa `bun run audit:konten` **setelah** build | Sembilan keluarga gerbang keluaran, ditambah dua gerbang anggaran performa, melewati dirinya dan mengatakannya — di sebuah SITUS itu berarti tidak berjalan |
-| Men-deploy tanpa `NODE_ENV=production` | `Strict-Transport-Security` **diam-diam tidak terkirim**, dan tidak ada yang mengatakannya (ADR-0029). `Dockerfile` menyetelnya; deployment yang tidak lewat image itu harus menyetelnya sendiri |
-| Menambahkan `includeSubDomains` tanpa memeriksa subdomain | Setiap subdomain organisasi menjadi HTTPS-saja selama setahun, di browser setiap pengunjung — dan yang menanggung akibatnya layanan lain, bukan situs ini |
-| Mengisi `src/assets/` dengan foto raster besar | Tidak ada `srcset` (ADR-0024): ponsel 360px mengunduh berkas yang sama dengan desktop 1920px. Anggaran gambar (beranda ≤ 250 KB, halaman konten ≤ 100 KB) **diukur** `bun run audit:konten` atas `dist/client` sejak 4 Agustus 2026 — jadi kelebihannya merah setelah build, bukan tidak terlihat |
-| Membuat `docs/ARCHITECTURE.md` dan `docs/PROJECT_STATE.md` kosong "karena checklist minta" | Berkas kosong yang wajib adalah cara paling cepat sebuah checklist berhenti dibaca. Keduanya OPSIONAL; template ini sengaja tidak membawanya |
+| `SITE_SOCIAL_IMAGE` points at a file that does not exist | Broken previews on every page, **without a single build failure**. Empty is a SUPPORTED state |
+| An image ratio that is not `--ratio-visual` | The frame uses `object-fit: cover` → the source is silently CROPPED, not scaled down. `audit:konten` refuses it |
+| `AWCMS_TENANT_CODE` is filled in | That variable is **refused**, not ignored (ADR-0018) |
+| `AWCMS_TENANT_ID` is left empty | Valid, but it checks nothing — another tenant's token will build a full site of somebody else's articles, with a green build |
+| Interface strings written literally in `.astro` | They are never translated; the PO catalogue gate catches a missing key, not a literal that never became a key |
+| Forgetting `bun run audit:konten` **after** the build | Nine output gate families, plus two performance budget gates, skip themselves and say so — in a SITE that means they did not run |
+| Deploying without `NODE_ENV=production` | `Strict-Transport-Security` is **silently not sent**, and nothing says so (ADR-0029). The `Dockerfile` sets it; a deployment that does not go through that image has to set it itself |
+| Adding `includeSubDomains` without checking the subdomains | Every subdomain of the organisation becomes HTTPS-only for a year, in every visitor's browser — and what bears the consequence is the other services, not this site |
+| Filling `src/assets/` with large raster photos | There is no `srcset` (ADR-0024): a 360px phone downloads the same file as a 1920px desktop. The image budgets (home ≤ 250 KB, content page ≤ 100 KB) are **measured** by `bun run audit:konten` over `dist/client` since 4 August 2026 — so going over is red after a build, not invisible |
+| Creating empty `docs/ARCHITECTURE.md` and `docs/PROJECT_STATE.md` "because the checklist asked for them" | A mandatory empty file is the fastest way for a checklist to stop being read. Both are OPTIONAL; this template deliberately does not carry them |
 
-## Sebelum rilis pertama
+## Before the first release
 
 ```bash
 bun install
-bun run build          # check + astro build + bundel penyaji + asal media
-bun test               # setelah build, lapis penyaji ikut jalan
-bun run audit:konten   # setelah build, gerbang keluaran ikut jalan
-bun run audit:dokumen  # tidak butuh build
-bun run audit:graf     # artefak graphify-out/; melewati diri bila dihapus
-bun run serve          # periksa header & cache seperti yang dilihat pembaca
-bun audit              # 0 kerentanan
+bun run build          # check + astro build + bundle the server + media origin
+bun test               # after the build, the server layer runs too
+bun run audit:konten   # after the build, the output gates run too
+bun run audit:dokumen  # needs no build
+bun run audit:translation  # needs no build
+bun run audit:graf     # the graphify-out/ artefact; skips itself if deleted
+bun run serve          # check headers & cache as a reader sees them
+bun audit              # 0 vulnerabilities
 bun run release minor --apply
 ```
 
-`bun audit` (kerentanan dependency) dan `bun run audit:konten` (isi situs)
-adalah dua hal berbeda; namanya sengaja tidak dibuat mirip.
+`bun audit` (dependency vulnerabilities) and `bun run audit:konten` (site
+contents) are two different things; the names are deliberately not made to look
+alike.

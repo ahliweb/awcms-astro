@@ -283,7 +283,21 @@ function pasangFetchTiruan(posts, { ukuranHalaman = 100, jejak = [], media = new
  * diam-diam.
  */
 describe("permukaan awcms yang dipanggil build", () => {
-  const SKILL = ".claude/skills/awcms-astro-integrasi/SKILL.md";
+  /**
+   * KEDUA berkas skill, masing-masing digerbangi sendiri.
+   *
+   * `bun run audit:translation` menjaga cermin tetap SEUSIA sumbernya — hash
+   * yang cocok membuktikan ia diterjemahkan ulang saat sumbernya berubah, bukan
+   * bahwa tabelnya memuat baris yang sama. Sebuah baris yang hilang dari cermin
+   * karena itu lolos kedua gerbang terjemahan, dan pembaca Indonesianya melihat
+   * daftar permukaan yang berbeda dari yang dipanggil kode. Penanda blok dan
+   * kolom pertamanya berupa jalur `/api/v1/…`, jadi keduanya diperiksa dengan
+   * pemeriksa yang sama meski prosanya berbeda bahasa.
+   */
+  const SKILL_BERKAS = [
+    { berkas: ".claude/skills/awcms-astro-integrasi/SKILL.md", bahasa: "Inggris" },
+    { berkas: ".claude/skills/awcms-astro-integrasi/SKILL.id.md", bahasa: "Indonesia" }
+  ];
 
   /** Jalur `/api/v1/…` di dalam string literal `src/`, tanpa komentar. */
   function permukaanDiSumber() {
@@ -306,14 +320,18 @@ describe("permukaan awcms yang dipanggil build", () => {
     return ditemukan;
   }
 
-  /** Jalur di kolom pertama tabel bertanda di skill. */
-  function permukaanDiSkill() {
-    const isi = readFileSync(SKILL, "utf8");
+  /**
+   * Jalur di kolom pertama tabel bertanda di sebuah berkas skill.
+   *
+   * @param {string} berkas
+   */
+  function permukaanDiSkill(berkas) {
+    const isi = readFileSync(berkas, "utf8");
     const blok = isi.split("<!-- permukaan:dipanggil:mulai -->")[1]?.split(
       "<!-- permukaan:dipanggil:selesai -->"
     )[0];
 
-    assert.ok(blok, `penanda permukaan tidak ditemukan di ${SKILL}`);
+    assert.ok(blok, `penanda permukaan tidak ditemukan di ${berkas}`);
 
     return new Set(
       [...blok.matchAll(/^\|\s*`(\/api\/v1\/[^`]+)`\s*\|/gm)].map((m) => m[1])
@@ -335,14 +353,20 @@ describe("permukaan awcms yang dipanggil build", () => {
     );
   });
 
-  test("tabel di skill sama persis dengan kode, dua arah", () => {
-    // Dua arah, bukan satu: sebuah baris yang TERTINGGAL di skill setelah
-    // permukaannya dihapus adalah cacat yang sama dengan permukaan baru yang
-    // tidak dicatat — dan yang pertama justru yang sudah pernah terjadi di sini
-    // (`/posts/{id}` bertahan di dokumen berbulan-bulan setelah ADR-0018
-    // menghapus panggilannya).
-    assert.deepEqual([...permukaanDiSkill()].sort(), [...permukaanDiSumber()].sort());
-  });
+  for (const { berkas, bahasa } of SKILL_BERKAS) {
+    test(`tabel di ${berkas} sama persis dengan kode, dua arah`, () => {
+      // Dua arah, bukan satu: sebuah baris yang TERTINGGAL di skill setelah
+      // permukaannya dihapus adalah cacat yang sama dengan permukaan baru yang
+      // tidak dicatat — dan yang pertama justru yang sudah pernah terjadi di sini
+      // (`/posts/{id}` bertahan di dokumen berbulan-bulan setelah ADR-0018
+      // menghapus panggilannya).
+      assert.deepEqual(
+        [...permukaanDiSkill(berkas)].sort(),
+        [...permukaanDiSumber()].sort(),
+        `tabel bertanda di ${berkas} (${bahasa}) menyimpang dari permukaan yang dipanggil src/`
+      );
+    });
+  }
 });
 
 describe("traversal build feed", () => {

@@ -1,192 +1,208 @@
 ---
 name: awcms-astro-gerbang
-description: Enam gerbang awcms-astro (check, test, audit:konten, audit:dokumen, audit:graf, audit:translation) — apa yang ditangkap masing-masing, apa yang TIDAK, dan aturan bahwa setiap aturan baru wajib membawa pemeriksanya. Gunakan sebelum PR, saat menambah aturan ke dokumen, atau saat sebuah gerbang merah dan sebabnya tidak jelas.
+description: The six awcms-astro gates (check, test, audit:konten, audit:dokumen, audit:graf, audit:translation) — what each one catches, what it does NOT, and the rule that every new rule must bring its own checker. Use before a PR, when adding a rule to a document, or when a gate is red and the reason is not obvious.
 ---
 
-# awcms-astro — gerbang
+🇬🇧 English (source) · 🇮🇩 [Bahasa Indonesia](SKILL.id.md)
 
-Lima perintah, dan tiap satunya menangkap kelas cacat yang **tidak
-menggagalkan apa pun** saat terjadi. Itu alasan kelimanya ada.
+# awcms-astro — the gates
+
+Six commands, and each one catches a class of defect that **fails nothing** when
+it happens. That is why all six exist.
 
 ```bash
-bun run check           # lockfile + astro check    — tanpa build, tanpa jaringan
-bun test                # unit + kontrak + penyaji  — lapis penyaji melewati diri tanpa dist/
-bun run audit:konten    # sumber gambar + KELUARAN build
-bun run audit:dokumen   # markdown repo ini         — tanpa build, tanpa jaringan
-bun run audit:graf      # artefak graphify-out/     — melewati diri bila direktorinya tak ada
+bun run check             # lockfile + astro check      — no build, no network
+bun test                  # unit + contract + server    — the server layer skips itself without dist/
+bun run audit:konten      # image sources + build OUTPUT
+bun run audit:dokumen     # this repo's markdown        — no build, no network
+bun run audit:translation # mirror staleness + coverage — no build, no network
+bun run audit:graf        # the graphify-out/ artefact  — skips itself if the directory is absent
 ```
 
-## Yang ditangkap masing-masing
+## What each one catches
 
-| Gerbang | Kelas cacat |
+| Gate | Class of defect |
 | --- | --- |
-| `check` | Tipe, props, impor putus, lockfile milik proyek lain |
-| `bun test` | 20 berkas. Paritas katalog PO; kontrak `awcms` (traversal, media, kartu) dan **permukaan yang dipanggil build**; **PERAN repo** (`tests/peran-situs.test.mjs`, ADR-0034); **TANPA backend** (`tests/tanpa-backend.test.mjs`, ADR-0038 — dependency kelas backend, jalur tulis, artefak persistensi); **kosakata `news`** (`tests/kosakata-news.test.mjs`, ADR-0036); feed Atom (`tests/feed.test.mjs`, ADR-0035); dua tanggal terpisah (`tests/tanggal.test.mjs`, ADR-0033); header + cache penyaji; CSP atas keluaran; **versi toolchain** termasuk pin TypeScript (ADR-0037); SBOM; CWV lab; analisis statik; schema; seni lokal; renderer blok; rilis terkondisi; plus tiga meta-tes yang menjalankan ulang ketiga skrip audit atas repo ini DAN atas pohon fixture |
-| `audit:konten` | Rasio gambar terhadap `--ratio-visual`, format dibaca dari ISI berkas, judul/canonical/hreflang, aset yang dijanjikan metadata, tautan mati, sitemap, **setiap `.xml` di keluaran** (feed Atom sah, atau pelanggaran), nama key bocor ke layar |
-| `audit:dokumen` | Tautan markdown mati, indeks ADR lengkap dua arah, status ADR setuju dengan berkasnya, daftar permukaan kilau, jalur berkas yang disebut dokumen, **kutipan `ADR-NNNN` yang resolve ke berkasnya** |
-| `audit:graf` | Artefak `graphify-out/` terlacak di luar keempat keluaran bersama, laporan yang tidak sepakat dengan `graph.json`, **nama komunitas yang tidak dipilih** (nama berkas, placeholder, kembar, atau berbeda antar-artefak), korpus yang mengabaikan `.graphifyignore` |
+| `check` | Types, props, broken imports, a lockfile belonging to another project |
+| `bun test` | 21 files. PO catalogue parity; the `awcms` contract (traversal, media, cards) and **the surfaces the build calls**; the repo's ROLE (`tests/peran-situs.test.mjs`, ADR-0034); **NO backend** (`tests/tanpa-backend.test.mjs`, ADR-0038 — backend-class dependencies, write paths, persistence artefacts); the **`news` vocabulary** (`tests/kosakata-news.test.mjs`, ADR-0036); the Atom feed (`tests/feed.test.mjs`, ADR-0035); two separate dates (`tests/tanggal.test.mjs`, ADR-0033); the server's headers + cache; CSP over the output; **toolchain versions** including the TypeScript pin (ADR-0037); SBOM; lab CWV; static analysis; schema; local art; the block renderer; the conditional release; the translation-check logic (`tests/docs-i18n-checks.test.mjs`, ADR-0039); plus three meta-tests that re-run the three audit scripts over this repo AND over a fixture tree |
+| `audit:konten` | Image ratios against `--ratio-visual`, format read from the file CONTENTS, title/canonical/hreflang, assets promised by metadata, dead links, the sitemap, **every `.xml` in the output** (a valid Atom feed, or a violation), key names leaking to the screen |
+| `audit:dokumen` | Dead markdown links, the ADR index complete in both directions, an ADR's status agreeing with its file, the polish-surface list, file paths named by a document, **`ADR-NNNN` citations that resolve to their file** |
+| `audit:translation` | A stale mirror (an `.id.md` whose recorded hash no longer matches its English source), an orphan mirror whose source is gone, a document with no mirror that is not on the shrink-only ledger, and a ledger entry whose mirror now exists (ADR-0039) |
+| `audit:graf` | `graphify-out/` artefacts tracked outside the four shared outputs, a report that disagrees with `graph.json`, **community names that were never chosen** (a file name, a placeholder, a twin, or differing between artefacts), a corpus that ignored `.graphifyignore` |
 
-## Yang TIDAK ditangkap — dan disebut supaya tidak dikira terjaga
+## What is NOT caught — named here so it is not taken for guarded
 
-- **Dua aturan gambar** di `AGENTS.md` (teks dalam gambar hanya label topik;
-  tanpa lambang instansi negara) — tidak bisa diperiksa mesin, selamanya manual.
-- **Gerbang keluaran `audit:konten`** melewati dirinya tanpa `dist/`, dan
-  **mengatakannya**. Di repo template itu normal; di sebuah SITUS itu berarti
-  gerbangnya tidak berjalan. Sejak 6 Agustus 2026 yang dilewati hanyalah
-  **jalannya atas situs sungguhan**: logika tiap keluarga sudah dibuktikan
-  `tests/audit-konten.test.mjs` atas pohon fixture, jadi skripnya tidak bisa
-  lagi berhenti memeriksa diam-diam di repo yang tidak pernah membangun.
-- **Lapis penyaji `bun test`** melewati dirinya tanpa `dist/`, dengan alasan
-  yang sama.
-- **URL eksternal dan anchor** di `audit:dokumen` — yang pertama butuh jaringan
-  (gerbang yang merah karena situs pihak ketiga mati akan diabaikan orang), yang
-  kedua berarti menebak slugifikasi heading GitHub.
-- **PROSA.** Keenam gerbang `audit:dokumen` membaca STRUKTUR — tautan, tabel
-  indeks dua arah, kolom status, blok bertanda, span kode, dan kutipan
-  `ADR-NNNN`. Tidak satu pun membaca kalimat. Sebuah kalimat biasa yang
-  menyatakan sesuatu yang tidak ada lolos seluruhnya, dan itu bukan hipotesis: gerbang
-  permukaan kilau menghapus `.wilayah-filter-btn` dari tabel bertanda pada 3
-  Agustus 2026, dan **salinannya di paragraf tiga puluh baris di atas tabel itu
-  bertahan sampai 4 Agustus**. Nama yang sama, dokumen yang sama, gerbang yang
-  dibuat khusus untuknya.
-- **Kolom "Keadaan" di `docs/awcms-astro/standar-performa-dan-keamanan.md`.**
-  Sebuah baris bisa berbunyi "Terpenuhi" setelah kontrolnya dicabut, dan tidak
-  ada yang akan merah. Itu biaya yang ADR-0028 nyatakan menerimanya.
-- **Prosa di dalam skill maupun docs.** Sama seperti di atas: gerbang membaca struktur.
-- **Kesegaran graf, dan mutu nama komunitas di luar bentuknya.** `audit:graf`
-  MELAPORKAN selisih `built_at_commit` ke `HEAD` tanpa pernah memerahkannya —
-  memerahkannya berarti tiap PR yang menyentuh berkas terindeks wajib membawa
-  rebuild bermegabyte, dan gerbang semahal itu akan dilonggarkan dalam sebulan.
-  Ia juga bisa membuktikan sebuah label BUKAN nama berkas, tetapi tidak bisa
-  menilai apakah namanya baik untuk komunitasnya. Penamaan tetap pekerjaan
-  pembaca; yang dijaga hanya bahwa pekerjaan itu benar-benar dilakukan.
-- **Paragraf penanda kutipan ADR.** Sejak 5 Agustus 2026 kutipan `ADR-NNNN`
-  DIPERIKSA resolve ke `docs/adr/NNNN-*.md` (aturan 2 `awcms`
+- **The two image rules** in `AGENTS.md` (text in an image is only a topic label;
+  no state-institution emblems) — not machine-checkable, manual forever.
+- **The output gates of `audit:konten`** skip themselves without `dist/`, and
+  **say so**. In the template repo that is normal; in a SITE it means the gate
+  did not run. Since 6 August 2026 what is skipped is only **the run over a real
+  site**: the logic of every family is proven by `tests/audit-konten.test.mjs`
+  over a fixture tree, so the script can no longer quietly stop checking in a
+  repo that never builds.
+- **The server layer of `bun test`** skips itself without `dist/`, for the same
+  reason.
+- **External URLs and anchors** in `audit:dokumen` — the first needs the network
+  (a gate that goes red because a third-party site is down gets ignored), the
+  second means guessing GitHub's heading slugification.
+- **What a mirror CONTAINS.** `audit:translation` keeps a mirror the same AGE as
+  its source: a matching hash proves it was re-translated when the source last
+  changed, not that it says the same thing. The related trap is on the other
+  side, and it has already happened — a gate that reads a document for a phrase
+  reads ONE of the two files. On 15 August 2026 `tests/peran-situs.test.mjs`
+  stayed green over a translated `AGENTS.md`, not because the prose still stated
+  the public default, but because a file name inside a link happened to contain
+  the word it grepped for. A gate that reads prose must name **which** file, and
+  say so in the language that file is written in.
+- **PROSE.** All six `audit:dokumen` gates read STRUCTURE — links, the two-way
+  index table, the status column, marked blocks, code spans, and `ADR-NNNN`
+  citations. Not one of them reads a sentence. An ordinary sentence stating
+  something that does not exist passes straight through, and that is not
+  hypothetical: the polish-surface gate removed `.wilayah-filter-btn` from the
+  marked table on 3 August 2026, and **its copy in a paragraph thirty lines above
+  that table survived until 4 August**. Same name, same document, the very gate
+  built for it.
+- **The "State" column in `docs/awcms-astro/standar-performa-dan-keamanan.md`.**
+  A row can read "Met" after its control has been removed, and nothing will go
+  red. That is the cost ADR-0028 states it accepts.
+- **Prose inside skills as well as docs.** Same as above: the gates read
+  structure.
+- **Graph freshness, and the quality of a community name beyond its shape.**
+  `audit:graf` REPORTS the gap between `built_at_commit` and `HEAD` without ever
+  turning red on it — turning red would mean every PR touching an indexed file
+  has to carry a multi-megabyte rebuild, and a gate that expensive gets loosened
+  within a month. It can also prove a label is NOT a file name, but it cannot
+  judge whether the name is good for its community. Naming stays the reader's
+  work; what is guarded is only that the work was actually done.
+- **The marker paragraph of an ADR citation.** Since 5 August 2026 `ADR-NNNN`
+  citations ARE checked to resolve to `docs/adr/NNNN-*.md` (rule 2 of `awcms`
   [ADR-0062](https://github.com/ahliweb/awcms/blob/main/docs/adr/0062-skills-are-gated-against-the-code-they-describe.md)),
-  dan kutipan milik repo lain dilewati bila paragrafnya memuat penanda —
-  `awcms`, "repo rujukan", atau tautan github. Yang TIDAK bisa dinilai gerbang:
-  apakah penandanya jujur. Kutipan `awcms` yang nomornya kelak kembar dengan
-  ADR lokal akan diterima lewat jalur resolusi lokal, dan kutipan lokal yang
-  salah ketik DI DEKAT kata `awcms` akan lolos sebagai milik tetangga. Bila itu
-  terjadi, bentuk penulisannya yang diperbaiki — bukan gerbangnya dilonggarkan.
+  and a citation belonging to another repo is skipped when its paragraph carries
+  a marker — `awcms`, "reference repo", or a github link. What the gate cannot
+  judge: whether the marker is honest. An `awcms` citation whose number one day
+  collides with a local ADR will be accepted through the local resolution path,
+  and a local citation with a typo NEAR the word `awcms` will pass as the
+  neighbour's. If that happens, it is the way it was written that gets fixed —
+  not the gate that gets loosened.
 
-## Aturan yang mengikat: aturan baru wajib membawa pemeriksanya
+## The binding rule: a new rule must bring its own checker
 
-Repo ini sudah menemukan **sebelas** dokumen yang menyatakan sesuatu yang tidak
-ada, dan tak satu pun memerahkan apa pun:
+This repo has already found **eleven** documents stating something that does not
+exist, and not one of them turned anything red:
 
-1. Indeks ADR mendaftarkan enam keputusan yang tak pernah ada di sini.
-2. `getArticleImage` mengembalikan `undefined` tanpa syarat dan tiga pemanggilnya
-   tak pernah membacanya.
-3. Tabel permukaan kilau mendaftarkan `.wilayah-filter-btn` yang tak pernah ada —
-   di dokumen yang **meramalkan sendiri** ia akan menyimpang.
-4. Checklist repo baru menyuruh menyiapkan lima jalur yang tidak ada.
-5. `og:image:alt` memerikan gambar yang berbeda dari `og:image`.
+1. The ADR index listed six decisions that never existed here.
+2. `getArticleImage` returned `undefined` unconditionally and three of its
+   callers never read it.
+3. The polish-surface table listed `.wilayah-filter-btn`, which never existed —
+   in a document that **predicted of itself** that it would drift.
+4. The new-repo checklist told you to prepare five paths that do not exist.
+5. `og:image:alt` described a different image from `og:image`.
 
-Enam berikutnya ditemukan 4 Agustus 2026, seluruhnya dalam satu pembacaan
+The next six were found on 4 August 2026, all in a single reading
 ([ADR-0028](../../../docs/adr/0028-jangkar-standar-performa-dan-keamanan.md)):
 
-6. **PROSA yang sama dengan nomor 3.** `.wilayah-filter-btn` masih disebut di
-   paragraf tiga puluh baris di atas tabel yang gerbangnya sudah bersihkan.
-7. `integrasi-awcms.md` berbunyi "Adapter belum ada" sementara 120 baris di
-   bawahnya berbunyi "perpindahan itu sudah terjadi". Dua kalimat, satu berkas,
-   saling membantah — dan yang salah adalah yang dibaca lebih dulu.
-8. `standar-teknis.md` mewajibkan `<Image>` dari `astro:assets` dan melarang
-   `<img>` mentah, sementara ADR-0024 memutuskan sebaliknya **dan tabel di
-   berkas yang sama** menuliskan keputusan itu.
-9. `standar-teknis.md` mewajibkan kartu share PNG dan melarang WebP, sementara
-   ADR-0026 membuat kartu artikel membawa MIME-nya sendiri dari media `awcms`.
-10. `standar-teknis.md` dan `ui-ux-design-system.md` menyebut tema dipasang
-    "skrip inline sebelum paint" — yang sejak ADR-0019 justru **mati** di
-    browser pembaca.
-11. `standar-teknis.md` mewajibkan tiga dokumen yang repo rujukan standar itu —
-    repo ini sendiri — tidak membawa satu pun.
+6. **The PROSE of number 3.** `.wilayah-filter-btn` was still named in a
+   paragraph thirty lines above the table its gate had already cleaned.
+7. `integrasi-awcms.md` read "There is no adapter yet" while 120 lines below it
+   read "that move has already happened". Two sentences, one file, contradicting
+   each other — and the wrong one is the one read first.
+8. `standar-teknis.md` required `<Image>` from `astro:assets` and forbade raw
+   `<img>`, while ADR-0024 decided the opposite **and a table in the same file**
+   wrote that decision down.
+9. `standar-teknis.md` required PNG share cards and forbade WebP, while ADR-0026
+   made an article's card carry its own MIME type from `awcms` media.
+10. `standar-teknis.md` and `ui-ux-design-system.md` said the theme is installed
+    by an "inline script before paint" — which since ADR-0019 is in fact **dead**
+    in a reader's browser.
+11. `standar-teknis.md` required three documents that the reference repo for that
+    standard — this repo itself — does not carry a single one of.
 
-Empat kelas kini digerbangi `audit:dokumen`. Sisanya prosa, dan prosa tidak bisa
-digerbangi. **Menulis aturan tanpa pemeriksanya adalah menambah calon nomor dua
-belas.**
+Four classes are now gated by `audit:dokumen`. The rest is prose, and prose
+cannot be gated. **Writing a rule without its checker is adding a candidate
+number twelve.**
 
-### Empat aturan yang tertulis TANPA pemeriksa — ditemukan 4 Agustus 2026
+### Five rules written with NO checker — four found 4 August 2026, the fifth on 14 August
 
-Bentuk yang berbeda dari sebelas di atas, dan lebih sunyi: bukan dokumen yang
-menyatakan sesuatu yang tidak ada, melainkan **aturan yang benar dan tidak
-pernah diperiksa siapa pun**. Keempatnya kini digerbangi
-([ADR-0030](../../../docs/adr/0030-aturan-tertulis-mendapat-pemeriksanya.md)):
+A different shape from the eleven above, and quieter: not a document stating
+something that does not exist, but **a rule that is correct and that nobody ever
+checked**. The first four are now gated
+([ADR-0030](../../../docs/adr/0030-aturan-tertulis-mendapat-pemeriksanya.md)),
+and the fifth by
+[ADR-0038](../../../docs/adr/0038-kebutuhan-backend-menjadi-modul-di-awcms.md):
 
-| Aturan, dan sejak kapan tertulis | Yang menemukannya | Pemeriksanya sekarang |
+| The rule, and how long it had been written | What found it | Its checker now |
 | --- | --- | --- |
-| Versi Bun sama di **lima** nilai (`AGENTS.md` menghitung tiga BERKAS) | `grep -rln "packageManager\|bun-version" tests/ scripts/` → nol | `tests/versi-toolchain.test.mjs` |
-| `bun test` + `bun audit` wajib sebelum rilis (**empat** dokumen menuntutnya) | Membaca `scripts/rilis.mjs` sampai habis | Perilis menjalankan keduanya, **sesudah** build |
-| Daftar permukaan `awcms` yang dipanggil build | `awcms` mencatat enam, kode memanggil tiga | `tests/kontrak-awcms.test.mjs`, dua arah terhadap tabel bertanda di skill integrasi |
-| Pin rantai pasok ke SHA/digest (celah 6 ADR-0028) | Sudah tercatat, belum dikerjakan | Pin + gerbang versi yang menjaganya |
-| "`awcms` adalah backend, repo ini tidak menyimpan apa pun" (tertulis sejak ADR-0020, dalam bentuk negatif di enam berkas) | Ditanyakan dari luar: ke mana sebuah kebutuhan backend PERGI? Tidak satu berkas pun menjawabnya, dan tidak satu gerbang pun membaca `package.json` menurut kelas paketnya | `tests/tanpa-backend.test.mjs` ([ADR-0038](../../../docs/adr/0038-kebutuhan-backend-menjadi-modul-di-awcms.md)) |
+| The Bun version is the same in **five** values (`AGENTS.md` counted three FILES) | `grep -rln "packageManager\|bun-version" tests/ scripts/` → zero | `tests/versi-toolchain.test.mjs` |
+| `bun test` + `bun audit` are required before a release (**four** documents demanded them) | Reading `scripts/rilis.mjs` to the end | The releaser runs both, **after** the build |
+| The list of `awcms` surfaces the build calls | `awcms` recorded six, the code called three | `tests/kontrak-awcms.test.mjs`, both directions against the marked table in the integration skill |
+| Supply-chain pinning to a SHA/digest (gap 6 of ADR-0028) | Already recorded, not yet done | The pin plus the version gate that keeps it |
+| "`awcms` is the backend, this repo stores nothing" (written since ADR-0020, in negative form in six files) | Asked from outside: where does a backend requirement GO? Not one file answered, and not one gate read `package.json` by package class | `tests/tanpa-backend.test.mjs` (ADR-0038) |
 
-**Pelajarannya bukan "tulis lebih banyak gerbang".** Ketiga yang pertama sudah
-punya kalimat yang tegas, sebagian dengan kata **wajib**, dan ketegasan itulah
-yang membuat semua orang mengira ada yang memeriksanya. Saat menambah aturan,
-pertanyaan yang menentukan bukan "apakah ini benar" melainkan **"perintah apa
-yang berubah merah bila ini dilanggar?"** Bila jawabannya tidak ada, aturan itu
-belum mendarat — ia baru ditulis.
+**The lesson is not "write more gates".** The first three already had a firm
+sentence, some of them with the word **must**, and it was that firmness that
+made everyone assume something was checking. When adding a rule, the deciding
+question is not "is this true" but **"which command turns red when this is
+broken?"** If the answer is none, the rule has not landed — it has only been
+written.
 
-### Yang membuat nomor 7–11 mungkin, dan cara menghindarinya
+### What made numbers 7–11 possible, and how to avoid it
 
-Kelimanya punya bentuk yang sama: sebuah kalimat yang **benar saat ditulis**,
-lalu sebuah ADR mengubah kodenya, lalu kalimatnya tidak ikut. Ia tidak pernah
-salah ketik — ia menua.
+All five have the same shape: a sentence that was **true when written**, then an
+ADR changed its code, then the sentence did not follow. It was never a typo — it
+aged.
 
-Yang menangkapnya bukan gerbang melainkan kebiasaan: **saat sebuah ADR
-mendarat, grep nama benda yang ia ubah di seluruh markdown.** ADR-0024 mengubah
-cara gambar dirender; `grep -rn "astro:assets" docs/` akan menemukan nomor 8
-dalam satu detik pada hari ADR itu ditulis.
+What catches it is not a gate but a habit: **when an ADR lands, grep the name of
+the thing it changed across all the markdown.** ADR-0024 changed how images are
+rendered; `grep -rn "astro:assets" docs/` would have found number 8 in one
+second on the day that ADR was written.
 
-## Menambah pemeriksa ke `audit:konten`
+## Adding a checker to `audit:konten`
 
-Skripnya **tidak** menerima akar sebagai argumen — ia membaca direktori kerja.
-`tests/audit-konten.test.mjs` karena itu menjalankannya dengan `cwd` sebuah
-pohon fixture, bukan dengan bendera uji: sebuah mode yang hanya hidup di tes
-adalah jalur kode yang tidak pernah dipakai situs mana pun.
+The script does **not** take a root as an argument — it reads the working
+directory. `tests/audit-konten.test.mjs` therefore runs it with the `cwd` of a
+fixture tree rather than with a test flag: a mode that only lives in the tests is
+a code path no site ever uses.
 
-Fixture minimalnya tiga berkas — `src/config/site.ts` (locale),
-`src/styles/global.css` (`--ratio-visual`), dan satu halaman di
-`dist/client/` — karena skripnya membaca ketiganya sebelum gerbang apa pun
-jalan. Menambah gerbang berarti menambah **dua** kasus: merah saat cacatnya
-ada, hijau saat tidak. Lalu buktikan tesnya bukan hiasan: mutasi barisnya di
-skrip dan pastikan tepat kasus itu yang merah. Dua kali cara itu menemukan
-lubang di tes yang sudah hijau — cabang `image` JSON-LD yang tidak pernah
-diuji, dan satu penyaring skema yang ternyata tidak bisa dimutasi sama sekali.
+Its minimal fixture is three files — `src/config/site.ts` (locales),
+`src/styles/global.css` (`--ratio-visual`), and one page in `dist/client/` —
+because the script reads all three before any gate runs. Adding a gate means
+adding **two** cases: red when the defect is present, green when it is not. Then
+prove the test is not decoration: mutate its line in the script and confirm that
+exactly that case goes red. Twice that method found a hole in a test that was
+already green — the JSON-LD `image` branch that was never exercised, and one
+schema filter that turned out not to be mutable at all.
 
-**Sebuah keluarga yang tidak akan pernah menemukan berkas di sini tetap wajib
-dibuktikan di sini.** Keluarga feed (ADR-0035) memindai `**/*.xml` di keluaran,
-dan template menyatakan nol seksi berita — jadi ia tidak akan pernah menemukan
-satu berkas pun, bahkan seandainya repo ini punya sumber konten. Pohon fixture
-adalah satu-satunya tempat ia berjalan, dan mutasinya adalah satu-satunya bukti
-bahwa ia masih memeriksa sesuatu (16 mutasi, 16 tes berbeda merah). Pola yang
-sama berlaku untuk keluarga berikutnya yang bergantung pada konfigurasi yang
-tidak dipakai template.
+**A family that will never find a file here still has to be proven here.** The
+feed family (ADR-0035) scans `**/*.xml` in the output, and the template declares
+zero news sections — so it will never find a single file, even if this repo had
+a content source. The fixture tree is the only place it runs, and mutating it is
+the only proof that it still checks anything (16 mutations, 16 different tests
+red). The same pattern holds for the next family that depends on configuration
+the template does not use.
 
-## Menambah pemeriksa ke `audit:dokumen`
+## Adding a checker to `audit:dokumen`
 
-Skripnya menerima akar sebagai argumen (`bun scripts/audit-dokumen.mjs <akar>`),
-dan itu yang membuat `tests/audit-dokumen.test.mjs` bisa membuktikan tiap
-gerbang **dua arah**: MERAH saat cacatnya ada, HIJAU saat tidak, atas pohon
-fixture sungguhan.
+The script takes a root as an argument (`bun scripts/audit-dokumen.mjs <root>`),
+and that is what lets `tests/audit-dokumen.test.mjs` prove each gate **both
+ways**: RED when the defect is present, GREEN when it is not, over a real
+fixture tree.
 
-Dua jebakan yang sudah ditemukan:
+Two traps already found:
 
-- **Pemeriksa yang hanya benar untuk repo INI tidak boleh tinggal di skrip.**
-  Draf pertama pemeriksaan "pengecualian yang membusuk" ditaruh di skrip dan
-  membuat 10 dari 25 tes merah — bukti langsung ia berhenti benar di luar repo
-  ini, yaitu keadaan setiap situs turunan template ini. Ia pindah ke tesnya.
-  (Angka 10-dari-25 itu **historis**, dari hari kejadiannya; berkas tesnya kini
-  32 tes. Ia tidak disegarkan karena yang diceritakan peristiwanya, bukan
-  keadaan hari ini.)
-- **Pengecualian wajib menyebut MILIK SIAPA.** `JALUR_DIKECUALIKAN` memuat jalur
-  milik `awcms` dan repo rujukan; "belum dibuat" bukan alasan yang sah — itu
-  justru yang gerbang ini cari.
+- **A checker that is only correct for THIS repo may not live in the script.**
+  The first draft of the "rotting exception" check was put in the script and made
+  10 of 25 tests red — direct evidence that it stops being correct outside this
+  repo, which is the condition of every site derived from this template. It moved
+  into its test. (That 10-of-25 figure is **historical**, from the day it
+  happened; the test file now has 32 tests. It is not refreshed because what is
+  being told is the event, not today's state.)
+- **An exception must name WHOSE it is.** `JALUR_DIKECUALIKAN` holds paths
+  belonging to `awcms` and to the reference repo; "not built yet" is not a valid
+  reason — that is precisely what this gate is looking for.
 
 ## Definition of Done
 
-Ada di [`AGENTS.md`](../../../AGENTS.md) §Definition of Done. Yang paling sering
-terlewat: `bun run audit:konten` **setelah** build (bukan sebelum), dan menambah
-ADR berarti menambah barisnya di
+It is in [`AGENTS.md`](../../../AGENTS.md) §Definition of Done. The one most
+often missed: `bun run audit:konten` **after** the build (not before), and adding
+an ADR means adding its row in
 [`docs/adr/README.md`](../../../docs/adr/README.md).
