@@ -1,104 +1,111 @@
-# 04 — Kesiapan, proof-of-concept, dan checklist
+🇬🇧 English (source) · 🇮🇩 [Bahasa Indonesia](04-kesiapan.id.md)
 
-> Rencana. Lihat [README](README.md) untuk status.
+# 04 — Readiness, the proof-of-concept, and the checklist
 
-## 1. Prasyarat sebelum layar produksi (P0)
+> Planned. See the [README](README.md) for its status.
 
-| #   | Prasyarat                                                                     | Bukti selesai                                                        |
+## 1. Prerequisites before a production screen (P0)
+
+| #   | Prerequisite                                                                  | Evidence of completion                                                |
 | --- | ----------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| 1   | [ADR-0014](../../adr/0014-rendering-campuran-dan-bff-portal.md) diterima      | ADR ber-status `Accepted` — **selesai**                               |
-| 2   | ADR-0045 di `awcms` diterima                                                  | ADR di repo `awcms` — **selesai**                                     |
-| 3   | Endpoint introspeksi sesi ada di `awcms` + terdokumentasi OpenAPI             | **SELESAI** — `GET /api/v1/auth/session` + kode handoff sekali-pakai (`awcms` ADR-0049/0050) |
-| 4   | Proof-of-concept adapter + satu rute on-demand + BFF                          | Login → sesi → baca profil lewat `awcms` privat, di branch terpisah   |
-| 5   | Konfigurasi deployment portal (image, proxy, healthcheck, variabel runtime)   | Deploy staging berhasil                                               |
-| 6   | Jalur rollback statis terdokumentasi **dan dicoba**                            | Build statis penuh hijau di CI + langkah rollback tertulis            |
-| 7   | Inventaris porting Elementor per rute/seksi                                   | Lembar `PORT/REDESIGN/DYNAMIC/REMOVE/DEFER`                           |
+| 1   | [ADR-0014](../../adr/0014-rendering-campuran-dan-bff-portal.md) accepted      | The ADR with status `Accepted` — **done**                             |
+| 2   | ADR-0045 in `awcms` accepted                                                  | The ADR in the `awcms` repo — **done**                                |
+| 3   | A session introspection endpoint exists in `awcms` + documented in OpenAPI    | **DONE** — `GET /api/v1/auth/session` + a single-use handoff code (`awcms` ADR-0049/0050) |
+| 4   | A proof-of-concept adapter + one on-demand route + the BFF                    | Login → session → read profile through a private `awcms`, on a separate branch |
+| 5   | The portal deployment configuration (image, proxy, healthcheck, runtime variables) | A successful staging deploy                                       |
+| 6   | The static rollback path documented **and tried**                              | A full static build green in CI + written rollback steps              |
+| 7   | An Elementor porting inventory per route/section                              | A `PORT/REDESIGN/DYNAMIC/REMOVE/DEFER` sheet                          |
 
-Butir 3 adalah dependensi keras: tanpa kontrak sesi, PoC hanya bisa memalsukan
-sesi, dan PoC yang memalsukan bagian tersulitnya tidak membuktikan apa pun.
-**Ia sudah selesai** (`awcms` ADR-0049/0050, 1–2 Agustus 2026), dan begitu pula
-business-scope resolver yang dulu NO-OP fail-closed (`awcms` ADR-0060).
+Item 3 is a hard dependency: without the session contract, a PoC can only fake a
+session, and a PoC that fakes its hardest part proves nothing. **It is now done**
+(`awcms` ADR-0049/0050, 1–2 August 2026), and so is the business-scope resolver
+that used to be a fail-closed NO-OP (`awcms` ADR-0060).
 
-**Yang menahan portal sekarang bukan kontrak yang hilang, melainkan dua hal
-lain**, dan keduanya perlu disebut supaya tabel di atas tidak terbaca sebagai
-"tinggal butir 4–7":
+**What holds the portal back now is not a missing contract but two other
+things**, and both need naming so the table above is not read as "only items 4–7
+left":
 
-- **Di repo ini:** uji [ADR-0023](../../adr/0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md).
-  BFF memanggil `awcms` di **setiap permintaan runtime**, jadi bentuknya
-  ditentukan respons `awcms` pada tiap permintaan — dan repo template ini tidak
-  punya instans untuk membuktikan panggilannya benar. Butir 4 (PoC) karena itu
-  bukan sekadar pekerjaan yang belum dimulai; ia pekerjaan yang belum bisa
-  dibuktikan siapa pun di sini.
-- **Di `awcms`:** bentuk scope merchant Jualanku masih butuh ADR admission-nya
-  sendiri. ADR-0060 memberi resolver-nya penyedia; ia tidak memutuskan bagaimana
-  merchant dipetakan ke scope.
+- **In this repo:** the [ADR-0023](../../adr/0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md)
+  test. The BFF calls `awcms` on **every runtime request**, so its shape is
+  decided by an `awcms` response on every request — and this template repo has no
+  instance to prove its calls are right. Item 4 (the PoC) is therefore not merely
+  work not yet started; it is work nobody here can yet prove.
+- **In `awcms`:** the shape of the Jualanku merchant scope still needs its own
+  admission ADR. ADR-0060 gave its resolver a provider; it did not decide how a
+  merchant maps onto a scope.
 
-## 2. Cakupan proof-of-concept
+## 2. The scope of the proof-of-concept
 
-Yang harus dibuktikan, tidak lebih:
+What must be proven, and no more:
 
-1. Adapter terpasang, `output: "static"` tetap, satu rute ditandai
-   `prerender = false` dan benar-benar dirender saat request.
-2. Build **tidak** menghasilkan berkas statis untuk rute itu.
-3. BFF menukar cookie portal menjadi kredensial `awcms` server-side; token tidak
-   pernah muncul di HTML maupun di penyimpanan browser.
-4. Tenant diturunkan dari host; header tenant yang dikirim klien diabaikan.
-5. Mutasi tanpa token CSRF ditolak; dengan Origin asing ditolak.
-6. Logout mencabut sesi di `awcms`, dan token lama benar-benar tidak bisa dipakai.
-7. Respons portal membawa `private, no-store` dan `noindex`.
-8. `awcms` dapat diakses **hanya** dari jaringan privat pada lingkungan uji.
+1. The adapter is installed, `output: "static"` stays, one route is marked
+   `prerender = false` and is genuinely rendered on request.
+2. The build does **not** produce a static file for that route.
+3. The BFF exchanges the portal cookie for an `awcms` credential server-side; the
+   token never appears in the HTML or in browser storage.
+4. The tenant is derived from the host; a tenant header sent by the client is
+   ignored.
+5. A mutation without a CSRF token is refused; one with a foreign Origin is
+   refused.
+6. Logging out revokes the session in `awcms`, and the old token genuinely cannot
+   be used.
+7. Portal responses carry `private, no-store` and `noindex`.
+8. `awcms` is reachable **only** from the private network in the test
+   environment.
 
-Bila salah satu tidak bisa dibuktikan, portal tidak lanjut — itulah gunanya PoC.
+If any one of them cannot be proven, the portal does not proceed — that is what a
+PoC is for.
 
-## 3. Checklist acceptance
+## 3. The acceptance checklist
 
-**Arsitektur** — ADR disetujui · adapter terpasang · matriks rendering diuji ·
-`awcms` origin privat · rollback statis terdokumentasi & dicoba.
+**Architecture** — the ADR approved · the adapter installed · the rendering
+matrix tested · a private `awcms` origin · the static rollback documented & tried.
 
-**Identity & akses** — tanpa token di storage browser · cookie
-HttpOnly/Secure/SameSite · CSRF + Origin check · tenant server-derived · rotasi
-sesi · logout mencabut upstream · test negatif ada dan pernah merah.
+**Identity & access** — no token in browser storage · an
+HttpOnly/Secure/SameSite cookie · CSRF + Origin check · a server-derived tenant ·
+session rotation · logout revoking upstream · negative tests that exist and have
+been red.
 
-**Rendering & cache** — nol berkas statis untuk rute privat · nol rute privat di
-sitemap · `private, no-store` pada portal · aset publik ber-hash `immutable`.
+**Rendering & cache** — zero static files for private routes · zero private
+routes in the sitemap · `private, no-store` on the portal · hashed public assets
+`immutable`.
 
-**UI/UX** — token desain · state empty/error/loading di setiap layar · alur
-keyboard · WCAG 2.2 AA · 360 px · tanpa placeholder · copy & klaim disetujui ·
-string baru masuk seluruh katalog locale.
+**UI/UX** — design tokens · empty/error/loading states on every screen · a
+keyboard flow · WCAG 2.2 AA · 360 px · no placeholders · approved copy & claims ·
+new strings entered into every locale catalogue.
 
-**Operasi** — healthcheck tidak menular gagal dari `awcms` · log ber-correlation
-ID · halaman error jujur saat `awcms` mati · variabel runtime tidak masuk riwayat
-image.
+**Operations** — a healthcheck that does not inherit failure from `awcms` · logs
+with a correlation ID · an honest error page when `awcms` is down · runtime
+variables that do not enter the image history.
 
-**Konten** — tanpa data pribadi pembaca di halaman publik · tanpa skrip pihak
-ketiga · tanpa HTML mentah dari CMS · gambar berasio `--ratio-visual`.
+**Content** — no reader personal data on public pages · no third-party scripts ·
+no raw HTML from the CMS · images at `--ratio-visual`.
 
-## 4. Yang sengaja ditunda
+## 4. What is deliberately postponed
 
-Dua butir daftar ini sudah **tidak berlaku lagi**, dan keduanya dibiarkan
-tertulis di sini beserta apa yang menggantikannya — daftar penundaan yang
-diam-diam dirapikan tidak meninggalkan jejak bahwa keputusannya pernah lain:
+Two items on this list **no longer apply**, and both are left written here
+together with what replaced them — a postponement list quietly tidied up leaves
+no trace that its decision was once different:
 
-- ~~**Migrasi runtime ke Bun** — ADR tersendiri, setelah portal stabil.~~
-  Sudah terjadi, dan **mendahului** portal, bukan menyusulnya:
-  [ADR-0015](../../adr/0015-runtime-bun-menutup-divergence-keluarga.md) memindahkan
-  runtime dan package manager ke Bun, lalu
+- ~~**The runtime migration to Bun** — its own ADR, after the portal is
+  stable.~~ It has happened, and it **preceded** the portal rather than following
+  it: [ADR-0015](../../adr/0015-runtime-bun-menutup-divergence-keluarga.md) moved
+  the runtime and package manager to Bun, and then
   [ADR-0016](../../adr/0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md)
-  membuat Bun pula yang menyajikan hasil build. Adapter yang dituntut PoC di §2
-  karena itu sudah terpasang — untuk menyajikan, bukan untuk merender saat
-  request.
-- **Halaman admin internal di repo ini** — tetap milik `awcms`. Pernyataan ini
-  sempat dibalik oleh [ADR-0017](../../adr/0017-peran-admin-owner-internal.md)
-  (31 Juli 2026) dan **dikembalikan** oleh
-  [ADR-0020](../../adr/0020-layar-admin-kembali-ke-awcms.md) (2 Agustus 2026),
-  selaras `awcms` ADR-0051 yang memusatkan seluruh layar admin di sana. Yang
-  membatalkan pembalikan itu bukan hambatan teknis — dua kontrak yang dulu
-  memblokirnya justru sudah mendarat — melainkan kesimpulan bahwa memindahkan
-  layar tidak memindahkan izinnya, sehingga tidak memindahkan risikonya.
+  made Bun serve the build output too. The adapter the §2 PoC demands is
+  therefore already installed — to serve, not to render on request.
+- **Internal admin pages in this repo** — still `awcms`'s. This statement was
+  briefly reversed by [ADR-0017](../../adr/0017-peran-admin-owner-internal.md)
+  (31 July 2026) and **restored** by
+  [ADR-0020](../../adr/0020-layar-admin-kembali-ke-awcms.md) (2 August 2026), in
+  line with `awcms` ADR-0051, which consolidates every admin screen over there.
+  What voided that reversal was not a technical obstacle — the two contracts that
+  used to block it had in fact landed — but the conclusion that moving a screen
+  does not move its permissions, and so does not move its risk.
 
-Yang masih benar-benar ditunda:
+What is still genuinely postponed:
 
-- **Rendering seluruh situs on-demand** — ditolak, bukan ditunda.
-- **Checkout/marketplace** — di luar MVP.
-- **Personalisasi halaman publik** — akan menghapus kemampuan cache publik; butuh
-  keputusan tersendiri.
+- **Rendering the whole site on demand** — refused, not postponed.
+- **Checkout/marketplace** — outside the MVP.
+- **Personalising public pages** — it would remove the ability to cache them
+  publicly; it needs a decision of its own.

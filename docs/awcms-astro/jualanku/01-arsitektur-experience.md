@@ -1,131 +1,132 @@
-# 01 — Arsitektur experience layer
+🇬🇧 English (source) · 🇮🇩 [Bahasa Indonesia](01-arsitektur-experience.id.md)
 
-> Rencana. Lihat [README](README.md) untuk status.
+# 01 — The experience layer architecture
 
-## 1. Matriks rendering
+> Planned. See the [README](README.md) for its status.
 
-| Rute                                   | Rendering                | Cache                          | Sesi              |
-| -------------------------------------- | ------------------------ | ------------------------------ | ----------------- |
-| `/`                                    | Prerender                | Public, revalidate saat deploy | —                 |
-| `/kategori`, `/kategori/[slug]`        | Prerender + rebuild      | Public, invalidasi ber-tag     | —                 |
-| `/usaha/[slug]`, `/usaha/[slug]/produk`| Prerender + rebuild      | Public                         | —                 |
-| `/produk/[slug]`, `/layanan/[slug]`    | Prerender + rebuild      | Public                         | —                 |
-| `/artikel/**`, `/bantuan/**`           | Prerender (fetch build)  | Public                         | —                 |
-| `/harga`, `/untuk-umkm`                | Prerender                | Public                         | —                 |
-| `/privasi`, `/ketentuan`, `/pengaduan`, `/disclosure-affiliate` | Prerender | Public   | —                 |
-| `/cari`                                | On-demand (atau statis + API publik ber-TTL) | Public, TTL pendek | — |
-| `/affiliate` (landing)                 | Prerender                | Public                         | —                 |
-| `/penjual/masuk`, `/penjual/daftar`    | On-demand                | `no-store`                     | Belum ada         |
-| `/penjual/**` lainnya                  | On-demand                | `private, no-store`            | Merchant          |
-| `/affiliate/masuk`, `/affiliate/daftar`| On-demand                | `no-store`                     | Belum ada         |
-| `/affiliate/**` lainnya                | On-demand                | `private, no-store`            | Affiliate         |
-| `/_portal-api/**`                      | Server endpoint          | `no-store`                     | Sesi + CSRF       |
+## 1. The rendering matrix
 
-Rute on-demand ditandai `export const prerender = false`. Semua yang tidak
-ditandai tetap prerender — default yang aman: sebuah rute privat yang lupa
-ditandai akan gagal saat build (butuh sesi yang tidak ada), bukan diam-diam
-menerbitkan halaman privat sebagai berkas statis.
+| Route                                  | Rendering                | Cache                            | Session           |
+| -------------------------------------- | ------------------------ | -------------------------------- | ----------------- |
+| `/`                                    | Prerendered              | Public, revalidated on deploy    | —                 |
+| `/kategori`, `/kategori/[slug]`        | Prerendered + rebuild    | Public, tag-based invalidation   | —                 |
+| `/usaha/[slug]`, `/usaha/[slug]/produk`| Prerendered + rebuild    | Public                           | —                 |
+| `/produk/[slug]`, `/layanan/[slug]`    | Prerendered + rebuild    | Public                           | —                 |
+| `/artikel/**`, `/bantuan/**`           | Prerendered (build fetch)| Public                           | —                 |
+| `/harga`, `/untuk-umkm`                | Prerendered              | Public                           | —                 |
+| `/privasi`, `/ketentuan`, `/pengaduan`, `/disclosure-affiliate` | Prerendered | Public | —          |
+| `/cari`                                | On-demand (or static + a public API with a TTL) | Public, short TTL | —  |
+| `/affiliate` (landing)                 | Prerendered              | Public                           | —                 |
+| `/penjual/masuk`, `/penjual/daftar`    | On-demand                | `no-store`                       | None yet          |
+| Other `/penjual/**`                    | On-demand                | `private, no-store`              | Merchant          |
+| `/affiliate/masuk`, `/affiliate/daftar`| On-demand                | `no-store`                       | None yet          |
+| Other `/affiliate/**`                  | On-demand                | `private, no-store`              | Affiliate         |
+| `/_portal-api/**`                      | Server endpoint          | `no-store`                       | Session + CSRF    |
 
-**Uji ini wajib ada:** setelah build, tidak boleh ada berkas HTML statis untuk
-path `/penjual/**` maupun `/affiliate/**` (kecuali landing), dan sitemap tidak
-boleh memuat satu pun rute privat.
+An on-demand route is marked `export const prerender = false`. Everything not
+marked stays prerendered — the safe default: a private route somebody forgot to
+mark will fail at build time (it needs a session that does not exist), rather than
+silently publishing a private page as a static file.
 
-## 2. Perubahan konfigurasi
+**This test is mandatory:** after a build there may be no static HTML file for any
+`/penjual/**` or `/affiliate/**` path (except the landing), and the sitemap may
+not contain one single private route.
+
+## 2. Configuration changes
 
 ```
 astro.config.mjs
-  + adapter server (Node standalone)
-    output: "static"   ← TIDAK berubah
+  + a server adapter (Node standalone)
+    output: "static"   ← UNCHANGED
 ```
 
-Dengan adapter terpasang, `output: "static"` tetap menjadi default dan rute
-on-demand di-opt-out satu per satu. Ini yang dimaksud "static-by-default dengan
-rute on-demand"; tidak ada nilai `output: 'hybrid'` di Astro modern.
+With an adapter installed, `output: "static"` remains the default and on-demand
+routes opt out one at a time. That is what "static-by-default with on-demand
+routes" means; there is no `output: 'hybrid'` value in modern Astro.
 
-Komentar panjang di `astro.config.mjs` yang menjelaskan kenapa `output: 'static'`
-adalah premis template **tetap dipertahankan**, ditambah rujukan ke
-[ADR-0014](../../adr/0014-rendering-campuran-dan-bff-portal.md) supaya pembaca
-berikutnya tahu batas mana yang sudah diputuskan dan mana yang belum.
+The long comment in `astro.config.mjs` explaining why `output: 'static'` is the
+template's premise is **kept**, with a reference to
+[ADR-0014](../../adr/0014-rendering-campuran-dan-bff-portal.md) added so the next
+reader knows which boundaries have been decided and which have not.
 
-## 3. Struktur direktori yang direncanakan
+## 3. The planned directory structure
 
 ```
 src/
   pages/
-    penjual/            # rute on-demand (prerender = false)
-    affiliate/          # landing prerender; sisanya on-demand
-    _portal-api/        # server endpoints (BFF)
+    penjual/            # on-demand routes (prerender = false)
+    affiliate/          # a prerendered landing; the rest on-demand
+    _portal-api/        # server endpoints (the BFF)
   lib/
     awcms/
-      client.ts         # SUDAH ADA — tetap satu-satunya penghubung ke awcms
-      portal.ts         # panggilan saat request (sesi, mutasi portal)
-      session.ts        # cookie portal ↔ token awcms, rotasi, logout
-      csrf.ts           # token + verifikasi Origin/Referer
-    view-models/        # bentuk data untuk komponen portal
+      client.ts         # ALREADY EXISTS — still the only link to awcms
+      portal.ts         # request-time calls (sessions, portal mutations)
+      session.ts        # the portal cookie ↔ the awcms token, rotation, logout
+      csrf.ts           # the token + Origin/Referer verification
+    view-models/        # data shapes for portal components
   components/
-    portal/             # komponen khusus portal (form, tabel, status)
-  middleware.ts         # header keamanan + cache policy per permukaan
+    portal/             # portal-specific components (forms, tables, statuses)
+  middleware.ts         # security headers + a cache policy per surface
 ```
 
-Aturan `AGENTS.md` yang tetap berlaku dan mengikat kode baru:
+The `AGENTS.md` rules that still apply and bind new code:
 
-- **`src/lib/awcms/*` adalah satu-satunya yang menghubungi `awcms`.** Komponen
-  menerima data lewat props; ia tidak pernah mengambil datanya sendiri.
-- **Tidak ada jalur HTML mentah dari CMS.** `set:html` hanya menerima keluaran
-  renderer blok terkontrol.
-- **Token tidak pernah ber-prefix `PUBLIC_`.** Variabel ber-prefix itu masuk ke
-  bundel klien; token di bundel klien adalah token yang diterbitkan ke setiap
-  pengunjung.
-- **Baca env lewat `src/lib/env.ts`**, bukan `import.meta.env` langsung.
-- **Token desain, bukan nilai lepas.**
+- **`src/lib/awcms/*` is the only thing that contacts `awcms`.** Components
+  receive data through props; they never fetch their own.
+- **There is no raw HTML path from the CMS.** `set:html` only accepts the output
+  of the controlled block renderer.
+- **A token is never prefixed `PUBLIC_`.** Variables with that prefix enter the
+  client bundle; a token in a client bundle is a token issued to every visitor.
+- **Read env through `src/lib/env.ts`**, not through `import.meta.env` directly.
+- **Design tokens, not loose values.**
 
-## 4. Perbedaan build-time vs request-time
+## 4. The difference between build-time and request-time
 
-Hari ini seluruh data ditarik saat `docker build` (lihat komentar di
-`Dockerfile`). Setelah portal aktif, ada dua kelas variabel dan membedakannya
-adalah sumber kebingungan deploy paling sering:
+Today all data is pulled during `docker build` (see the comment in the
+`Dockerfile`). Once the portal is active there are two classes of variable, and
+telling them apart is the most frequent source of deployment confusion:
 
-| Kelas                | Contoh                                            | Kapan dibutuhkan | Catatan                                     |
-| -------------------- | ------------------------------------------------- | ---------------- | ------------------------------------------- |
-| Build-time           | `SITE_URL`, `AWCMS_API_URL`, token baca konten     | saat `astro build` | Di Coolify wajib dicentang **Build Variable** |
-| Runtime (baru)       | URL internal `awcms`, secret sesi/CSRF, kredensial layanan | saat container jalan | **Tidak boleh** ikut ke riwayat image |
+| Class                | Example                                            | When it is needed | Note                                         |
+| -------------------- | -------------------------------------------------- | ----------------- | -------------------------------------------- |
+| Build-time           | `SITE_URL`, `AWCMS_API_URL`, the content read token | during `astro build` | In Coolify it must be ticked **Build Variable** |
+| Runtime (new)        | The internal `awcms` URL, the session/CSRF secret, service credentials | while the container runs | **Must not** enter the image history |
 
-Token baca-konten build-time hanya boleh membaca konten **published** untuk satu
-tenant. Kredensial runtime portal adalah identitas yang berbeda, dengan
-kewenangan berbeda, dan tidak pernah dipakai saat build.
+The build-time content read token may only read **published** content for one
+tenant. The portal's runtime credential is a different identity, with different
+authority, and is never used at build time.
 
-Setiap variabel baru wajib masuk `.env.example` beserta konsekuensi salah isi —
-bukan sekadar namanya. Itu ditambahkan **bersama kode yang membacanya**, bukan
-sekarang.
+Every new variable must enter `.env.example` along with the consequence of filling
+it in wrongly — not merely its name. That is added **together with the code that
+reads it**, not now.
 
-## 5. Perubahan deployment
+## 5. Deployment changes
 
-Kolom "Sekarang" ikut berubah oleh
+The "Today" column has itself changed through
 [ADR-0016](../../adr/0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md):
-nginx sudah dilepas dan keluaran build disajikan proses Bun lewat adapter.
-Selisih yang tersisa bagi portal karena itu jauh lebih kecil daripada saat
-dokumen ini ditulis — yang belum ada tinggal rute on-demand-nya sendiri.
+nginx has been dropped and the build output is served by a Bun process through the
+adapter. The remaining difference for the portal is therefore far smaller than
+when this document was written — what is missing is only its own on-demand routes.
 
-| Aspek       | Sekarang                                        | Setelah portal aktif                                                       |
-| ----------- | ----------------------------------------------- | -------------------------------------------------------------------------- |
-| Image       | build Bun → proses Bun menyajikan `dist/client`  | Sama; stage runtime yang sama juga merender rute on-demand                 |
-| Port        | 8080 (proses Bun)                               | Tetap 8080 di belakang Traefik                                             |
-| Healthcheck | `wget` ke `/`                                   | Endpoint kesehatan yang tidak menyentuh `awcms` (agar tidak menular gagal) |
-| Penyaji     | adapter `@astrojs/node`, seluruh rute prerender | Adapter yang sama; sebagian rute `prerender = false`                       |
-| Rebuild     | Webhook Coolify → rebuild penuh                 | Tetap, untuk konten publik; portal tidak butuh rebuild                     |
-| Jaringan    | Publik → Traefik → proses Bun                   | Tetap; app → `awcms` lewat jaringan privat                                 |
+| Aspect      | Today                                            | Once the portal is active                                                   |
+| ----------- | ------------------------------------------------ | --------------------------------------------------------------------------- |
+| Image       | a Bun build → a Bun process serving `dist/client` | The same; the same runtime stage also renders the on-demand routes          |
+| Port        | 8080 (the Bun process)                           | Still 8080 behind Traefik                                                   |
+| Healthcheck | `wget` to `/`                                    | A health endpoint that does not touch `awcms` (so failure is not inherited) |
+| Server      | the `@astrojs/node` adapter, every route prerendered | The same adapter; some routes `prerender = false`                       |
+| Rebuild     | A Coolify webhook → a full rebuild               | Unchanged, for public content; the portal needs no rebuild                  |
+| Network     | Public → Traefik → the Bun process               | Unchanged; the app → `awcms` over a private network                         |
 
-`awcms` dipindahkan ke origin privat/terbatas pada perubahan yang sama. Portal
-yang sudah jalan sementara `awcms` masih publik memberi keuntungan keamanan nol.
+`awcms` moves to a private/restricted origin in the same change. A portal already
+running while `awcms` is still public gives zero security benefit.
 
-## 6. Jalur rollback
+## 6. The rollback path
 
-Rollback **bukan** "revert commit lalu berdoa". Yang harus tetap benar:
+A rollback is **not** "revert the commit and pray". What has to stay true:
 
-1. Build statis penuh (tanpa rute on-demand) tetap bisa dihasilkan dan
-   di-deploy — diuji di CI, bukan diasumsikan.
-2. Selama portal belum diumumkan, konfigurasi deployment lama tetap disimpan dan
-   bisa dipakai kembali dalam satu langkah.
-3. Bila portal dimatikan, rute `/penjual/**` dan `/affiliate/**` mengembalikan
-   halaman "sementara tidak tersedia" yang jujur — bukan 404 yang membuat
-   pengguna mengira akunnya hilang.
+1. A full static build (with no on-demand routes) can still be produced and
+   deployed — tested in CI, not assumed.
+2. While the portal is not yet announced, the old deployment configuration is kept
+   and can be restored in one step.
+3. If the portal is switched off, `/penjual/**` and `/affiliate/**` return an
+   honest "temporarily unavailable" page — not a 404 that makes a user think their
+   account is gone.

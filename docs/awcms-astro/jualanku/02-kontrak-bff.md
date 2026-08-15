@@ -1,123 +1,126 @@
-# 02 — Kontrak BFF `/_portal-api/**`
+🇬🇧 English (source) · 🇮🇩 [Bahasa Indonesia](02-kontrak-bff.id.md)
 
-> Rencana. Lihat [README](README.md) untuk status.
+# 02 — The `/_portal-api/**` BFF contract
 
-## 1. Batas keras
+> Planned. See the [README](README.md) for its status.
 
-BFF **boleh**: memegang sesi portal, menukarnya menjadi kredensial `awcms`
-server-side, menetapkan tenant dari host, memverifikasi CSRF/Origin, memasang
-header cache privat, memvalidasi bentuk input secukupnya untuk UX, memanggil
-`awcms`, dan membentuk view model.
+## 1. The hard boundary
 
-BFF **tidak boleh**: memutuskan kepemilikan merchant, entitlement paket,
-kelayakan payout, transisi status, perhitungan komisi, atau kebijakan moderasi.
-Semua itu diputuskan `awcms` dan diperiksa ulang di sana **untuk setiap
-panggilan** — termasuk panggilan yang BFF yakin sudah divalidasi.
+The BFF **may**: hold the portal session, exchange it for an `awcms` credential
+server-side, set the tenant from the host, verify CSRF/Origin, set private cache
+headers, validate input shapes far enough for UX, call `awcms`, and shape a view
+model.
 
-Uji sederhana untuk setiap baris kode baru di sini: _kalau seseorang memanggil
-`awcms` langsung dari jaringan internal tanpa melewati BFF, apakah hasilnya masih
-benar?_ Kalau tidak, aturannya salah tempat.
+The BFF **may not**: decide merchant ownership, package entitlements, payout
+eligibility, status transitions, commission calculations, or moderation policy.
+All of those are decided by `awcms` and re-checked there **on every call** —
+including calls the BFF is sure it has already validated.
 
-## 2. Alur sesi
+A simple test for every new line of code here: _if somebody called `awcms`
+directly from the internal network without passing through the BFF, would the
+result still be correct?_ If not, the rule is in the wrong place.
+
+## 2. The session flow
 
 ```
 1. POST /_portal-api/auth/login
-     BFF → awcms POST /api/v1/auth/login  (tenant dari host, bukan dari klien)
-     ← token + expiresAt
-     BFF menyimpan token server-side, menyetel cookie portal (HttpOnly, Secure,
-     SameSite, Path=/), lalu MEROTASI id sesi portal.
+     BFF → awcms POST /api/v1/auth/login  (tenant from the host, not from the client)
+     ← a token + expiresAt
+     The BFF stores the token server-side, sets the portal cookie (HttpOnly, Secure,
+     SameSite, Path=/), and then ROTATES the portal session id.
 
-2. Setiap request halaman on-demand
-     BFF membaca cookie portal → token → awcms GET introspeksi sesi
-     ← safe claims (identityId, roles, assurance, scope merchant/affiliate)
-     Halaman dirender dari claims itu; tidak ada klaim yang datang dari klien.
+2. Every on-demand page request
+     BFF reads the portal cookie → the token → awcms GET session introspection
+     ← safe claims (identityId, roles, assurance, the merchant/affiliate scope)
+     The page is rendered from those claims; no claim comes from the client.
 
-3. Mutasi (POST/PATCH/DELETE)
-     Verifikasi CSRF + Origin/Referer → panggil awcms → proyeksikan hasil.
+3. Mutations (POST/PATCH/DELETE)
+     Verify CSRF + Origin/Referer → call awcms → project the result.
 
 4. POST /_portal-api/auth/logout
-     awcms logout (revokasi) LEBIH DULU → baru cookie portal dihapus.
+     awcms logout (revocation) FIRST → only then delete the portal cookie.
 ```
 
-Urutan pada langkah 4 tidak bisa dibalik: menghapus cookie lebih dulu lalu gagal
-memanggil `awcms` meninggalkan sesi hidup yang tidak lagi terlihat siapa pun.
+The order in step 4 cannot be reversed: deleting the cookie first and then failing
+to call `awcms` leaves a live session nobody can see any more.
 
-## 3. Aturan cookie & CSRF
+## 3. Cookie & CSRF rules
 
-| Aspek                 | Ketentuan                                                                                  |
+| Aspect                | Requirement                                                                                  |
 | --------------------- | -------------------------------------------------------------------------------------------- |
-| Nama cookie           | Terpisah untuk merchant dan affiliate bila audience-nya berbeda; jangan berbagi satu cookie.  |
-| Atribut               | `HttpOnly`, `Secure`, `SameSite=Lax` (naik ke `Strict` bila alur tidak butuh redirect lintas-site), `Path=/`. |
-| Isi                   | Referensi sesi buram. **Bukan** token `awcms`, bukan data pengguna.                          |
-| Umur                  | Mengikuti `expiresAt` dari `awcms`; BFF tidak memperpanjang sendiri.                          |
-| CSRF                  | Token synchronizer/double-submit **dan** Origin/Referer check. Dua-duanya.                    |
-| Form tanpa JavaScript | Token CSRF disematkan sebagai hidden field, sehingga alur kritis tetap bekerja tanpa JS.      |
-| Rotasi                | Setelah login, setelah step-up/perubahan privilege, setelah recovery.                         |
+| Cookie name           | Separate for merchant and affiliate when their audiences differ; do not share one cookie.     |
+| Attributes            | `HttpOnly`, `Secure`, `SameSite=Lax` (raised to `Strict` when the flow needs no cross-site redirect), `Path=/`. |
+| Contents              | An opaque session reference. **Not** the `awcms` token, and not user data.                    |
+| Lifetime              | Follows `expiresAt` from `awcms`; the BFF does not extend it itself.                          |
+| CSRF                  | A synchronizer/double-submit token **and** an Origin/Referer check. Both.                     |
+| Forms without JavaScript | The CSRF token is embedded as a hidden field, so critical flows still work without JS.      |
+| Rotation              | After login, after a step-up/privilege change, after recovery.                                |
 
-## 4. Inventaris endpoint BFF
+## 4. The BFF endpoint inventory
 
-| Endpoint                                   | Meneruskan ke `awcms`                              | Catatan                        |
+| Endpoint                                   | Forwards to `awcms`                                | Note                            |
 | ------------------------------------------ | -------------------------------------------------- | ------------------------------- |
-| `POST /_portal-api/auth/login`             | `/api/v1/auth/login`                                | Rate-limited, respons seragam   |
-| `POST /_portal-api/auth/logout`            | `/api/v1/auth/logout`                               | Revokasi dulu, cookie kemudian  |
-| `GET  /_portal-api/auth/session`           | endpoint introspeksi sesi                           | Hanya safe claims               |
-| `GET/PATCH /_portal-api/merchant/profile`  | `/api/v1/jualanku/portal/merchant/profile`          | ETag diteruskan                 |
-| `GET/POST/PATCH /_portal-api/merchant/catalog` | `.../portal/merchant/offerings`                 | Idempotency-Key diteruskan      |
+| `POST /_portal-api/auth/login`             | `/api/v1/auth/login`                                | Rate-limited, uniform responses |
+| `POST /_portal-api/auth/logout`            | `/api/v1/auth/logout`                               | Revoke first, cookie after      |
+| `GET  /_portal-api/auth/session`           | the session introspection endpoint                  | Safe claims only                |
+| `GET/PATCH /_portal-api/merchant/profile`  | `/api/v1/jualanku/portal/merchant/profile`          | The ETag is forwarded           |
+| `GET/POST/PATCH /_portal-api/merchant/catalog` | `.../portal/merchant/offerings`                 | The Idempotency-Key is forwarded |
 | `GET/POST /_portal-api/merchant/promotions`| `.../portal/merchant/promotions`                    | —                               |
-| `GET  /_portal-api/merchant/leads`         | `.../portal/merchant/leads`                         | PII sudah masked dari `awcms`   |
-| `POST /_portal-api/merchant/verification`  | `.../portal/merchant/verification`                  | Upload lewat presigned media    |
-| `GET  /_portal-api/affiliate/summary`      | `.../portal/affiliate/summary`                      | Saldo dari ledger               |
+| `GET  /_portal-api/merchant/leads`         | `.../portal/merchant/leads`                         | PII already masked by `awcms`   |
+| `POST /_portal-api/merchant/verification`  | `.../portal/merchant/verification`                  | Uploads through presigned media |
+| `GET  /_portal-api/affiliate/summary`      | `.../portal/affiliate/summary`                      | The balance from the ledger     |
 | `GET/POST /_portal-api/affiliate/links`    | `.../portal/affiliate/links`                        | —                               |
-| `POST /_portal-api/affiliate/payouts`      | `.../portal/affiliate/payouts`                      | **Idempotency wajib**           |
-| `POST /_portal-api/interactions`           | `/api/v1/jualanku/public/interactions`              | Publik, minim data, ber-rate-limit |
+| `POST /_portal-api/affiliate/payouts`      | `.../portal/affiliate/payouts`                      | **Idempotency mandatory**       |
+| `POST /_portal-api/interactions`           | `/api/v1/jualanku/public/interactions`              | Public, minimal data, rate-limited |
 
-**Tidak ada passthrough generik.** Tidak ada `/_portal-api/[...path].ts` yang
-meneruskan apa saja ke `awcms`; setiap endpoint didaftarkan eksplisit. Proxy
-generik mengubah BFF menjadi deputi yang bingung dan membatalkan seluruh alasan
-`awcms` tidak menghadap publik.
+**There is no generic passthrough.** There is no `/_portal-api/[...path].ts`
+forwarding anything at all to `awcms`; every endpoint is registered explicitly. A
+generic proxy turns the BFF into a confused deputy and voids the entire reason
+`awcms` does not face the public.
 
-## 5. Unggah berkas
+## 5. File uploads
 
-Bukti verifikasi dan gambar katalog **tidak** melewati BFF sebagai byte:
+Verification evidence and catalogue images do **not** pass through the BFF as
+bytes:
 
-1. BFF meminta URL presigned ke `awcms` (`media_library`).
-2. Browser mengunggah langsung ke penyimpanan objek.
-3. BFF memanggil finalize; `awcms` memverifikasi MIME lewat magic byte + SHA-256.
+1. The BFF asks `awcms` for a presigned URL (`media_library`).
+2. The browser uploads directly to object storage.
+3. The BFF calls finalize; `awcms` verifies the MIME type through magic bytes +
+   SHA-256.
 
-Portal tidak pernah mengirim URL gambar bebas — jalur itu persis yang
-enforcement managed-media di `awcms` ada untuk menutupnya.
+The portal never sends a free-form image URL — that path is exactly what the
+managed-media enforcement in `awcms` exists to close.
 
-## 6. Header dan cache
+## 6. Headers and cache
 
-| Permukaan          | `Cache-Control`                           | Tambahan                                        |
+| Surface            | `Cache-Control`                            | In addition                                      |
 | ------------------ | ------------------------------------------ | ------------------------------------------------ |
-| Publik prerender   | `public, max-age=…` sesuai jenis aset      | Aset ber-hash boleh `immutable`                  |
-| `/cari`            | `public, max-age` pendek                   | Tidak pernah memuat data personal                |
-| Portal on-demand   | `private, no-store`                        | `X-Robots-Tag: noindex`, tidak masuk sitemap     |
-| `/_portal-api/**`  | `no-store`                                 | `Vary` yang benar bila ada negosiasi             |
+| Prerendered public | `public, max-age=…` per asset type         | Hashed assets may be `immutable`                 |
+| `/cari`            | `public, max-age` short                    | It never carries personal data                   |
+| The on-demand portal | `private, no-store`                      | `X-Robots-Tag: noindex`, absent from the sitemap |
+| `/_portal-api/**`  | `no-store`                                 | A correct `Vary` when there is negotiation       |
 
-Security header (CSP, frame-ancestors, referrer-policy, permissions-policy)
-diterapkan di [`server/penyaji.mjs`](../../../server/penyaji.mjs) — satu-satunya
-tempat header respons ditentukan sejak
+Security headers (CSP, frame-ancestors, referrer-policy, permissions-policy) are
+applied in [`server/penyaji.mjs`](../../../server/penyaji.mjs) — the only place
+response headers are decided since
 [ADR-0016](../../adr/0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md),
-menggantikan snippet nginx yang dirujuk versi awal dokumen ini. CSP portal tidak
-boleh melonggar dibanding CSP publik.
+replacing the nginx snippet an early version of this document referred to. The
+portal CSP may not be looser than the public CSP.
 
-Satu hal yang perlu diselesaikan di situ saat portal dibangun: penyaji hari ini
-memasang satu set header untuk SELURUH respons, sementara tabel di atas menuntut
-`private, no-store` khusus permukaan portal. Aturan per-permukaan itu belum ada,
-dan ia bukan pekerjaan yang bisa ditumpangkan diam-diam — cache yang melayani
-pengunjung anonim tidak boleh menyentuh respons terautentikasi.
+One thing to settle there when the portal is built: today the server installs one
+set of headers for EVERY response, while the table above demands `private,
+no-store` specifically for the portal surfaces. That per-surface rule does not
+exist yet, and it is not work that can be smuggled in alongside something else — a
+cache serving anonymous visitors may not touch an authenticated response.
 
-## 7. Penanganan error
+## 7. Error handling
 
-- Envelope `awcms` (`{ success, data }` / `{ success: false, error }`)
-  diterjemahkan menjadi view model; kode error internal tidak bocor apa adanya ke
-  halaman.
-- `correlationId` dari `awcms` dicatat di log BFF dan ditampilkan sebagai
-  referensi singkat pada halaman error, sehingga keluhan pengguna bisa
-  ditelusuri.
-- `awcms` tidak tersedia → halaman error jujur + status HTTP yang benar. Jangan
-  pernah merender halaman kosong yang tampak berhasil.
-- 401 dari `awcms` → bersihkan sesi portal lalu arahkan ke halaman masuk; jangan
-  mengulang permintaan diam-diam (itu melahirkan login loop).
+- The `awcms` envelope (`{ success, data }` / `{ success: false, error }`) is
+  translated into a view model; internal error codes do not leak as-is onto the
+  page.
+- The `correlationId` from `awcms` is recorded in the BFF log and shown as a short
+  reference on the error page, so a user's complaint can be traced.
+- `awcms` unavailable → an honest error page + the correct HTTP status. Never
+  render an empty page that looks successful.
+- A 401 from `awcms` → clear the portal session and redirect to the login page; do
+  not silently retry the request (that gives birth to a login loop).

@@ -1,97 +1,99 @@
-# 03 — Peta rute, porting UI, dan komponen
+🇬🇧 English (source) · 🇮🇩 [Bahasa Indonesia](03-peta-rute-dan-ui.id.md)
 
-> Rencana. Lihat [README](README.md) untuk status.
+# 03 — The route map, UI porting, and components
 
-## 1. Rute publik
+> Planned. See the [README](README.md) for its status.
 
-| Kelompok        | Rute                                                              | Disposition        | Sumber data                    |
+## 1. Public routes
+
+| Group           | Routes                                                            | Disposition        | Data source                    |
 | --------------- | ----------------------------------------------------------------- | ------------------ | ------------------------------ |
-| Discovery       | `/`, `/cari`, `/kategori`, `/kategori/[slug]`                     | PORT/REDESIGN/DYNAMIC | direktori + taksonomi `awcms` |
-| Merchant        | `/usaha/[slug]`, `/usaha/[slug]/produk`                           | DYNAMIC            | projection published saja      |
-| Produk/layanan  | `/produk/[slug]`, `/layanan/[slug]`                               | DYNAMIC            | katalog published              |
-| Konten          | `/artikel/**`, `/bantuan/**`                                      | PORT/DYNAMIC       | `blog_content`                 |
-| Komersial       | `/harga`, `/untuk-umkm`, `/layanan/website`                       | REDESIGN/DYNAMIC   | paket dari system of record    |
-| Affiliate       | `/affiliate`                                                      | REDESIGN           | konten publik                  |
-| Legal           | `/privasi`, `/ketentuan`, `/pengaduan`, `/disclosure-affiliate`   | PORT               | konten ber-versi + tanggal berlaku |
+| Discovery       | `/`, `/cari`, `/kategori`, `/kategori/[slug]`                     | PORT/REDESIGN/DYNAMIC | the `awcms` directory + taxonomy |
+| Merchant        | `/usaha/[slug]`, `/usaha/[slug]/produk`                           | DYNAMIC            | a published-only projection    |
+| Product/service | `/produk/[slug]`, `/layanan/[slug]`                               | DYNAMIC            | the published catalogue        |
+| Content         | `/artikel/**`, `/bantuan/**`                                      | PORT/DYNAMIC       | `blog_content`                 |
+| Commercial      | `/harga`, `/untuk-umkm`, `/layanan/website`                       | REDESIGN/DYNAMIC   | packages from the system of record |
+| Affiliate       | `/affiliate`                                                      | REDESIGN           | public content                 |
+| Legal           | `/privasi`, `/ketentuan`, `/pengaduan`, `/disclosure-affiliate`   | PORT               | versioned content + an effective date |
 
-Halaman legal wajib menampilkan **versi** dan **tanggal berlaku**, dan versinya
-tersimpan — bukan sekadar teks yang bisa berubah tanpa jejak.
+A legal page must show its **version** and its **effective date**, and that
+version is stored — not merely text that can change without a trace.
 
-## 2. Rute portal penjual
+## 2. Seller portal routes
 
 `/penjual/` + `masuk`, `daftar`, `dashboard`, `onboarding`, `usaha`, `katalog`,
 `promosi`, `leads`, `analitik`, `paket`, `tagihan`, `verifikasi`, `tim`,
 `bantuan`.
 
-`masuk`/`daftar` adalah permukaan publik-tanpa-sesi; sisanya privat.
+`masuk`/`daftar` are public-without-a-session surfaces; the rest are private.
 
-## 3. Rute portal affiliate
+## 3. Affiliate portal routes
 
 `/affiliate/` + `masuk`, `daftar`, `dashboard`, `tautan`, `kampanye`, `klik`,
 `konversi`, `komisi`, `payout`, `pajak`, `profil`, `panduan`, `ketentuan`.
 
-`/affiliate` (tanpa sub-path) tetap landing publik yang di-prerender.
+`/affiliate` (with no sub-path) remains a prerendered public landing page.
 
-## 4. Yang TIDAK ada di repo ini
+## 4. What is NOT in this repo
 
-Seluruh `/admin/jualanku/**` hidup di `awcms`. Repo ini tidak punya rute, menu,
-tautan, maupun komponen ke sana — termasuk tautan "masuk sebagai admin".
-Merchant dan affiliate tidak memiliki audience sesi yang bisa membukanya.
+All of `/admin/jualanku/**` lives in `awcms`. This repo has no route, menu, link,
+or component pointing there — including a "log in as admin" link. Merchants and
+affiliates do not have a session audience that could open it.
 
-## 5. Disposition porting Elementor
+## 5. The Elementor porting disposition
 
-| Kode       | Makna                                   | Contoh Jualanku                                |
+| Code       | Meaning                                  | Jualanku example                               |
 | ---------- | ---------------------------------------- | ---------------------------------------------- |
-| `PORT`     | Tujuan & struktur dipertahankan          | Hero, kartu kategori, kartu usaha              |
-| `REDESIGN` | Tujuan tetap, alur diperbaiki            | Dashboard penjual, onboarding                  |
-| `DYNAMIC`  | Statis → data `awcms`                    | Listing kategori, katalog, harga               |
-| `REMOVE`   | Tidak dibawa                             | Placeholder, lorem ipsum, seksi duplikat, data demo |
-| `DEFER`    | Bernilai, bukan MVP                      | Rekomendasi AI, checkout marketplace           |
+| `PORT`     | Purpose & structure preserved            | The hero, category cards, business cards       |
+| `REDESIGN` | Purpose kept, the flow improved          | The seller dashboard, onboarding               |
+| `DYNAMIC`  | Static → `awcms` data                    | Category listings, the catalogue, pricing      |
+| `REMOVE`   | Not carried over                         | Placeholders, lorem ipsum, duplicate sections, demo data |
+| `DEFER`    | Valuable, not MVP                        | AI recommendations, marketplace checkout       |
 
-Inventaris per rute/seksi dibuat sebagai lembar kerja sebelum layar pertama
-dikerjakan; setiap baris memuat rute, seksi, disposition, pemilik data, dan
-catatan aksesibilitas. Tidak ada markup, kelas CSS, widget, atau plugin WordPress
-yang disalin.
+The per-route/section inventory is made as a worksheet before the first screen is
+worked on; every row holds its route, section, disposition, data owner, and an
+accessibility note. No WordPress markup, CSS class, widget, or plugin is copied.
 
-## 6. Komponen
+## 6. Components
 
-Dibangun di atas komponen dan token yang sudah ada di repo ini
-([`../ui-ux-design-system.md`](../ui-ux-design-system.md)), ditambah kelompok
-portal:
+Built on top of the components and tokens already in this repo
+([`../ui-ux-design-system.md`](../ui-ux-design-system.md)), plus a portal group:
 
-| Kelompok       | Komponen                                                            | Catatan                                            |
+| Group          | Components                                                          | Note                                               |
 | -------------- | ------------------------------------------------------------------- | -------------------------------------------------- |
-| Form           | `FormField`, `FormError`, `SubmitButton`, `CsrfField`                | Bekerja tanpa JS; error terasosiasi ke field       |
-| Data           | `DataTable`, `Pagination`, `EmptyState`, `ErrorState`, `LoadingState`| Setiap layar wajib punya ketiga state              |
-| Status         | `StatusPill` (verifikasi/payout/moderasi)                            | Selalu label teks, tidak pernah warna saja         |
-| Sensitif       | `MaskedText`, `MoneyText`                                            | Masking otoritatif tetap di `awcms`                |
-| Navigasi       | `PortalNav`, `Breadcrumb`                                            | Menu portal tidak pernah memuat tautan admin       |
-| Umpan balik    | `Toast`, `ConfirmDialog`                                             | Konfirmasi untuk aksi tak-terbalikkan              |
+| Forms          | `FormField`, `FormError`, `SubmitButton`, `CsrfField`                | Work without JS; errors associated with their field |
+| Data           | `DataTable`, `Pagination`, `EmptyState`, `ErrorState`, `LoadingState`| Every screen must have all three states            |
+| Status         | `StatusPill` (verification/payout/moderation)                        | Always a text label, never colour alone            |
+| Sensitive      | `MaskedText`, `MoneyText`                                            | Authoritative masking stays in `awcms`             |
+| Navigation     | `PortalNav`, `Breadcrumb`                                            | The portal menu never carries an admin link        |
+| Feedback       | `Toast`, `ConfirmDialog`                                             | Confirmation for irreversible actions              |
 
-Aturan token tetap: tidak ada gaya sekali pakai; komponen baru memakai token yang
-sudah ada di `src/styles/global.css`. Rasio visual tunggal `--ratio-visual`
-berlaku untuk seluruh gambar usaha/produk — sumber berasio lain akan **dipotong**
-diam-diam, bukan diperkecil.
+The token rule stands: no one-off styles; a new component uses tokens that already
+exist in `src/styles/global.css`. The single visual ratio `--ratio-visual` applies
+to every business/product image — a source at another ratio will be **cropped**
+silently, not scaled down.
 
-## 7. Aksesibilitas
+## 7. Accessibility
 
-Baseline **WCAG 2.2 AA** untuk permukaan Jualanku (naik dari 2.1 AA yang
-tertulis di `AGENTS.md`; kenaikan ini diputuskan di
+The baseline is **WCAG 2.2 AA** for the Jualanku surfaces (up from the 2.1 AA
+written in `AGENTS.md`; that rise was decided in
 [ADR-0014](../../adr/0014-rendering-campuran-dan-bff-portal.md)).
 
-- Fungsi inti publik bekerja tanpa JavaScript; alur kritis portal (masuk, lihat
-  status, kirim form utama) juga.
-- Fokus terlihat, navigasi keyboard penuh, skip link, landmark, hierarki heading.
-- Target sentuh CTA utama portal minimal 44 CSS px.
-- Kontras cukup di tema terang **dan** gelap.
-- `prefers-reduced-motion` mematikan animasi dekoratif — bukan mempercepatnya.
-- Mobile-first dari 360 px.
-- Form: label, hint, asosiasi error, pengumuman status; validasi server tetap
-  otoritatif.
+- Core public functions work without JavaScript; so do the portal's critical flows
+  (logging in, seeing a status, submitting the main form).
+- Visible focus, full keyboard navigation, a skip link, landmarks, a heading
+  hierarchy.
+- The touch target for a main portal CTA is at least 44 CSS px.
+- Sufficient contrast in the light theme **and** the dark one.
+- `prefers-reduced-motion` switches decorative animation off — not merely speeds
+  it up.
+- Mobile-first from 360 px.
+- Forms: labels, hints, error association, status announcements; server-side
+  validation stays authoritative.
 
-## 8. Bahasa
+## 8. Language
 
-String antarmuka lewat katalog PO seperti seluruh repo ini — tidak pernah
-ditulis langsung di komponen. String portal baru masuk ke **seluruh** katalog
-locale; key yang belum diterjemahkan jatuh ke locale default, bukan menampilkan
-nama key.
+Interface strings go through the PO catalogues like everything else in this repo —
+never written directly in a component. New portal strings enter **every** locale
+catalogue; a key not yet translated falls back to the default locale rather than
+displaying the key name.
