@@ -1,167 +1,170 @@
-# ADR-0021 — Pengembangan repo ini ditahan sampai fondasi `awcms` selesai
+🇬🇧 English (source) · 🇮🇩 [Bahasa Indonesia](0021-tahan-pengembangan-menunggu-fondasi-awcms.id.md)
+
+# ADR-0021 — Development of this repo is held until the `awcms` foundation is finished
 
 - **Status:** Superseded by [ADR-0027](0027-penahanan-adr-0021-selesai.md)
-- **Tanggal:** 2 Agustus 2026
-- **Aturan pemilik:** 2 Agustus 2026 — "pengembangan lanjutan repo ini menanti pengembangan **dasar** pada repo `ahliweb/awcms` selesai dulu, baru lanjut pengembangan dari repo ini."
-- **Terkait:** [ADR-0020](0020-layar-admin-kembali-ke-awcms.md) (layar admin kembali ke `awcms` — keputusan yang memindahkan pusat gravitasi pekerjaan ke sana), `awcms` [ADR-0047](https://github.com/ahliweb/awcms/blob/main/docs/adr/0047-mini-micro-frozen-foundation-built-here.md) (pembekuan `awcms-mini`/`awcms-micro`), `awcms` [ADR-0051](https://github.com/ahliweb/awcms/blob/main/docs/adr/0051-admin-screens-consolidated-in-awcms.md)
+- **Date:** 2 August 2026
+- **Owner's rule:** 2 August 2026 — "further development of this repo waits until **foundational** development in the `ahliweb/awcms` repo is finished first, then development continues from this repo."
+- **Related:** [ADR-0020](0020-layar-admin-kembali-ke-awcms.md) (admin screens return to `awcms` — the decision that moved the centre of gravity of the work over there), `awcms` [ADR-0047](https://github.com/ahliweb/awcms/blob/main/docs/adr/0047-mini-micro-frozen-foundation-built-here.md) (freezing `awcms-mini`/`awcms-micro`), `awcms` [ADR-0051](https://github.com/ahliweb/awcms/blob/main/docs/adr/0051-admin-screens-consolidated-in-awcms.md)
 
-## Konteks
+## Context
 
-Empat perubahan mendarat di repo ini pada 2 Agustus 2026 dan menutup seluruh
-pekerjaan yang bisa diselesaikan tanpa `awcms` bergerak lebih dulu: CSP ketat
-yang benar-benar dikirim (ADR-0019), gerbang audit konten atas keluaran build,
-penyelarasan CI dengan ADR-0018, dan penyelarasan peran repo dengan `awcms`
-ADR-0051 (ADR-0020).
+Four changes landed in this repo on 2 August 2026 and closed out all the work
+that could be finished without `awcms` moving first: a strict CSP that is really
+sent (ADR-0019), the content audit gate over the build output, aligning CI with
+ADR-0018, and aligning the repo's role with `awcms` ADR-0051 (ADR-0020).
 
-Yang tersisa di backlog **semuanya menunggu `awcms`**, dan itu bukan kebetulan.
-ADR-0020 baru saja memindahkan seluruh layar admin ke `awcms`; `awcms` ADR-0047
-membekukan `awcms-mini`/`awcms-micro` sehingga fitur fondasi dirintis langsung di
-`awcms`; dan audit permukaan admin `awcms` menemukan 13 dari 21 modul tanpa satu
-pun layar, yang kini sedang dikerjakan bergelombang. Pusat gravitasi pekerjaan
-keluarga ini ada di `awcms`, dan repo ini adalah **konsumen** kontraknya.
+What is left in the backlog is **all waiting on `awcms`**, and that is no
+coincidence. ADR-0020 has just moved every admin screen to `awcms`; `awcms`
+ADR-0047 freezes `awcms-mini`/`awcms-micro` so that foundational features are
+pioneered directly in `awcms`; and the `awcms` admin surface audit found 13 of 21
+modules with no screen at all, now being worked through in waves. The centre of
+gravity of this family's work is in `awcms`, and this repo is a **consumer** of
+its contract.
 
-Mengembangkan repo ini secara paralel karena itu punya biaya yang spesifik,
-bukan sekadar "kurang fokus": **setiap fitur yang dibangun di atas kontrak yang
-belum stabil harus ditulis dua kali.** Repo ini sudah membayarnya sekali —
-adapter kontennya ditulis untuk daftar ringkasan, lalu ditulis ulang saat `awcms`
-mengirimkan build feed (ADR-0018), dan versi pertamanya menerbitkan situs yang
-setiap artikelnya kosong dengan build hijau.
+Developing this repo in parallel therefore has a specific cost, not merely "less
+focus": **every feature built on a contract that is not yet stable has to be
+written twice.** This repo has already paid that once — its content adapter was
+written for the summary list, then rewritten when `awcms` shipped the build feed
+(ADR-0018), and its first version published a site whose every article was empty
+with a green build.
 
-## Keputusan
+## Decision
 
-**Pengembangan repo ini ditahan sampai pengembangan DASAR `awcms` selesai.**
+**Development of this repo is held until FOUNDATIONAL development of `awcms` is
+finished.**
 
-Ini penahanan, bukan pembekuan permanen, dan bukan pula pernyataan bahwa repo ini
-selesai — backlog-nya masih ada dan tercatat di [`README.md`](../../README.md).
+This is a hold, not a permanent freeze, and not a statement that this repo is
+finished — its backlog still exists and is recorded in
+[`README.md`](../../README.md).
 
-### Yang MASIH boleh mendarat
+### What may STILL land
 
-Dua kelas, dan keduanya sempit:
+Two classes, and both are narrow:
 
-1. **Patch keamanan.** Repo ini punya image produksi yang berjalan di belakang
-   Traefik. Kerentanan tidak ikut membeku bersama pengembangannya, dan
-   menahannya berbulan-bulan menukar risiko yang nyata dengan kerapian jadwal.
-2. **Bump dependency.** Dependabot sudah aktif (`bun` mingguan,
-   `github-actions` bulanan) dan akan terus membuka PR selama penahanan.
-   Membiarkannya menumpuk berarti mencabut penahanan ke sebuah tumpukan bump
-   berbulan-bulan yang harus dinilai sekaligus — persis keadaan yang paling
-   mungkin menyelundupkan perubahan perilaku tanpa ada yang membacanya.
+1. **Security patches.** This repo has a production image running behind Traefik.
+   Vulnerabilities do not freeze along with its development, and holding them for
+   months trades a real risk for a tidy schedule.
+2. **Dependency bumps.** Dependabot is already active (`bun` weekly,
+   `github-actions` monthly) and will keep opening PRs during the hold. Letting
+   them pile up means lifting the hold onto a months-deep stack of bumps to be
+   judged all at once — precisely the state most likely to smuggle in a behaviour
+   change with nobody reading it.
 
-Keduanya tetap tunduk pada seluruh gerbang yang ada: `bun run build`,
-`bun test`, `bun run audit:konten`, dan changeset bila perilakunya berubah.
+Both remain subject to every existing gate: `bun run build`, `bun test`,
+`bun run audit:konten`, and a changeset when behaviour changes.
 
-### Yang DITAHAN
+### What is HELD
 
-Semua selain dua butir di atas: fitur, refactor, penambahan gerbang, dan
-perubahan dokumentasi yang bukan koreksi.
+Everything other than the two items above: features, refactors, new gates, and
+documentation changes that are not corrections.
 
-**Satu pengecualian yang perlu dinyatakan terus terang:** dokumen yang *berhenti
-benar* karena `awcms` berubah adalah cacat, bukan pekerjaan baru. Kalau `awcms`
-mengubah sebuah kontrak dan `AGENTS.md` di sini menjadi menyesatkan, koreksinya
-mendarat — itu justru yang dilindungi penahanan ini. Yang ditahan adalah
-menumbuhkan dokumen, bukan menjaga yang ada tetap jujur. Repo ini sudah
-menemukan dua contohnya dalam satu hari (peran admin, dan endpoint media yang
-sudah ada), dan keduanya tidak akan terlihat oleh siapa pun yang membaca
-dokumennya saja.
+**One exception that has to be stated plainly:** a document that *stops being
+true* because `awcms` changed is a defect, not new work. If `awcms` changes a
+contract and `AGENTS.md` here becomes misleading, its correction lands — that is
+exactly what this hold protects. What is held is growing the documents, not
+keeping the existing ones honest. This repo has already found two examples in a
+single day (the admin role, and a media endpoint that already existed), and
+neither would be visible to anyone reading only the documents.
 
-### Kapan penahanan ini dicabut
+### When this hold is lifted
 
-Saat pemilik menyatakan pengembangan dasar `awcms` selesai. Sinyal yang paling
-mendekati dan bisa diperiksa hari ini ada dua, keduanya di
-[`docs/PROJECT_STATE.md`](https://github.com/ahliweb/awcms/blob/main/docs/PROJECT_STATE.md)
-milik `awcms`:
+When the owner declares foundational `awcms` development finished. The closest
+signals that can be checked today are two, both in `awcms`'s own
+[`docs/PROJECT_STATE.md`](https://github.com/ahliweb/awcms/blob/main/docs/PROJECT_STATE.md):
 
-- **Setiap modul punya layar.** ~~Tabel §Layar admin mencatat "**7 dari 21
-  modul** masih tanpa layar" (turun dari 13 saat `awcms` ADR-0051 ditulis).~~ Nol adalah
-  penandanya, dan `tests/admin-navigation-registry.test.ts` di sana yang
-  menegakkannya.
+- **Every module has a screen.** ~~The §Admin screens table records "**7 of 21
+  modules** still without a screen" (down from 13 when `awcms` ADR-0051 was
+  written).~~ Zero is the marker, and `tests/admin-navigation-registry.test.ts`
+  over there is what enforces it.
 
-  **Indikator ini SUDAH TERPENUHI, 3 Agustus 2026.** `grep -L 'navigation:'
-  src/modules/*/module.ts` di `awcms` mengembalikan **nol** baris — diperiksa ke
-  kode, bukan ke tabelnya, karena tabel itu sendiri pernah basi tanpa ada yang
-  merah. Tujuh yang tersisa ditutup lewat `/admin/reporting`, `/admin/approvals`,
-  `/admin/domain-events`, `/admin/sync`, `/admin/blog`, `/admin/media`
-  (ADR-0056), dan `/admin/idn-regions`; `/admin/blog-pages` (ADR-0057) menyusul
-  di atasnya.
+  **This indicator is now MET, 3 August 2026.** `grep -L 'navigation:'
+  src/modules/*/module.ts` in `awcms` returns **zero** lines — checked against the
+  code, not against its table, because that table itself once went stale with
+  nothing turning red. The remaining seven were closed by `/admin/reporting`,
+  `/admin/approvals`, `/admin/domain-events`, `/admin/sync`, `/admin/blog`,
+  `/admin/media` (ADR-0056), and `/admin/idn-regions`; `/admin/blog-pages`
+  (ADR-0057) followed on top of them.
 
-- **§4 "yang belum" habis** — seam yang menunggu penyedia, rute publik
-  host-resolved, dan sisa penyerapan `awcms-micro`.
+- **§4 "outstanding" is empty** — the seam waiting for a provider, host-resolved
+  public routes, and the remaining `awcms-micro` absorption.
 
-  ~~**BELUM, per 3 Agustus 2026.** Ketiganya masih terbuka di §4: business-scope
-  resolver base tetap NO-OP fail-closed, rute konten host-based `/blog/{slug}`
-  masih follow-up, dan `newsletter` + `social-publishing` + pustaka komponen
-  Wave 0 + trajektori Wave 3 belum diserap.~~
+  ~~**NOT YET, as of 3 August 2026.** All three are still open in §4: the
+  business-scope resolver base is still a fail-closed NO-OP, the host-based
+  content route `/blog/{slug}` is still a follow-up, and `newsletter` +
+  `social-publishing` + the Wave 0 component library + the Wave 3 trajectory are
+  not absorbed.~~
 
-  **TERPENUHI juga, 4 Agustus 2026** — dua dari tiga ditutup, dan yang ketiga
-  ternyata tidak pernah termasuk. `awcms` ADR-0059 mendaratkan rute konten
-  host-resolved (`/news/**`; `/blog/{slug}` **ditolak dengan bukti** — Astro
-  membiarkan dua berkas rute saling menaungi diam-diam), dan ADR-0060 memberi
-  business-scope resolver penyedianya. Sisa penyerapan `awcms-micro`
-  (`newsletter`, `social-publishing`, pustaka `src/components/ui/`) **masih
-  belum ada dan tidak memblokir repo ini** — itu bukan penilaian dari sini
-  melainkan kesimpulan `awcms` sendiri di §Kesiapan `awcms-astro`
-  PROJECT_STATE-nya: **"Yang tersisa DAN milik repo ini: nol."**
+  **MET as well, 4 August 2026** — two of the three closed, and the third turned
+  out never to have been included. `awcms` ADR-0059 landed host-resolved content
+  routes (`/news/**`; `/blog/{slug}` **refused with evidence** — Astro lets two
+  route files silently shadow each other), and ADR-0060 gave the business-scope
+  resolver its provider. The remaining `awcms-micro` absorption (`newsletter`,
+  `social-publishing`, the `src/components/ui/` library) **is still absent and
+  does not block this repo** — that is not a judgement from here but `awcms`'s own
+  conclusion in the §`awcms-astro` readiness section of its PROJECT_STATE:
+  **"What remains AND belongs to this repo: zero."**
 
-  Konsekuensinya ditulis di [ADR-0027](0027-penahanan-adr-0021-selesai.md).
+  Its consequences are written in [ADR-0027](0027-penahanan-adr-0021-selesai.md).
 
-Kriteria itu **indikator, bukan gerbang otomatis**: yang mencabut penahanan
-tetap pernyataan pemilik. Ditulis di sini supaya "sudah selesai belum?" punya
-sesuatu yang bisa dilihat alih-alih ditebak.
+Those criteria are **indicators, not an automatic gate**: what lifts the hold is
+still the owner's statement. They are written here so that "is it finished yet?"
+has something that can be looked at rather than guessed.
 
-## Titik lanjut — yang menunggu saat penahanan dicabut
+## Resumption points — what waits for the hold to be lifted
 
-Ditulis sekarang, selagi konteksnya masih segar. Daftar yang direkonstruksi
-berbulan-bulan kemudian dari `git log` selalu kehilangan alasannya.
+Written now, while the context is still fresh. A list reconstructed months later
+from `git log` always loses its reasoning.
 
-1. **Gambar artikel.** Tidak lagi diblokir `awcms` —
-   `GET /api/v1/media/objects?ids=…` sudah ada dan feed build sudah membawa
-   `featuredMediaId`. Dua keputusan tersisa di sini: di mana gambar hasil
-   resolusi tinggal (`LocalizedArticle`, di-resolve sekali per build di
-   `content.ts` — bukan di modul sinkron yang dipanggil komponen), dan apa yang
-   diizinkan `img-src` (host media ber-origin lain, jadi CSP ADR-0019
-   memblokirnya sampai origin itu dinyatakan). Rinciannya di
+1. **Article images.** No longer blocked by `awcms` —
+   `GET /api/v1/media/objects?ids=…` already exists and the build feed already
+   carries `featuredMediaId`. Two decisions remain here: where the resolved image
+   lives (`LocalizedArticle`, resolved once per build in `content.ts` — not in a
+   synchronous module called by components), and what `img-src` allows (the media
+   host is on another origin, so the ADR-0019 CSP blocks it until that origin is
+   declared). Details in
    [`src/lib/article-images.ts`](../../src/lib/article-images.ts).
-2. **Filter locale di feed `awcms`.** ~~Masih belum ada — diperiksa langsung di
-   `blog-post-list-query.ts` pada 2 Agustus 2026. Build menarik SELURUH locale
-   lalu memasangkannya di sini; benar, tetapi berlebih untuk situs satu bahasa.~~
+2. **The locale filter in the `awcms` feed.** ~~Still absent — checked directly in
+   `blog-post-list-query.ts` on 2 August 2026. The build pulls EVERY locale and
+   pairs them up here; correct, but excessive for a single-language site.~~
 
-   **Koreksi, 3 Agustus 2026 — butir ini berhenti benar dalam hitungan jam.**
-   `awcms` [#346](https://github.com/ahliweb/awcms/pull/346) mendarat pada hari
-   yang sama dan menyebut butir ini di badan commit-nya: `?locale=` kini ada di
-   ketiga cabang daftar (`view=full` termasuk), cocok-persis, absen berarti
-   seluruh locale, kosong dibalas 400.
+   **Correction, 3 August 2026 — this item stopped being true within hours.**
+   `awcms` [#346](https://github.com/ahliweb/awcms/pull/346) landed the same day
+   and names this item in its commit body: `?locale=` now exists on all three list
+   branches (`view=full` included), exact-match, absent meaning every locale,
+   empty answered with a 400.
 
-   Dan alasan butir ini **salah**, bukan cuma usang. "Berlebih untuk situs satu
-   bahasa" memerikan repo lain: template ini menyajikan dua locale (`id` + `en`,
-   `src/config/site.ts`) dan memasangkannya lewat `translationGroupId`. Memakai
-   `?locale=id` di sini membuang setiap baris `en` **tanpa satu pun gerbang
-   merah** — `assertTranslationsArePairable` menangkap terjemahan yang tiba
-   tanpa grup, bukan terjemahan yang tidak pernah ikut ditarik. Hasilnya build
-   hijau yang menerbitkan setiap halaman `/en/**` sebagai bahasa Indonesia
-   berpenanda "belum diterjemahkan": bentuk kegagalan yang sama persis dengan
-   ADR-0018 (`view=full` yang diabaikan → setiap artikel kosong, build hijau),
-   dan `AGENTS.md` sudah menyebutnya kegagalan, bukan optimasi.
+   And the reason this item was **wrong**, not merely out of date. "Excessive for
+   a single-language site" describes another repo: this template serves two
+   locales (`id` + `en`, `src/config/site.ts`) and pairs them through
+   `translationGroupId`. Using `?locale=id` here would discard every `en` row
+   **without a single gate turning red** — `assertTranslationsArePairable` catches
+   a translation arriving without a group, not a translation that was never pulled
+   at all. The result is a green build publishing every `/en/**` page as
+   Indonesian marked "not translated yet": exactly the same failure shape as
+   ADR-0018 (an ignored `view=full` → every article empty, green build), and
+   `AGENTS.md` already calls that a failure, not an optimisation.
 
-   Jadi yang menunggu pencabutan penahanan bukan "pasang `?locale=`", melainkan
-   keputusan yang lebih kecil: **deployment satu-locale** boleh mengirimnya, dan
-   itu berarti satu traversal per locale (parameternya menerima satu nilai),
-   bukan satu traversal yang lebih ramping.
-3. **Kartu share per halaman.** Butuh pembangkit yang terikat seni domain;
-   `SITE_SOCIAL_IMAGE` (satu kartu, opsional) tetap keadaan yang didukung.
-4. **BFF portal Jualanku (ADR-0014).** Dua kontrak yang dulu memblokirnya sudah
-   mendarat di `awcms` (ADR-0049/0050); prasyarat sisanya di
+   So what waits on the hold being lifted is not "add `?locale=`" but a smaller
+   decision: a **single-locale deployment** may send it, and that means one
+   traversal per locale (the parameter accepts one value), not one leaner
+   traversal.
+3. **A share card per page.** It needs a generator bound to domain artwork;
+   `SITE_SOCIAL_IMAGE` (one card, optional) remains a supported state.
+4. **The Jualanku portal BFF (ADR-0014).** The two contracts that used to block it
+   have landed in `awcms` (ADR-0049/0050); the remaining prerequisites are in
    [`04-kesiapan.md`](../awcms-astro/jualanku/04-kesiapan.md).
 
-## Konsekuensi
+## Consequences
 
-- **Kontrak `awcms` mengeras lebih dulu, lalu dikonsumsi sekali.** Ini
-  keuntungan utamanya, dan repo ini sudah membayar harga dari kebalikannya.
-- **Backlog tidak hilang, ia menunggu** — dan titik lanjut di atas yang membuat
-  penundaan ini murah untuk dicabut.
-- **Dependabot tetap berjalan**, jadi penahanan ini tidak menghasilkan repo yang
-  tertinggal dari rantai build-nya sendiri.
-- **Risiko yang diterima:** "pengembangan dasar selesai" tidak punya definisi
-  formal, jadi penahanan ini bisa berlangsung lebih lama daripada yang
-  dimaksudkan tanpa ada yang menyadarinya. Dua indikator di atas yang memberinya
-  sesuatu untuk diperiksa; kalau keduanya sudah nol dan penahanan masih berlaku,
-  itu pertanyaan yang layak diajukan, bukan keadaan yang dibiarkan.
+- **The `awcms` contract hardens first, then is consumed once.** That is the main
+  benefit, and this repo has already paid the price of the opposite.
+- **The backlog does not disappear, it waits** — and the resumption points above
+  are what make this postponement cheap to lift.
+- **Dependabot keeps running**, so this hold does not produce a repo left behind
+  by its own build chain.
+- **An accepted risk:** "foundational development is finished" has no formal
+  definition, so this hold could last longer than intended without anyone
+  noticing. The two indicators above are what give it something to check; if both
+  are at zero and the hold is still in force, that is a question worth raising,
+  not a state to be left alone.

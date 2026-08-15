@@ -1,57 +1,59 @@
-# ADR-0022 — Situs ini menerbitkan tenant DEFAULT (owner) `awcms`
+🇬🇧 English (source) · 🇮🇩 [Bahasa Indonesia](0022-situs-menerbitkan-tenant-default-awcms.id.md)
+
+# ADR-0022 — This site publishes the `awcms` DEFAULT (owner) tenant
 
 - **Status:** Accepted
-- **Tanggal:** 2 Agustus 2026
-- **Aturan pemilik:** 2 Agustus 2026 — "untuk repo `ahliweb/awcms-astro` juga merujuk ke default tenant (owner) pada repo `ahliweb/awcms`."
-- **Menyempurnakan:** [ADR-0018](0018-kontrak-build-token-mesin-dan-traversal-konten.md) — tenant tetap datang dari token mesin; ADR ini menyatakan tenant MANA yang boleh dirujuk, dan bagaimana pernyataan itu dibuat bisa diperiksa.
-- **Terkait:** [ADR-0021](0021-tahan-pengembangan-menunggu-fondasi-awcms.md) (penahanan pengembangan — tetap berlaku), `awcms` [ADR-0053](https://github.com/ahliweb/awcms/blob/main/docs/adr/0053-platform-scoped-permissions.md) (tenant platform & permission ber-scope platform), `awcms` [ADR-0054](https://github.com/ahliweb/awcms/blob/main/docs/adr/0054-tenant-provisioning.md) (provisioning tenant), `awcms` [ADR-0055](https://github.com/ahliweb/awcms/blob/main/docs/adr/0055-development-confined-to-awcms-and-awcms-astro.md) (pengembangan hanya di dua repo ini)
+- **Date:** 2 August 2026
+- **Owner's rule:** 2 August 2026 — "for the `ahliweb/awcms-astro` repo, also refer to the default tenant (owner) in the `ahliweb/awcms` repo."
+- **Refines:** [ADR-0018](0018-kontrak-build-token-mesin-dan-traversal-konten.md) — the tenant still comes from the machine token; this ADR states WHICH tenant may be referred to, and how that statement is made checkable.
+- **Related:** [ADR-0021](0021-tahan-pengembangan-menunggu-fondasi-awcms.md) (the development hold — still in force), `awcms` [ADR-0053](https://github.com/ahliweb/awcms/blob/main/docs/adr/0053-platform-scoped-permissions.md) (the platform tenant & platform-scoped permissions), `awcms` [ADR-0054](https://github.com/ahliweb/awcms/blob/main/docs/adr/0054-tenant-provisioning.md) (tenant provisioning), `awcms` [ADR-0055](https://github.com/ahliweb/awcms/blob/main/docs/adr/0055-development-confined-to-awcms-and-awcms-astro.md) (development confined to these two repos)
 
-## Konteks
+## Context
 
-ADR-0018 menutup pertanyaan **bagaimana** tenant ditentukan: token mesin membawanya (`awcmsm_<32 hex tenant id>_<secret>`), dan `AWCMS_TENANT_ID` adalah **asersi** yang menggagalkan build bila keduanya berbeda. Itu benar dan tidak berubah.
+ADR-0018 settled **how** the tenant is determined: the machine token carries it (`awcmsm_<32 hex tenant id>_<secret>`), and `AWCMS_TENANT_ID` is an **assertion** that fails the build when the two differ. That is true and does not change.
 
-Yang belum pernah dinyatakan adalah tenant **mana**. Selama `awcms` hanya bisa punya satu tenant, pertanyaannya tidak berarti apa-apa — dan memang begitu keadaannya sampai 2 Agustus 2026, karena `POST /api/v1/setup/initialize` meng-klaim singleton `awcms_setup_state` sehingga sukses tepat sekali.
+What was never stated is **which** tenant. As long as `awcms` could only have one tenant, the question meant nothing — and that was the state of things until 2 August 2026, because `POST /api/v1/setup/initialize` claims the `awcms_setup_state` singleton and therefore succeeds exactly once.
 
-Dua perubahan di `awcms` pada hari yang sama membuat pertanyaan itu punya arti:
+Two changes in `awcms` on the same day gave the question meaning:
 
-- **ADR-0053** memperkenalkan **tenant platform** — tenant yang memegang wewenang lintas-tenant, di-resolve `PLATFORM_TENANT_ID` → `PUBLIC_DEFAULT_TENANT_ID` → `PUBLIC_DEFAULT_TENANT_CODE` → `awcms_setup_state.tenant_id`. Ia juga menurunkan **mode ketenanan** `single`/`multi` dari jumlah tenant aktif.
-- **ADR-0054** membuat tenant kedua **bisa ada**.
+- **ADR-0053** introduced the **platform tenant** — the tenant holding cross-tenant authority, resolved `PLATFORM_TENANT_ID` → `PUBLIC_DEFAULT_TENANT_ID` → `PUBLIC_DEFAULT_TENANT_CODE` → `awcms_setup_state.tenant_id`. It also derives the `single`/`multi` **tenancy mode** from the number of active tenants.
+- **ADR-0054** made a second tenant **possible**.
 
-Sejak itu, "tenant mana yang situs ini terbitkan" adalah pertanyaan dengan lebih dari satu jawaban yang mungkin.
+Since then, "which tenant does this site publish" is a question with more than one possible answer.
 
-## Keputusan
+## Decision
 
-**Situs yang dibangun dari repo ini menerbitkan tenant DEFAULT (owner) `awcms`** — tenant yang sama yang `awcms` resolusi sebagai tenant platform.
+**A site built from this repo publishes the `awcms` DEFAULT (owner) tenant** — the same tenant `awcms` resolves as its platform tenant.
 
-Mekanismenya **tidak berubah**, dan itu disengaja:
+The mechanism **does not change**, and that is deliberate:
 
-1. Token mesin (`AWCMS_API_TOKEN`) **diterbitkan dari tenant default itu**, dan tetap menjadi satu-satunya hal yang memilih tenant.
-2. `AWCMS_TENANT_ID` diisi dengan uuid tenant tersebut, sehingga build gagal saat token dan asersi tidak cocok.
+1. The machine token (`AWCMS_API_TOKEN`) is **issued from that default tenant**, and remains the only thing that selects a tenant.
+2. `AWCMS_TENANT_ID` is filled in with that tenant's uuid, so the build fails when the token and the assertion do not match.
 
-Yang ADR ini tambahkan adalah **cara memastikannya**: layar `/admin/tenants` di `awcms` (ADR-0054) menandai tenant platform dengan badge `platform`, dan uuid-nya ada di baris yang sama. Itu sumber yang benar untuk `AWCMS_TENANT_ID` — bukan tebakan, bukan tenant yang kebetulan token-nya ada di clipboard.
+What this ADR adds is **how to be sure**: the `/admin/tenants` screen in `awcms` (ADR-0054) marks the platform tenant with a `platform` badge, and its uuid is on the same row. That is the correct source for `AWCMS_TENANT_ID` — not a guess, and not whichever tenant's token happened to be on the clipboard.
 
-### Kenapa TIDAK diverifikasi lewat jaringan
+### Why it is NOT verified over the network
 
-Kandidat yang jelas adalah build menanyakan `awcms` "apakah tenant saya tenant platform?". Itu **ditolak**, dan alasannya milik `awcms`, bukan kenyamanan:
+The obvious candidate is for the build to ask `awcms` "is my tenant the platform tenant?". That is **refused**, and the reason belongs to `awcms`, not to convenience:
 
-- `GET /api/v1/auth/session` **menolak kredensial mesin dengan 401 yang sama seperti token tak dikenal** (`awcms` ADR-0049 §Anti-oracle). Membuatnya menjawab kredensial mesin akan mengubah endpoint itu menjadi pengklasifikasi bearer yang sedang dipegang seseorang.
-- Endpoint baru yang menjawabnya berarti **melebarkan izin token build**, yang hari ini `["blog_content.posts.read"]` dan tidak lebih. Token build yang bocor tidak boleh bisa membaca postur platform.
+- `GET /api/v1/auth/session` **refuses machine credentials with the same 401 as an unknown token** (`awcms` ADR-0049 §Anti-oracle). Making it answer for machine credentials would turn that endpoint into a classifier for whatever bearer somebody is holding.
+- A new endpoint that answered it would mean **widening the build token's permissions**, which today are `["blog_content.posts.read"]` and no more. A leaked build token must not be able to read the platform posture.
 
-Asersi build-time sudah menangkap kesalahan yang benar-benar terjadi — **token yang salah ditempel** — dan menangkapnya tanpa menambah satu pun permukaan.
+The build-time assertion already catches the mistake that actually happens — **the wrong token pasted in** — and catches it without adding a single surface.
 
-## Konsekuensi
+## Consequences
 
-- **Positif:**
-  - Pertanyaan "tenant mana" punya jawaban tertulis sebelum `awcms` benar-benar multi-tenant, bukan sesudah situs pertama menerbitkan artikel milik pihak lain.
-  - Nol perubahan kode dan nol permukaan baru: mekanismenya sudah ada sejak ADR-0018.
-- **Negatif / trade-off yang diterima:**
-  - `AWCMS_TENANT_ID` **opsional**, jadi deployment yang mengosongkannya tidak memeriksa apa pun. Itu tetap pilihan yang sah (ADR-0018 §Asersi) — tetapi begitu `awcms` masuk mode `multi`, mengosongkannya berarti menerima bahwa token yang salah tidak akan terlihat sampai seseorang membaca artikelnya.
-  - Bila `awcms` kelak sengaja memisahkan tenant landing-page dari tenant platform (`PLATFORM_TENANT_ID` diisi terpisah — `awcms` ADR-0053 §Konsekuensi), ADR ini harus dibaca ulang: "default" dan "platform" berhenti menjadi tenant yang sama, dan repo ini harus memilih salah satunya secara eksplisit.
-- **Netral:**
-  - [ADR-0021](0021-tahan-pengembangan-menunggu-fondasi-awcms.md) tetap berlaku. Ini dokumen, bukan pengembangan fitur.
+- **Positive:**
+  - The "which tenant" question has a written answer before `awcms` is genuinely multi-tenant, rather than after the first site publishes somebody else's articles.
+  - Zero code changes and zero new surfaces: the mechanism has existed since ADR-0018.
+- **Negative / accepted trade-offs:**
+  - `AWCMS_TENANT_ID` is **optional**, so a deployment that leaves it empty checks nothing. That remains a valid choice (ADR-0018 §Assertion) — but once `awcms` enters `multi` mode, leaving it empty means accepting that a wrong token will not be visible until somebody reads the articles.
+  - If `awcms` one day deliberately separates the landing-page tenant from the platform tenant (`PLATFORM_TENANT_ID` filled in separately — `awcms` ADR-0053 §Consequences), this ADR has to be re-read: "default" and "platform" stop being the same tenant, and this repo has to choose one of them explicitly.
+- **Neutral:**
+  - [ADR-0021](0021-tahan-pengembangan-menunggu-fondasi-awcms.md) still applies. This is a document, not feature development.
 
-## Alternatif yang dipertimbangkan
+## Alternatives considered
 
-- **Endpoint `awcms` yang menyatakan tenant platform** — ditolak; lihat §Kenapa TIDAK diverifikasi lewat jaringan.
-- **Mewajibkan `AWCMS_TENANT_ID`** — ditolak untuk sekarang: ADR-0018 sengaja membuatnya opsional supaya deployment percobaan bisa jalan tanpa menyalin uuid. Mewajibkannya adalah perubahan yang wajar begitu ada deployment `multi` nyata, dan pantas mendapat ADR-nya sendiri saat itu.
-- **Menyimpulkan tenant default dari `AWCMS_API_URL`** — ditolak: origin tidak memberi tahu apa pun tentang tenant, dan menyimpulkan yang tidak diketahui adalah persis pola "nilai yang terbaca seperti konfigurasi dan tidak memutuskan apa pun" yang repo ini berulang kali menulis aturan untuk melawannya.
+- **An `awcms` endpoint that states the platform tenant** — refused; see §Why it is NOT verified over the network.
+- **Making `AWCMS_TENANT_ID` mandatory** — refused for now: ADR-0018 deliberately made it optional so a trial deployment can run without copying a uuid. Making it mandatory is a reasonable change once there is a real `multi` deployment, and deserves its own ADR at that point.
+- **Inferring the default tenant from `AWCMS_API_URL`** — refused: an origin tells you nothing about a tenant, and inferring what is not known is exactly the "a value that reads like configuration and decides nothing" pattern this repo has repeatedly written rules against.

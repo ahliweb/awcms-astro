@@ -1,158 +1,156 @@
-# ADR-0030 — Empat aturan yang sudah tertulis akhirnya punya pemeriksa, dan rantai pasok dipin ke SHA
+🇬🇧 English (source) · 🇮🇩 [Bahasa Indonesia](0030-aturan-tertulis-mendapat-pemeriksanya.id.md)
+
+# ADR-0030 — Four already-written rules finally get a checker, and the supply chain is pinned to SHAs
 
 - **Status:** Accepted
-- **Tanggal:** 4 Agustus 2026
-- **Aturan pemilik:** 4 Agustus 2026 — "analisis seluruh isi repo ini … lalu update semua docs dan skills. setuju lakukan rekomendasi terbaikmu."
-- **Terkait:** [ADR-0028](0028-jangkar-standar-performa-dan-keamanan.md) (celah 6 yang ditutup di sini), [ADR-0015](0015-runtime-bun-menutup-divergence-keluarga.md) (versi Bun dipin di beberapa tempat), [ADR-0018](0018-kontrak-build-token-mesin-dan-traversal-konten.md) (permukaan yang dipanggil build), `awcms` [ADR-0062](https://github.com/ahliweb/awcms/blob/main/docs/adr/0062-skills-are-gated-against-the-code-they-describe.md) (skill digerbangi terhadap kodenya)
+- **Date:** 4 August 2026
+- **Owner's rule:** 4 August 2026 — "analyse the whole contents of this repo … then update all the docs and skills. agreed, act on your best recommendation."
+- **Related:** [ADR-0028](0028-jangkar-standar-performa-dan-keamanan.md) (gap 6, closed here), [ADR-0015](0015-runtime-bun-menutup-divergence-keluarga.md) (the Bun version pinned in several places), [ADR-0018](0018-kontrak-build-token-mesin-dan-traversal-konten.md) (the surfaces the build calls), `awcms` [ADR-0062](https://github.com/ahliweb/awcms/blob/main/docs/adr/0062-skills-are-gated-against-the-code-they-describe.md) (skills gated against their code)
 
-## Konteks
+## Context
 
-Repo ini punya aturan yang mengikat: **"aturan baru wajib membawa pemeriksanya."**
-Pembacaan menyeluruh pada 4 Agustus 2026 menemukan empat aturan yang sudah
-tertulis — sebagian sejak berbulan-bulan — dan **tidak satu pun punya pemeriksa.**
-Keempatnya berbagi bentuk kegagalan yang sama: tidak ada yang gagal saat
-dilanggar.
+This repo has a binding rule: **"a new rule must bring its own checker."** A
+full reading on 4 August 2026 found four rules already written — some of them for
+months — and **not one of them had a checker.** All four share the same failure
+shape: nothing fails when they are broken.
 
-### 1. Versi Bun: lima nilai, nol gerbang
+### 1. The Bun version: five values, zero gates
 
-`AGENTS.md` §Konfigurasi menyatakannya sebagai aturan yang tidak bisa dilanggar:
+`AGENTS.md` §Configuration states it as a rule that cannot be broken:
 
-> Versinya dipin di TIGA tempat yang wajib bergerak bersama … Menaikkan salah
-> satu saja membuat build lokal, CI, dan image berbeda perilaku — **diam-diam**.
+> Its version is pinned in THREE places that must move together … Raising only
+> one of them makes the local build, CI, and the image behave differently —
+> **silently**.
 
-Kalimat itu menghitung BERKAS. Yang harus sepakat adalah NILAI, dan nilainya
-muncul **lima** kali: `packageManager`, `engines.bun`, `bun-version` di dua job
-CI, dan tag image di dua stage `Dockerfile`. Duplikat kedua di masing-masing
-berkas adalah yang paling mungkin tertinggal — letaknya jauh dari yang pertama,
-dan keduanya tetap hijau sendirian.
+That sentence counts FILES. What has to agree is VALUES, and the value appears
+**five** times: `packageManager`, `engines.bun`, `bun-version` in two CI jobs, and
+the image tag in two `Dockerfile` stages. The second duplicate in each file is the
+most likely to be left behind — it sits far from the first, and each stays green
+on its own.
 
-`grep -rln "packageManager\|bun-version" tests/ scripts/` mengembalikan **nol
-baris**.
+`grep -rln "packageManager\|bun-version" tests/ scripts/` returns **zero lines**.
 
-### 2. Rilis: dua gerbang wajib yang tidak dijalankan perilis
+### 2. Releases: two mandatory gates the releaser does not run
 
-Empat dokumen — `AGENTS.md` §Definition of Done, `CONTRIBUTING.md`, templat PR,
-dan `checklist-repo-baru.md` — menuntut `bun test` hijau dan `bun audit` nol
-sebelum rilis. `standar-teknis.md` §Keamanan menuliskannya sebagai kata **wajib**,
-yang di dokumen itu berarti "pelanggarannya menggagalkan gerbang mutu".
+Four documents — `AGENTS.md` §Definition of Done, `CONTRIBUTING.md`, the PR
+template, and `checklist-repo-baru.md` — demand a green `bun test` and a zero
+`bun audit` before a release. `standar-teknis.md` §Security writes it with the
+word **must**, which in that document means "breaking it fails a quality gate".
 
-`scripts/rilis.mjs` menjalankan `bun run build`, `audit:konten`, dan
-`audit:dokumen`. Ia **tidak** menjalankan `bun test` maupun `bun audit`.
+`scripts/rilis.mjs` runs `bun run build`, `audit:konten`, and `audit:dokumen`. It
+does **not** run `bun test` or `bun audit`.
 
-Yang hilang bukan sekadar dua perintah. Dua lapis `bun test` — gerbang penyajian
-dan gerbang keluaran CSP — **melewati dirinya tanpa `dist/`**, jadi satu-satunya
-tempat keduanya benar-benar bisa berjalan adalah sesudah build; dan sesudah build
-adalah persis titik yang dilewati perilis.
+What is missing is not merely two commands. Two layers of `bun test` — the
+serving gate and the CSP output gate — **skip themselves without `dist/`**, so the
+only place both can really run is after the build; and after the build is exactly
+the point the releaser skips.
 
-### 3. Permukaan `awcms`: dua repo, dua angka
+### 3. `awcms` surfaces: two repos, two numbers
 
-`ahliweb/awcms` menilai kesiapannya sebagian dari daftar permukaan yang
-dikonsumsi repo ini. Penilaian repo-nya pada 4 Agustus 2026
-(`docs/awcms/repo-assessment-2026-08-04.md` §4) mencatat **enam**, dan menyusun
-rencana snapshot kontrak konsumen di atas angka itu.
+`ahliweb/awcms` judges its readiness partly from the list of surfaces this repo
+consumes. Its repo assessment of 4 August 2026
+(`docs/awcms/repo-assessment-2026-08-04.md` §4) records **six**, and builds a
+consumer contract snapshot plan on that number.
 
-Repo ini memanggil **tiga**. Diverifikasi ke kode, bukan ke daftar:
+This repo calls **three**. Verified against the code, not against a list:
 
-| Permukaan | Keadaan |
+| Surface | State |
 | --- | --- |
-| `GET /api/v1/blog/posts` | dipanggil |
-| `GET /api/v1/media/objects` | dipanggil |
-| `GET /api/v1/media/public-origin` | dipanggil |
-| `GET /api/v1/blog/posts/{id}` | **DIHAPUS ADR-0018** — dulu N+1 per build |
-| `GET /api/v1/auth/session` | milik BFF portal yang belum ada |
-| `POST /api/v1/access/machine-credentials` | cara MANUSIA menerbitkan token |
+| `GET /api/v1/blog/posts` | called |
+| `GET /api/v1/media/objects` | called |
+| `GET /api/v1/media/public-origin` | called |
+| `GET /api/v1/blog/posts/{id}` | **REMOVED BY ADR-0018** — it used to be N+1 per build |
+| `GET /api/v1/auth/session` | belongs to a portal BFF that does not exist |
+| `POST /api/v1/access/machine-credentials` | how a HUMAN issues a token |
 
-Selisihnya bukan sekadar angka. Kontrak konsumen yang membekukan tiga permukaan
-yang tidak dikonsumsi akan mengikat repo SANA pada bentuk yang repo SINI tidak
-pernah butuh — sambil membuat "kontraknya terjaga" terasa lebih lengkap daripada
-kenyataannya. Dan daftar di sisi sini, sampai ADR ini, hanya prosa: ia sudah
-pernah salah, dengan `/posts/{id}` bertahan di dokumen berbulan-bulan setelah
-panggilannya dihapus.
+The difference is not merely a number. A consumer contract freezing three
+surfaces that are not consumed would bind the repo OVER THERE to a shape the repo
+HERE never needed — while making "the contract is guarded" feel more complete than
+it is. And the list on this side, until this ADR, was only prose: it has already
+been wrong once, with `/posts/{id}` surviving in the documents for months after
+its call was deleted.
 
-### 4. Celah 6 ADR-0028: pin rantai pasok
+### 4. ADR-0028 gap 6: supply chain pinning
 
-Empat action GitHub dipin ke tag dan image dasar dipin ke tag. Tag bisa
-dipindahkan; action berjalan dengan akses ke token workflow dan seluruh isi
-checkout.
+Four GitHub actions pinned to tags and the base image pinned to a tag. Tags can be
+moved; actions run with access to the workflow token and the whole checkout.
 
-## Keputusan
+## Decision
 
 ### §A — `tests/versi-toolchain.test.mjs`
 
-Lima nilai versi Bun dibandingkan: `packageManager` sebagai rujukan,
-`engines.bun` harus MENERIMA-nya (rentang, bukan kesamaan — keduanya menjawab
-pertanyaan berbeda), dua `bun-version` CI dan dua tag `Dockerfile` harus sama
-persis dengannya. Murni pembacaan berkas: tanpa build, tanpa jaringan.
+The five Bun version values are compared: `packageManager` as the reference,
+`engines.bun` must ACCEPT it (a range, not equality — the two answer different
+questions), and the two CI `bun-version` values and two `Dockerfile` tags must
+equal it exactly. Pure file reading: no build, no network.
 
-### §B — Rantai pasok dipin ke SHA dan digest
+### §B — The supply chain is pinned to SHAs and digests
 
-Keempat action dipin ke SHA commit dengan komentar `# vX.Y.Z` di belakangnya —
-bentuk yang Dependabot baca untuk menaikkan pin sekaligus komentarnya, sehingga
-baris itu tetap terbaca manusia tanpa berhenti bisa diperbarui mesin. Image dasar
-dipin ke digest, tag dipertahankan di depannya.
+All four actions are pinned to commit SHAs with a trailing `# vX.Y.Z` comment —
+the form Dependabot reads in order to raise both the pin and its comment, so the
+line stays human-readable without ceasing to be machine-updatable. The base image
+is pinned to a digest, with the tag kept in front of it.
 
-**Pin digest tidak boleh mendarat tanpa §A, dan itu bukan urutan yang bebas
-dipilih.** Saat tag dan digest sama-sama ada, **digest yang dipatuhi Docker dan
-tag hanya menjadi komentar** — sehingga menaikkan tag tanpa menaikkan digest
-menghasilkan `Dockerfile` yang berbunyi `1.3.15` sambil membangun `1.3.14`, tanpa
-satu pun kegagalan. Pin digest karena itu MENAMBAH satu kelas cacat diam yang
-hanya §A tutup. Gerbang itu memeriksanya secara khusus: bila satu stage dipin ke
-digest, keduanya harus, dan digestnya harus identik.
+**A digest pin may not land without §A, and that is not a freely chosen order.**
+When a tag and a digest are both present, **Docker obeys the digest and the tag
+becomes a comment** — so raising the tag without raising the digest produces a
+`Dockerfile` that reads `1.3.15` while building `1.3.14`, with not one failure.
+A digest pin therefore ADDS a class of silent defect that only §A closes. That
+gate checks it specifically: if one stage is pinned to a digest, both must be, and
+the digests must be identical.
 
-### §C — Perilis menjalankan gerbang yang dokumennya tuntut
+### §C — The releaser runs the gates its documents demand
 
-`scripts/rilis.mjs` menjalankan `bun test` dan `bun audit --audit-level=low`,
-keduanya **sesudah** build. `--audit-level=low` menyamai CI: ambang yang lebih
-longgar di perilis akan meloloskan advisory yang PR-nya sendiri tolak, dan
-selisih itu hanya terlihat oleh orang yang membandingkan dua berkas.
+`scripts/rilis.mjs` runs `bun test` and `bun audit --audit-level=low`, both
+**after** the build. `--audit-level=low` matches CI: a looser threshold in the
+releaser would admit an advisory its own PRs refuse, and that difference is
+visible only to someone comparing two files.
 
-### §D — Daftar permukaan `awcms` diekstrak dari kode, dibandingkan dua arah
+### §D — The `awcms` surface list is extracted from the code, compared both ways
 
-`tests/kontrak-awcms.test.mjs` mengekstrak jalur `/api/v1/…` dari string literal
-di `src/` — **setelah membuang komentar**, karena berkas di sini memerikan
-permukaan yang tidak dipanggil jauh lebih sering daripada memanggilnya — lalu
-membandingkannya dengan tabel bertanda di
+`tests/kontrak-awcms.test.mjs` extracts `/api/v1/…` paths from string literals in
+`src/` — **after stripping comments**, because files here describe surfaces that
+are not called far more often than they call them — then compares them with the
+marked table in
 [`awcms-astro-integrasi`](../../.claude/skills/awcms-astro-integrasi/SKILL.md).
 
-Dua arah, dan keduanya sudah pernah terjadi: permukaan baru yang tidak dicatat,
-dan baris yang tertinggal setelah permukaannya dihapus. Angka tiga juga ditulis
-eksplisit, supaya permukaan keempat memerahkan gerbang meskipun penulisnya ingat
-memperbarui skill — dua pemeriksaan yang bisa salah bersama bukan dua
-pemeriksaan.
+Both directions, and both have already happened: a new surface not recorded, and a
+row left behind after its surface was deleted. The number three is also written
+explicitly, so that a fourth surface turns the gate red even if its author
+remembers to update the skill — two checks that can be wrong together are not two
+checks.
 
-## Konsekuensi
+## Consequences
 
-**Yang didapat.** Empat aturan berhenti bergantung pada ingatan. Celah 6
-ADR-0028 tertutup. `awcms` mendapat sumber yang bisa dipercaya untuk kontrak
-konsumennya — daftar yang merah bila salah, alih-alih prosa yang sudah pernah
-keliru.
+**What is gained.** Four rules stop depending on memory. ADR-0028 gap 6 is
+closed. `awcms` gets a trustworthy source for its consumer contract — a list that
+goes red when it is wrong, rather than prose that has already been mistaken.
 
-**Yang dibayar.** Menaikkan versi Bun kini menyentuh enam nilai, bukan lima:
-tag, digest, dan empat lainnya. Itu memang lebih banyak pekerjaan — dan
-gerbangnya yang membuat pekerjaan itu tidak bisa setengah selesai. Menaikkan
-action juga tidak lagi cukup dengan mengganti `v7` menjadi `v8`; Dependabot yang
-mengerjakannya, dan tanpa Dependabot ia menjadi pekerjaan tangan yang nyata.
+**What is paid.** Raising the Bun version now touches six values, not five: the
+tag, the digest, and four others. That genuinely is more work — and its gate is
+what makes that work impossible to half-finish. Raising an action is also no
+longer a matter of changing `v7` to `v8`; Dependabot does that work, and without
+Dependabot it becomes real manual labour.
 
-**Yang TIDAK dilakukan.** `graphify-out/` **tetap dilacak.** Rekomendasi
-sebelumnya di sesi yang sama adalah meng-`gitignore`-nya karena hook menulisinya
-pada setiap perpindahan branch; membaca `.gitignore` membatalkan rekomendasi itu.
-Berkas itu sudah memuat tiga aturan graphify ber-alasan yang sengaja **menyisakan**
-keluaran bersama (`graph.json`, `manifest.json`, `GRAPH_REPORT.md`) tetap
-terlacak, sementara intermediate, snapshot bertanggal, dan `graph.html` dibuang.
-Itu keputusan yang sudah dipertimbangkan; churn-nya gesekan, bukan cacat.
+**What is NOT done.** `graphify-out/` **stays tracked.** An earlier
+recommendation in the same session was to `gitignore` it because a hook writes to
+it on every branch switch; reading `.gitignore` withdrew that recommendation. That
+file already carries three reasoned graphify rules that deliberately **leave** the
+shared outputs (`graph.json`, `manifest.json`, `GRAPH_REPORT.md`) tracked while
+discarding intermediates, dated snapshots, and `graph.html`. That is a decision
+already weighed; its churn is friction, not a defect.
 
-## Alternatif yang dipertimbangkan
+## Alternatives considered
 
-- **Memin action ke tag mayor saja** (`@v7`) dan mengandalkan Dependabot.
-  Ditolak: Dependabot menjaga versi tetap BARU, bukan tetap SAMA. Yang dijaga
-  pin SHA adalah jendela antara sebuah tag dipindahkan dan seseorang
-  menyadarinya.
-- **Memin digest tanpa gerbang versi.** Ditolak dengan alasan §B: ia menukar
-  satu kelas cacat dengan kelas cacat lain yang lebih sunyi.
-- **Memperluas daftar permukaan menjadi enam agar cocok dengan `awcms`.**
-  Ditolak: daftar ini menyatakan apa yang repo ini PANGGIL, dan tiga di antaranya
-  tidak dipanggil. Menyamakan angka dengan menambah baris yang salah adalah
-  membuat dua dokumen sepakat pada hal yang keliru.
-- **Menjalankan `bun test` sebelum build di perilis.** Ditolak: dua lapisnya
-  melewati diri tanpa `dist/`, jadi ia akan hijau tanpa menjalankan apa pun yang
-  penting — bentuk paling murni dari gerbang yang tampak terjaga.
+- **Pinning actions to a major tag only** (`@v7`) and relying on Dependabot.
+  Refused: Dependabot keeps a version NEW, not the SAME. What a SHA pin guards is
+  the window between a tag being moved and somebody noticing.
+- **Pinning digests without a version gate.** Refused with the §B reasoning: it
+  trades one defect class for another, quieter one.
+- **Widening the surface list to six so it matches `awcms`.** Refused: this list
+  states what this repo CALLS, and three of them are not called. Making the
+  numbers agree by adding wrong rows is making two documents agree on something
+  false.
+- **Running `bun test` before the build in the releaser.** Refused: two of its
+  layers skip themselves without `dist/`, so it would be green without running
+  anything that matters — the purest form of a gate that looks guarded.

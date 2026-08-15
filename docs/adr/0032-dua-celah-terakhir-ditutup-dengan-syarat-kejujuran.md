@@ -1,113 +1,114 @@
-# ADR-0032 — Dua celah terakhir ADR-0028 ditutup, masing-masing dengan syarat kejujurannya
+🇬🇧 English (source) · 🇮🇩 [Bahasa Indonesia](0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.id.md)
+
+# ADR-0032 — The last two ADR-0028 gaps are closed, each with its honesty condition
 
 - **Status:** Accepted
-- **Tanggal:** 5 Agustus 2026
-- **Aturan pemilik:** 5 Agustus 2026 — "apabila perlu implementasi lakukan semua rekomendasi."
-- **Terkait:** [ADR-0028](0028-jangkar-standar-performa-dan-keamanan.md) (celah 7 dan 8 yang ditutup di sini), [ADR-0030](0030-aturan-tertulis-mendapat-pemeriksanya.md) (pin SHA + aturan baru wajib membawa pemeriksanya), [ADR-0031](0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md) (celah 9, pola penutupan yang sama), `awcms` [ADR-0067](https://github.com/ahliweb/awcms/blob/main/docs/adr/0067-core-web-vitals-collection.md) (pengumpulan CWV lapangan masih `Proposed` di sana)
+- **Date:** 5 August 2026
+- **Owner's rule:** 5 August 2026 — "where implementation is needed, act on all the recommendations."
+- **Related:** [ADR-0028](0028-jangkar-standar-performa-dan-keamanan.md) (gaps 7 and 8, closed here), [ADR-0030](0030-aturan-tertulis-mendapat-pemeriksanya.md) (SHA pinning + a new rule must bring its checker), [ADR-0031](0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md) (gap 9, the same closure pattern), `awcms` [ADR-0067](https://github.com/ahliweb/awcms/blob/main/docs/adr/0067-core-web-vitals-collection.md) (field CWV collection, still `Proposed` over there)
 
-## Konteks
+## Context
 
-Dua celah ADR-0028 tersisa, dan keduanya ditahan bukan karena sulit melainkan
-karena penutupan yang mudah adalah penutupan yang bohong:
+Two ADR-0028 gaps remained, and both were held not because they are hard but
+because the easy closure is a closure that lies:
 
-- **Celah 7 (analisis statik).** CodeQL tidak mengurai `.astro`. Menyalakannya
-  lalu menyebut repo ini "dianalisis statik" adalah upacara yang terlihat
-  seperti cakupan — klaim yang lebih besar daripada kenyataannya.
-- **Celah 8 (Core Web Vitals).** Pengukuran lapangan (RUM) ditolak karena
-  mengumpulkan data pembaca — penolakan yang tidak punya pengecualian "tapi ini
-  untuk keamanan/performa". Pengukuran lab butuh Chrome di CI dan hasil build,
-  dan repo template tidak punya sumber konten untuk dibangun.
+- **Gap 7 (static analysis).** CodeQL does not parse `.astro`. Switching it on
+  and then calling this repo "statically analysed" is ceremony that looks like
+  coverage — a claim larger than the reality.
+- **Gap 8 (Core Web Vitals).** Field measurement (RUM) is refused because it
+  collects reader data — a refusal that has no "but this is for
+  security/performance" exception. Lab measurement needs Chrome in CI and a build
+  output, and the template repo has no content source to build.
 
-Tabel celah ADR-0028 sendiri sudah meresepkan bentuk penutupan yang jujur untuk
-keduanya: "workflow CodeQL terjadwal, **dengan cakupannya DINYATAKAN di
-ringkasan run**" dan "Lighthouse CI atas `dist/client` di job `build`, **hanya
-berjalan bila situs punya sumber konten**". Yang ditunggu bukan keputusan —
-keputusan itu sudah tertulis — melainkan instruksi pemilik untuk membayar
-biayanya.
+The ADR-0028 gap table itself already prescribed the honest closure shape for
+both: "a scheduled CodeQL workflow, **with its coverage STATED in the run
+summary**" and "Lighthouse CI over `dist/client` in the `build` job, **running
+only when the site has a content source**". What was being waited on was not a
+decision — that decision was already written — but the owner's instruction to pay
+its cost.
 
-## Keputusan
+## Decision
 
-### §A — Celah 7: CodeQL atas permukaan JS/TS, dengan cakupan yang dihitung, bukan diklaim
+### §A — Gap 7: CodeQL over the JS/TS surface, with coverage counted rather than claimed
 
-`.github/workflows/codeql.yml`: bahasa `javascript-typescript`, terjadwal
-mingguan plus pada perubahan (query CodeQL diperbarui GitHub terus-menerus,
-jadi kode yang diam pun layak dipindai ulang), seluruh action dipin ke SHA
-commit (ADR-0030).
+`.github/workflows/codeql.yml`: language `javascript-typescript`, scheduled
+weekly plus on changes (GitHub updates CodeQL queries continuously, so even code
+that has not moved deserves rescanning), every action pinned to a commit SHA
+(ADR-0030).
 
-**Syarat kejujurannya:** langkah `Nyatakan cakupan` menulis ke ringkasan run
-berapa berkas `.ts`/`.mjs`/`.js` dianalisis dan berapa berkas `.astro` TIDAK —
-keduanya **dihitung `find` saat run**, bukan ditulis tangan, karena angka yang
-ditulis tangan berhenti benar begitu berkas bertambah. Jalur data berisiko repo
-ini (`content-blocks.ts`, `penyaji.mjs`, klien `awcms`, seluruh gerbang)
-berada di dalam cakupan; yang di luar adalah markup komponen.
+**Its honesty condition:** the `State the coverage` step writes into the run
+summary how many `.ts`/`.mjs`/`.js` files were analysed and how many `.astro`
+files were NOT — both **counted by `find` at run time**, not written by hand,
+because a hand-written number stops being true the moment a file is added. This
+repo's risky data paths (`content-blocks.ts`, `penyaji.mjs`, the `awcms` client,
+every gate) are inside the coverage; what is outside is component markup.
 
-### §B — Celah 8: Core Web Vitals lab, terkondisi sumber konten, dengan proksi yang disebut proksi
+### §B — Gap 8: lab Core Web Vitals, conditioned on a content source, with a proxy that is called a proxy
 
-Langkah `Core Web Vitals (lab) atas hasil build` di job `build`
-(`treosh/lighthouse-ci-action`, dipin SHA), `if: vars.AWCMS_API_URL != ''` —
-pola yang sama dengan gerbang penyajian dan audit konten atas hasil build: di
-repo template ia tidak berjalan, di setiap SITUS ia berjalan pada setiap PR.
+The `Core Web Vitals (lab) over the build output` step in the `build` job
+(`treosh/lighthouse-ci-action`, SHA-pinned), `if: vars.AWCMS_API_URL != ''` — the
+same pattern as the serving gate and the content audit over the build output: in
+the template repo it does not run, in every SITE it runs on every PR.
 
-Ambang di `lighthouserc.json` disamakan dengan target dokumen standar: LCP ≤
-2500 ms, CLS ≤ 0,1, level `error` — `warn` adalah teater. **INP tidak diukur,
-dan itu dinyatakan:** ia metrik lapangan, dan lapangan berarti RUM yang sudah
-ditolak. Total Blocking Time ≤ 200 ms dipakai sebagai proksi lab-nya — situs
-yang nyaris tanpa JS seharusnya mendekati nol, jadi TBT tinggi adalah sinyal
-JS menyelinap masuk, persis yang ambang INP jaga.
+The thresholds in `lighthouserc.json` match the standards document's targets:
+LCP ≤ 2500 ms, CLS ≤ 0.1, at `error` level — `warn` is theatre. **INP is not
+measured, and that is stated:** it is a field metric, and field means the RUM
+that has already been refused. Total Blocking Time ≤ 200 ms is used as its lab
+proxy — a site that is very nearly JS-free should be near zero, so a high TBT is
+a signal that JS has crept in, exactly what the INP threshold guards.
 
-**Yang diaudit adalah SAMPEL, dan batasnya dipilih — bukan diwarisi.** Bawaan
-`@lhci/cli` berhenti diam-diam di 5 URL terdangkal dengan kedalaman penemuan
-2 — pada situs turunan nyata itu berarti TIDAK SATU PUN halaman artikel
-berlokal (`/{lang}/{tab}/{slug}/`, kedalaman 3) pernah diukur, sementara
-404.html memakan satu slot. Review adversarial pra-merge menemukannya dari
-sumber versi yang dipin. Konfigurasi karena itu menyatakan ketiganya:
-`staticDirFileDiscoveryDepth: 4`, `maxAutodiscoverUrls: 10`, dan blocklist
-`/404.html` — diasersi `tests/cwv-lab.test.mjs` supaya tidak ada yang bisa
-mengembalikannya ke bawaan tanpa terlihat. Situs yang butuh cakupan lebih
-menaikkan angkanya di `lighthouserc.json`; sepuluh halaman adalah sampel yang
-dipilih sadar untuk menjaga waktu CI, bukan klaim cakupan penuh.
+**What is audited is a SAMPLE, and its limit is chosen — not inherited.** The
+`@lhci/cli` default stops silently at the 5 shallowest URLs with a discovery
+depth of 2 — on a real derived site that means NOT ONE localised article page
+(`/{lang}/{tab}/{slug}/`, depth 3) is ever measured, while 404.html eats a slot.
+An adversarial pre-merge review found it from the pinned version's source. The
+configuration therefore states all three: `staticDirFileDiscoveryDepth: 4`,
+`maxAutodiscoverUrls: 10`, and a `/404.html` blocklist — asserted by
+`tests/cwv-lab.test.mjs` so nobody can return them to the defaults unseen. A site
+needing more coverage raises the numbers in `lighthouserc.json`; ten pages is a
+sample chosen deliberately to protect CI time, not a claim of full coverage.
 
-### §C — Pemeriksanya (ADR-0030 berlaku untuk penutupan ini juga)
+### §C — Its checkers (ADR-0030 applies to this closure too)
 
-- `tests/analisis-statik.test.mjs`: workflow ada, terjadwal, seluruh action
-  ber-SHA + komentar versi, dan langkah pernyataan cakupan — beserta sebutan
-  `.astro`-nya dan `find`-nya — tidak bisa dihapus diam-diam.
-- `tests/cwv-lab.test.mjs`: ambang konfigurasi TERPAKU ke angka dokumen
-  standar (melonggarkannya menuntut mengubah tes — terlihat di review), langkah
-  CI-nya terkondisi dan dipin. Kedua tes berjalan di repo template, sehingga
-  penutupan ini **bisa dibuktikan di tempat ia ditulis** — keberatan lama
-  terhadap gerbang yang membusuk dijawab di sini, bukan diabaikan.
+- `tests/analisis-statik.test.mjs`: the workflow exists, is scheduled, every
+  action carries a SHA + a version comment, and the coverage-statement step —
+  along with its mention of `.astro` and its `find` — cannot be deleted silently.
+- `tests/cwv-lab.test.mjs`: the configuration thresholds are PINNED to the
+  standards document's numbers (loosening them requires changing the test —
+  visible in review), and its CI step is conditioned and pinned. Both tests run in
+  the template repo, so this closure **can be proven where it was written** — the
+  old objection about gates rotting is answered here rather than ignored.
 
-## Konsekuensi
+## Consequences
 
-**Yang didapat.** Kesembilan celah ADR-0028 tertutup, masing-masing bersama
-pemeriksanya. SSDF RV.1 naik ke Terpenuhi. Sebuah situs turunan mendapat
-pengukuran CWV lab atas sampel halamannya pada setiap PR sejak hari pertama,
-tanpa satu byte pun data pembacanya dikumpulkan.
+**What is gained.** All nine ADR-0028 gaps are closed, each with its checker.
+SSDF RV.1 rises to Met. A derived site gets lab CWV measurement over a sample of
+its pages on every PR from day one, without a single byte of its readers' data
+being collected.
 
-**Yang dibayar.** Dua workflow CI bergantung pada dua action pihak ketiga
-(dipin SHA, di-bump Dependabot); ringkasan run CodeQL yang jujur harus terus
-mengatakan `.astro` tidak dianalisis; dan hasil lab akan berfluktuasi — tiga
-run per halaman meredamnya, tidak menghilangkannya.
+**What is paid.** Two CI workflows depend on two third-party actions (SHA-pinned,
+bumped by Dependabot); an honest CodeQL run summary has to keep saying `.astro`
+is not analysed; and lab results will fluctuate — three runs per page damp that,
+they do not remove it.
 
-**Yang TIDAK berubah.** RUM tetap ditolak; "memenuhi Core Web Vitals" tetap
-tidak boleh ditulis dari hasil lab (lab mengukur halaman, bukan pembaca); dan
-baris celah yang tertutup TETAP di tabel ADR-0028.
+**What does NOT change.** RUM stays refused; "meets Core Web Vitals" still may
+not be written from a lab result (a lab measures pages, not readers); and a
+closed gap's row STAYS in the ADR-0028 table.
 
-**Yang membuka kembali.** Ekstraktor `.astro` untuk CodeQL (atau analisis
-statik lain yang mengurainya) menuntut peninjauan §A; keputusan `awcms`
-ADR-0067 tidak mengubah apa pun di sini — opsi apa pun yang dipilihnya, postur
-repo ini sudah dinyatakan.
+**What would reopen this.** An `.astro` extractor for CodeQL (or another static
+analysis that parses it) requires §A to be reviewed; the `awcms` ADR-0067
+decision changes nothing here — whichever option it picks, this repo's posture is
+already stated.
 
-## Alternatif yang dipertimbangkan
+## Alternatives considered
 
-- **Membiarkan keduanya terbuka.** Sampai hari ini itu keputusan yang benar;
-  yang mengubahnya adalah instruksi pemilik. Bentuk penutupannya tidak
-  dinegosiasikan ulang — dipakai persis yang tabel celah resepkan.
-- **Semgrep/oxlint sebagai ganti CodeQL.** Sama-sama tidak mengurai `.astro`,
-  menambah keluarga tooling kedua, dan kehilangan integrasi tab Security.
-- **Mengukur CWV dengan RUM.** Ditolak permanen — bukan trade-off teknis
-  melainkan larangan mengumpulkan data pembaca.
-- **Menjalankan Lighthouse atas halaman fixture di repo template.** Mengukur
-  halaman yang tidak akan pernah diterbitkan siapa pun; hijau yang tidak
-  membuktikan apa-apa, merah yang tidak berarti apa-apa.
+- **Leaving both open.** Until today that was the right decision; what changed it
+  is the owner's instruction. The closure shape was not renegotiated — exactly
+  what the gap table prescribed is what was used.
+- **Semgrep/oxlint instead of CodeQL.** Equally unable to parse `.astro`, adds a
+  second tooling family, and loses the Security tab integration.
+- **Measuring CWV with RUM.** Permanently refused — not a technical trade-off but
+  the ban on collecting reader data.
+- **Running Lighthouse over fixture pages in the template repo.** It measures
+  pages nobody will ever publish; a green that proves nothing, a red that means
+  nothing.

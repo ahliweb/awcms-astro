@@ -1,120 +1,117 @@
-# ADR-0024 — Seni lokal di `src/assets/`, di-resolve `import.meta.glob` sebagai URL
+🇬🇧 English (source) · 🇮🇩 [Bahasa Indonesia](0024-seni-lokal-di-src-assets.id.md)
+
+# ADR-0024 — Local artwork in `src/assets/`, resolved to URLs by `import.meta.glob`
 
 - **Status:** Accepted
-- **Tanggal:** 3 Agustus 2026
-- **Terkait:** [ADR-0019](0019-csp-ketat-dikirim-penyaji.md) (`img-src 'self'`), [ADR-0021](0021-tahan-pengembangan-menunggu-fondasi-awcms.md) §Titik lanjut butir 1, [ADR-0023](0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md) (yang membuat pekerjaan ini boleh mendarat)
+- **Date:** 3 August 2026
+- **Related:** [ADR-0019](0019-csp-ketat-dikirim-penyaji.md) (`img-src 'self'`), [ADR-0021](0021-tahan-pengembangan-menunggu-fondasi-awcms.md) §Resumption points item 1, [ADR-0023](0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md) (which made this work allowed to land)
 
-## Konteks
+## Context
 
-`src/lib/article-images.ts` sejak awal mendeskripsikan **dua** sumber seni dan
-mengimplementasikan **nol** — `getArticleImage` mengembalikan `src: undefined`
-tanpa syarat, dan ketiga pemanggilnya bahkan tidak membaca `src`: mereka
-merender `.visual-placeholder` apa pun isinya.
+`src/lib/article-images.ts` described **two** artwork sources from the start and
+implemented **zero** — `getArticleImage` returned `src: undefined` unconditionally,
+and its three callers did not even read `src`: they rendered a
+`.visual-placeholder` regardless.
 
-Akibatnya lebih dari "belum ada gambar":
+The consequence is more than "there are no images yet":
 
-- **Empat bingkai CSS punya aturan `img` yang tidak pernah dipakai siapa pun.**
-  `.feature-hero-img img`, `.card-img-wrapper img`, `.hero-visual-frame img`,
-  `.article-hero-frame img` — semuanya sudah benar, dan tak satu pun pernah
-  diuji terhadap sebuah `<img>` sungguhan.
-- **Gerbang rasio `audit:konten` tidak punya apa pun untuk diperiksa.** Ia
-  melaporkan "src/assets/ belum ada — dilewati" di setiap run, yaitu gerbang
-  yang tampak jalan tanpa pernah menjawab satu pertanyaan pun.
+- **Four CSS frames have `img` rules nobody ever used.** `.feature-hero-img img`,
+  `.card-img-wrapper img`, `.hero-visual-frame img`, `.article-hero-frame img` —
+  all of them already correct, and not one ever tested against a real `<img>`.
+- **The `audit:konten` ratio gate had nothing to check.** It reported
+  "src/assets/ does not exist — skipped" on every run: a gate that looks like it
+  runs while never answering a single question.
 
-Sumber kedua — media `awcms` lewat `featuredMediaId` — **tetap ditahan**
-(ADR-0021, dipersempit ADR-0023): kodenya adalah kode yang bentuknya ditentukan
-respons `awcms`, dan repo template ini tidak punya instans untuk membuktikan
-panggilannya benar.
+The second source — `awcms` media through `featuredMediaId` — **stays held**
+(ADR-0021, narrowed by ADR-0023): its code is code whose shape is decided by an
+`awcms` response, and this template repo has no instance to prove its calls are
+right.
 
-## Keputusan
+## Decision
 
-**Seni lokal tinggal di `src/assets/` dan di-resolve `import.meta.glob` menjadi
-URL string.**
+**Local artwork lives in `src/assets/` and is resolved by `import.meta.glob` into
+URL strings.**
 
-Konvensi nama, relatif terhadap `src/assets/` dan **tanpa ekstensi**:
+The naming convention, relative to `src/assets/` and **without an extension**:
 
-| Kunci | Dipakai |
+| Key | Used for |
 | --- | --- |
-| `hero` | Hero beranda |
-| `tab/<tab>` | Hero seksi |
-| `artikel/<tab>/<slug>` | Satu artikel |
+| `hero` | The home page hero |
+| `tab/<tab>` | A section hero |
+| `artikel/<tab>/<slug>` | One article |
 
-Ekstensi apa pun dari `EKSTENSI_SENI` berlaku, sehingga mengganti `.svg`
-menjadi `.webp` tidak menyentuh satu baris kode pun.
+Any extension from `EKSTENSI_SENI` applies, so swapping a `.svg` for a `.webp`
+touches not one line of code.
 
-### `query: "?url"`, bukan `astro:assets`
+### `query: "?url"`, not `astro:assets`
 
-`astro:assets` akan meng-encode ulang dan memancarkan `srcset`, dan itu nyata
-lebih baik untuk raster. Ia **ditolak untuk sekarang** karena harganya bukan
-performa melainkan bentuk:
+`astro:assets` would re-encode and emit a `srcset`, and that is genuinely better
+for raster. It is **refused for now** because its price is not performance but
+shape:
 
-- Ia mengembalikan `ImageMetadata`, bukan string — jadi `ArticleVisual.src`
-  berubah bentuk, dan keempat bingkai harus berpindah dari `<img>` ke komponen
-  `<Image>`.
-- Ia memperlakukan SVG berbeda dari raster, sementara SVG justru format yang
-  gerbang repo ini ditulis untuk membaca (`viewBox`, ukuran teks terkecil).
-- **Pemotongan tidak hilang tanpanya.** Bingkai memotong di CSS, dan
-  `audit:konten` sudah menolak sumber yang bukan 16∶9 sebelum ia sempat terbit.
+- It returns `ImageMetadata`, not a string — so `ArticleVisual.src` changes shape,
+  and all four frames have to move from `<img>` to the `<Image>` component.
+- It treats SVG differently from raster, while SVG is exactly the format this
+  repo's gates were written to read (`viewBox`, smallest text size).
+- **Cropping does not disappear without it.** The frames crop in CSS, and
+  `audit:konten` already refuses a source that is not 16∶9 before it can be
+  published.
 
-Satu bentuk untuk setiap format yang gerbangnya terima lebih berharga daripada
-`srcset` pada template yang hari ini membawa nol gambar.
+One shape for every format the gate accepts is worth more than a `srcset` on a
+template that today carries zero images.
 
-### Tanpa fallback dari artikel ke seni seksinya
+### No fallback from an article to its section's artwork
 
-Sebuah artikel tanpa berkas seni merender placeholder, **bukan** gambar
-seksinya. Fallback akan membuat seluruh artikel satu seksi memakai gambar yang
-sama sambil tampak — di setiap pemanggil — persis seperti gambar yang dipilih
-untuk artikel itu. Placeholder jujur; fallback tidak.
+An article with no artwork file renders a placeholder, **not** its section's
+image. A fallback would make every article in a section use the same image while
+looking — at every call site — exactly like an image chosen for that article. A
+placeholder is honest; a fallback is not.
 
-### Dua berkas bernama sama = build gagal
+### Two files with the same name = a failed build
 
-`hero.svg` dan `hero.png` bersamaan adalah **error**, bukan pilihan diam-diam.
-Memilih salah satunya berarti situs menerbitkan seni yang bukan hasil suntingan
-terakhir penulisnya, dan tidak ada cara melihatnya selain membuka setiap
-halaman.
+`hero.svg` and `hero.png` together is an **error**, not a silent choice. Picking
+one of them means the site publishes artwork that is not its author's latest
+edit, with no way to see it short of opening every page.
 
-### Percabangan gambar/placeholder tinggal di satu komponen
+### The image/placeholder branch lives in one component
 
-`src/components/Ilustrasi.astro`. Ditulis empat kali di empat bingkai, ia akan
-menyimpang empat kali — dan bentuk penyimpangan yang paling mungkin adalah
-`alt` yang hilang atau `role="img"` yang tertinggal pada elemen yang sudah
-menjadi `<img>`: dua cacat yang hanya terasa oleh pembaca yang tidak melihat
-layarnya.
+`src/components/Ilustrasi.astro`. Written four times in four frames, it would
+diverge four times — and the most likely shape of that divergence is a missing
+`alt` or a `role="img"` left behind on an element that has become an `<img>`: two
+defects felt only by a reader who cannot see the screen.
 
-## Konsekuensi
+## Consequences
 
-- **`img-src 'self'` cukup, CSP tidak berubah.** Vite memancarkan aset ke
-  `/_astro/<nama>.<hash>.<ext>` di origin situs sendiri. Ini **kontras** dengan
-  sumber kedua: media `awcms` tinggal di origin lain dan akan menuntut ADR-0019
-  dilebarkan.
-- **Gerbang rasio berhenti kosong.** Diverifikasi dua arah pada saat mendarat:
-  sumber 16∶9 lolos, sumber 1∶1 memerahkan `audit:konten` dengan menyebut
-  pemotongannya.
-- **Daftar ekstensi kini hidup di tiga tempat** — konstanta `EKSTENSI_SENI`,
-  pola literal `import.meta.glob` (Vite menuntutnya literal), dan
-  `EKSTENSI_GAMBAR` di `scripts/audit-konten.mjs`. Menyimpang, ia menghasilkan
-  cacat diam ke dua arah: ekstensi yang diserap tetapi tidak diperiksa
-  menerbitkan seni berasio salah; yang diperiksa tetapi tidak diserap membuat
-  berkas yang lulus audit tidak pernah muncul. `tests/seni-lokal.test.mjs`
-  membandingkan ketiganya sebagai teks.
-- **Logikanya diuji tanpa build**, karena build repo template ini butuh `awcms`.
-  `src/lib/seni-lokal.ts` memisahkan seluruh pemetaan dari `import.meta.glob`
-  supaya `bun test` bisa menjangkaunya; yang tersisa di `article-images.ts`
-  hanya glob dan tiga pemanggilan.
-- **Risiko yang diterima:** raster besar tidak di-encode ulang, jadi situs yang
-  memakai foto alih-alih ilustrasi menanggung berkas penuh. Bila itu terjadi,
-  pindah ke `astro:assets` adalah perubahan yang wajar dan pantas mendapat
-  ADR-nya sendiri — bentuk `ArticleVisual` yang akan berubah, bukan konvensi
-  namanya.
+- **`img-src 'self'` suffices, the CSP does not change.** Vite emits assets to
+  `/_astro/<name>.<hash>.<ext>` on the site's own origin. This **contrasts** with
+  the second source: `awcms` media live on another origin and will require
+  ADR-0019 to be widened.
+- **The ratio gate stops being empty.** Verified in both directions when it
+  landed: a 16∶9 source passes, a 1∶1 source turns `audit:konten` red naming its
+  cropping.
+- **The extension list now lives in three places** — the `EKSTENSI_SENI`
+  constant, the literal `import.meta.glob` pattern (Vite requires it literal), and
+  `EKSTENSI_GAMBAR` in `scripts/audit-konten.mjs`. Diverging, it produces a silent
+  defect in both directions: an extension that is absorbed but not checked
+  publishes artwork at the wrong ratio; one that is checked but not absorbed makes
+  a file that passes the audit never appear. `tests/seni-lokal.test.mjs` compares
+  all three as text.
+- **The logic is tested without a build**, because building this template repo
+  needs `awcms`. `src/lib/seni-lokal.ts` separates the whole mapping from
+  `import.meta.glob` so `bun test` can reach it; what stays in
+  `article-images.ts` is only the glob and three calls.
+- **An accepted risk:** large rasters are not re-encoded, so a site using
+  photographs instead of illustrations carries the full files. If that happens,
+  moving to `astro:assets` is a reasonable change deserving its own ADR — it is
+  the shape of `ArticleVisual` that would change, not the naming convention.
 
-## Alternatif yang dipertimbangkan
+## Alternatives considered
 
-- **`astro:assets` sekarang** — lihat di atas; ditolak karena bentuk, bukan
-  karena kualitas.
-- **Registry manual (peta slug → berkas di sebuah `.ts`)** — ditolak: dua tempat
-  yang harus bergerak bersama untuk setiap gambar, dan yang kedua akan lupa
-  digerakkan. Konvensi nama tidak bisa lupa.
-- **Menaruh seni di `public/`** — ditolak: `public/` tidak di-hash, jadi
-  penggantian gambar tertahan cache pembaca; dan `audit:konten` sengaja **tidak**
-  memeriksa rasio di sana karena isinya perkakas situs (favicon, ikon), bukan
-  ilustrasi.
+- **`astro:assets` now** — see above; refused on shape, not on quality.
+- **A manual registry (a slug → file map in a `.ts`)** — refused: two places that
+  have to move together for every image, and the second will be forgotten.
+  A naming convention cannot forget.
+- **Putting artwork in `public/`** — refused: `public/` is not hashed, so
+  replacing an image is held back by readers' caches; and `audit:konten`
+  deliberately does **not** check ratios there, because its contents are site
+  furniture (favicons, icons), not illustrations.
