@@ -46,12 +46,6 @@ const ROOT = resolve(import.meta.dirname, "..");
  * this repo had no mirrored pair before it.
  */
 export const DOCS_AWAITING_MIRROR = [
-  ".changesets/README.md",
-  "CODE_OF_CONDUCT.md",
-  "CONTRIBUTING.md",
-  "GOVERNANCE.md",
-  "SECURITY.md",
-  "SUPPORT.md",
   "docs/adr/0014-rendering-campuran-dan-bff-portal.md",
   "docs/adr/0015-runtime-bun-menutup-divergence-keluarga.md",
   "docs/adr/0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md",

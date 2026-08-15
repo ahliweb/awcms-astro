@@ -1,26 +1,28 @@
-# Dukungan
+🇬🇧 English (source) · 🇮🇩 [Bahasa Indonesia](SUPPORT.id.md)
 
-## Yang BUKAN kanal ini
+# Support
 
-**Repo ini adalah template, bukan sebuah situs.** Kalau Anda sampai di sini karena sebuah situs yang dibangun dengannya, hubungi pengelola situs itu — repo ini tidak memegang kontennya, tidak memegang datanya, dan tidak dapat mengubah apa pun yang tayang di sana.
+## What this channel is NOT
 
-Pertanyaan tentang template — cara memulai situs baru, integrasi dengan `awcms`, atau perilaku komponen — silakan lewat GitHub Issues.
+**This repo is a template, not a site.** If you arrived here because of a site built with it, contact that site's operators — this repo does not hold their content, does not hold their data, and cannot change anything published there.
 
-Bila Anda menerima pesan mengatasnamakan situs ini yang meminta pembayaran atau data pribadi, itu penipuan.
+Questions about the template — how to start a new site, integration with `awcms`, or component behaviour — are welcome through GitHub Issues.
 
-## Yang bisa dibantu di sini
+If you receive a message in this site's name asking for payment or personal data, it is a scam.
 
-| Kebutuhan | Jalur |
+## What can be helped with here
+
+| Need | Route |
 | --- | --- |
-| Template error, tampilan rusak, tautan mati, hasil build salah | Buka issue dengan templat **Laporan bug** |
-| Sesuatu ternyata harus disunting di luar `src/config/site.ts` dan `.env` | Buka issue — itu pelanggaran janji utama template ini, dan kami memperlakukannya sebagai bug |
-| Ingin membantu menerjemahkan katalog antarmuka | Buka issue, lalu lihat [`CONTRIBUTING.md`](CONTRIBUTING.md#terjemahan) |
-| Pertanyaan integrasi dengan `awcms` | Buka issue; kontraknya di [`docs/awcms-astro/integrasi-awcms.md`](docs/awcms-astro/integrasi-awcms.md) |
-| Ingin memakai repo ini sebagai titik awal situs lain | Baca [`docs/awcms-astro/`](docs/awcms-astro/README.md) |
-| Menemukan kerentanan keamanan | **Jangan buka issue publik.** Ikuti [`SECURITY.md`](SECURITY.md) |
+| Template error, broken layout, dead link, wrong build output | Open an issue with the **Bug report** template |
+| Something turns out to need editing outside `src/config/site.ts` and `.env` | Open an issue — that breaks this template's central promise, and we treat it as a bug |
+| Wanting to help translate the interface catalogue | Open an issue, then see [`CONTRIBUTING.md`](CONTRIBUTING.md#translation) |
+| A question about integrating with `awcms` | Open an issue; the contract is in [`docs/awcms-astro/integrasi-awcms.md`](docs/awcms-astro/integrasi-awcms.md) |
+| Wanting to use this repo as the starting point for another site | Read [`docs/awcms-astro/`](docs/awcms-astro/README.md) |
+| Finding a security vulnerability | **Do not open a public issue.** Follow [`SECURITY.md`](SECURITY.md) |
 
-## Prioritas
+## Priority
 
-Ditangani lebih dulu daripada apa pun: cacat yang **tidak menggagalkan build**. Situs yang terlihat berhasil tetapi kehilangan artikel, halaman yang menampilkan nama key sebagai teks pembaca, gambar yang terpotong diam-diam, tag `og:image` yang menunjuk berkas yang tidak ada, dan header cache yang membuat rebuild sukses tidak pernah terlihat pembaca — seluruhnya lolos dari CI hijau, dan seluruhnya ikut ke setiap situs yang lahir dari template ini.
+Handled before anything else: defects that **do not fail the build**. A site that looks successful but is missing articles, a page showing a key name as reader-facing text, an image silently cropped, an `og:image` tag pointing at a file that does not exist, and cache headers that keep a successful rebuild from ever being seen by a reader — all of them pass a green CI, and all of them travel to every site born from this template.
 
-Koreksi konten sebuah situs bukan urusan repo ini: kontennya tinggal di instans `awcms` milik situs tersebut, dan repo ini tidak bisa mengubah apa pun yang tayang di sana.
+Correcting a site's content is not this repo's business: that content lives in that site's own `awcms` instance, and this repo cannot change anything published there.
