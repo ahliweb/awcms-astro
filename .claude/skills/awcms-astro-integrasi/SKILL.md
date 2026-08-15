@@ -1,200 +1,203 @@
 ---
 name: awcms-astro-integrasi
-description: Kontrak integrasi awcms-astro ↔ awcms — tenant dari token mesin, traversal build feed (view=full + cursor), resolusi media + asal media untuk img-src, dan penolakan yang WAJIB ditiru. Gunakan saat menyentuh src/lib/content.ts, src/lib/awcms/**, scripts/asal-media.mjs, atau saat sebuah build menerbitkan situs yang tampak benar tetapi isinya kurang.
+description: The awcms-astro ↔ awcms integration contract — the tenant coming from the machine token, the build feed traversal (view=full + cursor), media resolution + media origin for img-src, and the refusals that MUST be imitated. Use when touching src/lib/content.ts, src/lib/awcms/**, scripts/asal-media.mjs, or when a build publishes a site that looks right but is missing content.
 ---
 
-# awcms-astro — kontrak integrasi dengan `awcms`
+🇬🇧 English (source) · 🇮🇩 [Bahasa Indonesia](SKILL.id.md)
 
-Repo ini **mengonsumsi** `awcms`; ia tidak menyajikan API. `src/lib/awcms/client.ts`
-adalah satu-satunya berkas yang menghubungi `awcms`, dan `src/lib/content.ts`
-satu-satunya tempat komponen menyentuh hasilnya.
+# awcms-astro — the integration contract with `awcms`
 
-## Aturan yang tidak boleh dilanggar
+This repo **consumes** `awcms`; it does not serve an API. `src/lib/awcms/client.ts`
+is the only file that contacts `awcms`, and `src/lib/content.ts` is the only
+place a component touches the result.
 
-| Aturan | Yang terjadi bila dilanggar |
+## Rules that may not be broken
+
+| Rule | What happens when it is broken |
 | --- | --- |
-| Komponen **tidak pernah** mengambil datanya sendiri | Satu permintaan HTTP per kartu yang dirender, atau komponen async |
-| Traversal memakai `view=full` **dan** `order=created_at` | Daftar mengembalikan RINGKASAN; `contentJson` `undefined`, badan artikel kosong, seksi kosong, **build tetap hijau** |
-| Seluruh halaman disusuri lewat `nextCursor` | Situs terbit dengan artikel hilang — dan yang hilang justru yang terbaru |
-| Tenant datang dari **token**, tidak pernah dari header | `awcms` menurunkan tenant dari kredensial mesin dan mengabaikan header yang berbeda |
-| Post `published` tanpa `publishedAt` **tidak diterbitkan** | `awcms` menjawab 404 untuk post itu di `/blog/{tenantCode}/**`-nya sendiri; situs statis menerbitkannya — dua permukaan tidak sepakat tentang apa yang tayang |
-| Urutan dari field yang **dinyatakan seksinya**, berakhir pada slug SUMBER | Comparator yang mengembalikan 0 menyerahkan pasangannya pada urutan API. Memecah seri dengan judul membuat seksi berjalan dalam urutan berbeda di setiap bahasa |
-| `publishedDate` dan `updatedDate` dibaca dari **satu baris** | Dipasangkan lintas baris → `dateModified` mendahului `datePublished` pada konten yang sah, dan crawler membuang seluruh bloknya |
-| Diam-diam memotong data = **kegagalan**, bukan optimasi | Lihat seluruh baris di atas |
+| A component **never** fetches its own data | One HTTP request per rendered card, or an async component |
+| The traversal uses `view=full` **and** `order=created_at` | The list returns SUMMARIES; `contentJson` is `undefined`, article bodies are empty, sections are empty, **and the build stays green** |
+| Every page is walked through `nextCursor` | The site is published with articles missing — and the ones missing are the newest |
+| The tenant comes from the **token**, never from a header | `awcms` derives the tenant from the machine credential and ignores a header that says otherwise |
+| A `published` post without `publishedAt` **is not published** | `awcms` answers 404 for that post on its own `/blog/{tenantCode}/**`; the static site publishes it — two surfaces disagreeing about what is live |
+| Ordering comes from the field the section **declares**, ending on the SOURCE slug | A comparator returning 0 hands the pair over to the API's ordering. Breaking ties on the title makes a section run in a different order in each language |
+| `publishedDate` and `updatedDate` are read from **one row** | Paired across rows → `dateModified` precedes `datePublished` on valid content, and the crawler discards the whole block |
+| Silently truncating data is a **failure**, not an optimisation | See every row above |
 
-## Permukaan — TIGA yang dipanggil, dua yang tidak
+## Surfaces — THREE that are called, two that are not
 
-Bedanya penting, dan pernah salah ditulis di berkas ini sebagai "lima permukaan
-yang dipakai". Penilaian `awcms` 4 Agustus 2026 sempat mencatat ENAM, dan
-ADR-0065 di sana — yang mendarat hari itu juga — masih menulis "6 path"; ia
-tidak pernah disunting, dan tidak seharusnya. Yang meluruskan angkanya adalah
-commit sehari kemudian yang memecah `CONSUMER_PATHS` menjadi **tiga** path
-CONSUMED (dipanggil hari ini) dan **dua** COMMITTED (dijanjikan lewat ADR,
-sengaja dibekukan sebelum ada pemanggil: `/auth/session`,
-`/access/machine-credentials`). `GET /blog/posts/{id}` yang dihapus ADR-0018
-tidak ikut dibekukan. Gerbang di sana hari ini mencetak "OK — 5 consumer paths"
-beserta 16 komponen yang terjangkau lewat closure `$ref`.
+The difference matters, and it was once written wrongly in this file as "five
+surfaces in use". The `awcms` assessment of 4 August 2026 briefly recorded SIX,
+and ADR-0065 over there — which landed the same day — still writes "6 path"; it
+was never edited, and it should not be. What corrected the number is a commit a
+day later that split `CONSUMER_PATHS` into **three** CONSUMED paths (called
+today) and **two** COMMITTED ones (promised through an ADR, deliberately frozen
+before any caller exists: `/auth/session`, `/access/machine-credentials`).
+`GET /blog/posts/{id}`, removed by ADR-0018, was not frozen with them. The gate
+over there prints "OK — 5 consumer paths" today, along with the 16 components
+reachable through `$ref` closure.
 
-Perubahan non-aditif pada bentuk respons karena itu merah di CI `awcms` lebih
-dulu. **Yang mewajibkan berkas ini ikut berubah adalah regenerasi yang menyentuh
-path CONSUMED**, bukan setiap regenerasi: fixture di sana di-regenerate pada
-13 Agustus 2026 dan yang tersentuh hanya path COMMITTED — **bukan** seluruhnya
-aditif: `summary` beserta tiga `description` yang sudah beku ikut ditulis ulang,
-dan itu justru sebabnya fixture-nya HARUS di-regenerate alih-alih lolos apa
-adanya (komparatornya membandingkan skalar dengan kesetaraan). Aturan yang
-ditulis lebih luas dari "regenerasi yang menyentuh path CONSUMED" akan terbaca
-sebagai janji yang sudah dilanggar.
+A non-additive change to a response shape is therefore red in `awcms` CI first.
+**What obliges this file to change is a regeneration that touches a CONSUMED
+path**, not every regeneration: the fixture over there was regenerated on
+13 August 2026 and what it touched was only COMMITTED paths — **not** entirely
+additively: `summary` and three already-frozen `description` fields were
+rewritten too, and that is precisely why that fixture HAD to be regenerated
+rather than pass as it stood (its comparator compares scalars by equality). A
+rule written more broadly than "a regeneration that touches a CONSUMED path"
+would read as a promise that has already been broken.
 
-Daftar di bawah karena itu **digerbangi**, bukan ditulis tangan:
-`tests/kontrak-awcms.test.mjs` mengekstrak jalur `/api/v1/…` dari kode sumber
-`src/` dan menolak bila daftar ini menyimpang darinya, dua arah. Ia yang membuat
-permukaan keempat tidak bisa mendarat tanpa berkas ini ikut berubah.
+The list below is therefore **gated**, not written by hand:
+`tests/kontrak-awcms.test.mjs` extracts the `/api/v1/…` paths from the `src/`
+source code and refuses the list if it diverges from them, in both directions. It
+is what makes a fourth surface unable to land without this file changing too.
 
 <!-- permukaan:dipanggil:mulai -->
-| Permukaan yang benar-benar dipanggil build | Dipanggil dari |
+| Surface the build actually calls | Called from |
 | --- | --- |
-| `/api/v1/blog/posts` | `src/lib/content.ts` — traversal build feed, `view=full` + `order=created_at` + cursor |
-| `/api/v1/media/objects` | `src/lib/awcms/media.ts` — resolusi media, maks 100 id per permintaan |
-| `/api/v1/media/public-origin` | `src/lib/awcms/media.ts` — asal media untuk `img-src` |
+| `/api/v1/blog/posts` | `src/lib/content.ts` — the build feed traversal, `view=full` + `order=created_at` + cursor |
+| `/api/v1/media/objects` | `src/lib/awcms/media.ts` — media resolution, max 100 ids per request |
+| `/api/v1/media/public-origin` | `src/lib/awcms/media.ts` — the media origin for `img-src` |
 <!-- permukaan:dipanggil:selesai -->
 
 ```
-TIDAK DIPANGGIL (3)
-GET /api/v1/blog/posts/{id}    hidrasi satu post — DIHAPUS oleh ADR-0018.
-                               Ia dulu N+1: satu permintaan per post, per build,
-                               ke endpoint admin, pada setiap publish. Build feed
-                               menggantikannya. Jangan menghidupkannya kembali
-                               "untuk satu field yang kurang" — field itu ada di
-                               `view=full`.
-GET /api/v1/auth/session       introspeksi sesi — milik BFF portal, yang belum ada.
-                               `awcms` menolak kredensial mesin di sini dengan 401
-                               yang sama seperti token tak dikenal (anti-oracle,
-                               ADR-0049), jadi ia BUKAN cara memeriksa token build.
+NOT CALLED (3)
+GET /api/v1/blog/posts/{id}    hydrating one post — REMOVED by ADR-0018.
+                               It used to be N+1: one request per post, per build,
+                               to an admin endpoint, on every publish. The build
+                               feed replaced it. Do not bring it back "for one
+                               missing field" — that field is in `view=full`.
+GET /api/v1/auth/session       session introspection — it belongs to the portal BFF,
+                               which does not exist yet. `awcms` refuses machine
+                               credentials here with the same 401 as an unknown
+                               token (anti-oracle, ADR-0049), so it is NOT a way
+                               to check a build token.
 POST /api/v1/access/machine-credentials
-                               cara MANUSIA menerbitkan token build, sekali, di
-                               luar build. Dibekukan sebagai COMMITTED di sana,
-                               bukan karena repo ini memanggilnya. Sejak
-                               13 Agustus 2026 permukaan ini juga menerbitkan
-                               kredensial kelas TULIS — jangan pernah memakainya
-                               untuk token build.
+                               how a HUMAN issues a build token, once, outside the
+                               build. It is frozen as COMMITTED over there, not
+                               because this repo calls it. Since 13 August 2026
+                               this surface also issues WRITE-class credentials —
+                               never use it for a build token.
 ```
 
-Ketiganya di luar blok bertanda di atas, dan **blok pagar `TIDAK DIPANGGIL (3)`
-ini** yang tidak digerbangi — tabel bertanda di atasnya justru digerbangi dua
-arah terhadap kode. Yang menjaga blok ini hanya mata pembaca. Bila salah satunya
-mulai dipanggil `src/`, tabel di atas yang akan merah lebih dulu.
+All three are outside the marked block above, and **it is this `NOT CALLED (3)`
+fenced block** that is not gated — the marked table above it is gated against the
+code in both directions. What guards this block is only a reader's eye. If one of
+them starts being called from `src/`, the table above goes red first.
 
-## Penolakan `awcms` yang WAJIB ditiru di tiruan tes
+## `awcms` refusals that MUST be imitated in the test doubles
 
-Tes yang tiruannya lebih longgar daripada `awcms` asli akan hijau untuk kode
-yang gagal di produksi. `tests/kontrak-awcms.test.mjs` meniru ketiganya:
+A test whose double is more lenient than the real `awcms` will be green for code
+that fails in production. `tests/kontrak-awcms.test.mjs` imitates all of these:
 
-- `view=full` tanpa `order=created_at` → **400**, bukan diabaikan.
-- Tanpa `view=full` → daftar memberi **ringkasan**, bukan baris penuh.
-- `ids` lebih dari 100 → **400**, bukan dipotong diam-diam.
-- Id media yang tak resolve dilaporkan di `unresolved`, **tidak dibuang**.
+- `view=full` without `order=created_at` → **400**, not ignored.
+- Without `view=full` → the list gives a **summary**, not full rows.
+- `ids` beyond 100 → **400**, not silently truncated.
+- A media id that does not resolve is reported in `unresolved`, **not dropped**.
 
-## Gambar dan kartu share
+## Images and share cards
 
-Diresolusi **sekali per build** di `src/lib/content.ts`, hasilnya di
-`LocalizedArticle.gambar` dan `LocalizedArticle.kartuShare` (ADR-0025/0026).
+Resolved **once per build** in `src/lib/content.ts`, with the results in
+`LocalizedArticle.gambar` and `LocalizedArticle.kartuShare` (ADR-0025/0026).
 
-- Urutan kartu share `seoImageMediaId ?? featuredMediaId` — **milik `awcms`**,
-  jangan disusun ulang di sini.
-- Media `awcms` menang atas seni lokal `src/assets/` — spesifik mengalahkan
-  generik (ADR-0024/0025).
-- **Satu id hilang** → placeholder, build lanjut. **Nol dari N** → build gagal;
-  itu token tanpa `media.read`, `awcms` lebih tua, atau media tak dikonfigurasi.
-- Kartu membawa MIME dan ukurannya **sendiri**. Konstanta 1200×630 hanya berlaku
-  untuk `SITE_SOCIAL_IMAGE`, dan hanya karena `.env.example` mengontrakkannya.
+- The share-card order `seoImageMediaId ?? featuredMediaId` **belongs to `awcms`**;
+  do not reassemble it here.
+- `awcms` media win over local art in `src/assets/` — specific beats generic
+  (ADR-0024/0025).
+- **One id missing** → placeholder, the build continues. **Zero out of N** → the
+  build fails; that means a token without `media.read`, an older `awcms`, or
+  media that is not configured.
+- A card carries its **own** MIME type and dimensions. The 1200×630 constant
+  applies only to `SITE_SOCIAL_IMAGE`, and only because `.env.example` contracts
+  it.
 
-## `img-src` ditanyakan, tidak disalin
+## `img-src` is asked for, not copied
 
-`scripts/asal-media.mjs` menanyakan asal media saat build dan menulis
-`dist/server/asal-media.json`; `server/penyaji.mjs` membacanya dan melebarkan
-`img-src`. **Jangan** menyalin `NEWS_MEDIA_R2_PUBLIC_BASE_URL` ke sini — dua
-salinan satu nilai yang sepakat sampai salah satunya disunting, dengan kegagalan
-yang tak menyebut sebabnya: gambar diblokir diam-diam oleh kebijakan yang tampak
-baik-baik saja.
+`scripts/asal-media.mjs` asks for the media origin at build time and writes
+`dist/server/asal-media.json`; `server/penyaji.mjs` reads it and widens
+`img-src`. **Do not** copy `NEWS_MEDIA_R2_PUBLIC_BASE_URL` here — two copies of
+one value that agree until one of them is edited, with a failure that never names
+its cause: images silently blocked by a policy that looks perfectly fine.
 
-`Dockerfile` **wajib** menyalin berkas itu. Tanpa itu penyaji jatuh ke
-`img-src 'self'` dan setiap gambar artikel diblokir, pada image yang build-nya
-hijau.
+The `Dockerfile` **must** copy that file. Without it the server falls back to
+`img-src 'self'` and every article image is blocked, on an image whose build was
+green.
 
-## Sebelum menambah permukaan keempat
+## Before adding a fourth surface
 
-Uji [ADR-0023](../../../docs/adr/0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md):
-**apakah perubahan ini ditulis ulang bila `awcms` berubah?** Bila ya, ia butuh
-instans `awcms` untuk dibuktikan — dan **"endpoint-nya sudah ada" bukan jawaban
-"tidak"**. Repo template ini tidak punya instans; CI-nya mengondisikan build
-atas `vars.AWCMS_API_URL` justru karena itu.
+Apply the [ADR-0023](../../../docs/adr/0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md)
+test: **would this change be rewritten if `awcms` changed?** If yes, it needs an
+`awcms` instance to be proven — and **"the endpoint already exists" is not an
+answer of "no"**. This template repo has no instance; that is exactly why its CI
+conditions the build on `vars.AWCMS_API_URL`.
 
-Uji itu **tidak** ikut dicabut saat penahanan ADR-0021 selesai
-([ADR-0027](../../../docs/adr/0027-penahanan-adr-0021-selesai.md)). Premisnya
-yang berubah, batasnya tidak.
+That test was **not** withdrawn when the ADR-0021 hold ended
+([ADR-0027](../../../docs/adr/0027-penahanan-adr-0021-selesai.md)). Its premise
+changed; its boundary did not.
 
-## Keputusan `awcms` yang mengubah apa yang benar di sini
+## `awcms` decisions that change what is true here
 
-Periksa ini saat `awcms` merilis ADR baru — bukan setiap kali, tetapi setiap kali
-sebuah ADR menyentuh konten publik, media, atau kredensial.
+Check these when `awcms` releases a new ADR — not every time, but every time an
+ADR touches public content, media, or credentials.
 
-| `awcms` | Akibatnya di sini |
+| `awcms` | Its consequence here |
 | --- | --- |
-| ADR-0049/0050 — kredensial mesin + serah-terima sesi BFF | **Sudah diserap.** Tenant dari token, tanpa header tenant |
-| ADR-0056 §B — objek media boleh di-purge, rujukannya jadi inert | **Sudah diserap.** Satu id hilang → placeholder; NOL dari N → build gagal |
-| ADR-0071 — kosakata URL dibelah; men-supersede ADR-0059 | **Sudah diserap** ([ADR-0036](../../../docs/adr/0036-news-adalah-kosakata-repo-ini-dan-sebuah-tab-yang-memikulnya.md)). Keempat rute `/news/**` **dihapus** di `awcms` pada 8 Agustus 2026 dan kini 301 ke `/blog/{tenantCode}/**` — **kecuali** untuk tenant ber-`legacyTenantRouteEnabled: false`, yang sudah mematikan seluruh permukaan konten publiknya dan karena itu tetap dijawab 404 alih-alih diberi 301 menuju 404 yang pasti (`awcms` ADR-0071 §4 butir 3); `publicRouteMode` dan `withHostResolvedBlogTenant` dicabut bersamanya. `/blog/**` kini kosakata permanen `awcms` — **path-scoped**, bukan host-resolved — dan `/news/**` kosakata repo ini, berbentuk sebuah tab. Kalimat lama "keduanya host-resolved, jadi satu domain hanya bisa dilayani salah satunya" tidak lagi menggambarkan apa pun dan sudah dihapus dari baris ini |
-| Predikat publik `published_at` pada rute berita `awcms` | **Diserap sejak 7 Agustus 2026** (ADR-0033). `IS NOT NULL` ditiru persis; `<= now()` ditiru dengan toleransi condong jam 15 menit, karena kedua stempel datang dari dua mesin dan jalur normalnya terbit → webhook → build. `visibility` sengaja tetap LEBIH KETAT: keluaran statis tidak punya keadaan "hanya lewat tautan langsung" |
-| ADR-0061 — permukaan host-resolved boleh di-cache di tepi | Tidak berlaku: situs ini tidak lewat Varnish, dan tidak punya cabang 404 yang membedakan tenant |
-| ADR-0062 — skill digerbangi terhadap kodenya | **Diserap penuh sejak 5 Agustus 2026.** `bun run audit:dokumen` memeriksa jalur berkas yang disebut berkas ini DAN kutipan `ADR-NNNN` — yang tidak resolve ke `docs/adr/` dan tidak ditandai milik repo lain adalah pelanggaran |
-| ADR-0065 — kontrak konsumen `awcms-astro` dibekukan | **Batas dijaga dua arah.** Tabel bertanda di atas digerbangi di sini (ADR-0030); bentuk respons kelima path-nya dibekukan di sana (subset aditif, closure `$ref`). Saat fixture di sana di-regenerate menyentuh path CONSUMED, adapter di sini ikut berubah — serentak |
-| ADR-0070 — peran keluarga: repo ini memikul publik + admin USER | **Sudah diserap** ([ADR-0034](../../../docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md)). Bukan pekerjaan adapter, tetapi ia yang menentukan bahwa permukaan keempat kelak **mungkin** ada. Syaratnya dicatat di sana: penyempitan itu berlaku selama `owner` tetap ditolak gerbang di sini |
-| ADR-0073 — `suspended` adalah status LAYANAN | **Mode kegagalan build BARU.** Tenant `suspended` **atau** `inactive` dijawab `403 TENANT_SUSPENDED` (`matchedPolicy: "tenant_suspended"`), dan sejak ADR itu penolakannya mengenai **kredensial mesin** juga. Diputuskan sebelum permission dicari, jadi tidak ada scope token yang memperbaikinya. Build gagal total, nol berkas terbit — dan terbaca persis seperti token dicabut |
-| ADR-0084 — sebuah entitlement MENOLAK, ia tidak pernah memberi | **Kosakata penolakan baru, tetapi BELUM bisa mengenai build ini.** `403 ENTITLEMENT_REQUIRED` punya bentuk yang sama dengan `TENANT_SUSPENDED` — di atas pembacaan grant — tetapi entitlement diputuskan per MODUL, dan satu-satunya modul `awcms` yang mendeklarasikannya hari ini adalah `tenant_domain` (`custom_domain`, di paket DEFAULT, menolak nol tenant). Build ini hanya memanggil `blog_content` dan `media_library`. Dicatat karena bentuknya, bukan karena ia sudah muncul di log. ADR yang sama menaikkan `moduleDescriptorContractVersion` keluarga ke **3.1.0** (field opsional `requiresEntitlement`) — penambahan murni, nol pekerjaan di sini |
-| ADR-0083 — template `awcms` men-deploy ke SATU environment | **Kosakata keluarga menyempit.** Anggota `"staging"` **dihapus** dari union profil deployment modul (kini `development | production | offline-lan`), jadi contoh maupun dokumen di sini tidak boleh lagi menarasikan "token staging" sebagai lingkungan sejajar produksi |
-| ADR-0093 — partner yang di-suspend BERHENTI menjangkau | **Mode kegagalan build BERSYARAT — yang pertama yang bergantung pada siapa MENERBITKAN token.** `403 PARTNER_SUSPENDED` (`matchedPolicy: "partner_suspended"`) menolak setiap aktor **terdelegasi** yang partnernya tidak lagi `active`, di chokepoint, per permintaan. Kredensial mesin mewarisi `principal_kind` akun layanannya, dan tidak ada apa pun di jalur penerbitan `awcms` yang melarang akun layanan itu berupa tenant user **terdelegasi**: pemilih akun layanan mendaftar setiap tenant user tanpa menyaring jenisnya. Yang keliru memilih pasti admin tenant situs — agensinya sendiri tidak bisa menerbitkan apa pun di `identity_access` (`awcms` ADR-0090). Aturannya karena itu operasional: terbitkan token build atas akun layanan milik tenant **situs**. Dan diagnosisnya sengaja dipersulit oleh keputusan yang benar di sana: suspensi membuat grant **tidak berlaku, bukan tidak ada**, jadi memeriksa daftar grant tidak akan menunjukkan sesuatu yang hilang |
-| ADR-0094 — seorang subjek data dijawab PER TENANT | **Nol pekerjaan adapter, dan justru itu yang harus dicatat.** Build ini menerbitkan **salinan statis**, jadi anonimisasi seorang subjek di `awcms` tidak menjangkau satu pun berkas yang sudah terbit sampai build berikutnya — dan salinan yang sudah tersebar bisa hidup lebih lama lagi (cache CDN, riwayat git `dist/` bila sebuah situs meng-commit keluarannya). Yang membuat itu **tidak** menjadi masalah hari ini adalah sebuah keputusan, bukan kebetulan: template ini menerbitkan **nol data per-orang** — `author` JSON-LD adalah `Organization` ([`src/lib/schema.ts`](../../../src/lib/schema.ts), digerbangi [`tests/schema.test.mjs`](../../../tests/schema.test.mjs)) dan `<author>` feed adalah nama situs ([`src/lib/feed.ts`](../../../src/lib/feed.ts), keputusan yang **tidak** digerbangi — `tests/feed.test.mjs` tidak memeriksanya, jadi jangan membacanya sebagai terjaga). Situs yang menambah byline, avatar penulis, atau komentar **mengambil kewajiban itu**, dan jalur penghapusannya berakhir di sebuah rebuild. ADR yang sama menaikkan `moduleDescriptorContractVersion` keluarga ke **4.0.0** (union `SubjectDataErasure` melebar, `tenantColumn` menjadi `string \| null`) — nol pekerjaan di sini, karena repo ini tidak mendeklarasikan satu deskriptor modul pun |
-| ADR-0092 — kredensial mesin boleh MENULIS | **Premis lama gugur, dan ia premis keamanan.** "Kredensial mesin tidak bisa menulis" berhenti menjadi sifat KELAS: kelas tulis ada, dengan plafon aksi `create`/`update` **di kode** (bukan kolom), wajib terikat CIDR, **DITOLAK bila `clientIp` tidak diketahui** (fail-closed), umur maksimum 30 hari (CHECK basis data 31) alih-alih 365, dan sentinel penolakan `machine_credential_write_forbidden`. Setiap kredensial yang terbit sebelum migrasinya tetap baca-saja tanpa backfill. **Token build repo ini WAJIB tetap di kelas baca** — kini keputusan penerbitan yang dipertahankan, bukan sifat yang diwarisi. Diserap di [`.env.example`](../../../.env.example) dan banner [ADR-0018](../../../docs/adr/0018-kontrak-build-token-mesin-dan-traversal-konten.md) |
+| ADR-0049/0050 — machine credentials + BFF session handover | **Already absorbed.** The tenant comes from the token, with no tenant header |
+| ADR-0056 §B — a media object may be purged, its reference becoming inert | **Already absorbed.** One id missing → placeholder; ZERO out of N → the build fails |
+| ADR-0071 — the URL vocabulary is split; supersedes ADR-0059 | **Already absorbed** ([ADR-0036](../../../docs/adr/0036-news-adalah-kosakata-repo-ini-dan-sebuah-tab-yang-memikulnya.md)). All four `/news/**` routes were **removed** in `awcms` on 8 August 2026 and now 301 to `/blog/{tenantCode}/**` — **except** for a tenant with `legacyTenantRouteEnabled: false`, which has already switched off its entire public content surface and is therefore still answered 404 rather than given a 301 towards a certain 404 (`awcms` ADR-0071 §4 item 3); `publicRouteMode` and `withHostResolvedBlogTenant` were withdrawn along with them. `/blog/**` is now permanent `awcms` vocabulary — **path-scoped**, not host-resolved — and `/news/**` is this repo's vocabulary, in the shape of a tab. The old sentence "both are host-resolved, so one domain can only be served by one of them" no longer describes anything and has been deleted from this row |
+| The `published_at` public predicate on the `awcms` news routes | **Absorbed since 7 August 2026** (ADR-0033). `IS NOT NULL` is imitated exactly; `<= now()` is imitated with a 15-minute clock-skew tolerance, because the two timestamps come from two machines and the normal path is publish → webhook → build. `visibility` is deliberately kept STRICTER: static output has no "only through a direct link" state |
+| ADR-0061 — host-resolved surfaces may be cached at the edge | Not applicable: this site does not go through Varnish, and has no 404 branch that distinguishes tenants |
+| ADR-0062 — skills are gated against their code | **Fully absorbed since 5 August 2026.** `bun run audit:dokumen` checks the file paths named by this file AND the `ADR-NNNN` citations — one that does not resolve to `docs/adr/` and is not marked as another repo's is a violation |
+| ADR-0065 — the `awcms-astro` consumer contract is frozen | **The boundary is guarded from both sides.** The marked table above is gated here (ADR-0030); the response shapes of its five paths are frozen over there (additive subset, `$ref` closure). When the fixture over there is regenerated touching a CONSUMED path, the adapter here changes too — simultaneously |
+| ADR-0070 — the family roles: this repo bears public + USER admin | **Already absorbed** ([ADR-0034](../../../docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md)). Not adapter work, but it is what determines that a fourth surface **may** exist one day. Its condition is recorded there: that narrowing holds as long as `owner` stays refused by a gate here |
+| ADR-0073 — `suspended` is a SERVICE status | **A NEW build failure mode.** A `suspended` **or** `inactive` tenant is answered `403 TENANT_SUSPENDED` (`matchedPolicy: "tenant_suspended"`), and since that ADR the refusal reaches **machine credentials** too. It is decided before permissions are looked up, so no token scope fixes it. The build fails completely, zero files published — and it reads exactly like a revoked token |
+| ADR-0084 — an entitlement REFUSES, it never grants | **New refusal vocabulary, but it CANNOT yet reach this build.** `403 ENTITLEMENT_REQUIRED` has the same shape as `TENANT_SUSPENDED` — above the grant lookup — but entitlements are decided per MODULE, and the only `awcms` module declaring one today is `tenant_domain` (`custom_domain`, in the DEFAULT package, refusing zero tenants). This build only calls `blog_content` and `media_library`. Recorded for its shape, not because it has appeared in a log. The same ADR raised the family's `moduleDescriptorContractVersion` to **3.1.0** (the optional `requiresEntitlement` field) — a pure addition, zero work here |
+| ADR-0083 — the `awcms` template deploys to ONE environment | **The family vocabulary narrows.** The member `"staging"` was **removed** from the union of module deployment profiles (now `development \| production \| offline-lan`), so neither an example nor a document here may narrate "a staging token" as an environment on a par with production |
+| ADR-0093 — a suspended partner STOPS reaching | **A CONDITIONAL build failure mode — the first that depends on who ISSUED the token.** `403 PARTNER_SUSPENDED` (`matchedPolicy: "partner_suspended"`) refuses every **delegated** actor whose partner is no longer `active`, at the chokepoint, per request. A machine credential inherits the `principal_kind` of its service account, and nothing in the `awcms` issuing path forbids that service account from being a **delegated** tenant user: the service-account picker lists every tenant user without filtering by kind. Whoever picks wrongly is certainly the site's tenant admin — the agency itself cannot issue anything in `identity_access` (`awcms` ADR-0090). The rule is therefore operational: issue the build token on a service account belonging to the **site's** tenant. And its diagnosis is deliberately made harder by a decision that is correct over there: suspension makes a grant **inapplicable, not absent**, so inspecting the grant list will not show anything missing |
+| ADR-0094 — a data subject is answered PER TENANT | **Zero adapter work, and that is exactly what has to be recorded.** This build publishes a **static copy**, so anonymising a subject in `awcms` does not reach a single already-published file until the next build — and copies already distributed can live longer still (CDN caches, the git history of `dist/` if a site commits its output). What keeps that from being a problem today is a decision, not a coincidence: this template publishes **zero per-person data** — the JSON-LD `author` is an `Organization` ([`src/lib/schema.ts`](../../../src/lib/schema.ts), gated by [`tests/schema.test.mjs`](../../../tests/schema.test.mjs)) and the feed's `<author>` is the site name ([`src/lib/feed.ts`](../../../src/lib/feed.ts), a decision that is **not** gated — `tests/feed.test.mjs` does not check it, so do not read it as guarded). A site that adds a byline, an author avatar, or comments **takes on that obligation**, and its erasure path ends in a rebuild. The same ADR raised the family's `moduleDescriptorContractVersion` to **4.0.0** (the `SubjectDataErasure` union widens, `tenantColumn` becomes `string \| null`) — zero work here, because this repo declares no module descriptor at all |
+| ADR-0092 — machine credentials may WRITE | **An old premise falls, and it is a security premise.** "Machine credentials cannot write" stops being a property of the CLASS: a write class exists, with an action ceiling of `create`/`update` **in code** (not a column), mandatory CIDR binding, **REFUSED when `clientIp` is unknown** (fail-closed), a maximum age of 30 days (database CHECK 31) instead of 365, and the refusal sentinel `machine_credential_write_forbidden`. Every credential issued before its migration stays read-only, with no backfill. **This repo's build token MUST stay in the read class** — now an issuing decision that is maintained, not a property that is inherited. Absorbed in [`.env.example`](../../../.env.example) and in the [ADR-0018](../../../docs/adr/0018-kontrak-build-token-mesin-dan-traversal-konten.md) banner |
 
-**Gelombang ADR `awcms` 0072–0094 (9–13 Agustus 2026) sudah dibaca seluruhnya,
-dan yang tidak muncul di tabel di atas tidak relevan di sini — bukan belum
-diperiksa.** Yang tidak relevan beserta alasannya, supaya diamnya bisa
-dibedakan: 0072 (retensi log keputusan), 0074/0077 (outbox dan sync pull),
-0075 (SSE), 0076 (deskriptor retensi tabel infrastruktur), 0078–0082
-(bentuk grant, grup pengguna, undangan), 0085–0088 (identitas, lockout, MFA,
-pemilihan tenant), 0089–0091 (partner, akses terdelegasi, atribusi) — seluruhnya
-menyentuh permukaan **terautentikasi** dan tidak satu pun menyentuh jalur build
-statis. **Tiga gugus terakhir** (0078–0082, 0085–0088, 0089–0091) tetap penting bagi repo ini, tetapi tempatnya
+**The `awcms` ADR wave 0072–0094 (9–13 August 2026) has been read in full, and
+what does not appear in the table above is not relevant here — not merely
+unexamined.** What is not relevant, with its reason, so that the silence can be
+told apart: 0072 (decision log retention), 0074/0077 (the outbox and sync pull),
+0075 (SSE), 0076 (retention descriptors for infrastructure tables), 0078–0082
+(grant shapes, user groups, invitations), 0085–0088 (identity, lockout, MFA,
+tenant selection), 0089–0091 (partners, delegated access, attribution) — all of
+them touch **authenticated** surfaces and not one touches the static build path.
+**The last three clusters** (0078–0082, 0085–0088, 0089–0091) do still matter to
+this repo, but their place is
 [`permukaan-admin-user.md`](../../../docs/awcms-astro/permukaan-admin-user.md),
-bukan berkas ini: mereka membentuk permukaan admin USER, bukan adapter konten.
+not this file: they shape the USER admin surface, not the content adapter.
 
-## Batas waktu: ada, dan TIDAK sama dengan retry
+## The timeout: it exists, and it is NOT the same as a retry
 
-`awcmsGet` memasang `AbortSignal.timeout` — bawaan 30 detik, diubah lewat
-`AWCMS_API_TIMEOUT_MS`. Ia tidak bertabrakan dengan aturan "tanpa retry" di atas,
-dan bedanya perlu dipegang: **tanpa-retry memutuskan apa yang terjadi saat
-`awcms` menjawab buruk; batas waktu memutuskan apa yang terjadi saat ia tidak
-pernah menjawab sama sekali.** Keduanya berakhir sama — build gagal, nol berkas
-terbit.
+`awcmsGet` installs an `AbortSignal.timeout` — 30 seconds by default, changed
+through `AWCMS_API_TIMEOUT_MS`. It does not collide with the "no retries" rule
+above, and the difference is worth holding on to: **no-retries decides what
+happens when `awcms` answers badly; the timeout decides what happens when it
+never answers at all.** Both end the same way — the build fails, zero files
+published.
 
-Yang dijaganya bukan kelambatan melainkan **kesenyapan**: koneksi yang diterima
-lalu tidak pernah dijawab, bentuk kegagalan paling umum dari basis data yang
-kehabisan koneksi. `fetch` tidak punya batas waktu bawaan, jadi sebelum ini build
-menggantung sampai batas job CI membunuhnya — dengan pesan yang menyebut nama
-job, bukan `awcms`.
+What it guards against is not slowness but **silence**: a connection that is
+accepted and then never answered, the most common failure shape of a database
+that has run out of connections. `fetch` has no default timeout, so before this
+the build hung until the CI job limit killed it — with a message naming the job,
+not `awcms`.
 
-Dua hal yang jangan diubah tanpa membaca alasannya:
+Two things not to change without reading why:
 
-- **Batasnya longgar (30 detik), dan itu disengaja.** `view=full` membawa
-  `contentJson` utuh; tenant besar di basis data dingin bisa sah-sah saja lambat.
-  Menyetelnya ke nilai "jalur permintaan sehat" mengubah build lambat menjadi
-  build gagal — kebalikan dari gunanya.
-- **Nilai yang cacat DITOLAK, termasuk `0`.** `0` terlihat seperti "tanpa batas"
-  dan justru mengembalikan gantungan yang gerbang ini ada untuk mencegah.
+- **The limit is generous (30 seconds), and that is deliberate.** `view=full`
+  carries the whole `contentJson`; a large tenant on a cold database can legitimately
+  be slow. Setting it to a "healthy request path" value turns a slow build into a
+  failed build — the opposite of its purpose.
+- **A malformed value is REFUSED, including `0`.** `0` looks like "no limit" and
+  in fact restores exactly the hang this gate exists to prevent.
 
-## Rujukan
+## References
 
 - [`docs/adr/0018-kontrak-build-token-mesin-dan-traversal-konten.md`](../../../docs/adr/0018-kontrak-build-token-mesin-dan-traversal-konten.md)
 - [`docs/adr/0025-gambar-artikel-dari-media-awcms.md`](../../../docs/adr/0025-gambar-artikel-dari-media-awcms.md)
 - [`docs/adr/0027-penahanan-adr-0021-selesai.md`](../../../docs/adr/0027-penahanan-adr-0021-selesai.md)
 - [`docs/awcms-astro/integrasi-awcms.md`](../../../docs/awcms-astro/integrasi-awcms.md)
-- [`AGENTS.md`](../../../AGENTS.md) §Sumber data
+- [`AGENTS.md`](../../../AGENTS.md) §Data source

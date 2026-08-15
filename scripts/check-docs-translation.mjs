@@ -47,11 +47,6 @@ const ROOT = resolve(import.meta.dirname, "..");
  */
 export const DOCS_AWAITING_MIRROR = [
   ".changesets/README.md",
-  ".claude/skills/README.md",
-  ".claude/skills/awcms-astro-gerbang/SKILL.md",
-  ".claude/skills/awcms-astro-integrasi/SKILL.md",
-  ".claude/skills/awcms-astro-performa-keamanan/SKILL.md",
-  ".claude/skills/awcms-astro-situs-baru/SKILL.md",
   "CODE_OF_CONDUCT.md",
   "CONTRIBUTING.md",
   "GOVERNANCE.md",
