@@ -1,152 +1,149 @@
-# ADR-0025 — Gambar artikel dari media `awcms`: di-resolve sekali per build, dan `img-src` yang DITANYAKAN
+🇬🇧 English (source) · 🇮🇩 [Bahasa Indonesia](0025-gambar-artikel-dari-media-awcms.id.md)
+
+# ADR-0025 — Article images from `awcms` media: resolved once per build, with an `img-src` that is ASKED FOR
 
 - **Status:** Accepted
-- **Tanggal:** 3 Agustus 2026
-- **Aturan pemilik:** 3 Agustus 2026 — "cek repo `ahliweb/awcms`, lalu lanjutkan yang bisa dilakukan atas dasar kesiapan repo `awcms` tersebut."
-- **Menutup:** [ADR-0021](0021-tahan-pengembangan-menunggu-fondasi-awcms.md) §Titik lanjut butir 1
-- **Terkait:** [ADR-0018](0018-kontrak-build-token-mesin-dan-traversal-konten.md) (kontrak build), [ADR-0019](0019-csp-ketat-dikirim-penyaji.md) (`img-src`), [ADR-0023](0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md) (uji "ditulis ulang bila `awcms` berubah?"), [ADR-0024](0024-seni-lokal-di-src-assets.md) (seni lokal), `awcms` [ADR-0049](https://github.com/ahliweb/awcms/blob/main/docs/adr/0049-machine-credentials-and-session-introspection.md), `awcms` [ADR-0056](https://github.com/ahliweb/awcms/blob/main/docs/adr/0056-media-library-admin-surface.md)
+- **Date:** 3 August 2026
+- **Owner's rule:** 3 August 2026 — "check the `ahliweb/awcms` repo, then carry on with what can be done on the basis of that repo's readiness."
+- **Closes:** [ADR-0021](0021-tahan-pengembangan-menunggu-fondasi-awcms.md) §Resumption points item 1
+- **Related:** [ADR-0018](0018-kontrak-build-token-mesin-dan-traversal-konten.md) (the build contract), [ADR-0019](0019-csp-ketat-dikirim-penyaji.md) (`img-src`), [ADR-0023](0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md) (the "rewritten if `awcms` changed?" test), [ADR-0024](0024-seni-lokal-di-src-assets.md) (local artwork), `awcms` [ADR-0049](https://github.com/ahliweb/awcms/blob/main/docs/adr/0049-machine-credentials-and-session-introspection.md), `awcms` [ADR-0056](https://github.com/ahliweb/awcms/blob/main/docs/adr/0056-media-library-admin-surface.md)
 
-## Konteks
+## Context
 
-ADR-0023 menahan pekerjaan yang **membutuhkan** `awcms` dengan satu batas yang
-dinyatakan terus terang: *"endpoint-nya sudah ada" bukan jawaban "tidak"*, karena
-kode yang memanggil `awcms` bentuknya ditentukan respons `awcms`, dan repo
-template ini tidak punya instans untuk membuktikan panggilannya benar.
+ADR-0023 held work that **needs** `awcms` with one boundary stated plainly:
+*"the endpoint already exists" is not an answer of "no"*, because code calling
+`awcms` has its shape decided by an `awcms` response, and this template repo has
+no instance to prove its calls are right.
 
-Dua hal mengubah dasar itu pada 3 Agustus 2026, dan keduanya datang dari
-`awcms`, bukan dari sini:
+Two things changed that basis on 3 August 2026, and both came from `awcms`, not
+from here:
 
-1. **Analisis kesiapan `awcms` untuk repo ini** (`awcms` #371). Ia memeriksa ke
-   KODE, bukan ke daftar, dan menyimpulkan: **setiap kontrak konten dan sesi
-   yang benar-benar dipanggil `awcms-astro` sudah lengkap** — traversal post
-   (`view=full`/cursor/`locale`), resolusi objek media, introspeksi sesi,
-   kredensial mesin, dan post tunggal. Yang menahan repo ini bukan kontrak yang
-   hilang.
-2. **Satu celah nyata ditutup di gelombang yang sama** (`awcms` #370):
-   `GET /api/v1/media/public-origin`, dibuka **persis untuk repo ini**, karena
-   `img-src` harus menyebut host media pada kebijakan yang ditulis SEBELUM satu
-   objek pun diambil.
+1. **The `awcms` readiness analysis for this repo** (`awcms` #371). It checked
+   against the CODE, not against a list, and concluded: **every content and
+   session contract `awcms-astro` actually calls is complete** — post traversal
+   (`view=full`/cursor/`locale`), media object resolution, session introspection,
+   machine credentials, and the single post. What was holding this repo back was
+   not a missing contract.
+2. **One real gap was closed in the same wave** (`awcms` #370):
+   `GET /api/v1/media/public-origin`, opened **precisely for this repo**, because
+   `img-src` has to name the media host in a policy written BEFORE a single object
+   is fetched.
 
-Butir pertama §Titik lanjut ADR-0021 mencatat dua keputusan yang tersisa di sini,
-dan keduanya masih persis itu: **di mana gambar hasil resolusi tinggal**, dan
-**apa yang diizinkan `img-src`**. ADR ini menjawab keduanya.
+The first item of ADR-0021 §Resumption points recorded two decisions remaining
+here, and both are still exactly that: **where the resolved image lives**, and
+**what `img-src` allows**. This ADR answers both.
 
-## Keputusan
+## Decision
 
-### 1. Resolusi sekali per build, hasilnya di `LocalizedArticle`
+### 1. Resolved once per build, with the result in `LocalizedArticle`
 
-`content.ts` mengumpulkan seluruh `featuredMediaId` dari feed, menyelesaikannya
-dalam batch ke `GET /api/v1/media/objects?ids=…`, dan menaruh hasilnya di
+`content.ts` collects every `featuredMediaId` from the feed, resolves them in a
+batch against `GET /api/v1/media/objects?ids=…`, and puts the result in
 `LocalizedArticle.gambar`.
 
-**Bukan di `article-images.ts`**, dan itu keputusan ADR-0021 yang dipertahankan:
-modul itu sinkron dan komponen tidak boleh mengambil datanya sendiri
-(`AGENTS.md`). Menaruhnya di sana berarti komponen async, atau satu permintaan
-HTTP per kartu yang dirender — untuk situs 300 artikel dua locale, ratusan
-permintaan untuk data yang satu batch sudah pegang.
+**Not in `article-images.ts`**, and that is an ADR-0021 decision preserved: that
+module is synchronous and a component may not fetch its own data (`AGENTS.md`).
+Putting it there means either async components, or one HTTP request per rendered
+card — for a 300-article site in two locales, hundreds of requests for data one
+batch already holds.
 
-Batch dipecah per **100 id**, batas yang `awcms` terapkan. Melampauinya dijawab
-400, bukan dipotong — jadi situs ke-101 artikel bergambar akan gagal build alih
-alih diam-diam kehilangan sisanya.
+The batch is split at **100 ids**, the limit `awcms` enforces. Exceeding it is
+answered with a 400, not truncated — so a site's 101st illustrated article fails
+the build rather than silently losing the rest.
 
-### 2. Media `awcms` menang atas seni lokal
+### 2. `awcms` media beat local artwork
 
-Urutannya bukan "remote mengalahkan lokal" melainkan **spesifik mengalahkan
-generik**: `featuredMediaId` adalah pilihan yang dibuat editor untuk artikel
-ITU di CMS, sementara `artikel/<tab>/<slug>` adalah berkas yang kebetulan
-diletakkan situs pada jalur yang cocok. Menghormati berkas saat keduanya ada
-berarti menimpa keputusan redaksi tanpa satu pun tanda di halaman.
+The order is not "remote beats local" but **specific beats generic**:
+`featuredMediaId` is a choice an editor made for THAT article in the CMS, while
+`artikel/<tab>/<slug>` is a file the site happened to place on a matching path.
+Honouring the file when both exist means overriding an editorial decision with no
+sign of it on the page.
 
-Situs yang menginginkan sebaliknya tidak butuh saklar: ia berhenti mengisi
-featured image di `awcms`. Itu keputusan yang dibuat di tempat artikelnya
-tinggal.
+A site wanting the opposite needs no switch: it stops filling in the featured
+image in `awcms`. That is a decision made where the article lives.
 
-### 3. Satu id hilang ≠ semua id hilang
+### 3. One id missing ≠ every id missing
 
-| Keadaan | Perlakuan | Alasan |
+| State | Treatment | Reason |
 | --- | --- | --- |
-| Satu id tidak resolve | Placeholder, build lanjut | `awcms` mengizinkan objek di-purge dan memutuskan rujukan yang menggantung menjadi **inert, bukan penghalang** (ADR-0056 §B). Menggagalkan build di sini berarti repo ini memveto keputusan itu — situs tidak bisa terbit karena satu gambar dihapus. |
-| NOL dari N id resolve | **Build gagal** | Ini bukan aksi operator. Ia adalah token build tanpa `media_library.media.read`, `awcms` yang lebih tua dari endpoint-nya, atau media yang tidak dikonfigurasi. Ketiganya menerbitkan situs yang SETIAP artikelnya kehilangan gambar sekaligus — bentuk cacat ADR-0018 yang persis sama. |
+| One id does not resolve | Placeholder, the build continues | `awcms` permits an object to be purged and decides that a dangling reference becomes **inert, not an obstacle** (ADR-0056 §B). Failing the build here means this repo vetoing that decision — a site that cannot publish because one image was deleted. |
+| ZERO of N ids resolve | **The build fails** | This is not an operator action. It is a build token without `media_library.media.read`, an `awcms` older than the endpoint, or media that is not configured. All three publish a site whose EVERY article loses its image at once — exactly the ADR-0018 defect shape. |
 
-### 4. `img-src` DITANYAKAN, tidak disalin
+### 4. `img-src` is ASKED FOR, not copied
 
-`scripts/asal-media.mjs` menanyakan `GET /api/v1/media/public-origin` saat build
-dan menulis `dist/server/asal-media.json`; `server/penyaji.mjs` membacanya saat
-start dan melebarkan `img-src` dengan origin itu.
+`scripts/asal-media.mjs` asks `GET /api/v1/media/public-origin` at build time and
+writes `dist/server/asal-media.json`; `server/penyaji.mjs` reads it at start-up
+and widens `img-src` with that origin.
 
-ADR-0019 §Menyesuaikan menyuruh melebarkan `img-src` **di berkas penyaji**, dan
-itu tetap berlaku untuk origin yang dipilih SITUS (CDN, host pihak ketiga).
-Origin media bukan pilihan situs — ia milik deployment `awcms`, diturunkan dari
-`NEWS_MEDIA_R2_PUBLIC_BASE_URL` di sana. Menuliskannya dengan tangan adalah dua
-salinan satu nilai yang sepakat sampai salah satunya disunting, dan kegagalannya
-tidak menyebut sebabnya di mana pun: **gambar diblokir diam-diam oleh kebijakan
-yang tampak baik-baik saja.** `awcms` membuka endpoint itu justru untuk menutup
-ini.
+ADR-0019 §Adjusting says to widen `img-src` **in the server file**, and that still
+applies to an origin a SITE chooses (a CDN, a third-party host). A media origin is
+not the site's choice — it belongs to the `awcms` deployment, derived from
+`NEWS_MEDIA_R2_PUBLIC_BASE_URL` over there. Writing it by hand is two copies of
+one value that agree until one of them is edited, and its failure names its cause
+nowhere: **images silently blocked by a policy that looks perfectly fine.**
+`awcms` opened that endpoint precisely to close this.
 
-Yang **tidak** berubah: kebijakan tetap dirangkai di `penyaji.mjs` saja. Berkas
-JSON itu **data, bukan kebijakan kedua**. Dua sumber kebijakan yang saling
-menimpa adalah cara paling sunyi untuk berakhir tanpa kebijakan sama sekali, dan
-itu tetap aturan ADR-0019.
+What does **not** change: the policy is still assembled in `penyaji.mjs` alone.
+That JSON file is **data, not a second policy**. Two policy sources overwriting
+each other is the quietest way to end up with no policy at all, and that remains
+the ADR-0019 rule.
 
-Nilai yang dibaca dari berkas itu berakhir **di dalam sebuah header**, jadi ia
-diperlakukan sebagai masukan yang tidak dipercaya: JSON rusak, `configured:
-false`, skema selain `http`/`https`, dan nilai bukan-string semuanya
-diperlakukan sebagai tidak ada, dan origin dipangkas lewat `new URL(...).origin`
-sehingga path maupun spasi tidak bisa menyelundupkan direktif kedua. Satu nilai
-cacat membuat browser menolak SELURUH kebijakan — bersama `script-src`,
-`object-src`, dan setiap direktif lain di dalamnya.
+The value read from that file ends up **inside a header**, so it is treated as
+untrusted input: broken JSON, `configured: false`, a scheme other than
+`http`/`https`, and a non-string value are all treated as absent, and the origin
+is trimmed through `new URL(...).origin` so that neither a path nor whitespace can
+smuggle in a second directive. One malformed value makes the browser refuse the
+WHOLE policy — along with `script-src`, `object-src`, and every other directive
+inside it.
 
-## Konsekuensi
+## Consequences
 
-- **Butir pertama §Titik lanjut ADR-0021 selesai.** Yang tersisa di daftar itu
-  tinggal kartu share (butuh pembangkit, ADR sendiri) dan BFF portal.
-- **`Dockerfile` menyalin satu berkas lagi**, dan ketiadaannya tidak
-  menggagalkan apa pun — persis kelas cacat yang ADR ini ada untuk menutupnya.
-  Baris `COPY`-nya membawa komentar yang menyebut akibatnya.
-- **Deployment tanpa media publik tetap sah.** `configured: false` adalah
-  keadaan, bukan kesalahan (`awcms` memilih 200 alih-alih 404 justru supaya
-  build tidak gagal di deployment yang valid), dan `img-src 'self'` adalah
-  kebijakan yang benar untuknya.
-- **Uji ADR-0023 tetap berlaku untuk sisanya.** Yang mendarat di sini bukan
-  pelonggaran uji itu, melainkan pemenuhannya: kontraknya lengkap, dan
-  `awcms` sendiri yang memverifikasinya ke kode di #371. BFF portal — yang
-  memanggil `awcms` di setiap permintaan runtime, bukan sekali per build — tetap
-  ditahan.
-- **Risiko yang diterima:** gambar diverifikasi lewat kontrak tiruan, bukan
-  terhadap instans `awcms` sungguhan, karena repo template ini tidak punya satu.
-  Tiruannya meniru penolakan yang nyata (`unresolved` dilaporkan, batas 100 id),
-  dan gerbang nol-dari-N adalah yang menangkap perbedaan bila tiruan itu ternyata
-  lebih longgar daripada aslinya. Sebuah SITUS menjalankan build yang sama
-  terhadap `awcms` sungguhan di CI-nya.
+- **The first item of ADR-0021 §Resumption points is done.** What remains on that
+  list is the share card (needs a generator, its own ADR) and the portal BFF.
+- **The `Dockerfile` copies one more file**, and its absence fails nothing —
+  exactly the defect class this ADR exists to close. Its `COPY` line carries a
+  comment naming the consequence.
+- **A deployment with no public media stays valid.** `configured: false` is a
+  state, not an error (`awcms` chose 200 rather than 404 precisely so a build does
+  not fail on a valid deployment), and `img-src 'self'` is the right policy for it.
+- **The ADR-0023 test still applies to the rest.** What lands here is not a
+  loosening of that test but its satisfaction: the contract is complete, and
+  `awcms` itself verified that against the code in #371. The portal BFF — which
+  calls `awcms` on every runtime request, not once per build — stays held.
+- **An accepted risk:** images are verified against a test double, not against a
+  real `awcms` instance, because this template repo has none. The double imitates
+  the real refusals (`unresolved` reported, the 100-id limit), and the zero-of-N
+  gate is what catches the difference if that double turns out to be looser than
+  the original. A SITE runs the same build against a real `awcms` in its own CI.
 
-  > **Dicoba, dan ini yang menghalanginya — 3 Agustus 2026.** Menutup risiko ini
-  > secara lokal butuh dua hal, dan keduanya tidak ada. **Pertama**, jalur data
-  > host→container ke Postgres `awcms` mati: TCP connect berhasil (docker-proxy
-  > menerima di loopback) tetapi sesi menggantung — `Connection timeout after 30s
-  > (sent startup message, but never received response)`, dan ping ke IP
-  > container 100% hilang sementara outbound DARI container jalan dan seluruh
-  > konfigurasi bridge benar. Itu drop di lapisan bawah host, bukan cacat kode di
-  > repo mana pun, dan bukan sesuatu yang bisa diperbaiki dengan tweak
-  > iptables/sysctl. **Kedua**, dan ini yang menentukan: basis data itu ter-migrasi
-  > (126 tabel) tetapi **kosong** — nol tenant, nol post, nol objek media. Sebuah
-  > build end-to-end terhadapnya tidak akan membuktikan apa pun tentang resolusi
-  > media, dan mengisinya berarti mengarang data di basis data pengembangan orang
-  > lain untuk memuaskan sebuah tes. Risikonya tetap diterima, sekarang dengan
-  > alasan yang bisa diperiksa alih-alih diasumsikan.
+  > **Attempted, and here is what stopped it — 3 August 2026.** Closing this risk
+  > locally needs two things, and neither exists. **First**, the host→container
+  > data path to the `awcms` Postgres is dead: the TCP connect succeeds
+  > (docker-proxy accepts on loopback) but the session hangs —
+  > `Connection timeout after 30s (sent startup message, but never received
+  > response)`, and pings to the container IP are 100% lost while outbound FROM
+  > the container works and the whole bridge configuration is correct. That is a
+  > drop in a lower layer of the host, not a code defect in either repo, and not
+  > something an iptables/sysctl tweak fixes. **Second**, and this is the
+  > decisive one: that database is migrated (126 tables) but **empty** — zero
+  > tenants, zero posts, zero media objects. An end-to-end build against it would
+  > prove nothing about media resolution, and filling it means inventing data in
+  > somebody else's development database to satisfy a test. The risk stays
+  > accepted, now with a reason that can be checked rather than assumed.
 
-## Alternatif yang dipertimbangkan
+## Alternatives considered
 
-- **Membaca origin dari `publicUrl` yang dikembalikan** — ditolak, dan alasannya
-  milik `awcms`: kebijakan ditulis sebelum objek pertama diambil, jadi build
-  yang kebetulan tidak memuat gambar akan menghasilkan kebijakan tanpa `img-src`
-  sama sekali dan merusak build berikutnya.
-- **Menyalin `NEWS_MEDIA_R2_PUBLIC_BASE_URL` ke `.env` repo ini** — ditolak; dua
-  salinan satu nilai, dengan kegagalan yang tidak menyebut sebabnya. Ini yang
-  `awcms` #370 hapus.
-- **Melebarkan `img-src` lewat env var penyaji** — ditolak oleh ADR-0019, dan
-  alasannya masih berlaku: kebijakan yang bisa diubah dari luar berkasnya adalah
-  kebijakan yang bisa dikosongkan tanpa satu pun diff.
-- **Menggagalkan build pada id mana pun yang hilang** — ditolak; lihat tabel §3.
-- **Menaruh resolusi di `article-images.ts` dengan cache modul** — ditolak: ia
-  membuat komponen menunggu I/O dan memindahkan pengambilan data ke lapisan
-  presentasi, dua aturan `AGENTS.md` sekaligus.
+- **Reading the origin from the returned `publicUrl`** — refused, and the reason
+  belongs to `awcms`: the policy is written before the first object is fetched, so
+  a build that happens to contain no images would produce a policy with no
+  `img-src` at all and break the next build.
+- **Copying `NEWS_MEDIA_R2_PUBLIC_BASE_URL` into this repo's `.env`** — refused;
+  two copies of one value, with a failure that names its cause nowhere. This is
+  what `awcms` #370 removes.
+- **Widening `img-src` through a server env var** — refused by ADR-0019, and its
+  reasoning still holds: a policy that can be changed from outside its file is a
+  policy that can be emptied with not one diff.
+- **Failing the build on any missing id** — refused; see the §3 table.
+- **Putting the resolution in `article-images.ts` with a module cache** — refused:
+  it makes components wait on I/O and moves data fetching into the presentation
+  layer, two `AGENTS.md` rules at once.

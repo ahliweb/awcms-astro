@@ -1,75 +1,76 @@
-# ADR-0019 — CSP ketat dikirim penyaji, dan skrip tidak lagi tinggal di dalam HTML
+🇬🇧 English (source) · 🇮🇩 [Bahasa Indonesia](0019-csp-ketat-dikirim-penyaji.id.md)
+
+# ADR-0019 — A strict CSP sent by the server, and scripts no longer live inside the HTML
 
 - **Status:** Accepted
-- **Tanggal:** 2 Agustus 2026
-- **Berlaku untuk:** situs publik `awcms-astro` (permukaan admin ADR-0017 belum ada)
-- **Terkait:** ADR-0016 (penyaji Bun memegang header), ADR-0018 (keluaran siap CSP untuk gaya)
+- **Date:** 2 August 2026
+- **Applies to:** the public `awcms-astro` site (the ADR-0017 admin surface does not exist)
+- **Related:** ADR-0016 (the Bun server holds the headers), ADR-0018 (output made CSP-ready for styles)
 
-## Konteks
+## Context
 
-ADR-0018 membersihkan seluruh **gaya** inline dari keluaran build dan
-menerbitkan `tests/keluaran-csp.test.mjs` yang menjaganya. Yang ditinggalkannya
-disebut terus terang di README: `script-src` ketat belum bisa diklaim, karena
-keluarannya masih membawa skrip di dalam HTML.
+ADR-0018 cleared every inline **style** out of the build output and shipped
+`tests/keluaran-csp.test.mjs` to guard it. What it left behind was stated plainly
+in the README: a strict `script-src` could not yet be claimed, because the output
+still carried scripts inside the HTML.
 
-Setelah dihitung ulang atas keluaran build yang sebenarnya, jumlahnya bukan dua
-melainkan **tiga jalur**, dan yang ketiga tidak terlihat dari `src/` sama sekali:
+Recounted against the actual build output, the number is not two but **three
+paths**, and the third is not visible from `src/` at all:
 
-1. `<script is:inline>` pengalih tema di `BaseLayout.astro` — dua blok, satu di
-   `<head>` untuk memasang `data-theme` sebelum paint, satu di akhir `<body>`
-   untuk memasang listener tombol.
-2. `<script is:inline type="application/ld+json">` — JSON-LD di BaseLayout,
-   Breadcrumb, dan FaqAccordion.
-3. **`<script type="module">` yang tidak ditulis siapa pun.** `ShareButtons.astro`
-   memakai `<script>` biasa, yang dibundel Astro. Bundel tanpa impor yang lebih
-   kecil dari `assetsInlineLimit` Vite (4 kB secara bawaan) **disisipkan kembali
-   ke dalam HTML** alih-alih diterbitkan sebagai berkas. Ini pola yang sama
-   persis dengan `inlineStylesheets: 'auto'` yang ADR-0018 matikan untuk CSS:
-   bergantung UKURAN, jadi sebuah situs bisa patuh hari ini dan berhenti patuh
-   besok karena seseorang menghapus tiga baris dari sebuah komponen.
+1. `<script is:inline>` for the theme switcher in `BaseLayout.astro` — two blocks,
+   one in `<head>` to set `data-theme` before paint, one at the end of `<body>` to
+   attach the button listener.
+2. `<script is:inline type="application/ld+json">` — JSON-LD in BaseLayout,
+   Breadcrumb, and FaqAccordion.
+3. **A `<script type="module">` nobody wrote.** `ShareButtons.astro` uses a plain
+   `<script>`, which Astro bundles. A bundle with no imports smaller than Vite's
+   `assetsInlineLimit` (4 kB by default) is **inlined back into the HTML** instead
+   of being emitted as a file. This is exactly the same pattern as the
+   `inlineStylesheets: 'auto'` that ADR-0018 switched off for CSS: it depends on
+   SIZE, so a site can be compliant today and stop being compliant tomorrow
+   because somebody deleted three lines from a component.
 
-Sementara itu `server/penyaji.mjs` mengirim tiga header keamanan dan **tidak**
-mengirim CSP sama sekali. Jadi keadaannya: repo menyatakan keluarannya "siap
-CSP", tanpa satu pun pembaca yang pernah menerima CSP.
+Meanwhile `server/penyaji.mjs` sent three security headers and sent **no** CSP at
+all. So the state was: a repo declaring its output "CSP-ready", with not one
+reader ever having received a CSP.
 
-## Keputusan
+## Decision
 
-**1. Pengalih tema pindah ke `public/tema.js`, dimuat sebagai skrip klasik.**
+**1. The theme switcher moves to `public/tema.js`, loaded as a classic script.**
 
-Ia harus jalan sebelum paint pertama — `data-theme` yang terpasang setelah
-halaman terlukis berarti kedipan putih di setiap perpindahan halaman bagi
-pembaca yang memilih tema gelap. Skrip yang dibundel Astro menjadi
-`type="module"`, dan modul **selalu** ditunda sampai dokumen selesai diurai,
-sehingga jalur itu tertutup. Yang tersisa adalah berkas di `public/` yang dimuat
-`<script src="/tema.js">` tanpa `defer`/`async` di dalam `<head>`.
+It has to run before the first paint — a `data-theme` set after the page is
+painted means a white flash on every navigation for a reader who chose the dark
+theme. A script bundled by Astro becomes `type="module"`, and modules are
+**always** deferred until the document has finished parsing, so that path is
+closed. What remains is a file in `public/` loaded by
+`<script src="/tema.js">` with no `defer`/`async`, inside `<head>`.
 
-Konsekuensi yang diterima: berkas itu tidak ber-hash pada namanya, jadi ia
-disajikan `must-revalidate` seperti HTML, bukan `immutable` seperti `/_astro/`.
-Itu benar dan disengaja — perbaikan pada pengalih tema harus sampai ke pembaca
-lama pada rebuild berikutnya, bukan setahun kemudian.
+An accepted consequence: that file's name is not hashed, so it is served
+`must-revalidate` like HTML rather than `immutable` like `/_astro/`. That is
+correct and deliberate — a fix to the theme switcher must reach an existing
+reader on the next rebuild, not a year later.
 
-**2. `vite.build.assetsInlineLimit: 0` di `astro.config.mjs`.**
+**2. `vite.build.assetsInlineLimit: 0` in `astro.config.mjs`.**
 
-Menutup jalur ketiga di atas — sekaligus menghentikan gambar dan font kecil
-diterbitkan sebagai `data:` URI, yang adalah satu-satunya alasan `img-src 'self'`
-dan `font-src 'self'` di bawah bisa ditulis tanpa `data:`.
+This closes the third path above — and at the same time stops small images and
+fonts being emitted as `data:` URIs, which is the only reason the `img-src 'self'`
+and `font-src 'self'` below can be written without `data:`.
 
-**3. JSON-LD TETAP inline, dan itu bukan pengecualian yang dilonggarkan.**
+**3. JSON-LD STAYS inline, and that is not a loosened exception.**
 
-`<script type="application/ld+json">` bukan skrip melainkan **blok data**: tipe
-yang bukan MIME JavaScript membuat browser berhenti sebelum langkah mana pun
-yang mengeksekusi kode, sehingga `script-src` tidak berlaku atasnya. Memindahkan
-JSON-LD ke berkas eksternal — yang sempat dicatat README sebagai jalan keluar —
-justru merugikan tanpa menambah keamanan apa pun: mesin pencari membaca JSON-LD
-dari halamannya, dan JSON-LD di berkas terpisah adalah data yang tidak dibaca
-siapa pun.
+`<script type="application/ld+json">` is not a script but a **data block**: a type
+that is not a JavaScript MIME type makes the browser stop before any step that
+executes code, so `script-src` does not apply to it. Moving JSON-LD to an external
+file — which the README once recorded as a way out — is a pure loss with no
+security gain: search engines read JSON-LD from the page, and JSON-LD in a
+separate file is data nobody reads.
 
-Yang menjaga isinya tetap bukan CSP melainkan kontraknya: seluruh JSON-LD
-dirangkai `JSON.stringify` atas objek yang dibangun `src/lib/schema.ts`, tidak
-ada satu pun string HTML yang lewat.
+What guards its contents is not the CSP but its contract: all JSON-LD is
+assembled by `JSON.stringify` over an object built by `src/lib/schema.ts`, with
+not one HTML string passing through.
 
-**4. `server/penyaji.mjs` mengirim `Content-Security-Policy`**, sebagai header
-keamanan keempat:
+**4. `server/penyaji.mjs` sends `Content-Security-Policy`**, as the fourth
+security header:
 
 ```
 default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self';
@@ -77,62 +78,61 @@ font-src 'self'; connect-src 'self'; frame-src 'none'; object-src 'none';
 base-uri 'none'; form-action 'self'; frame-ancestors 'none'
 ```
 
-**Disamakan dengan postur `awcms`**, yang sudah mengirim CSP sendiri
-(`BASE_CSP_DIRECTIVES` di `src/lib/security/security-headers.ts`). Dua nilai
-diambil dari sana alih-alih dipilih ulang di sini:
+**Matched to the `awcms` posture**, which already sends its own CSP
+(`BASE_CSP_DIRECTIVES` in `src/lib/security/security-headers.ts`). Two values are
+taken from there rather than chosen afresh here:
 
-- **`base-uri 'none'`, bukan `'self'`.** `'self'` masih mengizinkan sebuah
-  `<base href="/apa-pun/">` yang disuntikkan menggeser resolusi SETIAP tautan
-  relatif di halaman. Situs statis tidak pernah memakai `<base>`, jadi tidak ada
-  yang hilang dengan menutupnya.
+- **`base-uri 'none'`, not `'self'`.** `'self'` still permits an injected
+  `<base href="/anything/">` to shift the resolution of EVERY relative link on the
+  page. A static site never uses `<base>`, so nothing is lost by closing it.
 - **`Permissions-Policy: geolocation=(), camera=(), microphone=(), payment=()`**
-  sebagai header keamanan **kelima**. Situs dari template ini tidak punya form,
-  tidak mengumpulkan data pribadi pembaca, dan tidak memuat skrip pihak ketiga —
-  keempat kemampuan itu tidak dipakai siapa pun, dan menyatakannya membuat skrip
-  yang suatu saat lolos tetap tidak bisa meminta kamera atau lokasi pembaca.
+  as the **fifth** security header. A site from this template has no forms,
+  collects no reader personal data, and loads no third-party scripts — none of
+  those four capabilities is used by anyone, and declaring them means a script
+  that does slip through one day still cannot ask for a reader's camera or
+  location.
 
-Perbedaan yang tersisa dari `awcms` ada satu, dan arahnya menguntungkan repo ini:
-`awcms` harus menamai **hash SHA-256** skrip theme-init-nya di `script-src`,
-karena skrip itu `is:inline` dan harus jalan sebelum paint. Repo ini tidak butuh
-hash sama sekali — butir 1 di atas memindahkan skrip yang sama ke berkas
-tersendiri. `script-src` di sini karena itu lebih ketat, bukan sekadar setara.
+One difference from `awcms` remains, and it runs in this repo's favour: `awcms`
+has to name the **SHA-256 hash** of its theme-init script in `script-src`, because
+that script is `is:inline` and must run before paint. This repo needs no hash at
+all — item 1 above moves the same script into a file of its own. `script-src` here
+is therefore stricter, not merely equivalent.
 
-Repo ini juga menyatakan `style-src`/`img-src`/`font-src`/`connect-src` secara
-eksplisit sementara `awcms` membiarkannya jatuh ke `default-src`. Efeknya
-identik; yang eksplisit dipilih supaya butir yang paling mungkin dilonggarkan
-sebuah situs (`img-src`) terlihat sebagai baris tersendiri alih-alih harus
-ditemukan lebih dulu.
+This repo also declares `style-src`/`img-src`/`font-src`/`connect-src`
+explicitly, where `awcms` lets them fall back to `default-src`. The effect is
+identical; the explicit form is chosen so that the directive a site is most likely
+to loosen (`img-src`) appears as a line of its own rather than having to be found
+first.
 
-Kebijakan ini hidup di berkas yang sama dengan tiga header lain karena ADR-0016
-sudah memutuskan header respons ditentukan di satu tempat. Menambahkannya di
-Traefik alih-alih di sini akan membuat dua sumber kebijakan yang saling menimpa
-— dan cara paling sunyi untuk berakhir tanpa kebijakan sama sekali.
+This policy lives in the same file as the three other headers because ADR-0016
+already decided that response headers are settled in one place. Adding it in
+Traefik instead of here would create two policy sources overwriting each other —
+and the quietest way to end up with no policy at all.
 
-Dua hal yang **tidak** dipasang, beserta alasannya:
+Two things that are **not** installed, with their reasons:
 
-- **`upgrade-insecure-requests`** — TLS diterminasi Traefik dan seluruh URL
-  situs relatif atau ber-origin `SITE_URL`. Yang ditambahkannya di produksi nol,
-  sementara di `bun run serve` atas `http://localhost` ia hanya menyulitkan
-  pratinjau yang README justru minta dipakai.
-- **nonce atau hash per halaman** — keduanya menuntut HTML yang berbeda per
-  request atau daftar hash yang berubah setiap build. Situs ini statis; solusi
-  yang benar adalah tidak punya skrip inline sama sekali, dan itulah yang
-  dikerjakan tiga butir di atas.
+- **`upgrade-insecure-requests`** — TLS is terminated by Traefik and every site
+  URL is relative or on the `SITE_URL` origin. What it adds in production is zero,
+  while on `bun run serve` over `http://localhost` it only obstructs the preview
+  the README specifically asks people to use.
+- **Per-page nonces or hashes** — both demand HTML that differs per request or a
+  hash list that changes on every build. This site is static; the right solution
+  is to have no inline scripts at all, and that is what the three items above do.
 
-## Konsekuensi
+## Consequences
 
-- **Melonggarkan CSP butuh menyunting `server/penyaji.mjs` dan `tests/penyaji.test.mjs`.**
-  Yang paling mungkin perlu: `img-src` bagi situs yang menyajikan gambar artikel
-  dari host media awcms. Itu disengaja — kebijakan yang bisa dilonggarkan lewat
-  variabel env adalah kebijakan yang dilonggarkan tanpa siapa pun membacanya.
-- **`tests/keluaran-csp.test.mjs` naik dari saran menjadi penjaga produksi.**
-  Sebelum ADR ini, gagalnya berarti "keluaran belum siap CSP". Sekarang berarti
-  sebuah halaman akan kehilangan fungsinya di produksi: gerbangnya menolak
-  skrip inline apa pun selain blok data JSON-LD, menolak sumber lintas-origin
-  dan `data:` URI, lalu **membuktikan JS-nya tidak ikut hilang** — `/tema.js` di
-  setiap halaman dan sedikitnya satu bundel `/_astro/*.js`.
-- **Skrip pihak ketiga kini gagal keras.** AGENTS.md sudah melarangnya; sejak
-  sekarang browser yang menegakkannya, bukan hanya review.
-- **Permukaan admin ADR-0017 mewarisi kebijakan ini sebagai LANTAI.** Dokumen
-  BFF Jualanku sudah menyatakan "CSP portal tidak boleh melonggar dibanding CSP
-  publik"; sejak ADR ini pernyataan itu punya nilai yang bisa dibandingkan.
+- **Loosening the CSP requires editing `server/penyaji.mjs` and `tests/penyaji.test.mjs`.**
+  The most likely need: `img-src` for a site serving article images from the awcms
+  media host. That is deliberate — a policy that can be loosened through an env
+  variable is a policy that gets loosened with nobody reading it.
+- **`tests/keluaran-csp.test.mjs` is promoted from advice to a production guard.**
+  Before this ADR, its failing meant "the output is not CSP-ready yet". Now it
+  means a page will lose its function in production: the gate refuses any inline
+  script other than a JSON-LD data block, refuses cross-origin sources and `data:`
+  URIs, and then **proves the JS did not disappear with them** — `/tema.js` on
+  every page and at least one `/_astro/*.js` bundle.
+- **Third-party scripts now fail hard.** AGENTS.md already forbade them; from now
+  on it is the browser enforcing it, not only review.
+- **The ADR-0017 admin surface inherits this policy as its FLOOR.** The Jualanku
+  BFF document already states "the portal CSP may not be looser than the public
+  CSP"; since this ADR that statement has a value it can be compared against.

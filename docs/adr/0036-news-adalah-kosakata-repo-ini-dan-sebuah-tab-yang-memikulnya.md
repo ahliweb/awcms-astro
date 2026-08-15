@@ -1,148 +1,148 @@
-# ADR-0036 — `/news/` adalah kosakata repo ini, dan sebuah tab yang memikulnya
+🇬🇧 English (source) · 🇮🇩 [Bahasa Indonesia](0036-news-adalah-kosakata-repo-ini-dan-sebuah-tab-yang-memikulnya.id.md)
+
+# ADR-0036 — `/news/` is this repo's vocabulary, and a tab that carries it
 
 - **Status:** Accepted
-- **Tanggal:** 8 Agustus 2026
-- **Aturan pemilik:** 8 Agustus 2026 — "update aturan bahwa `/news/` hanya berfungsi di repo ahliweb/awcms-astro untuk halaman publik dan halaman admin user", lalu "sedangkan `/blog/` hanya dipakai di repo ahliweb/awcms", lalu "semua menggunakan modul blog."
-- **Terkait:** [ADR-0033](0033-seksi-berita-urutan-dari-tanggal-dan-dua-tanggal-yang-terpisah.md) (seksi berita: `urutanSeksi: "terbaru"`), [ADR-0034](0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md) (publik sebagai fungsi utama, admin USER bila dinyatakan), [ADR-0035](0035-feed-atom-per-seksi-berita-dan-gerbang-atas-xml.md) (feed Atom per seksi berita), [ADR-0018](0018-kontrak-build-token-mesin-dan-traversal-konten.md) (traversal konten dari `awcms`), [ADR-0030](0030-aturan-tertulis-mendapat-pemeriksanya.md) (setiap aturan wajib membawa pemeriksanya), `awcms` [ADR-0071](https://github.com/ahliweb/awcms/blob/main/docs/adr/0071-kosakata-url-publik-dibelah-blog-di-sini-news-di-awcms-astro.md) (pasangan keputusan ini), `awcms` [ADR-0059](https://github.com/ahliweb/awcms/blob/main/docs/adr/0059-host-resolved-public-content-routes.md) (di-supersede ADR-0071 itu)
+- **Date:** 8 August 2026
+- **Owner's rule:** 8 August 2026 — "update the rule so that `/news/` only works in the ahliweb/awcms-astro repo, for public pages and USER admin pages", then "while `/blog/` is only used in the ahliweb/awcms repo", then "all of them use the blog module."
+- **Related:** [ADR-0033](0033-seksi-berita-urutan-dari-tanggal-dan-dua-tanggal-yang-terpisah.md) (news sections: `urutanSeksi: "terbaru"`), [ADR-0034](0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md) (public as the primary function, USER admin when declared), [ADR-0035](0035-feed-atom-per-seksi-berita-dan-gerbang-atas-xml.md) (an Atom feed per news section), [ADR-0018](0018-kontrak-build-token-mesin-dan-traversal-konten.md) (content traversal from `awcms`), [ADR-0030](0030-aturan-tertulis-mendapat-pemeriksanya.md) (every rule must bring its checker), `awcms` [ADR-0071](https://github.com/ahliweb/awcms/blob/main/docs/adr/0071-kosakata-url-publik-dibelah-blog-di-sini-news-di-awcms-astro.md) (this decision's counterpart), `awcms` [ADR-0059](https://github.com/ahliweb/awcms/blob/main/docs/adr/0059-host-resolved-public-content-routes.md) (superseded by that ADR-0071)
 
-## Konteks
+## Context
 
 [ADR-0033](0033-seksi-berita-urutan-dari-tanggal-dan-dua-tanggal-yang-terpisah.md)
-lahir dari pertanyaan yang sangat spesifik: **apakah template ini siap mengelola
-situs berita di prefix `/news/`?** Jawabannya waktu itu — prefiksnya siap,
-modelnya tidak — dan ADR itu memperbaiki modelnya. [ADR-0035](0035-feed-atom-per-seksi-berita-dan-gerbang-atas-xml.md)
-kemudian memberi setiap seksi berita feed Atom-nya sendiri.
+was born from a very specific question: **is this template ready to run a news
+site on the `/news/` prefix?** The answer at the time — the prefix was ready, the
+model was not — and that ADR fixed the model.
+[ADR-0035](0035-feed-atom-per-seksi-berita-dan-gerbang-atas-xml.md) then gave
+every news section its own Atom feed.
 
-Yang tidak pernah dijawab: **siapa yang berhak memakai prefiks itu.** `awcms`
+What was never answered: **who is entitled to use that prefix.** `awcms`
 [ADR-0059](https://github.com/ahliweb/awcms/blob/main/docs/adr/0059-host-resolved-public-content-routes.md)
-mendaratkan keluarga rute `/news/**`-nya sendiri di sana pada 3 Agustus 2026 —
-empat rute, host-resolved, dari modul `blog_content` yang sama yang mengisi repo
-ini. Jadi selama lima hari kedua repo boleh melayani berita publik, di alamat
-yang sama, dari sumber konten yang sama.
+landed its own `/news/**` route family over there on 3 August 2026 — four routes,
+host-resolved, from the same `blog_content` module that fills this repo. So for
+five days both repos were allowed to serve public news, at the same address, from
+the same content source.
 
-Itu bukan konflik teknis: keduanya bekerja. Ia konflik **kosakata**, dan
-bentuknya adalah pertanyaan yang harus dijawab ulang setiap kali sebuah
-deployment dibangun — berita situs ini disajikan dari mana? Pertanyaan yang
-dijawab per-deployment adalah pertanyaan yang dijawab berbeda-beda.
+That is not a technical conflict: both work. It is a **vocabulary** conflict, and
+its shape is a question that has to be re-answered every time a deployment is
+built — where are this site's news served from? A question answered per
+deployment is a question answered differently each time.
 
-## Keputusan
+## Decision
 
-**`/news/` adalah kosakata URL repo ini, dan `/blog/` adalah kosakata `awcms`.**
-Satu keluarga rute per repo, dan tidak pernah keduanya di satu repo. `awcms`
+**`/news/` is this repo's URL vocabulary, and `/blog/` is `awcms`'s.** One route
+family per repo, and never both in one repo. `awcms`
 [ADR-0071](https://github.com/ahliweb/awcms/blob/main/docs/adr/0071-kosakata-url-publik-dibelah-blog-di-sini-news-di-awcms-astro.md)
-adalah pasangan keputusan ini dan men-supersede ADR-0059 di sana.
+is this decision's counterpart and supersedes ADR-0059 over there.
 
-### 1. Bentuknya sebuah tab, bukan keluarga rute baru
+### 1. Its shape is a tab, not a new route family
 
-Sebuah situs yang menerbitkan berita menamai tabnya `news` dan menyatakan
-`urutanSeksi: "terbaru"` di `src/config/site.ts`. Ia langsung mendapat, tanpa
-satu baris kode baru:
+A site publishing news names its tab `news` and declares
+`urutanSeksi: "terbaru"` in `src/config/site.ts`. It immediately gets, with not
+one line of new code:
 
-| Rute              | Berkas                        | Dari                     |
-| ----------------- | ----------------------------- | ------------------------ |
-| `/news`           | `src/pages/[tab]/index.astro` | mesin tab yang sudah ada |
-| `/news/{slug}`    | `src/pages/[tab]/[...slug].astro` | mesin tab yang sudah ada |
-| `/news/feed.xml`  | `src/pages/[tab]/feed.xml.ts` | ADR-0035                 |
+| Route             | File                          | From                    |
+| ----------------- | ----------------------------- | ----------------------- |
+| `/news`           | `src/pages/[tab]/index.astro` | the existing tab engine |
+| `/news/{slug}`    | `src/pages/[tab]/[...slug].astro` | the existing tab engine |
+| `/news/feed.xml`  | `src/pages/[tab]/feed.xml.ts` | ADR-0035                |
 
-...beserta padanan ber-locale di `/{lang}/news/**`. `urutanSeksi: "terbaru"`
-adalah yang membuatnya benar-benar seksi berita: urutan dari `publishedAt`
-alih-alih `urutan` editor, kartu yang menampilkan tanggal alih-alih nomor
-artikel, dan `NewsArticle` alih-alih `Article` (ADR-0033).
+…along with their localised equivalents at `/{lang}/news/**`.
+`urutanSeksi: "terbaru"` is what makes it genuinely a news section: ordering from
+`publishedAt` instead of the editor's `urutan`, cards showing a date instead of an
+article number, and `NewsArticle` instead of `Article` (ADR-0033).
 
-### 2. `news` TETAP bukan kata yang dipesan
+### 2. `news` is STILL not a reserved word
 
-Ini selisih yang disengaja dengan bentuk `awcms` ADR-0059, yang §Konsekuensi-nya
-menyatakan "`/news` menjadi kata yang dipesan pada host mana pun".
+This is a deliberate difference from the shape of `awcms` ADR-0059, whose
+§Consequences states "`/news` becomes a reserved word on any host".
 
-Di sini tidak. `news` adalah **slug tab yang dipilih situs**. Sebuah situs
-panduan yang tidak punya berita tidak punya `/news`, tidak perlu mematikannya,
-dan tidak perlu menjelaskan kenapa. Template ini sendiri mengirimkan tiga tab —
-`panduan`, `layanan`, `informasi` — dan **nol** di antaranya berita.
+Not here. `news` is a **tab slug a site chooses**. A guides site with no news has
+no `/news`, does not need to switch it off, and does not need to explain why. This
+template itself ships three tabs — `panduan`, `layanan`, `informasi` — and
+**zero** of them are news.
 
-Keputusan ini tidak mewajibkan satu pun situs punya `/news`. Ia menyatakan bahwa
-situs yang punya, punya di sini.
+This decision does not require any site to have `/news`. It states that a site
+which has one, has it here.
 
-### 3. Yang dibelah adalah URL, bukan kepemilikan konten
+### 3. What is split is the URL, not content ownership
 
-Repo ini tidak punya basis data dan tidak menyimpan satu pun artikel. Ia membaca
-`GET /api/v1/blog/posts` dari `awcms` (ADR-0018, dibekukan `awcms` ADR-0065) dan
-membangun halamannya statis. Modulnya sama, layar pengelolanya sama
-(`/admin/blog*` di sana), izinnya sama.
+This repo has no database and stores not one article. It reads
+`GET /api/v1/blog/posts` from `awcms` (ADR-0018, frozen by `awcms` ADR-0065) and
+builds its pages statically. The module is the same, its management screens are
+the same (`/admin/blog*` over there), its permissions are the same.
 
-Karena itu keputusan ini tidak melanggar `awcms` ADR-0070 §4 ("tidak ada
-kemampuan yang hanya ada di sana"): tidak ada kemampuan yang **pindah** ke sini.
-Yang pindah adalah rendering halamannya.
+So this decision does not break `awcms` ADR-0070 §4 ("no capability exists only
+over there"): no capability **moves** here. What moves is the rendering of its
+pages.
 
-### 4. Untuk halaman publik DAN admin USER
+### 4. For public pages AND USER admin
 
-Prefiks `/news/` melayani keduanya, dalam pengertian [ADR-0034](0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md):
-halamannya publik sebagai fungsi utama, dan sebuah situs yang menyatakan
-`permukaanAdmin` boleh memberi USER-nya permukaan untuk mengerjakan bagiannya
-sendiri atas konten itu — menulis, mengajukan tinjauan, mengelola profilnya.
-Peran `owner` tetap **ditolak gerbang** di sini, dan template ini tetap
-menyatakan nol permukaan terautentikasi.
+The `/news/` prefix serves both, in the sense of
+[ADR-0034](0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md): its pages
+are public as the primary function, and a site declaring `permukaanAdmin` may give
+its USERS a surface for doing their own part of that content — writing, submitting
+for review, managing their profile. The `owner` role stays **refused by a gate**
+here, and this template still declares zero authenticated surfaces.
 
-Yang TIDAK berubah: permukaan admin USER apa pun tetap tunduk pada ADR-0034 —
-ia tidak ada sampai sebuah situs menyatakannya, dan ADR ini tidak
-menyatakannya untuk siapa pun.
+What does NOT change: any USER admin surface remains subject to ADR-0034 — it does
+not exist until a site declares it, and this ADR declares it for nobody.
 
-### 5. Taksonomi `category`/`tag` sengaja TIDAK ikut
+### 5. The `category`/`tag` taxonomy deliberately does NOT follow
 
-`awcms` ADR-0059 punya `/news/category/{slug}` dan `/news/tag/{slug}`. Repo ini
-tidak, dan tidak mendapatkannya di sini.
+`awcms` ADR-0059 has `/news/category/{slug}` and `/news/tag/{slug}`. This repo
+does not, and does not gain them here.
 
-Alasannya bukan kelalaian: repo ini **belum punya taksonomi sama sekali** —
-tidak ada model kategori maupun tag di `src/lib/content.ts`, dan seksi ditentukan
-oleh tab, bukan oleh term. Menambahkan dua rute arsip berarti memutuskan lebih
-dulu apa itu kategori di sini, bagaimana ia dipetakan dari `awcms`, dan apa yang
-terjadi pada artikel yang kategorinya menamai tab yang sudah dihapus —
-pertanyaan yang `urutanSeksiTab` sudah harus jawab hari ini dengan fallback
-`"manual"`.
+The reason is not an oversight: this repo **has no taxonomy at all** — there is no
+category or tag model in `src/lib/content.ts`, and a section is decided by a tab,
+not by a term. Adding two archive routes means first deciding what a category is
+here, how it maps from `awcms`, and what happens to an article whose category
+names a tab that has been deleted — a question `urutanSeksiTab` already has to
+answer today with its `"manual"` fallback.
 
-Itu keputusan tersendiri. Dinyatakan **terbuka**, bukan ditolak: sebuah situs
-yang benar-benar membutuhkannya membawanya lewat ADR-nya sendiri.
+That is a decision of its own. It is declared **open**, not refused: a site that
+genuinely needs it brings it through its own ADR.
 
-### 6. Aturannya membawa pemeriksanya (ADR-0030)
+### 6. The rule brings its checker (ADR-0030)
 
-Aturan "sebuah tab bernama `news` adalah seksi berita" bisa dilanggar secara
-diam-diam dengan satu kata: menamai tab `news` lalu membiarkannya `"manual"`.
-Hasilnya `/news` yang mengurutkan berita menurut nomor yang diketik editor,
-dengan kartu tanpa tanggal dan `Article` alih-alih `NewsArticle` — sebuah
-permukaan yang mengaku berita di alamatnya dan membantahnya di setiap detailnya.
+The rule "a tab named `news` is a news section" can be broken silently with one
+word: naming a tab `news` and then leaving it `"manual"`. The result is a `/news`
+ordering news by a number an editor typed, with dateless cards and `Article`
+instead of `NewsArticle` — a surface claiming to be news in its address and
+denying it in every detail.
 
-`tests/kosakata-news.test.mjs` menolak konfigurasi itu: bila `tabs` memuat slug
-`news`, `urutanSeksi`-nya wajib `"terbaru"`. Gerbangnya tidak menuntut tab itu
-ada — template ini tidak punya, dan §2 baru saja menyatakan itu benar.
+`tests/kosakata-news.test.mjs` refuses that configuration: if `tabs` contains the
+slug `news`, its `urutanSeksi` must be `"terbaru"`. The gate does not demand that
+tab exist — this template does not have it, and §2 has just stated that is
+correct.
 
-## Konsekuensi
+## Consequences
 
-- Pertanyaan "berita situs ini disajikan dari mana" punya satu jawaban yang bisa
-  dibaca dari alamatnya, di kedua repo, dan jawabannya sama pada setiap
-  deployment.
-- Situs berita yang dibangun di atas template ini memakai mesin yang memang
-  ditulis untuk berita — `urutanSeksi` (ADR-0033) dan feed per-seksi (ADR-0035) —
-  alih-alih empat rute di `awcms` yang tidak punya keduanya.
-- **Nol perubahan kode.** Mesin tabnya sudah ada, feed-nya sudah ada, dan
-  template ini tetap mengirimkan tiga tab non-berita. Yang mendarat aturannya dan
-  pemeriksanya.
-- `awcms` masih menyajikan `/news/**`-nya saat ADR ini ditulis. Penghapusannya
-  dijadwalkan ADR-0071 §4 di sana dan digerbangi di sana; repo ini tidak bisa
-  menegakkannya dan tidak berpura-pura bisa.
-- Sebuah situs yang butuh arsip kategori/tag di `/news/` belum terlayani (§5).
-  Itu dinyatakan, bukan disembunyikan di balik "sudah siap".
+- The question "where are this site's news served from" has one answer readable
+  from its address, in both repos, and the answer is the same on every deployment.
+- A news site built on this template uses an engine actually written for news —
+  `urutanSeksi` (ADR-0033) and per-section feeds (ADR-0035) — rather than four
+  routes in `awcms` that have neither.
+- **Zero code changes.** The tab engine exists, the feed exists, and this template
+  still ships three non-news tabs. What lands is the rule and its checker.
+- `awcms` still serves its `/news/**` as this ADR is written. Its removal is
+  scheduled by ADR-0071 §4 over there and gated over there; this repo cannot
+  enforce it and does not pretend it can.
+- A site needing category/tag archives under `/news/` is not yet served (§5). That
+  is stated, not hidden behind "it is ready".
 
-## Alternatif yang dipertimbangkan
+## Alternatives considered
 
-- **Keluarga rute `/news/**` fisik**, meniru bentuk `awcms` ADR-0059 — ditolak.
-  Ia menjadikan `news` kata yang dipesan di **setiap** situs turunan, termasuk
-  yang tidak punya berita, dan menduplikasi mesin tab yang sudah melayani bentuk
-  yang sama. Paritas rute bukan tujuan; melayani situs berita adalah tujuan.
-- **Membiarkan kedua repo melayani `/news/**`**, dibedakan per-deployment —
-  ditolak, dan ini yang memicu ADR ini. Keputusan yang dijawab per-deployment
-  adalah keputusan yang tidak pernah diambil.
-- **Mengambil `/blog/` juga** — ditolak. `awcms` butuh permukaan konten publik
-  yang bisa berdiri sendiri: sebuah deployment `awcms` tunggal harus tetap bisa
-  menerbitkan tanpa repo ini terpasang di depannya.
-- **Mewajibkan template mengirimkan tab `news`** — ditolak. Itu menjadikan setiap
-  situs turunan situs berita secara bawaan, kebalikan dari ADR-0034 yang justru
-  menuntut permukaan dinyatakan alih-alih diwarisi.
+- **A physical `/news/**` route family**, imitating the shape of `awcms` ADR-0059
+  — refused. It makes `news` a reserved word in **every** derived site, including
+  those with no news, and duplicates a tab engine that already serves the same
+  shape. Route parity is not the goal; serving news sites is the goal.
+- **Letting both repos serve `/news/**`**, distinguished per deployment —
+  refused, and this is what triggered this ADR. A decision answered per deployment
+  is a decision never taken.
+- **Taking `/blog/` as well** — refused. `awcms` needs a public content surface
+  that can stand on its own: a single `awcms` deployment must still be able to
+  publish without this repo installed in front of it.
+- **Requiring the template to ship a `news` tab** — refused. That would make every
+  derived site a news site by default, the opposite of ADR-0034, which demands a
+  surface be declared rather than inherited.

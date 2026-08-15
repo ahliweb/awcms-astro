@@ -1,136 +1,135 @@
-# ADR-0037 — Pin TypeScript 6.x adalah syarat hidupnya gerbang `astro check`
+🇬🇧 English (source) · 🇮🇩 [Bahasa Indonesia](0037-pin-typescript-6-adalah-syarat-hidupnya-gerbang-astro-check.id.md)
+
+# ADR-0037 — The TypeScript 6.x pin is the condition for the `astro check` gate being alive
 
 - **Status:** Accepted
-- **Tanggal:** 13 Agustus 2026
-- **Terkait:** [ADR-0015](0015-runtime-bun-menutup-divergence-keluarga.md) (toolchain keluarga), [ADR-0028](0028-jangkar-standar-performa-dan-keamanan.md) (jangkar standar), [ADR-0030](0030-aturan-tertulis-mendapat-pemeriksanya.md) (aturan tertulis wajib membawa pemeriksanya), `awcms` [ADR-0068](https://github.com/ahliweb/awcms/blob/main/docs/adr/0068-family-standards-posture-editions-and-recorded-divergences.md) (mekanisme pencatatan divergence keluarga)
+- **Date:** 13 August 2026
+- **Related:** [ADR-0015](0015-runtime-bun-menutup-divergence-keluarga.md) (the family toolchain), [ADR-0028](0028-jangkar-standar-performa-dan-keamanan.md) (the standards anchor), [ADR-0030](0030-aturan-tertulis-mendapat-pemeriksanya.md) (a written rule must bring its checker), `awcms` [ADR-0068](https://github.com/ahliweb/awcms/blob/main/docs/adr/0068-family-standards-posture-editions-and-recorded-divergences.md) (the family divergence recording mechanism)
 
-## Konteks
+## Context
 
-`bun run check` menjalankan `astro check`, dan tabel gerbang mutu di
-[`standar-teknis.md`](../awcms-astro/standar-teknis.md) mendaftarkannya sebagai
-gerbang **Type check** dengan kolom "Ada di `awcms-astro`?" berbunyi **Ya**.
-Itu benar. Yang tidak tertulis di mana pun sampai hari ini adalah **kenapa** ia
-masih bisa berjalan.
+`bun run check` runs `astro check`, and the quality gate table in
+[`standar-teknis.md`](../awcms-astro/standar-teknis.md) lists it as the **Type
+check** gate with its "Present in `awcms-astro`?" column reading **Yes**. That is
+true. What was written nowhere until today is **why** it can still run.
 
-`@astrojs/check` menuntut API programatik TypeScript **6.x**. Repo ini ada di
-`typescript: "^6.0.3"`, jadi gerbangnya jalan.
+`@astrojs/check` requires the TypeScript **6.x** programmatic API. This repo is
+on `typescript: "^6.0.3"`, so its gate runs.
 
-`awcms` tidak. Repo itu ada di `^7.0.2`, dan kompiler nativenya tidak
-menyediakan API tersebut — sehingga seluruh berkas `.astro` di sana **tidak
-punya pemeriksa tipe sama sekali**. Selisih itu sudah dicatat di sisi sana
-sebagai divergence keluarga bernama `astro-files-not-type-checked`, dengan
-pemilik `@ahliweb` dan `reviewDate` 2027-02-04. Kalimat yang menentukan ada di
-dalam entri itu, dan ia menyebut repo ini secara langsung:
+`awcms` is not. That repo is on `^7.0.2`, and its native compiler does not ship
+that API — so every `.astro` file over there has **no type checker at all**. That
+difference is already recorded on that side as a family divergence named
+`astro-files-not-type-checked`, owned by `@ahliweb` with a `reviewDate` of
+2027-02-04. The decisive sentence is inside that entry, and it names this repo
+directly:
 
 > `@astrojs/check` requires the TypeScript 6.x programmatic API; this repo is on
 > TypeScript 7.0.2, whose native compiler does not ship it … awcms-astro is on
 > `^6.0.3`, **which is the only reason its gate runs**.
 
-Jadi keadaan hari ini bukan "repo ini kebetulan belum naik versi". Ia adalah
-**satu-satunya sisi keluarga yang masih punya type-check `.astro`**, dan catatan
-divergence di sisi sana menyandarkan diri pada kenyataan itu.
+So today's state is not "this repo simply has not upgraded yet". It is **the only
+side of the family that still has `.astro` type checking**, and the divergence
+record over there leans on that fact.
 
-### Kenapa ini butuh keputusan, bukan sekadar dibiarkan
+### Why this needs a decision rather than being left alone
 
-Karena bentuk kegagalannya adalah pemeliharaan rutin yang tampak benar.
+Because its failure mode is routine maintenance that looks correct.
 
-Menaikkan `typescript` ke `^7` adalah tindakan yang setiap agen dan setiap
-pengembang akan baca sebagai kebersihan dependency — Dependabot pun akan
-mengusulkannya. Yang terjadi setelahnya: `@astrojs/check` berhenti bisa
-berjalan, dan **gerbang `Type check` mati**. Tabel gerbang mutu tetap berbunyi
-"Ya", tabel itu tidak digerbangi siapa pun, dan tidak ada satu perintah pun yang
-berubah merah. Repo ini sudah mengumpulkan sebelas dokumen yang menyatakan
-sesuatu yang tidak ada; ini calon nomor dua belas, dengan biaya yang lebih besar
-karena yang hilang adalah pemeriksanya sendiri.
+Raising `typescript` to `^7` is an action every agent and every developer will
+read as dependency hygiene — Dependabot will propose it too. What happens next:
+`@astrojs/check` can no longer run, and the **`Type check` gate dies**. The
+quality gate table still reads "Yes", that table is gated by nobody, and not one
+command turns red. This repo has already collected eleven documents stating
+something that does not exist; this is candidate number twelve, at a higher cost
+because what disappears is the checker itself.
 
-Dan akibatnya tidak berhenti di sini: catatan divergence `awcms` akan menjadi
-salah pada hari itu juga, tanpa ada yang menyentuh berkasnya.
+And the consequence does not stop here: the `awcms` divergence record becomes
+wrong that same day, with nobody touching its file.
 
-## Keputusan
+## Decision
 
-**`dependencies.typescript` di repo ini tetap di rentang `^6.x`.**
+**`dependencies.typescript` in this repo stays within `^6.x`.**
 
-Menaikkannya ke 7.x adalah keputusan tingkat **KELUARGA**, bukan tingkat repo,
-dan ia menuntut dua hal lebih dulu:
+Raising it to 7.x is a **FAMILY**-level decision, not a repo-level one, and it
+requires two things first:
 
-1. **Pengganti bagi type-check `.astro`.** Bila `@astrojs/check` sudah
-   mendukung TypeScript 7.x, itu penggantinya dan ADR ini bisa dicabut dengan
-   satu baris. Bila belum, kenaikan versi berarti repo ini **kehilangan** sebuah
-   gerbang — dan gerbang yang hilang wajib dinyatakan sebagai celah di
+1. **A replacement for `.astro` type checking.** If `@astrojs/check` supports
+   TypeScript 7.x by then, that is the replacement and this ADR can be withdrawn
+   in one line. If not, the version bump means this repo **loses** a gate — and a
+   lost gate must be declared as a gap in
    [`standar-performa-dan-keamanan.md`](../awcms-astro/standar-performa-dan-keamanan.md),
-   bukan dibiarkan menghilang dari tabel.
-2. **Pembaruan entri `astro-files-not-type-checked`** di manifest kompatibilitas
-   keluarga `awcms`. Repo ini tidak bisa menulisnya sendiri; yang bisa dilakukan
-   di sini adalah tidak membatalkan premisnya diam-diam.
+   not allowed to vanish from the table.
+2. **An update to the `astro-files-not-type-checked` entry** in the `awcms` family
+   compatibility manifest. This repo cannot write that itself; what can be done
+   here is to not void its premise silently.
 
-Yang **tidak** diputuskan ADR ini: versi `astro` dan `@astrojs/node`. Keduanya
-tertinggal satu minor dari pin `awcms` (`^7.1.4`/`^11.0.3` versus
-`^7.2.0`/`^11.1.0`), dan itu murni belum dikerjakan — bukan keputusan, dan tidak
-mengikat siapa pun. Selisihnya dicatat di
-[`standar-teknis.md`](../awcms-astro/standar-teknis.md) §Stack supaya tidak
-ditemukan ulang sebagai temuan.
+What this ADR does **not** decide: the `astro` and `@astrojs/node` versions. Both
+lag one minor behind the `awcms` pin (`^7.1.4`/`^11.0.3` versus
+`^7.2.0`/`^11.1.0`), and that is purely work not yet done — not a decision, and
+binding on nobody. The difference is recorded in
+[`standar-teknis.md`](../awcms-astro/standar-teknis.md) §Stack so it is not
+rediscovered as a finding.
 
-## Pemeriksanya mendarat bersama aturannya
+## Its checker lands with its rule
 
-[ADR-0030](0030-aturan-tertulis-mendapat-pemeriksanya.md) berlaku penuh, dan
-aturan ini adalah contoh persis yang ADR itu tulis: sebuah kalimat tegas membuat
-orang mengira ada yang memeriksanya. Karena itu
-[`tests/versi-toolchain.test.mjs`](../../tests/versi-toolchain.test.mjs)
-mendapat dua asersi:
+[ADR-0030](0030-aturan-tertulis-mendapat-pemeriksanya.md) applies in full, and
+this rule is exactly the example that ADR describes: a firm sentence makes people
+assume something is checking it. So
+[`tests/versi-toolchain.test.mjs`](../../tests/versi-toolchain.test.mjs) gets two
+assertions:
 
-1. `dependencies.typescript` wajib cocok `^6.` — dan **pesan gagalnya menyebut
-   sebabnya**, bukan hanya angkanya. Sebuah gerbang yang berbunyi "harus ^6"
-   akan dilonggarkan oleh orang berikutnya yang tidak tahu apa yang mati bila ia
-   melakukannya.
-2. `@astrojs/check` wajib masih terdaftar sebagai dependency. Tanpa asersi
-   kedua, asersi pertama menjaga sesuatu yang sudah tidak ada: melepas
-   `@astrojs/check` membuat pin TypeScript berhenti menjaga apa pun, sementara
-   gerbangnya tetap hijau.
+1. `dependencies.typescript` must match `^6.` — and **its failure message names
+   the reason**, not only the number. A gate that says "must be ^6" gets loosened
+   by the next person, who does not know what dies if they do.
+2. `@astrojs/check` must still be listed as a dependency. Without the second
+   assertion, the first guards something that no longer exists: dropping
+   `@astrojs/check` makes the TypeScript pin stop guarding anything, while its
+   gate stays green.
 
-Keduanya ditaruh di berkas yang sama dengan gerbang versi Bun karena
-pertanyaannya sama — **nilai mana yang wajib bergerak bersama, dan apa yang
-diam-diam mati bila salah satunya bergerak sendiri.**
+Both live in the same file as the Bun version gate because the question is the
+same — **which values must move together, and what dies silently if one of them
+moves alone.**
 
-## Konsekuensi
+## Consequences
 
-- **Positif:**
-  - Gerbang `Type check` berhenti bergantung pada kebetulan. Ia kini punya
-    alasan tertulis dan pemeriksa yang menegakkannya.
-  - Pembaruan Dependabot yang menaikkan TypeScript ke 7.x akan **merah**, dan
-    merahnya menjelaskan diri. Itu perbedaan antara keputusan yang ditinjau dan
-    keputusan yang terjadi.
-  - Catatan divergence `awcms` berhenti bersandar pada keadaan yang tak
-    seorang pun di repo ini tahu sedang ia pikul.
-- **Negatif / trade-off yang diterima:**
-  - **Repo ini tertahan di TypeScript 6.x sampai `@astrojs/check` menyusul**,
-    termasuk dari fitur bahasa dan perbaikan kompiler 7.x. Itu biaya nyata, dan
-    ia dipilih: 16 berkas komponen `.astro` beserta layout dan halamannya — 28 berkas `.astro`
-    di `src/` seluruhnya — tanpa pemeriksa tipe adalah harga yang lebih mahal, dan repo ini sudah pernah
-    membayarnya sekali — `entry: any` di `ArtikelLayout` menyembunyikan empat
-    field yang tidak pernah ada.
-  - **Keluarga menjadi tidak seragam pada satu nilai toolchain**, setelah
-    ADR-0015 justru menutup divergence runtime. Bedanya: yang ini **tercatat di
-    kedua sisi** beserta tanggal tinjaunya, bukan ditemukan orang berikutnya.
-- **Netral:**
-  - **Nol perubahan pada kode berjalan.** `package.json` sudah berada di
-    `^6.0.3` hari ini; yang mendarat adalah alasannya dan gerbangnya.
+- **Positive:**
+  - The `Type check` gate stops depending on coincidence. It now has a written
+    reason and a checker enforcing it.
+  - A Dependabot update raising TypeScript to 7.x will be **red**, and its
+    redness explains itself. That is the difference between a decision that is
+    reviewed and a decision that happens.
+  - The `awcms` divergence record stops resting on a state nobody in this repo
+    knew they were carrying.
+- **Negative / accepted trade-offs:**
+  - **This repo is held at TypeScript 6.x until `@astrojs/check` catches up**,
+    including away from 7.x language features and compiler fixes. That is a real
+    cost, and it is chosen: 16 `.astro` component files plus its layouts and
+    pages — 28 `.astro` files in `src/` in total — with no type checker is the
+    more expensive price, and this repo has already paid it once — `entry: any` in
+    `ArtikelLayout` hid four fields that never existed.
+  - **The family becomes non-uniform on one toolchain value**, right after
+    ADR-0015 closed the runtime divergence. The difference: this one is
+    **recorded on both sides** along with its review date, rather than being found
+    by the next person.
+- **Neutral:**
+  - **Zero changes to running code.** `package.json` is already at `^6.0.3`
+    today; what lands is its reasoning and its gate.
 
-## Alternatif yang dipertimbangkan
+## Alternatives considered
 
-- **Menaikkan ke TypeScript 7.x sekarang, menyamakan diri dengan `awcms`** —
-  ditolak. Ia menukar sebuah gerbang yang berjalan dengan keseragaman versi, dan
-  keseragaman itu tidak membeli apa pun: kedua repo tidak berbagi satu berkas
-  TypeScript pun.
-- **Menurunkan `awcms` ke 6.x supaya keluarganya seragam** — ditolak, dan
-  bukan oleh repo ini: entri divergence di sana sudah menolaknya dengan alasan
-  yang bisa diperiksa — itu akan meregresi toolchain di bawah 33 gerbang dan
-  ~156.000 baris yang hari ini dijaga bersih `tsc --noEmit`.
-- **Menuliskannya sebagai satu baris di `AGENTS.md` tanpa ADR** — ditolak.
-  Aturan yang mengubah sebuah pin dependency dari pemeliharaan rutin menjadi
-  keputusan tingkat keluarga adalah keputusan, dan indeks ADR repo ini adalah
-  tempat orang membaca keputusan mana yang berlaku.
-- **Menggerbanginya dengan memeriksa bahwa `astro check` benar-benar berjalan**,
-  alih-alih memeriksa versinya — ditolak karena tidak bisa dibedakan dari
-  kegagalan lain: `astro check` yang gagal karena API-nya hilang dan yang gagal
-  karena ada kesalahan tipe sama-sama keluar bukan-nol, dan gerbang yang tidak
-  bisa menyebut sebabnya adalah gerbang yang dimatikan orang saat buru-buru.
+- **Raising to TypeScript 7.x now, matching `awcms`** — refused. It trades a
+  running gate for version uniformity, and that uniformity buys nothing: the two
+  repos do not share one TypeScript file.
+- **Lowering `awcms` to 6.x so the family is uniform** — refused, and not by this
+  repo: the divergence entry over there already refuses it with checkable
+  reasoning — it would regress the toolchain underneath 33 gates and ~156,000
+  lines kept clean by `tsc --noEmit` today.
+- **Writing it as one line in `AGENTS.md` with no ADR** — refused. A rule that
+  turns a dependency pin from routine maintenance into a family-level decision is
+  a decision, and this repo's ADR index is where people read which decisions are
+  in force.
+- **Gating it by checking that `astro check` really runs**, rather than by
+  checking its version — refused because it cannot be distinguished from any
+  other failure: an `astro check` that fails because its API is gone and one that
+  fails because there is a type error both exit non-zero, and a gate that cannot
+  name its cause is a gate somebody switches off in a hurry.

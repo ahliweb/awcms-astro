@@ -1,111 +1,114 @@
-# ADR-0020 — Layar admin owner/internal kembali ke `awcms`; repo ini kembali murni publik + BFF
+🇬🇧 English (source) · 🇮🇩 [Bahasa Indonesia](0020-layar-admin-kembali-ke-awcms.id.md)
+
+# ADR-0020 — Owner/internal admin screens return to `awcms`; this repo is purely public + BFF again
 
 - **Status:** Accepted
-- **Dipersempit:** [ADR-0034](0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md)
-  (8 Agustus 2026) — kalimat "**Repo ini tidak memikul layar admin**" di
-  §Keputusan berlaku untuk layar admin **SISTEM**. Sebuah situs boleh membawa
-  permukaan admin **USER** bila ia menyatakannya lewat `permukaanAdmin`, dengan
-  `owner` ditolak gerbang. ADR ini **tidak** di-supersede: alasan intinya —
-  memindahkan layar tidak pernah menjadi kontrol keamanan — tidak dibantah, dan
-  tidak satu pun gerbangnya dilonggarkan. `awcms` menjawab dari sisinya dengan
+- **Narrowed by:** [ADR-0034](0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md)
+  (8 August 2026) — the sentence "**This repo carries no admin screens**" in
+  §Decision applies to **SYSTEM** admin screens. A site may carry a **USER**
+  admin surface if it declares one through `permukaanAdmin`, with `owner` refused
+  by a gate. This ADR is **not** superseded: its core reasoning — moving a screen
+  was never a security control — is not contradicted, and not one of its gates is
+  loosened. `awcms` answered from its side with
   [ADR-0070](https://github.com/ahliweb/awcms/blob/main/docs/adr/0070-peran-keluarga-awcms-astro-memikul-publik-dan-admin-user.md),
-  yang mempersempit ADR-0051 di sana dengan cara yang sama. Kalimat di bawah
-  **tidak ditulis ulang**; ia benar pada 2 Agustus 2026, dan menyuntingnya akan
-  memalsukan rekaman.
-- **Tanggal:** 2 Agustus 2026
-- **Men-supersede:** [ADR-0017](0017-peran-admin-owner-internal.md) (repo ini memikul halaman admin owner/internal)
-- **Pasangan di `awcms`:** [ADR-0051](https://github.com/ahliweb/awcms/blob/main/docs/adr/0051-admin-screens-consolidated-in-awcms.md) — keputusan yang sama, diambil di repo yang memiliki datanya, men-supersede `awcms` ADR-0048
-- **Terkait:** [ADR-0014](0014-rendering-campuran-dan-bff-portal.md) (rendering campuran + BFF Jualanku — **tidak berubah**), `awcms` [ADR-0045](https://github.com/ahliweb/awcms/blob/main/docs/adr/0045-jualanku-porting-awcms-system-of-record-astro-bff.md) (peran repo ini sebagai experience layer + BFF), `awcms` [ADR-0049](https://github.com/ahliweb/awcms/blob/main/docs/adr/0049-machine-credentials-and-session-introspection.md)/[ADR-0050](https://github.com/ahliweb/awcms/blob/main/docs/adr/0050-bff-session-handoff-code.md)
+  which narrows its ADR-0051 the same way. The sentences below are **not
+  rewritten**; they were true on 2 August 2026, and editing them would falsify
+  the record.
+- **Date:** 2 August 2026
+- **Supersedes:** [ADR-0017](0017-peran-admin-owner-internal.md) (this repo carries the owner/internal admin pages)
+- **Counterpart in `awcms`:** [ADR-0051](https://github.com/ahliweb/awcms/blob/main/docs/adr/0051-admin-screens-consolidated-in-awcms.md) — the same decision, taken in the repo that owns the data, superseding `awcms` ADR-0048
+- **Related:** [ADR-0014](0014-rendering-campuran-dan-bff-portal.md) (mixed rendering + the Jualanku BFF — **unchanged**), `awcms` [ADR-0045](https://github.com/ahliweb/awcms/blob/main/docs/adr/0045-jualanku-porting-awcms-system-of-record-astro-bff.md) (this repo's role as experience layer + BFF), `awcms` [ADR-0049](https://github.com/ahliweb/awcms/blob/main/docs/adr/0049-machine-credentials-and-session-introspection.md)/[ADR-0050](https://github.com/ahliweb/awcms/blob/main/docs/adr/0050-bff-session-handoff-code.md)
 
-## Konteks
+## Context
 
-ADR-0017 memberi repo ini peran kedua: **halaman admin owner/internal**. Ia adalah
-sisi lokal dari `awcms` ADR-0048, dan ditulis jujur — termasuk pengakuan bahwa layar
-pertamanya belum bisa dibangun karena dua kontrak di `awcms` belum ada.
+ADR-0017 gave this repo a second role: **the owner/internal admin pages**. It was
+the local side of `awcms` ADR-0048, and it was written honestly — including the
+admission that its first screen could not yet be built because two contracts in
+`awcms` did not exist.
 
-Sejak itu dua hal terjadi di `awcms`, dan keduanya bergerak berlawanan arah dengan
-ADR-0017.
+Since then two things happened in `awcms`, and both moved in the opposite
+direction from ADR-0017.
 
-**Pertama, penghalangnya hilang.** Kedua kontrak yang ADR-0017 sebut sebagai blocker
-mendarat di `awcms` pada 1 Agustus 2026: kredensial mesin baca-saja (ADR-0049) dan handoff sesi
-BFF (ADR-0050). Jadi jalur ADR-0017 terbuka.
+**First, the obstacle disappeared.** Both contracts ADR-0017 named as blockers
+landed in `awcms` on 1 August 2026: read-only machine credentials (ADR-0049) and
+the BFF session handoff (ADR-0050). So the ADR-0017 road opened.
 
-**Kedua, dan justru karena itu, `awcms` menutup jalur itu secara sadar.**
-ADR-0051 men-supersede ADR-0048 dan memutuskan **seluruh layar admin — tenant maupun
-owner/internal/platform — dibangun di `awcms`**, di bawah satu shell `/admin/*`.
-Alasannya ada tiga, dan ketiganya menyangkut repo ini:
+**Second, and precisely because of that, `awcms` deliberately closed it.**
+ADR-0051 supersedes ADR-0048 and decides that **every admin screen — tenant as
+well as owner/internal/platform — is built in `awcms`**, under a single `/admin/*`
+shell. Its reasoning has three parts, and all three concern this repo:
 
-1. **Aturan lama tidak pernah diikuti kode yang sudah ada.** `/admin/*` di `awcms`
-   sudah bercampur tenant dan platform sejak sebelum ADR-0048; aturan itu karena
-   itu hanya mengikat layar **baru**, menciptakan dua kelas layar yang dibedakan
-   oleh tanggal lahirnya, bukan oleh sifatnya.
-2. **Biayanya adalah modul tanpa layar sama sekali.** Audit permukaan admin
-   `awcms` (1 Agustus 2026) menemukan **13 dari 21 modul tanpa satu pun layar** —
-   125 berkas route yang hanya bisa dipakai lewat `curl`. Sebagian menunggu repo
-   ini, yang belum punya satu pun layar admin.
-3. **Memindahkan layar tidak pernah menjadi kontrol keamanan.** Ini butir yang
-   membatalkan premis ADR-0017, bukan sekadar melemahkannya. ADR-0017 §Keputusan
-   butir 2 sudah menuliskannya sendiri — "izin tidak pindah bersama layar" — tanpa
-   menarik kesimpulannya: kalau izin tidak pindah, **risikonya juga tidak pindah**.
-   `awcms` membuktikannya dengan kasus nyata: permission aktivasi dataset wilayah
-   di-seed ke role `owner` SETIAP tenant, sehingga owner tenant biasa memegang izin
-   mengganti data yang dilayani ke seluruh tenant — persis risiko yang pemisahan
-   repo itu klaim cegah. Yang menahannya adalah gerbang otorisasi, bukan alamat
-   repo tempat tombolnya digambar.
+1. **The old rule was never followed by the code that already existed.**
+   `/admin/*` in `awcms` had already mixed tenant and platform since before
+   ADR-0048; that rule therefore bound only **new** screens, creating two classes
+   of screen distinguished by their date of birth rather than by their nature.
+2. **Its cost was modules with no screen at all.** The `awcms` admin surface
+   audit (1 August 2026) found **13 of 21 modules with not a single screen** —
+   125 route files usable only through `curl`. Some were waiting on this repo,
+   which had no admin screen at all.
+3. **Moving a screen was never a security control.** This is the point that
+   voids ADR-0017's premise rather than merely weakening it. ADR-0017 §Decision
+   item 2 had already written it down itself — "permissions do not move with the
+   screen" — without drawing its conclusion: if the permissions do not move,
+   **the risk does not move either**. `awcms` proved it with a real case: the
+   region dataset activation permission was seeded into the `owner` role of EVERY
+   tenant, so an ordinary tenant's owner held the permission to change data
+   served to every tenant — exactly the risk that repo separation claimed to
+   prevent. What holds it back is an authorisation gate, not the address of the
+   repo where the button is drawn.
 
-Keputusan itu sudah dijalankan, bukan sekadar ditulis: sembilan PR layar admin
-mendarat di `awcms` pada 1–2 Agustus 2026 (`/admin/audit-trail`,
-`/admin/form-drafts`, `/admin/site-search`, `/admin/theming`, `/admin/seo`,
-`/admin/data-lifecycle`, dan lainnya).
+That decision was executed, not merely written: nine admin screen PRs landed in
+`awcms` on 1–2 August 2026 (`/admin/audit-trail`, `/admin/form-drafts`,
+`/admin/site-search`, `/admin/theming`, `/admin/seo`, `/admin/data-lifecycle`,
+and others).
 
-## Keputusan
+## Decision
 
-**Repo ini tidak memikul layar admin.** ADR-0017 di-supersede.
+**This repo carries no admin screens.** ADR-0017 is superseded.
 
-Perannya kembali persis ke `awcms` ADR-0045, yang tidak pernah berubah:
-**experience layer + satu-satunya BFF** untuk permukaan publik dan Jualanku. Yang
-dicabut hanya perannya sebagai rumah layar admin internal.
+Its role goes back exactly to `awcms` ADR-0045, which never changed: **the
+experience layer + the only BFF** for the public and Jualanku surfaces. What is
+withdrawn is only its role as the home of internal admin screens.
 
-| Repo          | Peran frontend                                | Audiens                          |
-| ------------- | --------------------------------------------- | -------------------------------- |
-| `awcms`       | frontend publik + **SELURUH** admin           | pengunjung, admin tenant, operator platform |
-| `awcms-astro` | situs publik statis + experience layer/BFF    | pembaca anonim, pengguna Jualanku |
+| Repo          | Frontend role                                  | Audience                          |
+| ------------- | ---------------------------------------------- | --------------------------------- |
+| `awcms`       | the public frontend + **ALL** admin            | visitors, tenant admins, platform operators |
+| `awcms-astro` | the static public site + experience layer/BFF  | anonymous readers, Jualanku users |
 
-Yang **tetap berlaku** dan tidak boleh ikut terhapus bersama ADR-0017:
+What **still applies** and must not be deleted along with ADR-0017:
 
-- **ADR-0014 tidak berubah.** Rute on-demand + BFF portal Jualanku (`/penjual/**`,
-  `/affiliate/**`, `/_portal-api/**`) adalah peran ADR-0045, bukan peran admin.
-  Prasyaratnya tetap di [`04-kesiapan.md`](../awcms-astro/jualanku/04-kesiapan.md).
-- **Empat aturan ADR-0017 tetap mengikat permukaan BFF Jualanku**, karena
-  keempatnya menyangkut permukaan terautentikasi apa pun: `awcms` tetap system of
-  record; izin diputuskan `awcms` dan permukaan di sini bukan jalur kedua yang
-  lebih longgar; tidak ada cache bersama antara permukaan publik dan
-  terautentikasi; dan setiap penambahan dinilai sebagai permukaan keamanan.
-  Keempatnya dipindahkan ke `AGENTS.md` §Peran repo ini agar tidak hilang bersama
-  ADR yang di-supersede.
-- **Kredensial mesin ADR-0049 tetap terpakai**, untuk hal yang memang dipakainya di
-  sini: token build yang menarik konten (ADR-0018). Itu tidak pernah bergantung
-  pada peran admin.
+- **ADR-0014 does not change.** On-demand routes + the Jualanku portal BFF
+  (`/penjual/**`, `/affiliate/**`, `/_portal-api/**`) are an ADR-0045 role, not an
+  admin role. Its prerequisites remain in
+  [`04-kesiapan.md`](../awcms-astro/jualanku/04-kesiapan.md).
+- **ADR-0017's four rules still bind the Jualanku BFF surface**, because all four
+  concern any authenticated surface: `awcms` remains the system of record;
+  permissions are decided by `awcms` and a surface here is not a second, looser
+  path; there is no shared cache between public and authenticated surfaces; and
+  every addition is judged as a security surface. All four moved into `AGENTS.md`
+  §This repo's role so they are not lost along with a superseded ADR.
+- **The ADR-0049 machine credentials are still used**, for what they are actually
+  used for here: the build token that pulls content (ADR-0018). That never
+  depended on an admin role.
 
-## Konsekuensi
+## Consequences
 
-- **Repo ini kembali ke kelas "publik".** ADR-0017 §Konsekuensi mencatat sebagai
-  biaya bahwa repo ini "berhenti menjadi hanya situs statis"; biaya itu dibatalkan.
-  Premis `output: 'static'` beserta seluruh ADR yang bersandar padanya kembali utuh
-  — dengan satu pengecualian yang sudah ada sebelumnya dan tetap ada: rute
-  on-demand Jualanku ADR-0014.
-- **Tidak ada kode yang perlu dihapus.** Layar admin di sini tidak pernah ada;
-  ADR-0017 sendiri menyatakan layar pertamanya diblokir. Yang berubah hanya
-  dokumen — dan itu justru alasan ADR ini perlu ditulis sekarang: kontrak kerja
-  yang menyuruh agen membangun layar admin di sini akan diikuti oleh agen
-  berikutnya, dan pekerjaannya akan mendarat di repo yang salah.
-- **Layar platform yang dulu direncanakan di sini dikerjakan di `awcms`**, tunduk
-  pada gerbang platform-scoped yang ADR-0051 §Keputusan wajibkan. Itu gerbang yang
-  tidak pernah bisa disediakan repo ini, karena katalog permission tinggal di
-  `awcms`.
-- **Postur CSP kedua repo tetap sebanding**, dan sekarang bisa dibandingkan
-  langsung karena keduanya publik-plus-terautentikasi di sisi masing-masing. Lihat
-  [ADR-0019](0019-csp-ketat-dikirim-penyaji.md); kebijakan repo ini lebih ketat
-  pada `script-src` karena tidak ada satu pun skrip inline yang perlu di-hash.
-- **Pembekuan `awcms-mini`/`awcms-micro` tidak tersentuh.** Ia keputusan `awcms`
-  ADR-0047, dan ADR-0051 tidak mengubahnya.
+- **This repo returns to the "public" class.** ADR-0017 §Consequences recorded as
+  a cost that this repo "stops being just a static site"; that cost is cancelled.
+  The `output: 'static'` premise and every ADR resting on it are whole again —
+  with one exception that already existed and still does: the ADR-0014 Jualanku
+  on-demand routes.
+- **No code has to be deleted.** The admin screens here never existed; ADR-0017
+  itself stated its first screen was blocked. What changes is only documents —
+  and that is exactly why this ADR has to be written now: a working contract
+  telling an agent to build admin screens here will be followed by the next
+  agent, and their work will land in the wrong repo.
+- **The platform screens once planned here are built in `awcms`**, subject to the
+  platform-scoped gates ADR-0051 §Decision requires. Those are gates this repo
+  could never have provided, because the permission catalogue lives in `awcms`.
+- **The two repos' CSP postures remain comparable**, and can now be compared
+  directly because each is public-plus-authenticated on its own side. See
+  [ADR-0019](0019-csp-ketat-dikirim-penyaji.md); this repo's policy is stricter on
+  `script-src` because it has no inline script needing a hash.
+- **The `awcms-mini`/`awcms-micro` freeze is untouched.** That is `awcms`
+  ADR-0047's decision, and ADR-0051 does not change it.

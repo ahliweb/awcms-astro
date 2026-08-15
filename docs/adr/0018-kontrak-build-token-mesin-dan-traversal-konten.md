@@ -1,198 +1,195 @@
-# ADR-0018 — Kontrak build terhadap awcms: tenant dari token mesin, traversal cursor + hidrasi, dan gerbang terjemahan
+🇬🇧 English (source) · 🇮🇩 [Bahasa Indonesia](0018-kontrak-build-token-mesin-dan-traversal-konten.id.md)
+
+# ADR-0018 — The build contract against awcms: tenant from the machine token, cursor traversal + hydration, and the translation gate
 
 - **Status:** Accepted
-- **Dua kalimat di §Konsekuensi berhenti benar, dan badannya sengaja TIDAK
-  disunting** (13 Agustus 2026 — ADR adalah rekaman keputusan pada satu titik
-  waktu):
-  - **"`awcms` ADR-0049 §3 sudah menolak aksi selain `read` untuk kredensial
-    mesin"** benar sampai 12 Agustus 2026. Sejak `awcms`
+- **Two sentences in §Consequences stopped being true, and the body is
+  deliberately NOT edited** (13 August 2026 — an ADR is a record of a decision at
+  one point in time):
+  - **"`awcms` ADR-0049 §3 already refuses any action other than `read` for
+    machine credentials"** was true until 12 August 2026. Since `awcms`
     [ADR-0092](https://github.com/ahliweb/awcms/blob/main/docs/adr/0092-machine-credentials-may-write.md)
-    kelas kredensial mesin **boleh menulis**: plafon aksi `create`/`update` di
-    kode (bukan kolom), wajib terikat CIDR, **ditolak bila `clientIp` tidak
-    diketahui**, umur maksimum 30 hari alih-alih 365, dengan sentinel penolakan
-    `machine_credential_write_forbidden`. Setiap kredensial yang terbit sebelum
-    migrasinya tetap baca-saja tanpa backfill. Token build ADR ini karena itu
-    tetap tidak bisa mengubah apa pun — tetapi karena ia diterbitkan **tanpa satu
-    pun aksi tulis**, yaitu properti barisnya, bukan properti kelasnya. Menjaganya
-    di kelas baca kini keputusan penerbitan yang wajib dipertahankan.
-  - **"`allowed_permission_keys` berisi tepat `blog_content.posts.read`"**
-    menjadi kurang satu kunci sejak [ADR-0025](0025-gambar-artikel-dari-media-awcms.md)
-    menambahkan resolusi media: yang benar hari ini **dua** kunci,
-    `blog_content.posts.read` dan `media_library.media.read`. Tanpa yang kedua,
-    `scripts/asal-media.mjs` dibalas 403 dan build gagal setelah setiap halaman
-    selesai dirender. Nilai yang berlaku ada di
+    the machine credential class **may write**: an action ceiling of
+    `create`/`update` in code (not a column), mandatory CIDR binding, **refused
+    when `clientIp` is unknown**, a maximum age of 30 days instead of 365, with
+    the refusal sentinel `machine_credential_write_forbidden`. Every credential
+    issued before its migration stays read-only, with no backfill. This ADR's
+    build token therefore still cannot change anything — but because it is issued
+    **with no write action at all**, that is a property of its row, not of its
+    class. Keeping it in the read class is now an issuing decision that has to be
+    maintained.
+  - **"`allowed_permission_keys` contains exactly `blog_content.posts.read`"**
+    became one key short when [ADR-0025](0025-gambar-artikel-dari-media-awcms.md)
+    added media resolution: what is correct today is **two** keys,
+    `blog_content.posts.read` and `media_library.media.read`. Without the second,
+    `scripts/asal-media.mjs` is answered with a 403 and the build fails after
+    every page has finished rendering. The values in force are in
     [`.env.example`](../../.env.example).
-- **Tanggal:** 1 Agustus 2026
-- **Menindaklanjuti:** `awcms` [ADR-0049](https://github.com/ahliweb/awcms/blob/main/docs/adr/0049-machine-credentials-and-session-introspection.md) (kredensial mesin + introspeksi sesi), yang menutup dua kontrak yang ADR-0047 catat sebagai penahan repo ini
-- **Terkait:** [ADR-0014](0014-rendering-campuran-dan-bff-portal.md) (BFF), [ADR-0017](0017-peran-admin-owner-internal.md) (permukaan admin internal — di-supersede [ADR-0020](0020-layar-admin-kembali-ke-awcms.md); kredensial mesin di bawah tidak terpengaruh, ia dipakai token BUILD)
+- **Date:** 1 August 2026
+- **Follows on from:** `awcms` [ADR-0049](https://github.com/ahliweb/awcms/blob/main/docs/adr/0049-machine-credentials-and-session-introspection.md) (machine credentials + session introspection), which closed the two contracts ADR-0047 recorded as holding this repo back
+- **Related:** [ADR-0014](0014-rendering-campuran-dan-bff-portal.md) (the BFF), [ADR-0017](0017-peran-admin-owner-internal.md) (the internal admin surface — superseded by [ADR-0020](0020-layar-admin-kembali-ke-awcms.md); the machine credentials below are unaffected, they are used by the BUILD token)
 
-## Konteks
+## Context
 
-Repo ini menarik konten saat build lewat `GET /api/v1/blog/posts`. Tiga hal
-tentang panggilan itu ternyata tidak sesuai kenyataan, dan **ketiganya gagal
-tanpa menggagalkan build**:
+This repo pulls content at build time through `GET /api/v1/blog/posts`. Three
+things about that call turned out not to match reality, and **all three fail
+without failing the build**:
 
-### 1. Header tenant yang tidak pernah dibaca siapa pun
+### 1. A tenant header nobody ever read
 
-`src/lib/awcms/tenant.ts` mengirim `X-Tenant-Code`/`X-Tenant-Id`. awcms membaca
-`x-awcms-tenant-id`, dan ADR-0049 §4 menolak menambahkan alias — ejaan yang
-dipakai repo ini tidak pernah ada di sisi sana. Untuk token mesin header itu
-diabaikan (tenant datang dari token); untuk bearer lain hasilnya
+`src/lib/awcms/tenant.ts` sent `X-Tenant-Code`/`X-Tenant-Id`. awcms reads
+`x-awcms-tenant-id`, and ADR-0049 §4 refuses to add an alias — the spelling this
+repo used never existed over there. For a machine token that header is ignored
+(the tenant comes from the token); for any other bearer the result is
 `400 TENANT_REQUIRED`.
 
-Rantai resolusi tiga tingkat (`AWCMS_TENANT_CODE` → `AWCMS_TENANT_ID` →
-`AWCMS_DEFAULT_TENANT_CODE`) karena itu menjawab pertanyaan yang sudah tidak
-ditanyakan siapa pun.
+The three-level resolution chain (`AWCMS_TENANT_CODE` → `AWCMS_TENANT_ID` →
+`AWCMS_DEFAULT_TENANT_CODE`) was therefore answering a question nobody was asking.
 
-### 2. Daftar post tidak memuat isinya
+### 2. The post list does not contain its contents
 
-`GET /api/v1/blog/posts` mengembalikan **ringkasan** (`BlogPostSummary` di sisi
-awcms): `id`, `title`, `slug`, `status`, `visibility`, `locale`, `publishedAt`,
-`updatedAt`, `createdAt`. Tidak ada `contentJson`, `excerpt`,
-`metaDescription`, `canonicalUrl`, maupun `translationGroupId`.
+`GET /api/v1/blog/posts` returns a **summary** (`BlogPostSummary` on the awcms
+side): `id`, `title`, `slug`, `status`, `visibility`, `locale`, `publishedAt`,
+`updatedAt`, `createdAt`. There is no `contentJson`, `excerpt`,
+`metaDescription`, `canonicalUrl`, or `translationGroupId`.
 
-Adapter di repo ini mendeklarasikan bentuk post PENUH untuk respons itu dan
-membaca `contentJson` langsung darinya. Akibatnya bukan error: `contentJson`
-terbaca `undefined`, badan setiap artikel kosong — dan karena **`kategori` juga
-tinggal di dalam `contentJson`**, tidak ada satu pun artikel yang cocok dengan
-tab mana pun. Build sukses, situs terbit, seluruh seksi kosong.
+The adapter in this repo declared the FULL post shape for that response and read
+`contentJson` straight from it. The consequence was not an error: `contentJson`
+read as `undefined`, every article body was empty — and because **`kategori` also
+lives inside `contentJson`**, not one article matched any tab. The build
+succeeded, the site published, every section empty.
 
-### 3. Batas 100 baris yang dijaga dengan `throw`
+### 3. The 100-row limit guarded with a `throw`
 
-Adapter meminta 100 (batas atas awcms) dan melempar bila respons kembali tepat
-di batas itu. Itu keputusan yang benar saat ditulis — memotong diam-diam lebih
-buruk — tetapi sejak awcms menambahkan traversal keyset (`?order=created_at`
-dengan `nextCursor`), melempar berarti menolak membangun situs yang sebenarnya
-bisa dibangun utuh.
+The adapter requested 100 (awcms's upper bound) and threw when the response came
+back exactly at that limit. That was the right decision when it was written —
+truncating silently is worse — but since awcms added keyset traversal
+(`?order=created_at` with `nextCursor`), throwing means refusing to build a site
+that could in fact be built whole.
 
-## Keputusan
+## Decision
 
-### 1. Token menentukan tenant; konfigurasi menjadi ASSERTION
+### 1. The token decides the tenant; configuration becomes an ASSERTION
 
-`AWCMS_API_TOKEN` wajib berupa kredensial mesin
-(`awcmsm_<32 hex tenant>_<43 char rahasia>`). Tenant diturunkan dari token,
-dan **tidak ada header tenant yang dikirim** — mengirimnya berarti memasang
-nilai yang tampak menentukan padahal diabaikan.
+`AWCMS_API_TOKEN` must be a machine credential
+(`awcmsm_<32 hex tenant>_<43 char secret>`). The tenant is derived from the
+token, and **no tenant header is sent** — sending one means setting a value that
+looks decisive while being ignored.
 
-`AWCMS_TENANT_ID` dipertahankan, tetapi berpindah peran: dari **sumber**
-menjadi **pernyataan yang diverifikasi**. Bila diisi dan berbeda dari tenant
-token, build gagal.
+`AWCMS_TENANT_ID` is kept, but changes role: from a **source** to a **verified
+statement**. If it is filled in and differs from the token's tenant, the build
+fails.
 
-Ini bukan pelemahan penjagaan, melainkan pemindahannya ke tempat kebocoran
-sebenarnya bisa terjadi. Rantai lama menjaga "build menebak tenant" — keadaan
-yang tidak mungkin lagi. Yang mungkin, dan tidak terlihat oleh apa pun
-sebelumnya, adalah **token tenant lain terpasang di konfigurasi situs ini**:
-build hijau, situs penuh, isinya milik orang lain. Sebuah rantai tidak bisa
-melihat itu; sebuah assertion bisa.
+This is not a weakening of the guard but its move to where a leak can actually
+happen. The old chain guarded against "the build guesses the tenant" — a state
+that is no longer possible. What is possible, and was invisible to everything
+before, is **another tenant's token installed in this site's configuration**: a
+green build, a full site, somebody else's contents. A chain cannot see that; an
+assertion can.
 
-`AWCMS_TENANT_CODE` dan `AWCMS_DEFAULT_TENANT_CODE` **ditolak, bukan
-diabaikan.** Nilai yang terbaca seperti konfigurasi tetapi tidak menentukan
-apa pun adalah kelas cacat yang sama dengan yang ADR ini perbaiki.
+`AWCMS_TENANT_CODE` and `AWCMS_DEFAULT_TENANT_CODE` are **refused, not
+ignored.** A value that reads like configuration but decides nothing is the same
+defect class this ADR fixes.
 
-### 2. Traversal cursor, lalu hidrasi per post
+### 2. Cursor traversal, then hydration per post
 
-1. Susuri seluruh daftar dengan cursor keyset `?order=created_at` — satu-satunya
-   urutan yang awcms mau paginasi, karena `updated_at` bergerak setiap kali post
-   disunting sehingga sebuah baris bisa melompati batas halaman.
-2. Buang yang bukan `published` + `public` **sebelum** hidrasi, sehingga draft
-   tidak pernah memakan satu permintaan pun.
-3. Ambil setiap sisanya utuh dari `GET /api/v1/blog/posts/{id}`.
+1. Walk the whole list with the `?order=created_at` keyset cursor — the only
+   ordering awcms will paginate, because `updated_at` moves every time a post is
+   edited so a row can jump across a page boundary.
+2. Discard anything not `published` + `public` **before** hydration, so a draft
+   never costs a single request.
+3. Fetch each remaining one whole from `GET /api/v1/blog/posts/{id}`.
 
-Langkah 3 adalah N+1 permintaan per build. Biayanya diterima dan dinyatakan,
-tidak disembunyikan: **benar-tapi-lambat mengalahkan cepat-tapi-kosong.**
-Perbaikan sebenarnya tetap sama seperti yang sudah dicatat adapter sejak awal —
-sebuah **build feed** di sisi awcms yang mengembalikan baris penuh,
-ber-paginasi keyset dan sadar locale. ADR ini tidak menggantikan kebutuhan itu;
-ia membuat repo ini bisa berjalan benar sebelum feed itu ada.
+Step 3 is N+1 requests per build. Its cost is accepted and stated, not hidden:
+**correct-but-slow beats fast-but-empty.** The real fix remains what the adapter
+recorded from the start — a **build feed** on the awcms side returning full rows,
+keyset-paginated and locale-aware. This ADR does not replace that need; it lets
+this repo behave correctly before that feed exists.
 
-Batas `MAX_PAGES` (200 halaman ≈ 20.000 post) adalah penahan loop liar, bukan
-batas konten: ia **melempar**, tidak mengembalikan yang sudah terkumpul.
+The `MAX_PAGES` limit (200 pages ≈ 20,000 posts) is a runaway-loop backstop, not
+a content limit: it **throws**, rather than returning what it has collected.
 
-### 3. Terjemahan yang tidak bisa dipasangkan MENGGAGALKAN build
+### 3. Translations that cannot be paired FAIL the build
 
-`translationGroupId` diterima awcms saat menulis dan **tidak dikembalikan satu
-pun endpoint baca**. Aturan 1 adapter ini memasangkan locale lewat field itu.
+`translationGroupId` is accepted by awcms on write and **returned by no read
+endpoint**. Rule 1 of this adapter pairs locales through that field.
 
-Melanjutkan tanpa field itu tidak terlihat seperti kegagalan: setiap locale
-non-default jatuh ke bahasa sumber, masing-masing membawa penanda "belum
-diterjemahkan", dan situs menerbitkan terjemahan yang ADA sebagai halaman yang
-tidak diterjemahkan. Itu membuang konten diam-diam, dan repo ini
-memperlakukannya sebagai kegagalan.
+Continuing without it does not look like a failure: every non-default locale
+falls back to the source language, each carrying a "not translated yet" marker,
+and the site publishes translations that DO exist as untranslated pages. That
+discards content silently, and this repo treats it as a failure.
 
-Gerbangnya ditulis sebagai assertion atas **data**, bukan pemeriksaan versi
-awcms: situs satu-locale tetap membangun hari ini, dan begitu awcms
-mengembalikan field-nya, gerbang itu lewat sendiri tanpa ada yang perlu diubah
-di sini.
+Its gate is written as an assertion over **data**, not as an awcms version check:
+a single-locale site still builds today, and once awcms returns the field, that
+gate passes on its own with nothing needing to change here.
 
-## Konsekuensi
+## Consequences
 
-**Build sebuah situs berubah dari "hijau tetapi kosong" menjadi benar, atau
-gagal dengan sebab yang tertulis.** Tidak ada keadaan ketiga.
+**A site's build changes from "green but empty" to correct, or fails with a
+written cause.** There is no third state.
 
-**Konfigurasi deployment yang sudah ada akan gagal sekali, dengan sengaja.**
-Setiap situs yang memasang `AWCMS_TENANT_CODE`/`AWCMS_DEFAULT_TENANT_CODE` atau
-token non-mesin berhenti membangun sampai variabelnya diperbaiki. Alternatifnya
-adalah menerima keduanya diam-diam dan membiarkan operator percaya sesuatu yang
-tidak berlaku.
+**Existing deployment configurations will fail once, deliberately.** Every site
+that sets `AWCMS_TENANT_CODE`/`AWCMS_DEFAULT_TENANT_CODE` or a non-machine token
+stops building until its variables are fixed. The alternative is to accept both
+silently and let an operator believe something that does not hold.
 
-**Kredensialnya harus diterbitkan dengan cakupan tersempit.**
-`POST /api/v1/access/machine-credentials`, `allowed_permission_keys` berisi
-tepat `blog_content.posts.read`. `awcms` ADR-0049 §3 sudah menolak aksi selain `read`
-untuk kredensial mesin, jadi token yang bocor tidak bisa mengubah apa pun —
-tetapi ia tetap bisa MEMBACA data tenant, jadi kedaluwarsanya wajib dan
-pencabutannya berlaku pada permintaan berikutnya.
+**The credential must be issued with the narrowest scope.**
+`POST /api/v1/access/machine-credentials`, with `allowed_permission_keys`
+containing exactly `blog_content.posts.read`. `awcms` ADR-0049 §3 already refuses
+any action other than `read` for machine credentials, so a leaked token cannot
+change anything — but it can still READ tenant data, so its expiry is mandatory
+and its revocation takes effect on the next request.
 
-**Beban ke awcms naik.** Satu build sekarang N+1 permintaan, bukan satu.
-Untuk situs 500 artikel itu 500-an permintaan baca per rebuild, dan rebuild
-dipicu setiap publish. Ini alasan tambahan build feed layak dikerjakan di sisi
-sana, dan alasan `HYDRATION_CONCURRENCY` dibatasi 8.
+**Load on awcms rises.** One build is now N+1 requests, not one. For a
+500-article site that is some 500 read requests per rebuild, and a rebuild is
+triggered on every publish. This is an additional reason the build feed is worth
+doing over there, and the reason `HYDRATION_CONCURRENCY` is capped at 8.
 
-## Catatan implementasi (1 Agustus 2026, sore)
+## Implementation notes (1 August 2026, afternoon)
 
-Keputusan 2 di atas menyebut build feed sebagai "perbaikan sebenarnya" yang
-ditunda. Ia **tidak jadi ditunda** — ia mendarat di `awcms` pada hari yang sama
-([PR build feed](https://github.com/ahliweb/awcms/pulls)), jadi bagian
-"N+1 permintaan per build" dari ADR ini hanya sempat berlaku beberapa jam.
+Decision 2 above names the build feed as the "real fix", postponed. It **was not
+postponed** — it landed in `awcms` the same day
+([the build feed PR](https://github.com/ahliweb/awcms/pulls)), so the "N+1
+requests per build" part of this ADR only applied for a few hours.
 
-Yang berubah dari yang tertulis di atas:
+What differs from what is written above:
 
-- **`GET /api/v1/blog/posts?view=full&order=created_at`** mengembalikan baris
-  penuh dengan cursor keyset yang sama. Adapter menyusuri satu traversal; tidak
-  ada lagi permintaan per-post. `tests/kontrak-awcms.test.mjs` menegaskan
-  permintaan per-id itu **tidak** kembali — kalau ia kembali, ia kembali
-  diam-diam.
-- **`translationGroupId` kini dikembalikan** oleh `view=full` maupun endpoint
-  detail. Gerbang di Keputusan 3 karena itu tidak lagi menggagalkan situs
-  multi-locale; ia tetap ada dan tetap menjaga keadaannya, persis karena ia
-  ditulis sebagai assertion atas data alih-alih pemeriksaan versi.
-- **Ukuran halaman turun ke 50**, batas yang awcms terapkan untuk `view=full`
-  karena barisnya membawa `contentJson`.
+- **`GET /api/v1/blog/posts?view=full&order=created_at`** returns full rows with
+  the same keyset cursor. The adapter walks one traversal; there are no more
+  per-post requests. `tests/kontrak-awcms.test.mjs` asserts that the per-id
+  request does **not** come back — because if it did, it would come back
+  silently.
+- **`translationGroupId` is now returned** by both `view=full` and the detail
+  endpoint. The gate in Decision 3 therefore no longer fails a multi-locale site;
+  it stays, and it still guards its condition, precisely because it was written
+  as an assertion over data rather than as a version check.
+- **The page size drops to 50**, the limit awcms enforces for `view=full` because
+  its rows carry `contentJson`.
 
-Akar masalahnya juga tercatat di sisi sana, dan layak diulang di sini: kontrak
-OpenAPI `awcms` menyatakan endpoint ini mengembalikan `BlogPost`, sementara
-implementasinya mengembalikan ringkasan. Adapter repo ini ditulis dari dokumen
-itu — komentar tipenya menyebut `openapi/awcms-public-api.openapi.yaml` — jadi
-cacat "situs kosong yang build hijau" lahir dari dokumen yang menjanjikan lebih
-daripada yang dikirim kode. Bentuk ringkasannya kini punya skemanya sendiri
-(`BlogPostSummary`).
+The root cause is recorded over there too, and is worth repeating here: the
+`awcms` OpenAPI contract stated this endpoint returns a `BlogPost`, while its
+implementation returned a summary. This repo's adapter was written from that
+document — its type comment names
+`openapi/awcms-public-api.openapi.yaml` — so the "empty site with a green build"
+defect was born from a document promising more than the code delivered. The
+summary shape now has a schema of its own (`BlogPostSummary`).
 
-## Alternatif yang ditimbang
+## Alternatives weighed
 
-**Membaca `contentText` dari daftar dan berhenti di situ.** Tidak mungkin:
-daftar tidak memuatnya juga. Tidak ada bentuk apa pun dari halaman artikel yang
-bisa dibangun dari ringkasan.
+**Reading `contentText` from the list and stopping there.** Not possible: the
+list does not contain that either. No form whatsoever of an article page can be
+built from a summary.
 
-**Memasangkan terjemahan lewat kesamaan `slug`.** Ditolak. Slug dilokalkan —
-itu justru alasan `translationGroupId` ada. Aturan pemasangan yang hanya hidup
-di repo ini adalah aturan yang tidak ada, dan salah pasang menerbitkan artikel
-yang keliru di bawah judul yang benar.
+**Pairing translations by matching `slug`.** Refused. Slugs are localised —
+that is precisely why `translationGroupId` exists. A pairing rule living only in
+this repo is a rule that does not exist, and a mispairing publishes the wrong
+article under the right title.
 
-**Membangun feed-nya sekarang di `awcms`.** Ditunda, bukan ditolak: ia
-perubahan di repo lain, dengan ADR dan review keamanannya sendiri. Yang ADR ini
-putuskan adalah bagaimana repo ini berperilaku benar sementara feed itu belum
-ada.
+**Building the feed now in `awcms`.** Postponed, not refused: it is a change in
+another repo, with its own ADR and security review. What this ADR decides is how
+this repo behaves correctly while that feed does not exist.
 
-**Menerima token sesi manusia sebagai kredensial build.** Ditolak, dan
-alasannya ada di `awcms` ADR-0049 §Konteks: sesi kedaluwarsa, reset password mencabut
-seluruh sesi identitas itu, dan step-up MFA merotasinya. Build akan mati pada
-saat yang tidak bisa diprediksi siapa pun, jauh dari sebabnya.
+**Accepting a human session token as the build credential.** Refused, and the
+reason is in `awcms` ADR-0049 §Context: sessions expire, a password reset revokes
+every session of that identity, and an MFA step-up rotates them. The build would
+die at a moment nobody could predict, far from its cause.

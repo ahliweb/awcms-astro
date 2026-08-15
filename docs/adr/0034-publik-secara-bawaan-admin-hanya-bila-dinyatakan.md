@@ -1,64 +1,63 @@
-# ADR-0034 — Publik sebagai fungsi utama; admin USER hanya bila dinyatakan, admin utama tidak pernah
+🇬🇧 English (source) · 🇮🇩 [Bahasa Indonesia](0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.id.md)
+
+# ADR-0034 — Public as the primary function; USER admin only when declared, principal admin never
 
 - **Status:** Accepted
-- **Tanggal:** 8 Agustus 2026
-- **Aturan pemilik:** 8 Agustus 2026 — "repo ini merupakan default … sebagai halaman publik kecuali dinyatakan juga sebagai halaman admin", dipertajam dua kali dalam percakapan yang sama: "hanya boleh menjadi halaman admin untuk user, bukan admin utama (owner)" dan "selain fungsi utamanya sebagai halaman publik".
-- **Mempersempit:** [ADR-0020](0020-layar-admin-kembali-ke-awcms.md) (repo ini tidak memikul layar admin sama sekali) — **tidak** men-supersede-nya; lihat §Hubungan dengan ADR-0020
-- **Terkait:** [ADR-0014](0014-rendering-campuran-dan-bff-portal.md) (static-by-default + rute on-demand — polanya dipakai ulang di sini), [ADR-0017](0017-peran-admin-owner-internal.md) (empat aturan permukaan terautentikasi yang tetap berlaku), [ADR-0023](0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md) (uji "ditulis ulang bila `awcms` berubah?"), [ADR-0030](0030-aturan-tertulis-mendapat-pemeriksanya.md) (aturan baru wajib membawa pemeriksanya), `awcms` [ADR-0045](https://github.com/ahliweb/awcms/blob/main/docs/adr/0045-jualanku-porting-awcms-system-of-record-astro-bff.md), `awcms` [ADR-0051](https://github.com/ahliweb/awcms/blob/main/docs/adr/0051-admin-screens-consolidated-in-awcms.md) (seluruh layar admin dipusatkan di sana)
+- **Date:** 8 August 2026
+- **Owner's rule:** 8 August 2026 — "this repo is by default … a public page unless it is also declared an admin page", sharpened twice in the same conversation: "it may only be an admin page for users, not the principal admin (owner)" and "besides its primary function as a public page".
+- **Narrows:** [ADR-0020](0020-layar-admin-kembali-ke-awcms.md) (this repo carries no admin screens at all) — it does **not** supersede it; see §Relationship with ADR-0020
+- **Related:** [ADR-0014](0014-rendering-campuran-dan-bff-portal.md) (static-by-default + on-demand routes — its pattern is reused here), [ADR-0017](0017-peran-admin-owner-internal.md) (the four authenticated-surface rules that still apply), [ADR-0023](0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md) (the "rewritten if `awcms` changed?" test), [ADR-0030](0030-aturan-tertulis-mendapat-pemeriksanya.md) (a new rule must bring its checker), `awcms` [ADR-0045](https://github.com/ahliweb/awcms/blob/main/docs/adr/0045-jualanku-porting-awcms-system-of-record-astro-bff.md), `awcms` [ADR-0051](https://github.com/ahliweb/awcms/blob/main/docs/adr/0051-admin-screens-consolidated-in-awcms.md) (every admin screen consolidated over there)
 
-## Konteks
+## Context
 
-`AGENTS.md` §Peran repo ini berbunyi, sejak ADR-0020: **"Repo ini tidak memikul
-layar admin."** Kalimat itu mutlak, dan kemutlakannya menjawab pertanyaan yang
-salah.
+`AGENTS.md` §This repo's role has read, since ADR-0020: **"This repo carries no
+admin screens."** That sentence is absolute, and its absoluteness answers the
+wrong question.
 
-Yang benar-benar diputuskan ADR-0020 adalah bahwa **layar admin SISTEM** —
-modul, peran, tenant, jejak audit, apa pun yang lintas-tenant — dibangun di
-`awcms`, karena memindahkan layar tidak pernah menjadi kontrol keamanan yang
-diklaimkan. Alasan itu masih benar hari ini, dan ADR ini tidak menyentuhnya.
+What ADR-0020 actually decided is that **SYSTEM admin screens** — modules, roles,
+tenants, the audit trail, anything cross-tenant — are built in `awcms`, because
+moving a screen was never the security control it was claimed to be. That reason
+is still true today, and this ADR does not touch it.
 
-Yang tidak pernah ditanyakan ADR-0020: **apakah seorang PENGGUNA situs boleh
-mengerjakan bagiannya sendiri di situs itu.** Seorang penulis yang mengarang
-artikel untuk sebuah situs berita bukan operator platform. Ia tidak mengelola
-modul, tidak menyentuh tenant lain, dan tidak butuh satu pun layar yang `awcms`
-ADR-0051 pusatkan. Ia butuh satu tempat untuk menulis, mengirim untuk ditinjau,
-dan mengurus profilnya — di domain situs yang ia isi.
+What ADR-0020 never asked: **whether a site's USER may do their own part on that
+site.** A writer composing an article for a news site is not a platform operator.
+They manage no modules, touch no other tenant, and need not one of the screens
+`awcms` ADR-0051 consolidated. They need one place to write, to submit for review,
+and to manage their profile — on the domain of the site they are filling.
 
-Kalimat mutlak itu melarangnya, dan tidak ada satu pun alasan ADR-0020 yang
-sebenarnya berlaku padanya.
+That absolute sentence forbids it, and not one of ADR-0020's reasons actually
+applies to them.
 
-### Kenapa ini butuh keputusan, bukan sekadar dibolehkan
+### Why this needs a decision rather than merely being permitted
 
-Karena bentuk kegagalannya senyap, dan ia bentuk yang sudah dikenal repo ini.
+Because its failure mode is silent, and it is a shape this repo already knows.
 
-`output: 'static'` adalah premis template ini: kontainer tidak pernah
-menghubungi basis data, dan seluruh postur keamanannya bersandar pada itu. Satu
-berkas rute dengan `export const prerender = false` sudah cukup untuk
-membatalkannya — dan **tidak ada yang gagal**. Build hijau, situs terbit, dan
-sebuah permukaan terautentikasi berdiri di domain yang pemiliknya tidak pernah
-memutuskan untuk memilikinya.
+`output: 'static'` is this template's premise: the container never contacts a
+database, and its entire security posture rests on that. One route file with
+`export const prerender = false` is enough to void it — and **nothing fails**. A
+green build, a published site, and an authenticated surface standing on a domain
+whose owner never decided to have one.
 
-Sebuah aturan yang membolehkan permukaan admin karena itu harus datang bersama
-cara MENYATAKANNYA, dan cara menolak yang tidak dinyatakan.
+A rule permitting an admin surface must therefore arrive together with a way to
+DECLARE it, and a way to refuse what is not declared.
 
-## Keputusan
+## Decision
 
-### 1. Publik adalah fungsi UTAMA, bukan sekadar bawaan
+### 1. Public is the PRIMARY function, not merely the default
 
-Repo ini, dan setiap situs yang lahir darinya, adalah **halaman publik**. Itu
-keadaan asalnya dan tetap keadaan utamanya sekalipun sebuah permukaan admin
-dinyatakan.
+This repo, and every site born from it, is a **public page**. That is its original
+state and stays its principal state even when an admin surface is declared.
 
-Konsekuensi yang ditegakkan, bukan sekadar ditulis: `permukaanAdmin.prefiks`
-**tidak boleh** `/`, tidak boleh prefiks locale, dan tidak boleh slug sebuah
-tab. Ketiganya menaruh bagian publik di belakang login — dan situsnya tetap
-terbangun hijau. Seluruh halamannya ada; setiap satu di antaranya kini meminta
-pembacanya masuk lebih dulu.
+An enforced consequence, not merely a written one: `permukaanAdmin.prefiks` may
+**not** be `/`, may not be a locale prefix, and may not be a tab's slug. All three
+would put the public part behind a login — and the site would still build green.
+Every one of its pages is there; every one of them now asks its reader to log in
+first.
 
-### 2. Admin hanya bila DINYATAKAN, lewat satu pintu
+### 2. Admin only when DECLARED, through one door
 
-`permukaanAdmin` di [`src/config/site.ts`](../../src/config/site.ts), kosong
-secara bawaan:
+`permukaanAdmin` in [`src/config/site.ts`](../../src/config/site.ts), empty by
+default:
 
 ```ts
 export const permukaanAdmin = {
@@ -67,204 +66,192 @@ export const permukaanAdmin = {
 };
 ```
 
-Kosong berarti situs ini publik saja. Keduanya bergerak bersama: rute tanpa
-peran adalah permukaan terautentikasi yang tidak bisa dimasuki siapa pun, dan
-peran tanpa rute adalah izin yang tidak menuju ke mana-mana sambil terbaca
-seperti permukaan yang ada.
+Empty means this site is public only. The two move together: a route with no role
+is an authenticated surface nobody can enter, and a role with no route is a
+permission leading nowhere while reading like a surface that exists.
 
-### 3. Admin untuk USER, tidak pernah ADMIN UTAMA
+### 3. Admin for USERS, never the PRINCIPAL ADMIN
 
-Ini batasnya, dan ia bukan nuansa dari butir sebelumnya.
+This is the boundary, and it is not a nuance of the previous item.
 
-| | Boleh di sini | Tempatnya |
+| | Allowed here | Where it belongs |
 | --- | --- | --- |
-| Seorang pengguna mengerjakan bagiannya sendiri di situs ini — menulis, mengirim untuk ditinjau, mengurus profilnya | **Ya**, bila dinyatakan | `awcms-astro` |
-| Mengelola SISTEM — modul, peran, tenant, jejak audit, apa pun yang platform-scoped | **Tidak pernah** | `/admin/*` milik `awcms` |
+| A user doing their own part on this site — writing, submitting for review, managing their profile | **Yes**, when declared | `awcms-astro` |
+| Managing the SYSTEM — modules, roles, tenants, the audit trail, anything platform-scoped | **Never** | `awcms`'s own `/admin/*` |
 
-`owner` karena itu **ditolak** dari `permukaanAdmin.peran`. Ia super-manajer
-sistem lengkap; sebuah situs yang bisa memasukkannya di sini adalah pintu kedua
-ke seluruh platform, digambar di atas sebuah template. Penolakannya mekanis —
-`bun test` merah — bukan imbauan.
+`owner` is therefore **refused** from `permukaanAdmin.peran`. It is the complete
+system super-manager; a site that could admit it here is a second door to the
+whole platform, drawn on top of a template. Its refusal is mechanical — `bun test`
+red — not an exhortation.
 
-### 4. Tidak ada fitur yang HANYA ada di sini
+### 4. No feature exists ONLY here
 
-Template ini memang dimaksudkan tumbuh menjadi **banyak variasi** — tiap situs
-turunan punya permukaan publiknya sendiri dan, bila dinyatakan, permukaan admin
-user-nya sendiri, sesuai kebutuhan pengelolaan fitur penggunanya. Yang tidak
-boleh ikut bervariasi adalah satu hal:
+This template is indeed meant to grow into **many variations** — each derived site
+with its own public surface and, when declared, its own user admin surface,
+according to what its users need to manage. What may not vary is one thing:
 
-> **Setiap fitur yang dipakai user di permukaan admin situs ini WAJIB juga bisa
-> dikelola `owner` lewat `/admin/*` milik `awcms`.**
+> **Every feature a user works with on this site's admin surface MUST also be
+> manageable by an `owner` through `awcms`'s own `/admin/*`.**
 
-Aturan ini berlawanan arah dengan §3 dan justru karena itu melengkapinya. §3
-menjaga `owner` tidak bisa MASUK ke sini; butir ini menjaga tidak ada apa pun di
-sini yang LEPAS dari `owner`. Tanpa yang kedua, situs turunan bisa menumbuhkan
-kemampuan yang tidak terlihat, tidak teraudit, dan tidak bisa dicabut dari
-tempat yang seharusnya memegang kendali penuh — persis "pintu kedua" yang §3
-tutup, hanya masuk dari arah sebaliknya.
+This rule runs in the opposite direction to §3 and precisely for that reason
+completes it. §3 keeps `owner` from getting IN here; this item keeps anything here
+from getting AWAY from `owner`. Without the second, a derived site could grow
+capabilities that are invisible, unaudited, and impossible to withdraw from the
+place that is supposed to hold full control — exactly the "second door" §3 closes,
+only entered from the other side.
 
-Konsekuensi praktisnya, dan ini yang menentukan urutan kerja:
+Its practical consequence, and this is what settles the work order:
 
-- **Permukaan user di sini adalah PROYEKSI dari kemampuan yang sudah ada di
-  `awcms`, bukan kemampuan baru.** Datanya tetap di sana, izinnya tetap
-  diputuskan di sana, dan jejak auditnya tetap tercatat di sana.
-- **Bila sebuah fitur belum bisa dikelola `owner` di `awcms`, ia belum boleh
-  muncul di sini.** Urutannya `awcms` dulu, selalu — bukan karena birokrasi,
-  melainkan karena fitur yang mendarat di sini lebih dulu adalah fitur yang
-  untuk sementara tidak bisa dimatikan siapa pun.
-- **"Variasi" berarti bentuk permukaannya, bukan kumpulan kemampuannya.** Dua
-  situs turunan boleh sangat berbeda dalam apa yang mereka tampilkan dan
-  bagaimana; keduanya tetap berdiri di atas kemampuan yang sama, yang dimiliki
-  dan dikendalikan `awcms`.
+- **A user surface here is a PROJECTION of a capability that already exists in
+  `awcms`, not a new capability.** Its data stays there, its permissions stay
+  decided there, and its audit trail stays recorded there.
+- **If a feature cannot yet be managed by an `owner` in `awcms`, it may not appear
+  here.** The order is `awcms` first, always — not out of bureaucracy, but because
+  a feature landing here first is a feature that for a while nobody can switch off.
+- **"Variation" means the shape of the surface, not the set of capabilities.** Two
+  derived sites may differ greatly in what they show and how; both still stand on
+  the same capabilities, owned and controlled by `awcms`.
 
-**Sejauh mana ini bisa digerbangi, dan sejauh mana tidak** — dinyatakan karena
-[ADR-0030](0030-aturan-tertulis-mendapat-pemeriksanya.md) menuntutnya:
+**How far this can be gated, and how far it cannot** — stated because
+[ADR-0030](0030-aturan-tertulis-mendapat-pemeriksanya.md) demands it:
 
-`tests/kontrak-awcms.test.mjs` mengeraskan daftar permukaan `awcms` yang
-dipanggil repo ini menjadi tepat tiga, dan menuntutnya sama dua arah dengan
-tabel bertanda di skill integrasi. Sebuah fitur admin user yang baru **pasti**
-menambah permukaan keempat, jadi ia tidak bisa mendarat diam-diam: gerbang itu
-merah, dan penulisnya dipaksa menyatakan apa yang ia tambahkan.
+`tests/kontrak-awcms.test.mjs` hardens the list of `awcms` surfaces this repo
+calls to exactly three, and demands it match the marked table in the integration
+skill in both directions. A new user admin feature **certainly** adds a fourth
+surface, so it cannot land silently: that gate goes red, and its author is forced
+to state what they added.
 
-Yang **tidak** bisa diverifikasi mesin dari repo ini: apakah kemampuan di balik
-permukaan itu benar-benar punya layar `owner` di `awcms`. Katalog permission dan
-registry layar tinggal di sana, dan repo ini tidak punya instans untuk
-menanyakannya. Itu penilaian manusia pada saat review, dan menuliskannya sebagai
-"digerbangi" akan menjadi klaim yang tidak bisa dipertanggungjawabkan.
+What **cannot** be machine-verified from this repo: whether the capability behind
+that surface really has an `owner` screen in `awcms`. The permission catalogue and
+the screen registry live there, and this repo has no instance to ask. That is a
+human judgement at review time, and writing it up as "gated" would be a claim
+nobody could stand behind.
 
-### 5. Satu `awcms`, banyak situs
+### 5. One `awcms`, many sites
 
-Topologinya searah dan perlu dinyatakan, karena setiap butir di atas berubah
-maknanya bila dibaca seolah hanya ada satu situs:
+The topology is one-directional and needs stating, because every item above
+changes meaning if it is read as though there were only one site:
 
-> Sebuah instans `awcms` boleh memiliki **banyak** repo situs — masing-masing
-> dengan halaman publiknya sendiri dan, bila dinyatakan, halaman admin user-nya
-> sendiri. Semuanya tetap merujuk `awcms` yang sama sebagai **backend** dan
-> sebagai **admin utama (`owner`)**.
+> An `awcms` instance may own **many** site repos — each with its own public pages
+> and, when declared, its own user admin pages. All of them still refer to the same
+> `awcms` as their **backend** and as their **principal admin (`owner`)**.
 
-Sebuah repo turunan karena itu bukan "sistemnya"; ia satu wajah dari satu
-sistem. Yang mengikuti dari situ:
+A derived repo is therefore not "the system"; it is one face of one system. What
+follows from that:
 
-- **Sebuah situs tidak pernah boleh mengandaikan dirinya satu-satunya.** Tenant
-  datang dari token build-nya sendiri, dengan `AWCMS_TENANT_ID` sebagai asersi
-  silang ([ADR-0018](0018-kontrak-build-token-mesin-dan-traversal-konten.md));
-  itu sudah menjadi jalur yang benar untuk topologi ini, dan tidak berubah.
-- **`owner` mengelola SEMUANYA dari satu tempat.** Itu justru yang hilang bila
-  §4 dilanggar: kemampuan yang hanya ada di satu situs membuat kendali owner
-  berlubang tepat di situs itu, dan lubangnya tidak terlihat dari `/admin/*`
-  mana pun.
-- **Kemampuan yang dipakai beberapa situs tinggal di `awcms` SEKALI**, bukan
-  disalin per situs. Dua salinan satu kemampuan adalah dua tempat yang harus
-  ditambal saat satu di antaranya salah — dan yang kedua biasanya tidak ikut
-  ditambal.
-- **"Banyak variasi" karena itu berarti banyak PERMUKAAN di atas satu fondasi**,
-  bukan banyak fondasi yang mirip.
+- **A site may never assume it is the only one.** Its tenant comes from its own
+  build token, with `AWCMS_TENANT_ID` as a cross-assertion
+  ([ADR-0018](0018-kontrak-build-token-mesin-dan-traversal-konten.md)); that is
+  already the right path for this topology, and it does not change.
+- **`owner` manages EVERYTHING from one place.** That is exactly what is lost when
+  §4 is broken: a capability existing in only one site puts a hole in the owner's
+  control precisely at that site, and the hole is invisible from any `/admin/*`.
+- **A capability used by several sites lives in `awcms` ONCE**, not copied per
+  site. Two copies of one capability are two places to patch when one of them is
+  wrong — and the second usually does not get patched.
+- **"Many variations" therefore means many SURFACES on one foundation**, not many
+  similar foundations.
 
-### 6. Menyatakannya tidak memindahkan satu izin pun
+### 6. Declaring it moves not one permission
 
-Butir ADR-0017 yang ADR-0020 pertahankan, dan ia yang membuat ADR ini bukan
-pembalikan: **RBAC/ABAC default-deny `awcms` tetap yang memutuskan setiap
-permintaan.** Deklarasi di sini menggambar tombol; ia tidak memberi apa pun, dan
-peran yang ditolak `awcms` tetap ditolak dengan tombolnya terpampang.
+The ADR-0017 item ADR-0020 preserved, and it is what makes this ADR not a
+reversal: **`awcms`'s default-deny RBAC/ABAC still decides every request.** A
+declaration here draws a button; it grants nothing, and a role `awcms` refuses
+stays refused with its button on display.
 
-Tiga aturan ADR-0017 lainnya ikut berlaku penuh atas permukaan ini, sama seperti
-atas BFF Jualanku: `awcms` tetap system of record dan repo ini tanpa basis data;
-tidak ada cache bersama antara permukaan publik dan terautentikasi; dan setiap
-penambahan dinilai sebagai **permukaan keamanan**, bukan sekadar halaman.
+ADR-0017's three other rules apply in full to this surface, exactly as to the
+Jualanku BFF: `awcms` remains the system of record and this repo has no database;
+there is no shared cache between public and authenticated surfaces; and every
+addition is judged as a **security surface**, not merely as a page.
 
-### 7. Pemeriksanya mendarat bersama aturannya
+### 7. Its checkers land with its rule
 
-[ADR-0030](0030-aturan-tertulis-mendapat-pemeriksanya.md) berlaku penuh.
-`tests/peran-situs.test.mjs` menegakkan seluruh butir di atas atas KODE, bukan
-atas dokumen:
+[ADR-0030](0030-aturan-tertulis-mendapat-pemeriksanya.md) applies in full.
+`tests/peran-situs.test.mjs` enforces every item above against the CODE, not
+against the documents:
 
-- template menyatakan nol permukaan admin, dan benar-benar tidak punya satu pun
-  rute on-demand — dua pemeriksaan terpisah, karena konfigurasi dan kode bisa
-  berselisih dan yang menentukan apa yang disajikan adalah kode;
-- setiap rute ber-`prerender = false` wajib berada di bawah prefiks yang
-  dinyatakan `permukaanAdmin` **atau** di bawah prefiks BFF Jualanku ADR-0014 —
-  ini yang membuat "publik secara bawaan" menjadi keadaan yang ditegakkan;
-- `owner` ditolak, apa pun kapitalisasinya;
-- prefiks yang menelan permukaan publik ditolak;
-- deklarasi separuh ditolak;
-- `AGENTS.md` wajib menyebut `permukaanAdmin` dan peran yang dilarang — kontrak
-  kerja yang menua menjadi salah adalah yang membuat pekerjaan berikutnya
-  mendarat di repo yang keliru, dan itu sudah pernah terjadi di sini
-  (ADR-0020 §Konsekuensi).
+- the template declares zero admin surfaces, and genuinely has no on-demand route
+  — two separate checks, because configuration and code can disagree and what
+  decides what is served is the code;
+- every `prerender = false` route must be under a prefix declared by
+  `permukaanAdmin` **or** under the ADR-0014 Jualanku BFF prefix — this is what
+  makes "public by default" an enforced state;
+- `owner` is refused, whatever its capitalisation;
+- a prefix that swallows the public surface is refused;
+- a half declaration is refused;
+- `AGENTS.md` must name `permukaanAdmin` and the forbidden role — a working
+  contract that ages into being wrong is what makes the next piece of work land in
+  the wrong repo, and that has already happened here (ADR-0020 §Consequences).
 
-## Hubungan dengan ADR-0020, dan dengan `awcms` ADR-0051
+## Relationship with ADR-0020, and with `awcms` ADR-0051
 
-ADR ini **mempersempit** ADR-0020; ia tidak men-supersede-nya. Yang tetap utuh:
-seluruh layar admin SISTEM dibangun di `awcms`, dan alasannya — memindahkan
-layar bukan kontrol keamanan — tidak dibantah di mana pun di atas.
+This ADR **narrows** ADR-0020; it does not supersede it. What stays whole: every
+SYSTEM admin screen is built in `awcms`, and its reason — moving a screen is not a
+security control — is contradicted nowhere above.
 
-Ketegangan dengan `awcms` ADR-0051 ada, dan menuliskannya lebih berguna daripada
-merapikannya: ADR itu memutuskan **"seluruh layar admin AWCMS — tenant maupun
-owner/internal/platform — dibangun di repo `awcms`"**. Kata "seluruh" mencakup
-layar tenant, dan permukaan USER yang ADR ini bolehkan berada di dekat batas
-itu.
+There is a tension with `awcms` ADR-0051, and writing it down is more useful than
+tidying it away: that ADR decided **"every AWCMS admin screen — tenant as well as
+owner/internal/platform — is built in the `awcms` repo"**. The word "every"
+includes tenant screens, and the USER surface this ADR permits sits close to that
+boundary.
 
-Yang membuat keduanya bisa hidup bersama adalah gerbang pengganti yang ADR-0051
-sendiri wajibkan, dan yang justru menjadi alasannya: **repo bukan lagi pembatas
-audiens, jadi pembatasnya dinyatakan di tempat yang menegakkannya.** Aksi
-lintas-tenant wajib punya gerbang platform-scoped di `awcms`, dan izinnya tidak
-boleh di-seed ke role tenant. Selama itu berlaku, permukaan USER di sini tidak
-bisa menjadi jalur yang lebih longgar — ia tunduk pada gerbang yang sama, dan
-`owner` tidak bisa lewat sama sekali.
+What lets both live together is the replacement gate ADR-0051 itself requires, and
+which is in fact its reasoning: **a repo is no longer an audience boundary, so the
+boundary is stated where it is enforced.** A cross-tenant action must have a
+platform-scoped gate in `awcms`, and its permission may not be seeded into tenant
+roles. As long as that holds, a USER surface here cannot become a looser path — it
+is subject to the same gates, and `owner` cannot pass at all.
 
-> **Yang harus dilakukan di sisi sana — SUDAH, pada 8 Agustus 2026.** Selisih ini
-> pantas dicatat sebagai divergence keluarga di `awcms-family-compatibility.yaml`
-> milik `awcms`, mengikuti pola `awcms` ADR-0068 — dengan pemilik dan
-> `reviewDate`, sehingga ia kembali ke meja alih-alih ditemukan ulang sebagai
-> temuan. Repo ini tidak bisa menulisnya sendiri; yang bisa dilakukan di sini
-> adalah tidak berpura-pura selisih itu tidak ada.
+> **What had to be done on that side — DONE, on 8 August 2026.** This difference
+> deserves recording as a family divergence in `awcms`'s own
+> `awcms-family-compatibility.yaml`, following the `awcms` ADR-0068 pattern — with
+> an owner and a `reviewDate`, so it returns to the table rather than being
+> rediscovered as a finding. This repo cannot write that itself; what can be done
+> here is not to pretend the difference does not exist.
 >
-> **`awcms` menjawabnya dengan ADR-0070** ("Peran keluarga: `awcms-astro`
-> memikul halaman publik dan permukaan admin USER"), yang **MEMPERSEMPIT**
-> ADR-0051 di sana alih-alih men-supersede-nya: sumbu pembagian layar bergeser
-> dari AUDIENS menjadi **apa yang dikelola**, admin SISTEM tetap di sana, dan
-> ketiga gerbang pengganti ADR-0051 tidak dilonggarkan sedikit pun. Entri
-> `admin-user-surface-in-awcms-astro` masuk manifest keluarganya dengan
-> `reviewDate` 2027-02-04 — dan yang ditinjau pada tanggal itu bukan apakah
-> admin USER boleh di sini, melainkan **apakah batasnya masih di tempat yang
-> sama**. Ketegangan di §ini karena itu berhenti menjadi selisih yang tidak
-> tercatat di mana pun, dan menjadi selisih yang punya berkas, pemilik, dan
-> tanggal.
+> **`awcms` answered with ADR-0070** ("The family roles: `awcms-astro` carries
+> public pages and the USER admin surface"), which **NARROWS** its ADR-0051 rather
+> than superseding it: the axis dividing screens shifts from AUDIENCE to **what is
+> managed**, SYSTEM admin stays over there, and none of ADR-0051's three
+> replacement gates is loosened at all. The entry
+> `admin-user-surface-in-awcms-astro` enters its family manifest with a
+> `reviewDate` of 2027-02-04 — and what is reviewed on that date is not whether
+> USER admin may live here, but **whether its boundary is still in the same
+> place**. The tension in this section therefore stops being a difference recorded
+> nowhere, and becomes a difference with a file, an owner, and a date.
 
-## Konsekuensi
+## Consequences
 
-- **Tidak ada kode permukaan admin yang mendarat hari ini.** Yang mendarat
-  aturannya, deklarasinya, dan gerbangnya. Template tetap publik saja, dan
-  `bun test` yang membuktikannya.
-- **Implementasinya masih ditahan uji ADR-0023**, persis seperti BFF Jualanku
-  dan karena alasan yang sama: permukaan terautentikasi memanggil `awcms` di
-  SETIAP permintaan runtime, jadi bentuknya ditentukan respons `awcms` pada tiap
-  permintaan — dan repo template ini tidak punya instans untuk membuktikannya.
-  Yang dibuka ADR ini adalah izinnya, bukan penahanannya.
-- **`output: 'static'` tetap premis.** Permukaan admin adalah pengecualian yang
-  DINYATAKAN, bentuk yang sama dengan ADR-0014, bukan perubahan mode render.
-- **Sebuah situs yang menyatakan permukaan admin memikul biaya yang situs publik
-  tidak punya**: sesi, CSRF, cache yang harus dipisah, dan seluruh postur
-  ADR-0019 di jalur yang kini membawa kredensial. Itu sebabnya deklarasinya
-  eksplisit — supaya biaya itu dipilih, bukan diwarisi.
-- **Yang paling mungkin salah dipahami**, dan karena itu ditulis di sini: ADR ini
-  **bukan** izin membangun kembali layar admin `awcms` di repo ini dengan nama
-  lain. Ukurannya bukan siapa yang memakainya melainkan apa yang dikelolanya —
-  bila layarnya mengubah sesuatu di luar isi situs ini, ia milik `awcms`.
+- **No admin surface code lands today.** What lands is its rule, its declaration,
+  and its gates. The template stays public only, and `bun test` is what proves it.
+- **Its implementation is still held by the ADR-0023 test**, exactly like the
+  Jualanku BFF and for the same reason: an authenticated surface calls `awcms` on
+  EVERY runtime request, so its shape is decided by an `awcms` response on every
+  request — and this template repo has no instance to prove it. What this ADR
+  opens is its permission, not its hold.
+- **`output: 'static'` remains the premise.** An admin surface is a DECLARED
+  exception, the same shape as ADR-0014, not a change of render mode.
+- **A site declaring an admin surface takes on costs a public site does not have**:
+  sessions, CSRF, caches that must be separated, and the whole ADR-0019 posture on
+  a path that now carries credentials. That is why its declaration is explicit — so
+  those costs are chosen rather than inherited.
+- **What is most likely to be misread**, and therefore written here: this ADR is
+  **not** permission to rebuild `awcms`'s admin screens in this repo under another
+  name. The measure is not who uses it but what it manages — if a screen changes
+  something outside this site's contents, it belongs to `awcms`.
 
-## Alternatif yang dipertimbangkan
+## Alternatives considered
 
-- **Membiarkan aturan mutlak ADR-0020 apa adanya** — ditolak. Ia melarang hal
-  yang tidak satu pun alasannya berlaku padanya, dan larangan yang lebih luas
-  daripada alasannya adalah larangan yang akan dilanggar diam-diam.
-- **Membolehkan permukaan admin tanpa deklarasi**, mengandalkan review — ditolak.
-  Bentuk kegagalannya adalah build hijau dengan permukaan terautentikasi yang
-  tidak pernah diputuskan siapa pun; review tidak melihat berkas yang tidak
-  diubah.
-- **Membolehkan `owner` bila situsnya "kecil"** — ditolak. Ukuran situs tidak
-  mengubah apa yang bisa dilakukan owner, dan pengecualian yang bersandar pada
-  kata sifat adalah pengecualian tanpa gerbang.
-- **Mendaftarkan peran yang DIBOLEHKAN alih-alih menolak `owner`** — ditolak:
-  daftar putih atas katalog peran yang tinggal di `awcms` akan menua setiap kali
-  `awcms` menambah peran, dan menuanya berbentuk situs yang menolak peran yang
-  sah. Yang stabil justru satu larangan.
+- **Leaving ADR-0020's absolute rule as it was** — refused. It forbids something
+  not one of its reasons applies to, and a ban wider than its reasoning is a ban
+  that gets broken silently.
+- **Permitting an admin surface without a declaration**, relying on review —
+  refused. Its failure mode is a green build with an authenticated surface nobody
+  ever decided on; review does not look at files that were not changed.
+- **Permitting `owner` when the site is "small"** — refused. A site's size does not
+  change what an owner can do, and an exception resting on an adjective is an
+  exception with no gate.
+- **Listing the PERMITTED roles instead of refusing `owner`** — refused: an
+  allowlist over a role catalogue that lives in `awcms` would age every time
+  `awcms` adds a role, and its ageing takes the form of a site refusing a
+  legitimate role. What is stable is the single ban.

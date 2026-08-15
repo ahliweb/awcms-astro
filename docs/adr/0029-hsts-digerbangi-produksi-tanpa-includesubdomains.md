@@ -1,180 +1,176 @@
-# ADR-0029 — HSTS dikirim penyaji, digerbangi produksi, tanpa `includeSubDomains`
+🇬🇧 English (source) · 🇮🇩 [Bahasa Indonesia](0029-hsts-digerbangi-produksi-tanpa-includesubdomains.id.md)
+
+# ADR-0029 — HSTS sent by the server, gated to production, without `includeSubDomains`
 
 - **Status:** Accepted
-- **Tanggal:** 4 Agustus 2026
-- **Aturan pemilik:** 4 Agustus 2026 — "kerjakan sesuai rekomendasi terbaikmu."
-- **Terkait:** [ADR-0028](0028-jangkar-standar-performa-dan-keamanan.md) (celah 1 dan 5 yang ditutup di sini), [ADR-0019](0019-csp-ketat-dikirim-penyaji.md) (CSP dikirim penyaji), [ADR-0016](0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md) (penyaji satu-satunya pemilik header)
-- **Sumber pembanding di `awcms`:** `src/lib/security/security-headers.ts` (`buildSecurityHeaders`, Issue #437). Ia **bukan** ADR di sana — postur header `awcms` mendarat lewat issue, jadi tidak ada nomor ADR yang bisa dirujuk. Baris ini ditulis begitu alih-alih menebak sebuah nomor: draf pertama ADR ini mengutip `awcms` ADR-0035, yang ternyata tentang repositioning ERP/SaaS. Itu persis aturan 2 `awcms` [ADR-0062](https://github.com/ahliweb/awcms/blob/main/docs/adr/0062-skills-are-gated-against-the-code-they-describe.md) — kutipan ADR yang pembacanya juga tidak bisa periksa — dan celah yang ADR-0028 catat belum digerbangi di sini.
+- **Date:** 4 August 2026
+- **Owner's rule:** 4 August 2026 — "do it according to your best recommendation."
+- **Related:** [ADR-0028](0028-jangkar-standar-performa-dan-keamanan.md) (gaps 1 and 5, closed here), [ADR-0019](0019-csp-ketat-dikirim-penyaji.md) (the CSP sent by the server), [ADR-0016](0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md) (the server as the sole owner of headers)
+- **Comparison source in `awcms`:** `src/lib/security/security-headers.ts` (`buildSecurityHeaders`, Issue #437). It is **not** an ADR over there — the `awcms` header posture landed through an issue, so there is no ADR number to cite. This line is written that way rather than guessing a number: the first draft of this ADR cited `awcms` ADR-0035, which turned out to be about the ERP/SaaS repositioning. That is exactly rule 2 of `awcms` [ADR-0062](https://github.com/ahliweb/awcms/blob/main/docs/adr/0062-skills-are-gated-against-the-code-they-describe.md) — a citation its reader cannot check either — and the gap ADR-0028 records as not yet gated here.
 
-> **Banner (14 Agustus 2026) — keputusan ini BENAR dan tetap berlaku, tetapi
-> selama delapan hari ia tidak pernah sampai ke pembaca.**
+> **Banner (14 August 2026) — this decision is CORRECT and still in force, but
+> for eight days it never reached a reader.**
 >
-> Badan ADR ini adalah rekaman dan tidak disunting. Yang ditemukan saat
-> verifikasi deploy produksi pertama: `bun build --target=bun` **melipat**
-> `process.env.NODE_ENV` bertitik menjadi literal saat bundling, sehingga
-> `dist/server/penyaji.mjs` yang tayang memuat `headerKeamanan(produksi = false)`.
-> Container berjalan dengan `NODE_ENV=production`, dan respons sungguhannya tetap
-> **tanpa** `Strict-Transport-Security`.
+> This ADR's body is a record and is not edited. What was found while verifying
+> the first production deploy: `bun build --target=bun` **folds** a dotted
+> `process.env.NODE_ENV` into a literal while bundling, so the
+> `dist/server/penyaji.mjs` that was serving contained
+> `headerKeamanan(produksi = false)`. The container ran with
+> `NODE_ENV=production`, and its real responses still had **no**
+> `Strict-Transport-Security`.
 >
-> Setiap gerbang hijau selama itu, dan alasannya persis kelas cacat yang repo ini
-> berulang kali tulis aturannya: keduanya membaca `server/penyaji.mjs`, tempat
-> gerbang produksi memang masih benar — bukan **bundel** yang dikirim.
+> Every gate was green throughout, and the reason is exactly the defect class
+> this repo has repeatedly written rules about: both read
+> `server/penyaji.mjs`, where the production gate is indeed still correct — not
+> the **bundle** that ships.
 >
-> Perbaikannya satu bentuk akses (`process.env["NODE_ENV"]`, yang tidak dilipat),
-> dan pemeriksanya menjalankan **artefaknya**: `tests/penyaji.test.mjs`
-> menyalakan `dist/server/penyaji.mjs` dua kali dan menuntut HSTS ada di
-> `production` sekaligus absen di luar itu. Ia berjalan di dalam `docker build`,
-> jadi sebuah image yang kehilangan header keenam berhenti bisa dibangun.
+> The fix is one form of access (`process.env["NODE_ENV"]`, which is not folded),
+> and its checker runs the **artefact**: `tests/penyaji.test.mjs` starts
+> `dist/server/penyaji.mjs` twice and demands HSTS be present in `production` and
+> absent outside it. It runs inside `docker build`, so an image that loses the
+> sixth header can no longer be built.
 
-## Konteks
+## Context
 
-### 1. Header keenam yang tidak dipasang di mana pun
+### 1. A sixth header installed nowhere
 
-[ADR-0028](0028-jangkar-standar-performa-dan-keamanan.md) mencatat satu selisih
-postur dari `awcms` sebagai celah bernomor 1: `awcms` mengirim
-`Strict-Transport-Security` di produksi, repo ini tidak mengirimkannya di
-lingkungan mana pun.
+[ADR-0028](0028-jangkar-standar-performa-dan-keamanan.md) recorded one posture
+difference from `awcms` as numbered gap 1: `awcms` sends
+`Strict-Transport-Security` in production, this repo sends it in no environment
+at all.
 
-Alasan yang terbaca masuk akal selama dua bulan — "TLS diterminasi Traefik, jadi
-itu urusan lapisan di depan" — tidak bertahan diperiksa. Traefik tidak memasang
-HSTS tanpa middleware yang dinyatakan, sehingga yang terjadi bukan "dipasang di
-tempat lain" melainkan **tidak dipasang di mana pun**. Dan
-[ADR-0016](0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md) sudah melarang
-penyelesaiannya ditaruh di Traefik: header respons ditentukan di
-`server/penyaji.mjs`, bukan di dua tempat yang bisa saling menimpa.
+The reason that read plausibly for two months — "TLS is terminated by Traefik, so
+that is the front layer's business" — does not survive checking. Traefik does not
+install HSTS without a declared middleware, so what was happening was not
+"installed elsewhere" but **installed nowhere**. And
+[ADR-0016](0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md) already forbids
+solving it in Traefik: response headers are decided in `server/penyaji.mjs`, not
+in two places that can overwrite each other.
 
-Yang dijaga HSTS bukan permintaan yang sudah HTTPS. Yang dijaganya adalah
-permintaan **pertama** seorang pembaca — `contoh.go.id` diketik tanpa skema,
-browser mencoba HTTP, dan redirect ke HTTPS adalah respons yang bisa diganti
-siapa pun yang duduk di jalur itu. Sebuah situs informasi publik yang pembacanya
-berada di jaringan yang tidak dapat diandalkan adalah persis konteks tempat
-serangan itu murah.
+What HSTS guards is not a request that is already HTTPS. It guards a reader's
+**first** request — `contoh.go.id` typed with no scheme, the browser tries HTTP,
+and the redirect to HTTPS is a response anybody sitting on that path can replace.
+A public information site whose readers are on connections that cannot be relied
+on is exactly the context where that attack is cheap.
 
-### 2. Kenapa keputusan ini tidak bisa diambil di satu baris
+### 2. Why this decision cannot be taken in one line
 
-Dua sifat HSTS membuatnya berbeda dari empat header lain di berkas itu, dan
-keduanya mengarah ke bahaya yang **tidak terlihat saat perubahannya ditulis**:
+Two properties make HSTS different from the four other headers in that file, and
+both lead to a danger that is **invisible when the change is written**:
 
-- **Ia tidak bisa dibatalkan dari sisi situs.** Sekali sebuah browser
-  menerimanya, ia menolak berbicara HTTP ke host itu selama `max-age`.
-  Mengirimkannya lalu menyesal berarti menunggu satu tahun, bukan men-deploy
-  perbaikan.
-- **Ia berlaku untuk HOST, bukan untuk situs.** Pada `localhost`, yang terkunci
-  bukan hanya pratinjau ini melainkan **setiap proyek lain** yang dikembangkan
-  pemilik mesin di `http://localhost:<port>`. `bun run serve` dan
-  `bun run preview` menjalankan berkas yang sama dengan produksi — jadi tanpa
-  gerbang, satu pratinjau lokal merusak mesin yang menjalankannya, dan tidak ada
-  satu pun yang gagal saat itu terjadi.
+- **It cannot be cancelled from the site's side.** Once a browser has received
+  it, it refuses to speak HTTP to that host for `max-age`. Sending it and
+  regretting it means waiting a year, not deploying a fix.
+- **It applies to a HOST, not to a site.** On `localhost`, what gets locked is
+  not only this preview but **every other project** the machine's owner develops
+  at `http://localhost:<port>`. `bun run serve` and `bun run preview` run the same
+  file as production — so without a gate, one local preview breaks the machine
+  running it, and nothing fails when that happens.
 
-### 3. `includeSubDomains` benar untuk `awcms` dan salah untuk sebuah template
+### 3. `includeSubDomains` is right for `awcms` and wrong for a template
 
-`awcms` mengirim `max-age=31536000; includeSubDomains`. Itu benar di sana:
-`awcms` adalah SATU deployment yang operatornya tahu persis apa saja
-subdomainnya.
+`awcms` sends `max-age=31536000; includeSubDomains`. That is right over there:
+`awcms` is ONE deployment whose operator knows exactly what its subdomains are.
 
-`awcms-astro` adalah **template**. Ia berjalan di domain yang belum ada saat
-baris ini ditulis, milik organisasi yang hampir pasti punya layanan lain di
-subdomain lain. `includeSubDomains` dari `contoh.go.id` memaksa
-`mail.contoh.go.id` dan setiap subdomain lainnya menjadi HTTPS-saja selama
-setahun, di browser setiap orang yang pernah membuka situsnya — dan yang
-menanggung akibatnya bukan situs ini melainkan layanan-layanan itu, yang
-pemiliknya tidak pernah ikut memutuskan.
+`awcms-astro` is a **template**. It runs on a domain that did not exist when this
+line was written, belonging to an organisation that almost certainly has other
+services on other subdomains. `includeSubDomains` from `contoh.go.id` forces
+`mail.contoh.go.id` and every other subdomain to be HTTPS-only for a year, in the
+browser of everyone who has ever opened its site — and what bears the consequence
+is not this site but those services, whose owners never took part in the decision.
 
-Menyalin nilai `awcms` apa adanya karena itu bukan "paritas keluarga". Ia
-memindahkan sebuah keputusan yang bergantung konteks ke tempat yang tidak punya
-konteksnya.
+Copying the `awcms` value as-is is therefore not "family parity". It moves a
+context-dependent decision to a place that does not have its context.
 
-## Keputusan
+## Decision
 
-### §A — HSTS dikirim, digerbangi `NODE_ENV === "production"`
+### §A — HSTS is sent, gated on `NODE_ENV === "production"`
 
-`server/penyaji.mjs` mengekspor `HSTS` dan `headerKeamanan(produksi)`. Yang
-kedua mengembalikan lima header di luar produksi dan enam di dalamnya.
-`pasangHeader` memakainya.
+`server/penyaji.mjs` exports `HSTS` and `headerKeamanan(produksi)`. The second
+returns five headers outside production and six inside it. `pasangHeader` uses it.
 
-`NODE_ENV` dipakai karena stage runtime `Dockerfile` **sudah** menyetelnya
-`production`, jadi tidak ada tempat kedua yang perlu diingat saat men-deploy.
-Yang membuat gerbang ini aman adalah asimetri akibatnya: kesalahan ke arah
-"lupa" hanya kehilangan HSTS, sementara kesalahan ke arah "terlalu awal"
-mengunci mesin pengembang selama setahun. **Bawaannya karena itu mati.**
+`NODE_ENV` is used because the `Dockerfile` runtime stage **already** sets it to
+`production`, so there is no second place to remember when deploying. What makes
+this gate safe is the asymmetry of its consequences: an error in the "forgot"
+direction only loses HSTS, while an error in the "too early" direction locks a
+developer's machine for a year. **Its default is therefore off.**
 
-### §B — `max-age=31536000`, tanpa `includeSubDomains`, tanpa `preload`
+### §B — `max-age=31536000`, without `includeSubDomains`, without `preload`
 
-Satu tahun adalah nilai yang direkomendasikan OWASP Secure Headers Project dan
-sama dengan `awcms`. Dua direktif lainnya tidak ikut:
+One year is the value the OWASP Secure Headers Project recommends and matches
+`awcms`. The other two directives do not follow:
 
-- **`includeSubDomains`** — alasan §3. Sebuah situs yang subdomainnya memang
-  seluruhnya HTTPS **boleh** menambahkannya, di `server/penyaji.mjs` dan bukan
-  di tempat kedua, lalu memperbarui `tests/penyaji.test.mjs`. Aturannya sama
-  dengan melebarkan `img-src`.
-- **`preload`** — ia menuntut `includeSubDomains`, dan pendaftaran ke daftar
-  preload browser praktis tidak bisa ditarik. Sebuah template tidak boleh
-  membuat komitmen permanen atas domain yang belum ada.
+- **`includeSubDomains`** — the reasoning in §3. A site whose subdomains really
+  are all HTTPS **may** add it, in `server/penyaji.mjs` and not in a second place,
+  then update `tests/penyaji.test.mjs`. The rule is the same as for widening
+  `img-src`.
+- **`preload`** — it requires `includeSubDomains`, and registration on the
+  browser preload list is practically irreversible. A template may not make a
+  permanent commitment over a domain that does not exist yet.
 
-Divergence dari `awcms` ini **sempit dan disengaja**, dan ia menutup celah
-ADR-0028 nomor 1 sepenuhnya: yang dicatat di sana adalah header yang tidak
-dikirim sama sekali, bukan direktif yang lebih pendek.
+This divergence from `awcms` is **narrow and deliberate**, and it closes ADR-0028
+gap 1 completely: what was recorded there is a header not sent at all, not a
+shorter directive.
 
-### §C — Tiga asersi, dan yang terpenting arahnya terbalik
+### §C — Three assertions, and the most important one runs backwards
 
-`tests/penyaji.test.mjs` bertambah tiga, dan ketiganya **mutation-proven** —
-tiap satunya sudah dibuktikan MERAH saat kontrolnya dicabut, lalu hijau lagi:
+`tests/penyaji.test.mjs` gains three, and all three are **mutation-proven** —
+each was demonstrated RED with its control removed, then green again:
 
-1. **HSTS TIDAK dikirim di luar produksi.** Ini asersi yang benar-benar menjaga
-   sesuatu. Sebuah gerbang yang hanya memeriksa "header ada" akan hijau pada
-   versi yang mengunci setiap `localhost` pengembang.
-2. **HSTS dikirim di produksi, tanpa `includeSubDomains` dan tanpa `preload`**,
-   dan kelima header lain tidak hilang saat yang keenam ditambahkan.
-3. **`Server` dan `X-Powered-By` tidak ada** pada tiap kelas respons — celah
-   ADR-0028 nomor 5, ASVS V14.4.
+1. **HSTS is NOT sent outside production.** This is the assertion that really
+   guards something. A gate that only checks "the header is present" would be
+   green on a version that locks every developer's `localhost`.
+2. **HSTS is sent in production, without `includeSubDomains` and without
+   `preload`**, and the other five headers do not disappear when the sixth is
+   added.
+3. **`Server` and `X-Powered-By` are absent** on every response class — ADR-0028
+   gap 5, ASVS V14.4.
 
-Kehadiran HSTS diuji lewat fungsi murni `headerKeamanan(true)`, bukan dengan
-menyetel `NODE_ENV` di dalam proses tes: menyetelnya akan bocor ke berkas tes
-lain di proses yang sama, dan kegagalannya muncul jauh dari sebabnya.
+HSTS presence is tested through the pure `headerKeamanan(true)` function rather
+than by setting `NODE_ENV` inside the test process: setting it would leak into
+other test files in the same process, and its failure would surface far from its
+cause.
 
-### §D — `Server`/`X-Powered-By` dihapus, bukan sekadar diasersi
+### §D — `Server`/`X-Powered-By` are removed, not merely asserted
 
-Keduanya memang tidak dikirim Node hari ini. `pasangHeader` tetap memanggil
-`removeHeader` atas keduanya, karena **"tidak dikirim hari ini" dan "tidak akan
-dikirim" adalah dua hal berbeda** — sebuah middleware yang ditambahkan kelak
-(proxy, logging, kompresi lain) bisa memasangnya tanpa siapa pun memutuskannya.
-`removeHeader` atas header yang tidak ada adalah no-op.
+Neither is in fact sent by Node today. `pasangHeader` still calls `removeHeader`
+on both, because **"not sent today" and "will not be sent" are two different
+things** — a middleware added later (a proxy, logging, other compression) could
+install one with nobody deciding it. `removeHeader` on an absent header is a
+no-op.
 
-## Konsekuensi
+## Consequences
 
-**Yang didapat.** Permintaan pertama seorang pembaca berhenti bisa dibajak
-setelah kunjungan pertamanya. Selisih jumlah header dari `awcms` tertutup, dan
-selisih yang tersisa (`includeSubDomains`) kini **tertulis sebagai keputusan**
-alih-alih terbaca sebagai kelalaian.
+**What is gained.** A reader's first request stops being hijackable after their
+first visit. The header-count difference from `awcms` is closed, and the
+difference that remains (`includeSubDomains`) is now **written as a decision**
+rather than reading as an oversight.
 
-**Yang dibayar.** Sebuah situs yang men-deploy tanpa `NODE_ENV=production`
-tidak mendapat HSTS dan **tidak ada yang mengatakannya**. Itu diterima sadar:
-gerbang yang sebaliknya — memperingatkan saat HSTS tidak terkirim — hanya bisa
-berjalan di runtime, dan peringatan runtime pada penyaji statis akan menjadi
-baris log pertama yang orang belajar abaikan. `Dockerfile` menyetelnya, dan itu
-jalur deploy yang didokumentasikan.
+**What is paid.** A site deploying without `NODE_ENV=production` gets no HSTS and
+**nothing says so**. That is knowingly accepted: the opposite gate — warning when
+HSTS is not sent — could only run at runtime, and a runtime warning on a static
+server would become the first log line people learn to ignore. The `Dockerfile`
+sets it, and that is the documented deploy path.
 
-**Yang TIDAK dilakukan.** Tidak ada variabel env yang mengatur HSTS. Menambahkan
-`HSTS_MAX_AGE` atau `HSTS_INCLUDE_SUBDOMAINS` akan memindahkan kebijakan
-keamanan keluar dari berkas yang ADR-0016 tetapkan sebagai satu-satunya
-pemiliknya — dan sebuah nilai yang salah di sana tidak gagal, ia hanya mengunci
-domain orang lain selama setahun.
+**What is NOT done.** There is no env variable controlling HSTS. Adding
+`HSTS_MAX_AGE` or `HSTS_INCLUDE_SUBDOMAINS` would move a security policy out of
+the file ADR-0016 established as its only owner — and a wrong value there does
+not fail, it merely locks somebody else's domain for a year.
 
-## Alternatif yang dipertimbangkan
+## Alternatives considered
 
-- **Memasang HSTS di Traefik/Coolify.** Ditolak: ADR-0016 melarangnya, dan
-  alasan larangan itu justru terbukti di sini — selama dua bulan semua orang
-  mengira ia dipasang di sana.
-- **Mengirim HSTS di setiap lingkungan.** Ditolak: ia mengunci `localhost`
-  setiap pengembang, termasuk untuk proyek yang tidak ada hubungannya dengan
-  repo ini, selama setahun dan tanpa cara mencabutnya dari sisi situs.
-- **Menyalin nilai `awcms` apa adanya**, `includeSubDomains` dan semua.
-  Ditolak dengan alasan §3: ia memindahkan keputusan yang bergantung konteks ke
-  tempat yang tidak punya konteksnya, dan yang menanggung akibatnya pihak yang
-  tidak ikut memutuskan.
-- **`max-age` pendek dulu (mis. 300 detik) lalu dinaikkan bertahap.** Ini saran
-  yang benar untuk sebuah SITUS yang belum yakin seluruh permukaannya HTTPS —
-  dan salah untuk template, yang tidak bisa tahu di tahap mana sebuah situs
-  turunan berada. Sebuah situs yang ingin menaikkannya bertahap menyunting
-  `HSTS` di penyajinya; nilai bawaan template adalah nilai untuk situs yang
-  sudah HTTPS penuh, yang merupakan prasyarat men-deploy di belakang Traefik.
+- **Installing HSTS in Traefik/Coolify.** Refused: ADR-0016 forbids it, and the
+  reason for that ban is proven right here — for two months everyone assumed it
+  was installed there.
+- **Sending HSTS in every environment.** Refused: it locks every developer's
+  `localhost`, including for projects unrelated to this repo, for a year and with
+  no way to revoke it from the site's side.
+- **Copying the `awcms` value as-is**, `includeSubDomains` and all. Refused with
+  the §3 reasoning: it moves a context-dependent decision to a place without its
+  context, and what bears the consequence is a party that took no part in it.
+- **A short `max-age` first (e.g. 300 seconds), raised gradually.** This is the
+  right advice for a SITE that is not yet sure all of its surfaces are HTTPS —
+  and wrong for a template, which cannot know what stage a derived site is at. A
+  site wanting to raise it gradually edits `HSTS` in its own server; the
+  template's default is the value for a site that is already fully HTTPS, which is
+  a prerequisite for deploying behind Traefik.

@@ -1,348 +1,336 @@
-# ADR-0033 — Seksi berita: urutan datang dari tanggal, dan dua tanggal berhenti dilipat menjadi satu
+🇬🇧 English (source) · 🇮🇩 [Bahasa Indonesia](0033-seksi-berita-urutan-dari-tanggal-dan-dua-tanggal-yang-terpisah.id.md)
+
+# ADR-0033 — News sections: ordering comes from the date, and two dates stop being folded into one
 
 - **Status:** Accepted
-- **Tanggal:** 7 Agustus 2026
-- **Aturan pemilik:** 7 Agustus 2026 — "cek dan analisis kesiapan untuk pengelolaan website berita menggunakan modul blog dengan prefix `/news/`", lalu "lanjut kerjakan mengikuti alur awcms."
-- **Terkait:** [ADR-0018](0018-kontrak-build-token-mesin-dan-traversal-konten.md) (build feed, dan bentuk cacat "build hijau, situs kosong" yang jadi rujukan berulang di sini), [ADR-0023](0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md) (uji "ditulis ulang bila `awcms` berubah?"), [ADR-0026](0026-kartu-share-per-artikel-dari-media-awcms.md) (paritas urutan `seoImageMediaId ?? featuredMediaId` yang ditiru, bukan ditemukan ulang), [ADR-0030](0030-aturan-tertulis-mendapat-pemeriksanya.md) (setiap aturan baru wajib membawa pemeriksanya), `awcms` [ADR-0044](https://github.com/ahliweb/awcms/blob/main/docs/adr/0044-merge-news-portal-into-blog-content.md) (portal berita melebur ke `blog_content`), `awcms` [ADR-0059](https://github.com/ahliweb/awcms/blob/main/docs/adr/0059-host-resolved-public-content-routes.md) (rute publik `/news/**` host-resolved di sana)
+- **Date:** 7 August 2026
+- **Owner's rule:** 7 August 2026 — "check and analyse the readiness for running a news website using the blog module with the `/news/` prefix", then "carry on, following the awcms flow."
+- **Related:** [ADR-0018](0018-kontrak-build-token-mesin-dan-traversal-konten.md) (the build feed, and the "green build, empty site" defect shape referred to repeatedly here), [ADR-0023](0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md) (the "rewritten if `awcms` changed?" test), [ADR-0026](0026-kartu-share-per-artikel-dari-media-awcms.md) (the `seoImageMediaId ?? featuredMediaId` order imitated rather than reinvented), [ADR-0030](0030-aturan-tertulis-mendapat-pemeriksanya.md) (every new rule must bring its checker), `awcms` [ADR-0044](https://github.com/ahliweb/awcms/blob/main/docs/adr/0044-merge-news-portal-into-blog-content.md) (the news portal merged into `blog_content`), `awcms` [ADR-0059](https://github.com/ahliweb/awcms/blob/main/docs/adr/0059-host-resolved-public-content-routes.md) (host-resolved public `/news/**` routes over there)
 
-## Konteks
+## Context
 
-Pertanyaannya spesifik: **apakah template ini siap mengelola situs berita di
-prefix `/news/`?** Jawabannya, sebelum ADR ini: prefiksnya siap, modelnya tidak.
+The question was specific: **is this template ready to run a news site on the
+`/news/` prefix?** The answer, before this ADR: the prefix was ready, the model
+was not.
 
-Menambahkan `/news/` secara mekanis memang sepele — rute `[tab]` sudah generik,
-jadi satu baris di `src/config/site.ts` melahirkan `/news/` dan
-`/news/<slug>/`. Yang tidak siap adalah apa yang terjadi SESUDAH prefiks itu
-ada.
+Adding `/news/` mechanically is indeed trivial — the `[tab]` route is already
+generic, so one line in `src/config/site.ts` gives birth to `/news/` and
+`/news/<slug>/`. What was not ready is what happens AFTER that prefix exists.
 
-### 1. Seksi berita akan terurut menurut abjad
+### 1. A news section would sort alphabetically
 
-`src/lib/content.ts` mengurutkan setiap seksi dari `urutan` — bilangan yang
-ditulis redaksi di `contentJson`, dengan bawaan **99** bagi artikel yang tidak
-pernah dinomori. Di seksi berita tidak ada yang menomori apa pun, jadi setiap
-artikel bernilai 99 dan pemecah serinya mengambil alih: **seksi terurut menurut
-judul.** Berita terbaru terkubur di antara huruf.
+`src/lib/content.ts` orders every section by `urutan` — a number the editors
+write in `contentJson`, defaulting to **99** for an article that was never
+numbered. In a news section nobody numbers anything, so every article is 99 and
+the tiebreaker takes over: **the section is ordered by title.** The latest news is
+buried among the letters.
 
-Ironisnya `awcms` sudah menjawab ini di sisinya. Build feed dikembalikan
-`created_at DESC`, dan rute publik `/news/**` miliknya sendiri memakai
-`ORDER BY published_at DESC`. Adapter di sini membuang keduanya lalu mengurutkan
-ulang dari field yang tidak diisi siapa pun.
+Ironically `awcms` already answers this on its side. The build feed is returned
+`created_at DESC`, and its own public `/news/**` routes use
+`ORDER BY published_at DESC`. The adapter here discards both and then re-sorts by
+a field nobody fills in.
 
-### 2. Tidak ada satu halaman pun yang bisa melaporkan koreksi
+### 2. Not one page can report a correction
 
-`LocalizedArticle` membawa SATU tanggal, diisi `publishedAt ?? updatedAt`, dan
-tiga permukaan membacanya:
+`LocalizedArticle` carries ONE date, filled from `publishedAt ?? updatedAt`, and
+three surfaces read it:
 
-- `src/lib/schema.ts` memasangnya pada `datePublished` **dan** `dateModified`;
-- `src/layouts/BaseLayout.astro` memasangnya pada `article:published_time`
-  **dan** `article:modified_time`;
-- `src/layouts/ArtikelLayout.astro` menampilkannya berlabel "Diperbarui".
+- `src/lib/schema.ts` puts it on `datePublished` **and** `dateModified`;
+- `src/layouts/BaseLayout.astro` puts it on `article:published_time` **and**
+  `article:modified_time`;
+- `src/layouts/ArtikelLayout.astro` displays it labelled "Updated".
 
-Akibatnya bertingkat. Yang paling ringan: label di halaman berbohong — nilai
-yang tampil sebenarnya tanggal TERBIT. Yang paling berat: begitu `publishedAt`
-terisi, `updatedAt` tidak pernah dibaca lagi, sehingga `dateModified` membeku di
-tanggal terbit **selamanya**. Sebuah artikel yang dikoreksi tiga kali tetap
-menyatakan dirinya tidak pernah disentuh. Untuk panduan layanan itu sudah
-sayang; untuk berita, kebaruan justru satu-satunya sinyal yang dibaca.
+Its consequences are layered. The mildest: the page label lies — the value shown
+is in fact the PUBLICATION date. The worst: once `publishedAt` is filled in,
+`updatedAt` is never read again, so `dateModified` freezes at the publication date
+**forever**. An article corrected three times still declares itself untouched. For
+a service guide that is already a shame; for news, recency is the one signal that
+gets read.
 
-Komentar di `src/lib/schema.ts` membela keadaan itu dengan kalimat yang benar
-saat ditulis dan tidak lagi benar: *"Repo tidak menyimpan tanggal terbit
-terpisah."* Repo memang tidak; `awcms` menyimpannya, di dua kolom, dan
-mengembalikan keduanya di baris yang sama. Yang perlu dilakukan hanya berhenti
-melipatnya.
+A comment in `src/lib/schema.ts` defended that state with a sentence that was true
+when written and no longer is: *"The repo does not store a separate publication
+date."* The repo does not; `awcms` does, in two columns, and returns both on the
+same row. All that was needed was to stop folding them.
 
-### 3. Sebuah artikel bisa terbit di sini padahal `awcms` menyembunyikannya
+### 3. An article can publish here while `awcms` hides it
 
-Permukaan yang dipanggil build — `GET /api/v1/blog/posts?view=full` — dilayani
-`listBlogPostsFullPage`, yang menyaring tenant, `deleted_at`, `status`, dan
-`locale`. **Tidak ada `published_at` di sana sama sekali.** Rute publik `awcms`
-sendiri menyaring `published_at IS NOT NULL AND published_at <= now()`. Jadi
-sebuah post ber-`status='published'` tanpa `published_at` dijawab 404 oleh
-`awcms` dan **diterbitkan** oleh situs statis — dua jawaban untuk satu
-pertanyaan, dan yang salah justru yang punya URL publik.
+The surface the build calls — `GET /api/v1/blog/posts?view=full` — is served by
+`listBlogPostsFullPage`, which filters by tenant, `deleted_at`, `status`, and
+`locale`. **There is no `published_at` there at all.** `awcms`'s own public routes
+filter `published_at IS NOT NULL AND published_at <= now()`. So a post with
+`status='published'` and no `published_at` is answered 404 by `awcms` and
+**published** by the static site — two answers to one question, and the wrong one
+is the one with a public URL.
 
-Ini pertahanan berlapis, bukan kebocoran yang bisa didemonstrasikan: lewat jalur
-tulis `awcms` hari ini sebuah baris `published` selalu membawa `published_at`
-(INSERT selalu `draft`; transisi menyetel `now()`; publikasi terjadwal memakai
-`COALESCE`). Menuliskannya sebagai "menutup kebocoran" akan menjadi klaim yang
-tidak bisa dipertanggungjawabkan — persis kelas kesalahan yang komentar di
-`src/lib/schema.ts` di atas contohkan.
+This is defence in depth, not a demonstrable leak: through the `awcms` write path
+today, a `published` row always carries a `published_at` (an INSERT is always
+`draft`; a transition sets `now()`; scheduled publication uses `COALESCE`).
+Writing it up as "closing a leak" would be a claim nobody could stand behind —
+exactly the class of mistake the `src/lib/schema.ts` comment above exemplifies.
 
-### 4. Persimpangan yang harus dinyatakan, bukan dilewati
+### 4. A fork in the road that has to be stated, not passed over
 
-`awcms` **sudah** menyajikan `/news/**` sendiri: indeks berpaginasi, halaman
-kategori, halaman tag, feed RSS/Atom/JSON di akar host, pencarian, iklan, dan
-terbit-langsung-tayang tanpa rebuild. Karena keduanya host-resolved, satu domain
-hanya bisa dilayani salah satunya.
+`awcms` **already** serves `/news/**` itself: a paginated index, category pages,
+tag pages, RSS/Atom/JSON feeds at the host root, search, advertising, and
+publish-goes-live-without-a-rebuild. Because both are host-resolved, one domain
+can only be served by one of them.
 
-Yang dipilih repo ini tidak berubah dan bukan bentuk URL-nya: **nol panggilan ke
-CMS saat pembaca meminta halaman.** ADR ini tidak memindahkan pilihan itu; ia
-membuat sisi statisnya benar-benar bisa dipakai untuk berita.
+What this repo chose does not change, and it is not its URL shape: **zero calls to
+the CMS when a reader asks for a page.** This ADR does not move that choice; it
+makes its static side genuinely usable for news.
 
-## Keputusan
+## Decision
 
-### 1. Sebuah tab MENYATAKAN dirinya seksi berita
+### 1. A tab DECLARES itself a news section
 
-`src/config/site.ts` memberi setiap tab `urutanSeksi: "manual" | "terbaru"`.
+`src/config/site.ts` gives every tab `urutanSeksi: "manual" | "terbaru"`.
 
-Satu deklarasi, tiga akibat, karena ketiganya satu keputusan: urutannya
-(`publishedAt` menurun), isi lencana kartunya (tanggal, bukan "Artikel 99"), dan
-apa yang diklaim artikelnya (`NewsArticle`, bukan `Article`).
+One declaration, three consequences, because all three are one decision: its
+ordering (`publishedAt` descending), the contents of its card badge (a date, not
+"Article 99"), and what its articles claim to be (`NewsArticle`, not `Article`).
 
-Field itu ditulis pada **setiap** tab, bukan hanya yang membutuhkannya. Bukan
-karena verbose lebih baik: `as const` atas array heterogen membuat tipe
-elemennya menjadi union, dan `tab.urutanSeksi` lalu menjadi properti yang tidak
-ada pada sebagian anggotanya — `astro check` merah.
+That field is written on **every** tab, not only on those that need it. Not
+because verbose is better: `as const` over a heterogeneous array makes its element
+type a union, and `tab.urutanSeksi` then becomes a property some members do not
+have — `astro check` red.
 
-### 2. Urutan tetap dari field eksplisit; FIELD-nya milik seksi
+### 2. Ordering still comes from an explicit field; the FIELD belongs to the section
 
-Aturan ke-3 di `src/lib/content.ts` tidak dilonggarkan, ia diperjelas. Yang
-dilarang aturan itu adalah bergantung pada urutan yang kebetulan dikembalikan
-API. `publishedAt` adalah field eksplisit, sama seperti `urutan`.
+Rule 3 in `src/lib/content.ts` is not loosened, it is clarified. What that rule
+forbids is depending on whatever order the API happened to return. `publishedAt`
+is an explicit field, exactly like `urutan`.
 
-**Yang dibaca `"terbaru"` adalah `publishedAt` artikel yang DITAMPILKAN, bukan
-post sumbernya**, dan itu berbeda dari `urutan`. Alasannya: indeks seksi
-menampilkan tanggal di setiap kartu, jadi mengurutkan dari kolom yang tidak
-ditampilkan kartu menghasilkan daftar yang tanggalnya naik-turun tanpa sebab
-yang terlihat — di `/en/`, artikel yang terjemahannya terbit Juli akan duduk di
-atas artikel yang terjemahannya terbit Agustus, karena versi Indonesianya terbit
-sebaliknya. Kolom yang diurutkan wajib kolom yang dilihat pembaca.
+**What `"terbaru"` reads is the `publishedAt` of the article DISPLAYED, not of its
+source post**, and that differs from `urutan`. The reason: a section index shows a
+date on every card, so ordering by a column the card does not show produces a list
+whose dates rise and fall for no visible reason — on `/en/`, an article whose
+translation was published in July would sit above one whose translation was
+published in August, because their Indonesian versions were published the other way
+round. The column that is sorted must be the column the reader sees.
 
-Alasan `urutan` dibaca dari SUMBER tidak berpindah ke sini: seorang penerjemah
-bisa membiarkan `urutan` kosong dan diam-diam mengurutkan ulang seluruh
-bahasanya, sedangkan `publishedAt` tidak pernah bisa kosong — §3 menolak
-membangun post tanpanya. Yang dilepas adalah jaminan bahwa dua locale
-mengurutkan seksinya sama persis; itu jujur, karena jadwal terbit keduanya
-memang berbeda.
+The reason `urutan` is read from the SOURCE does not carry over here: a translator
+could leave `urutan` empty and silently re-order their whole language, whereas
+`publishedAt` can never be empty — §3 refuses to build a post without it. What is
+given up is the guarantee that two locales order their sections identically; that
+is honest, because their publication schedules genuinely differ.
 
-Keduanya berakhir pada **slug sumber** sebagai pemecah seri terakhir, dan itu
-bukan hiasan. `Array#sort` stabil, jadi comparator yang mengembalikan 0
-menyerahkan pasangannya pada urutan API — persis yang aturan ke-3 larang.
-Kunci sebelumnya tidak cukup sendirian: `"terbaru"` bisa seri pada stempel yang
-sama (publikasi massal menstempel satu `now()` ke setiap baris), dan `"manual"`
-bisa seri pada `urutan` **dan** judul sekaligus. Slug adalah satu-satunya kunci
-yang unik per artikel sekaligus identik di setiap locale, jadi sebuah seri tidak
-pernah pecah ke arah yang berbeda di Bahasa Indonesia dan di English.
+Both end on the **source slug** as the final tiebreaker, and that is not
+decoration. `Array#sort` is stable, so a comparator returning 0 hands its pair over
+to the API's order — precisely what rule 3 forbids. The earlier keys are not
+enough alone: `"terbaru"` can tie on the same timestamp (a bulk publication stamps
+one `now()` onto every row), and `"manual"` can tie on `urutan` **and** title at
+once. The slug is the only key that is unique per article and identical in every
+locale, so a tie never breaks in different directions in Bahasa Indonesia and in
+English.
 
-Comparator-nya diekspor sebagai fungsi murni (`urutkanArtikel`). Alasannya bukan
-kerapian: `getArticles` memilih cabangnya dari `siteConfig.tabs`, setiap tab yang
-dibawa template ini bernilai `"manual"`, dan repo template tidak punya instans
-`awcms` untuk membangun apa pun. Ditulis inline, cabang `"terbaru"` akan menjadi
-kode yang tidak pernah dieksekusi di repo yang memilikinya — eksekusi pertamanya
-terjadi di build produksi sebuah situs turunan.
+Its comparator is exported as a pure function (`urutkanArtikel`). The reason is not
+tidiness: `getArticles` picks its branch from `siteConfig.tabs`, every tab this
+template ships is `"manual"`, and the template repo has no `awcms` instance to
+build anything with. Written inline, the `"terbaru"` branch would be code never
+executed in the repo that owns it — its first execution would happen in a derived
+site's production build.
 
-### 3. Predikat terbit `awcms` ditiru — dengan satu penyimpangan yang dinyatakan
+### 3. The `awcms` publication predicate is imitated — with one stated deviation
 
-Adapter menyaring `publishedAt !== null` di atas `status`/`visibility` yang sudah
-ada. Yang **tidak** ditiru harfiah:
+The adapter filters `publishedAt !== null` on top of the existing
+`status`/`visibility`. What is **not** imitated literally:
 
-| Predikat `awcms` | Di sini | Alasan |
+| `awcms` predicate | Here | Reason |
 | --- | --- | --- |
-| `published_at IS NOT NULL` | Ditiru persis | Post tanpa tanggal terbit dijawab 404 oleh `awcms`; menerbitkannya membuat dua permukaan tidak sepakat |
-| `published_at <= now()` | Ditiru **dengan toleransi 15 menit** | Kedua stempel datang dari dua mesin: `awcms` menstempel dari jam SISI SANA — `now()` basis data pada transisi manual, jam proses aplikasi pada publikasi terjadwal — sementara perbandingan ini berjalan di jam builder. Jalur normalnya terbit → webhook → build, berjarak detik. Tanpa toleransi, builder yang tertinggal semenit membuang artikel yang baru terbit — dan di seksi berita itu kartu PERTAMA. Yang benar-benar dijaga adalah post bertanggal berhari-hari ke depan, tidak pernah yang sembilan puluh detik ke depan |
-| `visibility IN ('public','unlisted')` | **Sengaja lebih ketat** | Itu predikat DETAIL `awcms`, longgar supaya tautan langsung ke post unlisted tetap hidup. Keluaran statis tidak punya keadaan "hanya lewat tautan langsung": semuanya masuk sitemap dan bisa dirayapi, jadi post unlisted yang diterbitkan di sini berhenti menjadi unlisted |
-| `deleted_at IS NULL` | Tidak perlu | Build feed sudah menyaringnya di sisi `awcms` |
+| `published_at IS NOT NULL` | Imitated exactly | A post with no publication date is answered 404 by `awcms`; publishing it makes two surfaces disagree |
+| `published_at <= now()` | Imitated **with a 15-minute tolerance** | The two timestamps come from two machines: `awcms` stamps from ITS OWN clock — the database `now()` on a manual transition, the application process clock on a scheduled publication — while this comparison runs on the builder's clock. The normal path is publish → webhook → build, seconds apart. Without a tolerance, a builder a minute behind discards a just-published article — and in a news section that is the FIRST card. What is really guarded against is a post dated days ahead, never one ninety seconds ahead |
+| `visibility IN ('public','unlisted')` | **Deliberately stricter** | That is `awcms`'s DETAIL predicate, loose so a direct link to an unlisted post stays alive. Static output has no "only through a direct link" state: everything enters the sitemap and can be crawled, so an unlisted post published here stops being unlisted |
+| `deleted_at IS NULL` | Not needed | The build feed already filters it on the `awcms` side |
 
-Penyaring yang hanya bisa MENGURANGI mendapat lantainya, bentuk yang sama dengan
-gerbang media di [ADR-0025](0025-gambar-artikel-dari-media-awcms.md): satu post
-tertahan adalah keadaan redaksi dan build lanjut; **nol dari sekian** bukan — itu
-`awcms` yang tidak pernah menstempel `published_at`, jam yang salah melampaui
-toleransi, atau bentuk respons yang berubah, dan ketiganya menerbitkan situs
-yang setiap seksinya kosong tanpa ada yang gagal.
+A filter that can only SUBTRACT gets its floor, the same shape as the media gate in
+[ADR-0025](0025-gambar-artikel-dari-media-awcms.md): one post held back is an
+editorial state and the build continues; **zero out of however many** is not —
+that is an `awcms` that never stamped `published_at`, a clock wrong beyond the
+tolerance, or a changed response shape, and all three publish a site whose every
+section is empty with nothing failing.
 
-Dua urutan operasi ikut dikunci karena keduanya bisa menghijaukan kekosongan:
+Two orderings of operations are locked down too, because both can turn emptiness
+green:
 
-- Assertion `view=full` dan pemasangan terjemahan berjalan **sebelum** penyaring
-  tanggal, di atas himpunan yang lebih luas. Keduanya lolos hampa pada array
-  kosong, jadi menjalankannya sesudah penyaring akan mengubah "`awcms` menjawab
-  ringkasan" menjadi "tidak ada yang perlu diperiksa".
-- `publishedAt` yang **tidak bisa diurai** melempar, bukan mengembalikan
-  `false`. Setiap perbandingan terhadap `NaN` bernilai false, jadi memperlakukan
-  tanggal-yang-bukan-tanggal sebagai "belum waktunya terbit" akan membuang
-  SETIAP artikel sekaligus dan terbaca seperti CMS yang masih kosong.
+- The `view=full` assertion and translation pairing run **before** the date
+  filter, over the wider set. Both pass vacuously on an empty array, so running
+  them after the filter would turn "`awcms` answered with summaries" into "there
+  was nothing to check".
+- A `publishedAt` that **cannot be parsed** throws rather than returning `false`.
+  Every comparison against `NaN` is false, so treating a date-that-is-not-a-date as
+  "not time to publish yet" would discard EVERY article at once and read like a CMS
+  that is still empty.
 
-### 4. Dua tanggal, dari SATU baris
+### 4. Two dates, from ONE row
 
-`LocalizedArticle` membawa `publishedDate` dan `updatedDate`, keduanya dibaca
-dari post yang kata-katanya ditampilkan halaman itu.
+`LocalizedArticle` carries `publishedDate` and `updatedDate`, both read from the
+post whose words that page displays.
 
-"Satu baris" adalah bagian yang menentukan. Memasangkan tanggal terbit dari post
-SUMBER dengan tanggal ubah dari TERJEMAHAN menghasilkan `dateModified`
-mendahului `datePublished` pada konten yang sepenuhnya normal — artikel sumber
-yang baru terbit bulan ini, terjemahannya tidak disentuh sejak bulan lalu — dan
-crawler membuang blok yang menyatakan itu. `awcms` membaca keduanya dari satu
-baris; repo ini ikut.
+"One row" is the decisive part. Pairing a publication date from the SOURCE post
+with a modification date from the TRANSLATION produces a `dateModified` preceding
+its `datePublished` on entirely normal content — a source article published this
+month whose translation has not been touched since last month — and crawlers
+discard a block that says that. `awcms` reads both from one row; this repo
+follows.
 
-Urutan tidak terpengaruh, karena urutan tidak pernah membaca field ini: ia
-membaca post sumber langsung.
+`ArticleSchemaInput.updatedDate` is **renamed**, not accompanied by a new field.
+Adding an optional field would leave every old caller green while continuing to
+emit a `datePublished` that is actually a modification date — the very defect this
+exists to close. It is that rename which forces `astro check` to find its callers.
 
-`ArticleSchemaInput.updatedDate` **diganti namanya**, bukan ditemani field baru.
-Menambah field opsional akan membiarkan setiap pemanggil lama tetap hijau sambil
-terus memancarkan `datePublished` yang sebenarnya tanggal ubah — cacat yang
-justru ada untuk ditutup. Penggantian nama itu yang memaksa `astro check`
-menemukan pemanggilnya.
+How far the typecheck genuinely helps here needs stating, because it is easy to
+assume it goes further: `articleSchema` has only ONE caller, and that is the one it
+turns red. The second surface (`articleMeta` in `BaseLayout`) is red because its
+new field is declared required, not because of the rename. The third surface — a
+read of `LocalizedArticle.updatedDate` whose MEANING changes without its type
+changing — cannot be found by a typecheck at all; it was found by reading, and is
+guarded by tests.
 
-Sejauh mana typecheck benar-benar membantu di sini perlu dinyatakan, karena
-mudah dikira lebih jauh: `articleSchema` hanya punya SATU pemanggil, dan itu
-yang dimerahkannya. Permukaan kedua (`articleMeta` di `BaseLayout`) merah karena
-field barunya dinyatakan wajib, bukan karena penggantian nama. Permukaan
-ketiga — pembacaan `LocalizedArticle.updatedDate` yang berubah ARTI tanpa
-berubah tipe — tidak bisa ditemukan typecheck sama sekali; ia ditemukan dengan
-membaca, dan dijaga oleh tes.
+The "Updated" line on an article page now appears **only when the article really
+was changed after publication**, compared STRICTLY over the raw values
+(`pernahDiubahSetelahTerbit`). Strict is sufficient because both `awcms`
+publication paths write `published_at` and `updated_at` in ONE statement with the
+same value, so a just-published article carries two EXACTLY equal stamps — not two
+a few milliseconds apart. Comparing at date granularity would instead hide a
+correction made on the same day as publication, and on a news site that is the kind
+of correction that happens most.
 
-Baris "Diperbarui" di halaman artikel kini tampil **hanya bila artikel memang
-diubah setelah terbit**, dibandingkan KETAT atas nilai mentah
-(`pernahDiubahSetelahTerbit`). Ketat sudah cukup karena kedua jalur terbit
-`awcms` menulis `published_at` dan `updated_at` dalam SATU pernyataan dengan
-nilai yang sama, sehingga artikel yang baru terbit membawa dua stempel yang
-PERSIS sama — bukan yang berselisih beberapa milidetik. Membandingkan pada
-tingkat tanggal justru menyembunyikan koreksi yang dilakukan di hari yang sama
-dengan penerbitan, dan di situs berita koreksi jenis itulah yang paling sering
-terjadi.
+### 5. `NewsArticle` with an ORGANISATION-level author
 
-### 5. `NewsArticle` dengan penulis tingkat ORGANISASI
+An article in a `"terbaru"` section emits `NewsArticle`; anything else stays
+`Article`. Its type comes from the caller and is never guessed from its contents:
+what makes a page news or not is the section it lives in — the site's
+configuration, not something inferable from a title.
 
-Artikel di seksi `"terbaru"` memancarkan `NewsArticle`; selainnya tetap
-`Article`. Tipenya datang dari pemanggil dan tidak pernah ditebak dari isinya:
-yang menentukan sebuah halaman berita atau bukan adalah seksi tempat ia
-tinggal — konfigurasi situs, bukan sesuatu yang bisa disimpulkan dari judul.
+`author` is added along with it, and that is part of this decision, not a garnish.
+Changing only the `@type` string would in fact IMPOVERISH the output: until now
+`articleSchema` here has no `author` at all, so a `NewsArticle` with no author
+would be poorer than the `Article` it replaces. The organisation-level byline
+imitated here comes from `awcms`'s `NewsArticle` node
+(`structured-data-rendering.ts`), which fills it from the tenant name.
 
-`author` ikut ditambahkan, dan itu bagian dari keputusan ini, bukan pelengkap.
-Mengganti string `@type` saja justru MEMISKINKAN keluaran: sampai sekarang
-`articleSchema` di sini tidak punya `author` sama sekali, jadi `NewsArticle`
-tanpa penulis akan lebih miskin daripada `Article` yang digantikannya. Byline
-tingkat organisasi yang ditiru datang dari simpul `NewsArticle` `awcms`
-(`structured-data-rendering.ts`), yang mengisinya dari nama tenant.
+It is written INLINE, not as an `@id` reference to the page's Organization node,
+because a reader that does not resolve `@id` would read an article with no author
+at all. `publisher` **stays** an `@id` reference, and that is not an inconsistency
+overlooked: it was already so before this ADR, the node it points at is in the same
+`@graph` on the same page, and changing it is not part of this decision. What makes
+`author` different is that it is NEW — there is no old behaviour to preserve — and
+that an empty `author` on a `NewsArticle` is precisely the state this §5 exists to
+end.
 
-Ia ditulis INLINE, bukan sebagai rujukan `@id` ke simpul Organization halaman,
-karena pembaca yang tidak menyelesaikan `@id` akan membaca artikel tanpa penulis
-sama sekali. `publisher` **tetap** rujukan `@id`, dan itu bukan inkonsistensi
-yang terlewat: ia sudah begitu sebelum ADR ini, simpul yang ditunjuknya ada di
-`@graph` yang sama halaman itu juga, dan mengubahnya bukan bagian dari keputusan
-ini. Yang membuat `author` berbeda adalah bahwa ia BARU — tidak ada perilaku
-lama yang perlu dipertahankan — dan bahwa `author` kosong pada `NewsArticle`
-adalah persis keadaan yang §5 ini ada untuk mengakhirinya.
+A **person**-level byline is still absent, and its reason belongs to `awcms`: that
+repo refuses it first, noting that putting an internal user's identity into public
+structured data opens a new PII surface. The `authorTenantUserId` column does exist
+on a post row; resolving it into a name needs a fourth `awcms` surface, and
+`tests/kontrak-awcms.test.mjs` hardens the list of three surfaces precisely so such
+an addition goes red.
 
-Byline tingkat **orang** tetap tidak ada, dan alasannya milik `awcms`: repo itu
-menolaknya lebih dulu, dengan catatan bahwa menaruh identitas pengguna internal
-di structured data publik membuka permukaan PII baru. Kolom
-`authorTenantUserId` memang ada pada baris post; meresolusinya menjadi nama
-butuh permukaan `awcms` keempat, dan `tests/kontrak-awcms.test.mjs` mengeraskan
-daftar tiga permukaan justru supaya penambahan seperti itu merah.
+### 6. Its checkers land with its rule
 
-### 6. Pemeriksanya mendarat bersama aturannya
+[ADR-0030](0030-aturan-tertulis-mendapat-pemeriksanya.md) applies in full, and
+"in full" here means ALL THREE surfaces of §2 — not one.
 
-[ADR-0030](0030-aturan-tertulis-mendapat-pemeriksanya.md) berlaku penuh, dan
-"penuh" di sini berarti KETIGA permukaan §2 — bukan satu.
+- **JSON-LD.** A new family in `scripts/audit-konten.mjs` reads every
+  `Article`/`NewsArticle` node in the output — however deep inside `@graph`,
+  because a scanner that only looks at the root would report zero violations over
+  zero nodes and that reads exactly like a pass — and demands: both dates present,
+  both parseable, `dateModified` not preceding `datePublished`, and `author.name`
+  readable.
+- **Open Graph.** A second family demands `article:published_time` and
+  `article:modified_time` be paired, parseable, and not in reverse order. It is a
+  family of its own because its surface is not JSON-LD and its installation lives in
+  `.astro` — which is reached by neither `astro check` nor any test, so the folding
+  this ADR closes could be reinstalled there with all five gates staying green.
+- **The date line on the page.** Its predicate is lifted out of `.astro` into
+  `pernahDiubahSetelahTerbit` in `src/lib/tanggal.ts`, and tested directly. So too
+  is the `Article`/`NewsArticle` choice, which becomes `tipeArtikelSeksi` in
+  `src/lib/schema.ts`. A decision left as a ternary inside `.astro` is a decision
+  that can be inverted without one gate changing colour.
 
-- **JSON-LD.** Keluarga baru di `scripts/audit-konten.mjs` membaca setiap simpul
-  `Article`/`NewsArticle` di keluaran — sedalam apa pun di dalam `@graph`, karena
-  pemindai yang hanya melihat akar akan melaporkan nol pelanggaran atas nol
-  simpul dan itu terbaca persis seperti lulus — dan menuntut: kedua tanggal ada,
-  keduanya bisa diurai, `dateModified` tidak mendahului `datePublished`, dan
-  `author.name` terbaca.
-- **Open Graph.** Keluarga kedua menuntut `article:published_time` dan
-  `article:modified_time` berpasangan, terurai, dan tidak terbalik urutannya.
-  Ia keluarga tersendiri karena permukaannya bukan JSON-LD dan pemasangannya
-  hidup di `.astro` — yang tidak dijangkau `astro check` maupun tes mana pun,
-  sehingga pelipatan yang ADR ini tutup bisa dipasang kembali di sana dengan
-  kelima gerbang tetap hijau.
-- **Baris tanggal di halaman.** Predikatnya diangkat keluar dari `.astro`
-  menjadi `pernahDiubahSetelahTerbit` di `src/lib/tanggal.ts`, dan diuji
-  langsung. Begitu juga pemilihan `Article`/`NewsArticle`, yang menjadi
-  `tipeArtikelSeksi` di `src/lib/schema.ts`. Keputusan yang tinggal sebagai
-  ekspresi terner di dalam `.astro` adalah keputusan yang bisa dibalik tanpa
-  satu gerbang pun berubah warna.
+Two IDENTICAL dates stay green in both families. An article never corrected does
+carry two equal stamps, and a rule that legitimate content can break is a rule the
+next person loosens.
 
-Dua tanggal yang IDENTIK tetap hijau di kedua keluarga. Artikel yang belum
-pernah dikoreksi memang membawa dua stempel yang sama, dan aturan yang bisa
-dilanggar konten yang sah adalah aturan yang akan dilonggarkan orang berikutnya.
+A boundary that stays stated: both output families only run AFTER `bun run build`,
+which in the template repo cannot be run at all. What proves them here is the
+two-way fixture in `tests/audit-konten.test.mjs`, and `audit:konten` names every
+family it skips instead of staying silent.
 
-Batas yang tetap dinyatakan: kedua keluarga keluaran itu hanya berjalan SESUDAH
-`bun run build`, yang di repo template tidak bisa dijalankan sama sekali. Yang
-membuktikannya di sini adalah fixture dua arah di `tests/audit-konten.test.mjs`,
-dan `audit:konten` menyebut setiap keluarga yang dilewatinya alih-alih diam.
+## What was NOT built, and why
 
-## Yang TIDAK dibangun, dan kenapa
+All four were checked against the code first; not one is refused for "no time".
 
-Keempatnya diperiksa ke kode lebih dulu; tidak satu pun ditolak karena "belum
-sempat".
+- **RSS/Atom/JSON feeds.** Postponed, and needing an ADR of their own. The
+  decisive reason is not their cost but that **the only `.xml` any gate reads is
+  `sitemap*.xml`** — and even that gate skips every `<loc>` ending in `.xml` without
+  a sound. An `.xml` file under any other name is read by nobody: the page scanner
+  only picks up `**/*.html`. A feed pointing at an unpublished article, carrying a
+  raw key name, or carrying relative URLs (illegal in RSS) would pass EVERY gate
+  with a green build — precisely what ADR-0030 forbids. Closing that means a new
+  gate family the size of this whole ADR. Plus one thing that cannot be worked
+  around: an endpoint's response headers are discarded in a static build, so
+  `Content-Type: application/rss+xml` is decided by the file extension in the
+  adapter, not by code.
+- **Section index pagination.** Postponed; it changes the ROUTE SHAPE, which by the
+  criteria in `docs/adr/README.md` is a class of decision needing its own ADR. It
+  also demands things nothing above demands: a different title per page (the
+  duplicate-title gate turns identical ones red, and its standard escape — `noindex`
+  + canonical to page one — is absolutely forbidden by the "two colliding signals"
+  gate), a page count that must be identical in every locale so hreflang stays
+  reciprocal, and a Lighthouse sample that shifts with it. **Its consequence is
+  stated rather than disguised: until that lands, a news section index renders ALL
+  of its articles on one page.**
+- **Tag and category archives.** Blocked on the `awcms` side, and that is a stated
+  decision over there: `listBlogPostsFullPage` deliberately omits `termIds` because
+  both would be an extra query per post, which would restore the N+1 ADR-0018
+  deleted. This is a performance decision, not an oversight — so its refusal is
+  durable and can be re-examined by the next reader.
+- **An editor's byline.** See §5.
 
-- **Feed RSS/Atom/JSON.** Ditunda, dan butuh ADR-nya sendiri. Alasan yang
-  menentukan bukan biayanya melainkan bahwa **satu-satunya `.xml` yang dibaca
-  gerbang mana pun adalah `sitemap*.xml`** — dan bahkan gerbang itu melewati
-  setiap `<loc>` berakhiran `.xml` tanpa suara. Berkas `.xml` bernama lain tidak
-  dibaca siapa pun: pemindai halaman hanya mengambil `**/*.html`. Feed
-  yang menunjuk artikel yang tidak terbit, memuat nama key mentah, atau membawa
-  URL relatif (ilegal di RSS) akan lolos SELURUH gerbang dengan build hijau —
-  persis yang ADR-0030 larang. Menutupnya berarti keluarga gerbang baru seukuran
-  seluruh ADR ini. Ditambah satu hal yang tidak bisa disiasati: header respons
-  endpoint dibuang pada build statis, jadi `Content-Type: application/rss+xml`
-  ditentukan ekstensi berkas oleh adapter, bukan oleh kode.
-- **Paginasi indeks seksi.** Ditunda; ia mengubah BENTUK RUTE, yang menurut
-  kriteria di `docs/adr/README.md` adalah kelas keputusan yang butuh ADR
-  tersendiri. Ia juga menuntut hal-hal yang tidak dituntut apa pun di atas:
-  judul berbeda per halaman (gerbang judul-kembar memerahkan yang sama, dan
-  pelarian bakunya — `noindex` + canonical ke halaman satu — dilarang mutlak
-  oleh gerbang "dua sinyal yang bertabrakan"), jumlah halaman yang wajib identik
-  di setiap locale agar hreflang tetap resiprokal, dan sampel Lighthouse yang
-  ikut bergeser. **Konsekuensinya dinyatakan, bukan disamarkan: sampai itu
-  mendarat, indeks seksi berita merender SELURUH artikelnya dalam satu
-  halaman.**
-- **Arsip tag dan kategori.** Diblokir di sisi `awcms`, dan itu keputusan yang
-  dinyatakan di sana: `listBlogPostsFullPage` sengaja mengeluarkan `termIds`
-  karena keduanya satu query tambahan per post, yang akan mengembalikan N+1 yang
-  ADR-0018 hapus. Ini keputusan performa, bukan kelalaian — jadi penolakannya
-  tahan lama dan bisa diperiksa ulang pembaca berikutnya.
-- **Byline seorang editor.** Lihat §5.
+## Consequences
 
-## Konsekuensi
+- **The three tabs this template ships do not change behaviour.** All of them are
+  `"manual"`, and the manual branch is identical to what came before except for one
+  final tiebreaker that is only active when `urutan` AND title both tie — a state
+  that today ends in an arbitrary order.
+- **One metadata line on every article page changes meaning**, including on the old
+  tabs: what used to be labelled "Updated" was in fact the publication date, and
+  now there really are two lines with the second conditional.
+- **The template does NOT add a `news` tab.** This repo is a mould, not a site;
+  adding a fourth tab changes the site every derivative inherits and demands twelve
+  catalogue entries and 16:9 artwork for a section with not one article. What lands
+  is the capability. How a site declares `/news/` is written in
+  `docs/awcms-astro/checklist-repo-baru.md`.
+- **A derived site declaring `"terbaru"` inherits the §What was not built
+  boundary**: with no pagination, a section with hundreds of articles is one large
+  page, and that has to be considered before switching it on.
+- **The ADR-0023 test passes for everything in this ADR.** There is no new `awcms`
+  surface; every field read already exists in the `view=full` response and is frozen
+  over there. What would need an `awcms` instance is exactly what is refused above.
 
-- **Ketiga tab yang dibawa template ini tidak berubah perilakunya.** Semuanya
-  `"manual"`, dan cabang manualnya identik dengan yang sebelumnya kecuali satu
-  pemecah seri terakhir yang hanya aktif saat `urutan` DAN judul sama-sama seri
-  — keadaan yang hari ini berakhir pada urutan sembarang.
-- **Satu baris metadata di setiap halaman artikel berubah arti**, termasuk di
-  tab lama: yang dulu berlabel "Diperbarui" sebenarnya tanggal terbit, dan kini
-  benar-benar ada dua baris dengan yang kedua bersyarat.
-- **Template TIDAK menambahkan tab `news`.** Repo ini cetakan, bukan situs;
-  menambah tab keempat mengubah situs yang setiap turunan warisi dan menuntut
-  dua belas entri katalog serta seni 16:9 untuk seksi tanpa satu artikel pun.
-  Yang mendarat adalah kemampuannya. Cara sebuah situs menyatakan `/news/`
-  ditulis di `docs/awcms-astro/checklist-repo-baru.md`.
-- **Sebuah situs turunan yang menyatakan `"terbaru"` mewarisi batas §Yang tidak
-  dibangun**: tanpa paginasi, seksi dengan ratusan artikel adalah satu halaman
-  besar, dan itu harus jadi pertimbangan sebelum menyalakannya.
-- **Uji ADR-0023 lolos untuk seluruh isi ADR ini.** Tidak ada permukaan `awcms`
-  baru; setiap field yang dibaca sudah ada di respons `view=full` dan dibekukan
-  di sisi sana. Yang butuh instans `awcms` justru yang ditolak di atas.
+## Alternatives considered
 
-## Alternatif yang dipertimbangkan
-
-- **Mengurutkan dari `createdAt` alih-alih `publishedAt`** — ditolak. Build feed
-  memang dipaginasi atas `created_at` (satu-satunya urutan yang aman untuk
-  cursor keyset), tetapi yang dibaca pembaca adalah kapan artikel TERBIT. Draf
-  yang ditulis Januari dan diterbitkan Agustus akan muncul di bawah pada urutan
-  `createdAt`. Rute publik `awcms` sendiri memakai `published_at`.
-- **Menyimpulkan seksi berita dari datanya** (mis. "tab yang tak satu pun
-  artikelnya punya `urutan`") — ditolak. Ia berubah diam-diam saat satu editor
-  mengisi satu field, dan tidak ada halaman yang menyebutkan kenapa seluruh
-  seksi tiba-tiba terurut ulang.
-- **Menjadikan `urutanSeksi` opsional dengan bawaan `"manual"`** — ditolak oleh
-  `astro check`; lihat §1.
-- **Menjepit `updatedDate` ke `max(updatedAt, publishedAt)`** agar gerbang
-  urutan tanggal tidak pernah bisa merah — ditolak. Ia menyembunyikan data yang
-  tidak konsisten alih-alih menampilkannya, dan dengan kedua tanggal dibaca dari
-  satu baris, keadaan yang dijepitnya tidak bisa dihasilkan jalur tulis `awcms`.
-- **Membiarkan `<= now()` tanpa toleransi**, atau membuangnya sama sekali —
-  keduanya ditolak; lihat tabel §3. Tanpa toleransi ia membuang artikel terbaru
-  pada selisih jam yang wajar; tanpa perbandingan sama sekali, satu-satunya
-  pertahanan terhadap `published_at` yang disetel di luar jalur tulis `awcms`
-  ikut hilang.
-- **Menyajikan berita dari `/news/**` milik `awcms` dan tidak membangun apa pun
-  di sini** — tetap pilihan yang sah, dan untuk banyak situs pilihan yang lebih
-  murah: di sana paginasi, arsip tag, feed, dan pencarian sudah ada, dan terbit
-  langsung tayang. Ia tidak dipilih di sini karena ia menukar premis template
-  ini — nol panggilan ke CMS saat pembaca meminta halaman — dengan kelengkapan.
-  Yang benar adalah menyatakan persimpangannya, bukan berpura-pura hanya ada
-  satu jalan.
+- **Ordering by `createdAt` instead of `publishedAt`** — refused. The build feed is
+  indeed paginated over `created_at` (the only ordering safe for a keyset cursor),
+  but what a reader reads is when an article was PUBLISHED. A draft written in
+  January and published in August would appear near the bottom under `createdAt`.
+  `awcms`'s own public routes use `published_at`.
+- **Inferring a news section from its data** (e.g. "a tab where not one article has
+  an `urutan`") — refused. It changes silently the moment one editor fills in one
+  field, and no page states why a whole section suddenly re-ordered.
+- **Making `urutanSeksi` optional with a `"manual"` default** — refused by
+  `astro check`; see §1.
+- **Clamping `updatedDate` to `max(updatedAt, publishedAt)`** so the date-order gate
+  could never go red — refused. It hides inconsistent data rather than showing it,
+  and with both dates read from one row, the state it would clamp cannot be produced
+  by the `awcms` write path.
+- **Leaving `<= now()` without a tolerance**, or dropping it entirely — both
+  refused; see the §3 table. Without a tolerance it discards the newest article over
+  a reasonable clock difference; with no comparison at all, the only defence against
+  a `published_at` set outside the `awcms` write path goes with it.
+- **Serving news from `awcms`'s own `/news/**` and building nothing here** — still
+  a valid choice, and for many sites the cheaper one: over there, pagination, tag
+  archives, feeds, and search already exist, and publishing goes live immediately.
+  It is not chosen here because it trades this template's premise — zero calls to the
+  CMS when a reader asks for a page — for completeness. What is right is to state the
+  fork, not to pretend there is only one road.
