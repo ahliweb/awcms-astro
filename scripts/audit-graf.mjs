@@ -85,9 +85,21 @@
  */
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { gitLines, gitRun } from "./lib/git.mjs";
+import { createReporter } from "./lib/reporter.mjs";
 
 const AKAR = process.argv[2] ?? ".";
 const KELUARAN = "graphify-out";
+
+// Validated before the reporter is built, so an unusable root still exits 2
+// with only its own message — the header belongs to a gate that is actually
+// going to run.
+if (!existsSync(AKAR) || !statSync(AKAR).isDirectory()) {
+  console.error(`akar "${AKAR}" bukan direktori`);
+  process.exit(2);
+}
+
+const pelapor = createReporter("audit graf");
 
 /**
  * Artefak graphify yang repo ini lacak, dan hanya itu.
@@ -115,13 +127,12 @@ const ARTEFAK_TERLACAK = new Set([
 const AKHIRAN_BERKAS =
   /\.(ts|tsx|js|mjs|cjs|jsx|astro|json|jsonc|md|mdx|ya?ml|toml|css|scss|html|py|sh|lock)$/i;
 
-/** @type {Array<{ gerbang: string, berkas: string, pesan: string }>} */
-const temuan = [];
-/** Dicetak apa pun hasilnya — gerbang yang diam saat tidak jalan tidak ada. */
-const catatan = [];
-
 function langgar(gerbang, berkas, pesan) {
-  temuan.push({ gerbang, berkas, pesan });
+  pelapor.violation(gerbang, berkas, pesan);
+}
+
+function catat(baris) {
+  pelapor.note(baris);
 }
 
 function bacaJson(jalur) {
@@ -129,12 +140,7 @@ function bacaJson(jalur) {
 }
 
 function git(...argumen) {
-  const hasil = Bun.spawnSync(["git", "-C", AKAR, ...argumen], {
-    stderr: "pipe",
-    stdout: "pipe"
-  });
-  if (hasil.exitCode !== 0) return null;
-  return hasil.stdout.toString();
+  return gitRun(AKAR, ...argumen);
 }
 
 // ---------------------------------------------------------------------------
@@ -148,14 +154,14 @@ function auditArtefakTerlacak() {
   // Ia MENGATAKAN begitu; gerbang yang lolos diam-diam saat tidak bisa jalan
   // adalah tanda centang palsu.
   if (keluaran === null) {
-    catatan.push("terlacak: DILEWATI — bukan repo git, `git ls-files` tak bisa dijalankan");
+    catat("terlacak: DILEWATI — bukan repo git, `git ls-files` tak bisa dijalankan");
     return;
   }
 
   const terlacak = keluaran.split("\n").filter(Boolean);
 
   if (terlacak.length === 0) {
-    catatan.push(`terlacak: tidak ada berkas ${KELUARAN}/ yang terlacak`);
+    catat(`terlacak: tidak ada berkas ${KELUARAN}/ yang terlacak`);
     return;
   }
 
@@ -190,7 +196,7 @@ function auditArtefakTerlacak() {
     langgar("terlacak", `${KELUARAN}/${nama}`, "artefak bersama tidak terlacak");
   }
 
-  catatan.push(`terlacak: ${sah}/${ARTEFAK_TERLACAK.size} artefak bersama, ${terlacak.length} berkas terlacak`);
+  catat(`terlacak: ${sah}/${ARTEFAK_TERLACAK.size} artefak bersama, ${terlacak.length} berkas terlacak`);
 }
 
 // ---------------------------------------------------------------------------
@@ -238,7 +244,7 @@ function auditLaporanSepakat(graf, laporan) {
     }
   }
 
-  catatan.push(
+  catat(
     `sepakat: laporan ${diklaim.node}/${diklaim.edge}/${diklaim.komunitas} vs graf ${nyata.node}/${nyata.edge}/${nyata.komunitas} (node/edge/komunitas)`
   );
 }
@@ -268,7 +274,7 @@ function auditLabelKomunitas(graf, laporan) {
   }
 
   if (namaDiGraf.size === 0) {
-    catatan.push("label: tidak ada komunitas di graph.json");
+    catat("label: tidak ada komunitas di graph.json");
     return;
   }
 
@@ -320,7 +326,7 @@ function auditLabelKomunitas(graf, laporan) {
     }
   }
 
-  catatan.push(`label: ${namaDiGraf.size} komunitas, ${pemakai.size} nama berbeda`);
+  catat(`label: ${namaDiGraf.size} komunitas, ${pemakai.size} nama berbeda`);
 }
 
 // ---------------------------------------------------------------------------
@@ -331,7 +337,7 @@ function auditPengecualian(graf) {
   const berkasIgnore = join(AKAR, ".graphifyignore");
 
   if (!existsSync(berkasIgnore)) {
-    catatan.push("pengecualian: tidak ada .graphifyignore");
+    catat("pengecualian: tidak ada .graphifyignore");
     return;
   }
 
@@ -393,7 +399,7 @@ function auditPengecualian(graf) {
     );
   }
 
-  catatan.push(
+  catat(
     `pengecualian: ${awalan.length} entri ditegakkan` +
       (takDitegakkan.length
         ? `, ${takDitegakkan.length} TIDAK ditegakkan (${takDitegakkan.join(", ")})`
@@ -409,7 +415,7 @@ function catatKesegaran(graf) {
   const dibangunDi = graf.built_at_commit;
 
   if (typeof dibangunDi !== "string" || dibangunDi === "") {
-    catatan.push("kesegaran: graph.json tidak menyebut built_at_commit");
+    catat("kesegaran: graph.json tidak menyebut built_at_commit");
     return;
   }
 
@@ -417,12 +423,12 @@ function catatKesegaran(graf) {
   const jumlah = git("rev-list", "--count", `${dibangunDi}..HEAD`);
 
   if (jumlah === null) {
-    catatan.push(`kesegaran: dibangun dari ${pendek}, selisih ke HEAD tak terbaca`);
+    catat(`kesegaran: dibangun dari ${pendek}, selisih ke HEAD tak terbaca`);
     return;
   }
 
   const tertinggal = Number.parseInt(jumlah.trim(), 10);
-  catatan.push(
+  catat(
     tertinggal === 0
       ? `kesegaran: dibangun dari ${pendek}, sama dengan HEAD`
       : `kesegaran: dibangun dari ${pendek}, tertinggal ${tertinggal} commit dari HEAD — pertimbangkan \`/graphify . --update\``
@@ -433,21 +439,13 @@ function catatKesegaran(graf) {
 // Jalankan
 // ---------------------------------------------------------------------------
 
-if (!existsSync(AKAR) || !statSync(AKAR).isDirectory()) {
-  console.error(`akar "${AKAR}" bukan direktori`);
-  process.exit(2);
-}
-
-console.log("── audit graf ──");
-
 const dirKeluaran = join(AKAR, KELUARAN);
 
 if (!existsSync(dirKeluaran)) {
   // Keadaan sah untuk situs turunan: checklist-repo-baru.md menyuruh
   // menghapusnya. Gerbang ini menjaga artefak yang ADA, bukan mewajibkannya.
-  console.log(`  ${KELUARAN}/ tidak ada — tidak ada artefak graf untuk diperiksa`);
-  console.log("\n✓ Tidak ada pelanggaran.");
-  process.exit(0);
+  catat(`${KELUARAN}/ tidak ada — tidak ada artefak graf untuk diperiksa`);
+  pelapor.finish();
 }
 
 const jalurGraf = join(dirKeluaran, "graph.json");
@@ -483,25 +481,4 @@ if (!existsSync(jalurGraf)) {
   }
 }
 
-for (const baris of catatan) console.log(`  ${baris}`);
-
-if (temuan.length === 0) {
-  console.log("\n✓ Tidak ada pelanggaran.");
-  process.exit(0);
-}
-
-console.log(`\n✗ ${temuan.length} pelanggaran:\n`);
-
-/** @type {Map<string, Array<{ berkas: string, pesan: string }>>} */
-const perGerbang = new Map();
-for (const t of temuan) {
-  perGerbang.set(t.gerbang, [...(perGerbang.get(t.gerbang) ?? []), t]);
-}
-
-for (const [gerbang, daftar] of perGerbang) {
-  console.log(`  [${gerbang}] ${daftar.length}`);
-  for (const { berkas, pesan } of daftar) console.log(`    ${berkas}: ${pesan}`);
-  console.log("");
-}
-
-process.exit(1);
+pelapor.finish();

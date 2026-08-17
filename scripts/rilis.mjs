@@ -4,12 +4,23 @@
  *
  * Menulis catatan rilis adalah pekerjaan yang paling mudah ditunda sampai lupa.
  * Skrip ini memindahkan yang mekanis (hitung versi, gabung berkas, buat tag) ke
- * mesin, sehingga yang tersisa untuk manusia hanya menilai besar perubahannya.
+ * mesin.
+ *
+ * Sejak ADR-0040 ia memindahkan satu hal lagi: **besar rilisnya**. Setiap
+ * changeset menyatakan `bump: major | minor | patch`, dan versi berikutnya
+ * adalah bump TERBESAR di antara yang menunggu. Yang tersisa untuk manusia
+ * adalah menilai satu perubahan saat menulisnya — bukan menilai sepuluh
+ * sekaligus, berbulan-bulan kemudian, dari daftar nama berkas.
  *
  * Pemakaian:
- *   bun run release patch            # pratinjau: tidak menyentuh berkas
- *   bun run release minor --apply    # tulis package.json + CHANGELOG.md
- *   bun run release minor --apply --commit   # sekalian commit dan tag
+ *   bun run release                  # pratinjau; tingkat diturunkan dari changeset
+ *   bun run release --apply          # tulis package.json + CHANGELOG.md
+ *   bun run release --apply --commit # sekalian commit dan tag
+ *   bun run release minor --apply    # naikkan DI ATAS yang dituntut changeset
+ *
+ * Tingkat yang disebut di baris perintah kini opsional, dan hanya boleh LEBIH
+ * BESAR dari yang dituntut changeset. Yang lebih kecil ditolak: itu menerbitkan
+ * perubahan yang memutus sesuatu di balik nomor yang menjanjikan sebaliknya.
  *
  * Tanpa --apply skrip hanya melapor. Tanpa --commit berkas ditulis tetapi
  * commit dan tag diserahkan ke tangan manusia; perintah persisnya dicetak.
@@ -17,21 +28,44 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
+import { gitRunInherit, gitRunOrThrow } from './lib/git.mjs';
+import {
+  changesetBody,
+  isChangesetFile,
+  parseChangeset,
+  validateChangeset
+} from './lib/changeset.mjs';
+import {
+  BUMP_LEVELS,
+  atLeastAsSignificant,
+  bumpVersion,
+  formatTag,
+  highestBump
+} from './lib/semver.mjs';
+
+/**
+ * Every git call goes through `scripts/lib/git.mjs`, which spawns an argv array
+ * instead of a shell.
+ *
+ * This is a security boundary, not a style preference. `execSync` runs its
+ * argument through `/bin/sh`, and the line below that reads the last tag used
+ * to splice git's own output into that string. A git tag may contain `$`, a
+ * backtick, `;`, `&` and `|` — `git check-ref-format` rejects only a space and
+ * a few others — so a tag named `v9.9.9$(...)` executed its payload on the
+ * machine of whoever ran `bun run release`, with their SSH agent and tokens,
+ * and git then failed with a message indistinguishable from an ordinary one.
+ *
+ * The remaining `execSync` calls in this file run CONSTANT command strings with
+ * nothing interpolated into them; they are left as they are because the shell
+ * is doing no work there that an argv array would do differently.
+ */
 
 const args = process.argv.slice(2);
-const level = args.find((a) => ['major', 'minor', 'patch'].includes(a));
+const levelDiminta = args.find((a) => BUMP_LEVELS.includes(a));
 const apply = args.includes('--apply');
 const commit = args.includes('--commit');
 
-if (!level) {
-  console.error('Pilih tingkat rilis: major | minor | patch\n');
-  console.error('  major  perubahan yang memutus URL publik, struktur konten, atau kontrak frontmatter');
-  console.error('  minor  artikel/tab/locale/fitur baru, atau perubahan konten yang terlihat pembaca');
-  console.error('  patch  perbaikan yang tidak mengubah bentuk situs: typo, gaya, dependency, dokumentasi\n');
-  process.exit(1);
-}
-
-const run = (cmd) => execSync(cmd, { stdio: 'pipe' }).toString().trim();
+const git = (...args) => gitRunOrThrow('.', ...args).trim();
 
 // ── Prasyarat ────────────────────────────────────────────────────────────────
 // "Ada yang perlu dirilis" bukan berarti pohon kerja kotor. Pekerjaan yang
@@ -39,36 +73,96 @@ const run = (cmd) => execSync(cmd, { stdio: 'pipe' }).toString().trim();
 // kekotoran saja akan menolak persis kasus itu. Yang menentukan adalah apakah
 // ada sesuatu yang belum tercakup tag terakhir.
 if (commit) {
-  const kotor = run('git status --porcelain') !== '';
-  const tagTerakhir = run('git tag --list "v*" --sort=-v:refname').split('\n')[0];
-  const commitBaru = tagTerakhir ? run(`git rev-list ${tagTerakhir}..HEAD --count`) !== '0' : true;
+  const kotor = git('status', '--porcelain') !== '';
+  const tagTerakhir = git('tag', '--list', 'v*', '--sort=-v:refname').split('\n')[0];
+  const commitBaru = tagTerakhir
+    ? git('rev-list', '--count', `${tagTerakhir}..HEAD`) !== '0'
+    : true;
   if (!kotor && !commitBaru) {
     console.error(`Tidak ada perubahan untuk dirilis: pohon kerja bersih dan tidak ada commit sejak ${tagTerakhir}.`);
     process.exit(1);
   }
 }
 
-const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-const [major, minor, patch] = pkg.version.split('.').map(Number);
-const next = { major: `${major + 1}.0.0`, minor: `${major}.${minor + 1}.0`, patch: `${major}.${minor}.${patch + 1}` }[level];
-const tag = `v${next}`;
+// ── Changeset yang menunggu ──────────────────────────────────────────────────
+// Dibaca SEBELUM versi dihitung, karena sejak ADR-0040 merekalah yang
+// menentukannya. `isChangesetFile` menolak setiap `README*`, bukan hanya
+// `README.md`: penyaring lama membandingkan dengan satu nama persis, sehingga
+// `README.id.md` terhitung sebagai changeset menunggu — dan rilis berikutnya
+// akan melipat isinya ke CHANGELOG.md lalu MENGHAPUS berkasnya.
+const pending = fs.existsSync('.changesets')
+  ? fs.readdirSync('.changesets').filter(isChangesetFile).sort()
+  : [];
 
-if (run(`git tag -l ${tag}`)) {
+/** Setiap changeset dibaca sekali; isinya dipakai untuk bump DAN untuk lipatan. */
+const isiChangeset = new Map(
+  pending.map((f) => [f, fs.readFileSync(`.changesets/${f}`, 'utf8')])
+);
+
+// Frontmatter divalidasi di sini juga, bukan hanya di `bun test`. Gerbangnya
+// menangkap changeset cacat saat PR; ini menangkap yang ditulis SESUDAH gerbang
+// terakhir berjalan — dan pada saat itu kesalahannya menghitung versi.
+const cacat = pending.flatMap((f) =>
+  validateChangeset(`.changesets/${f}`, isiChangeset.get(f))
+);
+
+if (cacat.length) {
+  console.error(`${cacat.length} changeset tidak sah — versi tidak bisa dihitung darinya:\n`);
+  for (const { file, message } of cacat) console.error(`  ${file}: ${message}`);
+  console.error('\nPerbaiki frontmatter-nya, lalu jalankan ulang.');
+  process.exit(1);
+}
+
+const bumpDiminta = pending.map(
+  (f) => parseChangeset(isiChangeset.get(f)).fields.bump
+);
+const levelTurunan = highestBump(bumpDiminta);
+
+// Tanpa changeset tidak ada yang bisa diturunkan, jadi tingkatnya harus
+// dinyatakan — dan sebuah rilis tanpa satu pun changeset adalah rilis yang
+// tidak akan terbaca siapa pun nanti, jadi ia dikatakan keras-keras.
+if (!levelTurunan && !levelDiminta) {
+  console.error('Tidak ada changeset menunggu, jadi tingkat rilis tidak bisa diturunkan.\n');
+  console.error('  Tulis changeset-nya (itu yang dianjurkan), atau sebutkan tingkatnya:');
+  console.error(`  bun run release ${BUMP_LEVELS.join(' | ')} --apply\n`);
+  process.exit(1);
+}
+
+// Tingkat yang disebut manusia boleh LEBIH BESAR dari yang diminta changeset —
+// seorang perilis boleh tahu sesuatu yang belum tertulis. Yang ditolak adalah
+// yang lebih KECIL: itu menerbitkan perubahan yang memutus sesuatu di balik
+// nomor yang menjanjikan tidak ada yang putus.
+if (levelDiminta && levelTurunan && !atLeastAsSignificant(levelDiminta, levelTurunan)) {
+  const penuntut = pending.filter(
+    (f) => parseChangeset(isiChangeset.get(f)).fields.bump === levelTurunan
+  );
+  console.error(`Diminta "${levelDiminta}", tetapi changeset menuntut "${levelTurunan}":\n`);
+  for (const f of penuntut) console.error(`  .changesets/${f}`);
+  console.error(
+    `\nTurunkan bump changeset-nya bila memang berlebihan, atau rilis sebagai ` +
+      `"${levelTurunan}" atau lebih besar.`
+  );
+  process.exit(1);
+}
+
+const level = levelDiminta ?? levelTurunan;
+
+const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+const next = bumpVersion(pkg.version, level);
+const tag = formatTag(next);
+
+if (git('tag', '-l', tag)) {
   console.error(`Tag ${tag} sudah ada.`);
   process.exit(1);
 }
 
-// ── Changeset yang menunggu ──────────────────────────────────────────────────
-const pending = fs.existsSync('.changesets')
-  ? fs.readdirSync('.changesets').filter((f) => f.endsWith('.md') && f !== 'README.md').sort()
-  : [];
-
-console.log(`${pkg.version} -> ${next}  (tag ${tag})`);
+const asal = levelDiminta
+  ? levelTurunan && levelDiminta !== levelTurunan
+    ? `diminta, di atas "${levelTurunan}" yang dituntut changeset`
+    : 'diminta'
+  : 'diturunkan dari changeset';
+console.log(`${pkg.version} -> ${next}  (tag ${tag}, ${level} — ${asal})`);
 console.log(pending.length ? `Changeset menunggu: ${pending.join(', ')}` : 'Tidak ada changeset menunggu.');
-
-if (!pending.length && level !== 'patch') {
-  console.log('\nPeringatan: rilis minor/major tanpa changeset. Perubahannya tidak akan terbaca siapa pun nanti.');
-}
 
 if (!apply) {
   console.log('\nPratinjau saja. Tambahkan --apply untuk menulis berkas.');
@@ -166,9 +260,7 @@ execSync('bun audit --audit-level=low', { stdio: 'inherit' });
 const today = new Date().toLocaleDateString('sv-SE');
 const body = pending
   .map((f) =>
-    fs
-      .readFileSync(`.changesets/${f}`, 'utf8')
-      .replace(/^---\n[\s\S]*?\n---\n/, '')
+    changesetBody(isiChangeset.get(f))
       // Heading changeset diturunkan dua tingkat agar bersarang rapi di bawah
       // heading versi: judul changeset jadi `###`, sub-bagiannya jadi `####`.
       .replace(/^(#{1,4}) /gm, (_, hashes) => `${'#'.repeat(hashes.length + 2)} `)
@@ -250,7 +342,7 @@ if (!commit) {
   process.exit(0);
 }
 
-execSync('git add -A', { stdio: 'inherit' });
-execSync(`git commit -m "rilis: ${tag}"`, { stdio: 'inherit' });
-execSync(`git tag -a ${tag} -m "${tag}"`, { stdio: 'inherit' });
+gitRunInherit('.', 'add', '-A');
+gitRunInherit('.', 'commit', '-m', `rilis: ${tag}`);
+gitRunInherit('.', 'tag', '-a', tag, '-m', tag);
 console.log(`\n${tag} dibuat. Dorong dengan: git push && git push origin ${tag}`);

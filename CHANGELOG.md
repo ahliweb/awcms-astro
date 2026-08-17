@@ -4,7 +4,9 @@ Seluruh perubahan yang layak diketahui pencatat rilis, terbaru di atas.
 
 Versi memakai format `MAJOR.MINOR.PATCH` dan ditandai di git sebagai `vX.Y.Z`. Arti setiap angka ditetapkan di [`docs/awcms-astro/standar-teknis.md`](docs/awcms-astro/standar-teknis.md#versioning) — semver dirancang untuk library ber-API, jadi artinya untuk sebuah situs perlu didefinisikan ulang.
 
-Berkas ini diisi `bun run release <level>` dengan melipat seluruh changeset di [`.changesets/`](.changesets/README.md). Jangan menambahkan bagian versi dengan tangan; tulis changeset-nya, dan biarkan skrip rilis yang melipat.
+Berkas ini diisi `bun run release` dengan melipat seluruh changeset di [`.changesets/`](.changesets/README.md). Jangan menambahkan bagian versi dengan tangan; tulis changeset-nya, dan biarkan skrip rilis yang melipat.
+
+Sejak [ADR-0040](docs/adr/0040-changeset-menyatakan-bump-semver.md) setiap changeset menyatakan `bump: major | minor | patch`, dan versi berikutnya adalah bump TERBESAR di antara yang menunggu — jadi besar sebuah rilis adalah akibat dari isinya, bukan keputusan terpisah yang diambil saat merilis.
 
 ## [0.2.0] — 2026-08-08
 

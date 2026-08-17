@@ -20,14 +20,15 @@
  *   bun run docs:i18n:stamp            # rewrite banners + markers in place
  *   bun run docs:i18n:stamp --check    # report what would change, exit 1 if any
  */
-import { readFileSync, writeFileSync } from "node:fs";
+import { writeFileSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
-import { execFileSync } from "node:child_process";
 import {
   MARKER_REGEX,
   computeSourceHash,
   deriveSourcePath
 } from "./lib/docs-i18n-checks.mjs";
+import { readFileIfPresent } from "./lib/files.mjs";
+import { gitLines, gitRun } from "./lib/git.mjs";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const CHECK_ONLY = process.argv.includes("--check");
@@ -137,41 +138,28 @@ function withMarker(content, hash) {
 
 /** @returns {string[]} */
 function listMirrors() {
-  return execFileSync(
-    "git",
-    // Untracked mirrors included: a pair created in this change must be stamped
-    // now, not after someone commits it.
-    ["ls-files", "--cached", "--others", "--exclude-standard", "*.id.md"],
-    { cwd: ROOT, encoding: "utf8" }
-  )
-    .split("\n")
-    .filter(Boolean);
-}
+  // Untracked mirrors included: a pair created in this change must be stamped
+  // now, not after someone commits it.
+  const output = gitRun(
+    ROOT,
+    "ls-files",
+    "--cached",
+    "--others",
+    "--exclude-standard",
+    "*.id.md"
+  );
 
-/**
- * Read a file, or return null when it is not there.
- *
- * Deliberately not `existsSync` + `readFileSync`: that pair is a
- * time-of-check/time-of-use race, and the failure it invites here is silent —
- * the check passes, the file disappears, and the read throws in the middle of a
- * multi-file rewrite, leaving the tree half-stamped.
- *
- * @param {string} path
- * @returns {string | null}
- */
-function readFileIfPresent(path) {
-  try {
-    return readFileSync(path, "utf8");
-  } catch (error) {
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      /** @type {NodeJS.ErrnoException} */ (error).code === "ENOENT"
-    ) {
-      return null;
-    }
-    throw error;
+  // Outside a git repo this stamper has no way to enumerate mirrors. It says so
+  // and stops, rather than dying with a `node:child_process` stack that names
+  // neither the script nor the cause.
+  if (output === null) {
+    console.log(
+      "docs:i18n:stamp DILEWATI — bukan repo git, `git ls-files` tak bisa dijalankan."
+    );
+    process.exit(0);
   }
+
+  return gitLines(output);
 }
 
 /** @type {string[]} */

@@ -244,9 +244,21 @@ Loosening a checker so a gate goes green is a violation, not a fix. If a rule re
 
 ## Versioning
 
-`MAJOR.MINOR.PATCH`, with annotated git tags `vX.Y.Z`. What each level means for an information site is defined in the reference repo's ADR-0009 — semver was designed for libraries with an API, so its meaning has to be restated.
+`MAJOR.MINOR.PATCH`, with annotated git tags `vX.Y.Z`. Semver was designed for libraries with an API, so its meaning has to be restated for an information site — the reference repo's ADR-0009 does that, and [ADR-0040](../adr/0040-changeset-menyatakan-bump-semver.md) fixes the restatement here:
+
+| Level | The site | 
+| ----- | -------- |
+| `major` | a public URL, the content structure, or the frontmatter contract **breaks** |
+| `minor` | a reader gains something: an article, tab, locale, or feature |
+| `patch` | a fix that does not change the shape of the site |
 
 Every change affecting public content, structure, dependencies, or deployment is written as a changeset **in the same iteration**, and folded into `CHANGELOG.md` at release.
+
+**The changeset declares the level, and the release derives the version from it.** Each one carries `bump: major | minor | patch`; the next version is the largest bump among those waiting. The level is therefore chosen while the change is being written, by its author — not at release time, from a list of file names, by whoever ran the script. `bun run release` still accepts a level, and it may only be a **larger** one; a smaller one is refused, because it publishes a break behind a number promising there is none.
+
+Version strings are parsed strictly: a `v` prefix, prerelease or build metadata, and leading zeros are each refused by name. The arithmetic that preceded this refused nothing and answered `NaN` — enough to tag a release `v0.2.NaN`, which sorts nowhere and makes the *next* release read the wrong tag as latest. Its checker is `tests/versi-changeset.test.mjs`.
+
+The repo is still `0.x`, where semver itself promises nothing about compatibility. The `bump` field records intent now so the record is already true on the day `1.0.0` makes it binding.
 
 ## The knowledge graph (`graphify-out/`)
 

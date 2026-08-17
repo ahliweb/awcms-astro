@@ -45,6 +45,7 @@ styling, adding tests.
 | [0037](0037-pin-typescript-6-adalah-syarat-hidupnya-gerbang-astro-check.md) | Pinning TypeScript 6.x is what keeps the `astro check` gate alive; raising it is a family-level decision, and its gate lands with it | Accepted |
 | [0038](0038-kebutuhan-backend-menjadi-modul-di-awcms.md) | The unit of a backend need is a MODULE in `awcms`; this repo reads and does not write, and all four of its limits are gated | Accepted |
 | [0039](0039-english-is-the-source-language.md) | English is the source language at the bare path, Indonesian its mirror at `<name>.id.md`; a shrink-only ledger, and three gates that had to move first | Accepted |
+| [0040](0040-changeset-menyatakan-bump-semver.md) | A changeset declares its own `bump`, and the release derives `vX.Y.Z` from the largest one waiting; strict parsing ends the tag that read `v0.2.NaN` | Accepted |
 
 > **Why the numbering starts at 0014.** The ADRs in this repo continue the
 > sequence of the reference repo whose identity was released in

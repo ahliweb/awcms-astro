@@ -42,51 +42,13 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+// Re-exported: tests/sbom.test.mjs imports the scanner from this module, and the
+// SBOM is the artifact whose correctness depends on the lockfile parsing right.
+export { buangTrailingComma } from "./lib/lockfile.mjs";
+import { buangTrailingComma } from "./lib/lockfile.mjs";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-/**
- * `bun.lock` adalah JSONC bertrailing-comma. Pemindai ini disalin dari
- * `scripts/cek-lockfile.mjs` — mengimpornya langsung akan MENJALANKAN gerbang
- * lockfile (skrip itu top-level dan bisa `process.exit`), jadi salinan sadar
- * dipilih atas impor yang punya efek samping.
- *
- * @param {string} teks
- * @returns {string}
- */
-export function buangTrailingComma(teks) {
-  let hasil = "";
-  let diDalamString = false;
-  let terescape = false;
-
-  for (let i = 0; i < teks.length; i += 1) {
-    const c = teks[i];
-
-    if (diDalamString) {
-      hasil += c;
-      if (terescape) terescape = false;
-      else if (c === "\\") terescape = true;
-      else if (c === '"') diDalamString = false;
-      continue;
-    }
-
-    if (c === '"') {
-      diDalamString = true;
-      hasil += c;
-      continue;
-    }
-
-    if (c === ",") {
-      let j = i + 1;
-      while (j < teks.length && /\s/.test(teks[j])) j += 1;
-      if (teks[j] === "}" || teks[j] === "]") continue;
-    }
-
-    hasil += c;
-  }
-
-  return hasil;
-}
 
 /**
  * `pkg:npm/...` sesuai spesifikasi purl: namespace scoped di-percent-encode
