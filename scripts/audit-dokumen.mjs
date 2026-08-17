@@ -82,8 +82,18 @@
  */
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { posix } from "node:path";
+import { createReporter } from "./lib/reporter.mjs";
 
 const AKAR = process.argv[2] ?? ".";
+
+// Validated before the reporter is built, so an unusable root still exits 2
+// with only its own message — the header belongs to a gate that is going to run.
+if (!existsSync(AKAR) || !statSync(AKAR).isDirectory()) {
+  console.error(`akar "${AKAR}" bukan direktori`);
+  process.exit(2);
+}
+
+const pelapor = createReporter("audit dokumen");
 
 /** Direktori yang tidak pernah dibaca: bukan sumber, atau bukan milik repo ini. */
 const LEWATI = new Set([
@@ -94,13 +104,12 @@ const LEWATI = new Set([
   "graphify-out"
 ]);
 
-/** @type {Array<{ gerbang: string, berkas: string, pesan: string }>} */
-const temuan = [];
-/** Dicetak apa pun hasilnya — gerbang yang diam saat tidak jalan tidak ada. */
-const catatan = [];
-
 function langgar(gerbang, berkas, pesan) {
-  temuan.push({ gerbang, berkas, pesan });
+  pelapor.violation(gerbang, berkas, pesan);
+}
+
+function catat(baris) {
+  pelapor.note(baris);
 }
 
 function gabung(...bagian) {
@@ -202,7 +211,7 @@ function auditTautan(berkas) {
     }
   }
 
-  catatan.push(`${berkas.length} berkas markdown, ${jumlah} tautan internal diperiksa`);
+  catat(`${berkas.length} berkas markdown, ${jumlah} tautan internal diperiksa`);
 }
 
 // ---------------------------------------------------------------------------
@@ -320,7 +329,7 @@ function auditSatuIndeks(indeks, berkasAdr, statusBerkas, dirAdr) {
     }
   }
 
-  catatan.push(`adr: ${indeks} — ${berkasAdr.length} berkas, ${baris.size} baris tabel`);
+  catat(`adr: ${indeks} — ${berkasAdr.length} berkas, ${baris.size} baris tabel`);
 }
 
 function auditIndeksAdr() {
@@ -328,7 +337,7 @@ function auditIndeksAdr() {
   const indeks = gabung(dirAdr, "README.md");
 
   if (!existsSync(gabung(AKAR, dirAdr)) || !existsSync(gabung(AKAR, indeks))) {
-    catatan.push(`adr: ${indeks} tidak ada — gerbang indeks ADR DILEWATI`);
+    catat(`adr: ${indeks} tidak ada — gerbang indeks ADR DILEWATI`);
     return;
   }
 
@@ -426,7 +435,7 @@ function auditPermukaanKilau() {
   const adaDok = existsSync(gabung(AKAR, DOK_KILAU));
 
   if (!adaCss && !adaDok) {
-    catatan.push("kilau: berkas CSS maupun dokumennya tidak ada — gerbang permukaan DILEWATI");
+    catat("kilau: berkas CSS maupun dokumennya tidak ada — gerbang permukaan DILEWATI");
     return;
   }
 
@@ -489,7 +498,7 @@ function auditPermukaanKilau() {
     diperiksa.push(`${dok.split("/").pop()}=${dariDok.length}`);
   }
 
-  catatan.push(`kilau: ${dariCss.length} permukaan di CSS, baris tabel ${diperiksa.join(", ")}`);
+  catat(`kilau: ${dariCss.length} permukaan di CSS, baris tabel ${diperiksa.join(", ")}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -561,7 +570,7 @@ function auditJalurDisebut(berkas) {
   // menegakkannya `tests/audit-dokumen.test.mjs`, BUKAN gerbang ini — daftarnya
   // milik repo ini, sementara gerbang ini harus tetap benar saat dijalankan
   // atas pohon mana pun (fixture tes, dan situs turunan yang dokumennya lain).
-  catatan.push(
+  catat(
     `jalur: ${diperiksa} span diperiksa, ${dipakai.size}/${JALUR_DIKECUALIKAN.size} pengecualian terpakai`
   );
 }
@@ -597,7 +606,7 @@ function auditKutipanAdr(berkas) {
   const dirAdr = "docs/adr";
 
   if (!existsSync(gabung(AKAR, dirAdr))) {
-    catatan.push("kutipan adr: docs/adr/ tidak ada — gerbang kutipan ADR DILEWATI");
+    catat("kutipan adr: docs/adr/ tidak ada — gerbang kutipan ADR DILEWATI");
     return;
   }
 
@@ -653,7 +662,7 @@ function auditKutipanAdr(berkas) {
     }
   }
 
-  catatan.push(
+  catat(
     `kutipan adr: ${diperiksa} kutipan diperiksa, ${lokal} lokal, ${milikLain} ditandai milik repo lain`
   );
 }
@@ -661,11 +670,6 @@ function auditKutipanAdr(berkas) {
 // ---------------------------------------------------------------------------
 // Jalankan
 // ---------------------------------------------------------------------------
-
-if (!existsSync(AKAR) || !statSync(AKAR).isDirectory()) {
-  console.error(`akar "${AKAR}" bukan direktori`);
-  process.exit(2);
-}
 
 const dokumen = berkasMarkdown();
 
@@ -675,26 +679,4 @@ auditPermukaanKilau();
 auditJalurDisebut(dokumen);
 auditKutipanAdr(dokumen);
 
-console.log("── audit dokumen ──");
-for (const baris of catatan) console.log(`  ${baris}`);
-
-if (temuan.length === 0) {
-  console.log("\n✓ Tidak ada pelanggaran.");
-  process.exit(0);
-}
-
-console.log(`\n✗ ${temuan.length} pelanggaran:\n`);
-
-/** @type {Map<string, Array<{ berkas: string, pesan: string }>>} */
-const perGerbang = new Map();
-for (const t of temuan) {
-  perGerbang.set(t.gerbang, [...(perGerbang.get(t.gerbang) ?? []), t]);
-}
-
-for (const [gerbang, daftar] of perGerbang) {
-  console.log(`  [${gerbang}] ${daftar.length}`);
-  for (const { berkas, pesan } of daftar) console.log(`    ${berkas}: ${pesan}`);
-  console.log("");
-}
-
-process.exit(1);
+pelapor.finish();

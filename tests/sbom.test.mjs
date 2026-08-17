@@ -203,7 +203,13 @@ describe("SBOM ditulis SESUDAH versi dinaikkan (ADR-0031)", () => {
     const tulisSbom = perilis.indexOf("bun run sbom");
     // Baris yang benar-benar meng-commit, bukan baris yang MENCETAK perintahnya
     // untuk disalin manusia — keduanya memuat teks `git commit`.
-    const commitRilis = perilis.indexOf("execSync(`git commit");
+    //
+    // Bentuknya `gerbangRunInherit`, bukan `execSync`, sejak setiap panggilan
+    // git pindah ke `scripts/lib/git.mjs`: `execSync` menjalankan argumennya
+    // lewat shell, dan nama tag yang dibaca dari `git tag --list` bisa memuat
+    // `$(...)`. Yang dijaga tes ini tidak berubah — urutannya — hanya bentuk
+    // panggilan yang dicarinya.
+    const commitRilis = perilis.indexOf("gitRunInherit('.', 'commit'");
 
     assert.notEqual(commitRilis, -1, "scripts/rilis.mjs tidak lagi membuat commit rilis.");
     assert.ok(

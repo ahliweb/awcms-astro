@@ -1,4 +1,5 @@
 ---
+bump: patch
 tipe: perbaikan
 dampak: publik
 ---

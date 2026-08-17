@@ -14,6 +14,7 @@ File name: `YYYY-MM-DD-summary-in-kebab-case.md`.
 
 ```markdown
 ---
+bump: major | minor | patch
 tipe: konten | struktur | perbaikan | dependency | dokumentasi
 dampak: publik | internal
 ---
@@ -26,6 +27,25 @@ the "what" can be read from the diff, the "why" cannot.
 - A point of change a site's reader would see.
 - A point of change only felt while developing.
 ```
+
+## `bump` decides the version ([ADR-0040](../docs/adr/0040-changeset-menyatakan-bump-semver.md))
+
+This is the field the release reads. The next version is the **largest** `bump` among the waiting changesets: one `minor` beside nine `patch` entries makes the whole release `minor`.
+
+| `bump` | For a site, that means | Example |
+| ------- | ----------------------- | -------- |
+| `major` | a public URL, the content structure, or the frontmatter contract **breaks** | a tab slug changes, so every link to it 404s |
+| `minor` | something a reader gains: a new article, tab, locale, or feature | a `news` section appears |
+| `patch` | a fix that does not change the shape of the site | a typo, a style, a dependency, documentation, a corrected response header |
+
+Choose it **while writing the change**, which is the only moment anyone knows the answer. Before ADR-0040 the level was typed at the command line at release time, by whoever happened to run the script — often months later, often not the author, and always from a list of file names rather than from the change itself.
+
+Two rules follow from `bump` being load-bearing, and both are gated by `tests/versi-changeset.test.mjs`:
+
+- **A changeset without a valid `bump` fails the gate.** Not because the field is mandatory paperwork, but because the failure it prevents is invisible: a changeset the release cannot read stops contributing to the version and nothing looks wrong.
+- **`bun run release` may be told a level, and it may only be a LARGER one.** A releaser who knows the change is bigger than its changesets admit may say so; a smaller one is refused, because it publishes a break behind a number promising there is none.
+
+Versions are `MAJOR.MINOR.PATCH`, tagged `vX.Y.Z`. The repo is still `0.x`, where semver itself makes no compatibility promise — `bump` records intent now so that the record is already true when `1.0.0` makes it binding.
 
 ## Notes
 

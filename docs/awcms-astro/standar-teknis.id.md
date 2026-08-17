@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](standar-teknis.md)
 
-<!-- i18n-source-hash: sha256:cb2a1856f58807ea26654205a435e390eea27a952c935259d70e5cb0a98f1062 -->
+<!-- i18n-source-hash: sha256:21cf982147462666f898f6759c48896b57805d0b3d6f4b3e51306d36e37203e0 -->
 
 # awcms-astro — Standar Teknis
 
@@ -245,9 +245,21 @@ Melonggarkan pemeriksa agar gerbang hijau adalah pelanggaran, bukan perbaikan. B
 
 ## Versioning
 
-`MAJOR.MINOR.PATCH`, tag git `vX.Y.Z` anotatif. Arti tiap tingkat untuk situs informasi didefinisikan di ADR-0009 repo rujukan — semver dirancang untuk library ber-API, jadi artinya perlu ditetapkan ulang.
+`MAJOR.MINOR.PATCH`, tag git `vX.Y.Z` anotatif. Semver dirancang untuk library ber-API, jadi artinya perlu ditetapkan ulang untuk sebuah situs informasi — ADR-0009 repo rujukan melakukannya, dan [ADR-0040](../adr/0040-changeset-menyatakan-bump-semver.md) memakukan penetapan ulang itu di sini:
+
+| Tingkat | Situsnya |
+| ------- | -------- |
+| `major` | sebuah URL publik, struktur konten, atau kontrak frontmatter **putus** |
+| `minor` | pembaca mendapat sesuatu: artikel, tab, locale, atau fitur baru |
+| `patch` | perbaikan yang tidak mengubah bentuk situs |
 
 Setiap perubahan yang memengaruhi konten publik, struktur, dependency, atau deployment ditulis sebagai changeset **pada iterasi yang sama**, dilipat ke `CHANGELOG.md` saat rilis.
+
+**Changeset-lah yang menyatakan tingkatnya, dan rilis menurunkan versinya dari situ.** Masing-masing membawa `bump: major | minor | patch`; versi berikutnya adalah bump terbesar di antara yang menunggu. Tingkatnya karena itu dipilih sambil perubahannya ditulis, oleh penulisnya — bukan saat rilis, dari daftar nama berkas, oleh siapa pun yang menjalankan skripnya. `bun run release` masih menerima sebuah tingkat, dan hanya boleh yang **lebih besar**; yang lebih kecil ditolak, karena itu menerbitkan sesuatu yang putus di balik nomor yang menjanjikan sebaliknya.
+
+String versi diurai ketat: awalan `v`, prerelease atau metadata build, dan angka ber-nol-depan masing-masing ditolak dengan menyebut namanya. Aritmetika yang mendahuluinya tidak menolak apa pun dan menjawab `NaN` — cukup untuk menandai sebuah rilis `v0.2.NaN`, yang tidak terurut di mana pun dan membuat rilis *berikutnya* membaca tag yang salah sebagai yang terbaru. Pemeriksanya `tests/versi-changeset.test.mjs`.
+
+Repo ini masih `0.x`, di mana semver sendiri tidak menjanjikan apa pun soal kompatibilitas. Bidang `bump` mencatat niat sekarang supaya catatannya sudah benar pada hari `1.0.0` membuatnya mengikat.
 
 ## Graf pengetahuan (`graphify-out/`)
 

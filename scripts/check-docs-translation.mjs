@@ -18,15 +18,15 @@
  * written after ADR-0039 is written in English, and naming this one `terjemahan`
  * would add a fourth entry to the debt the same ADR schedules for removal.
  */
-import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { execFileSync } from "node:child_process";
 import {
   checkMirrorCoverage,
   checkTranslationPair,
   deriveSourcePath,
   isInScope
 } from "./lib/docs-i18n-checks.mjs";
+import { readFileIfPresent } from "./lib/files.mjs";
+import { gitLines, gitRun } from "./lib/git.mjs";
 
 const ROOT = resolve(import.meta.dirname, "..");
 
@@ -59,13 +59,28 @@ export const DOCS_AWAITING_MIRROR = [];
  * @returns {string[]}
  */
 function gitList(pattern) {
-  return execFileSync(
-    "git",
-    ["ls-files", "--cached", "--others", "--exclude-standard", pattern],
-    { cwd: ROOT, encoding: "utf8" }
-  )
-    .split("\n")
-    .filter(Boolean);
+  const output = gitRun(
+    ROOT,
+    "ls-files",
+    "--cached",
+    "--others",
+    "--exclude-standard",
+    pattern
+  );
+
+  // Not a git repo (a tarball, `git archive`, a vendored copy). This gate
+  // cannot be answered there, and a gate that dies with a `node:child_process`
+  // stack naming neither itself nor the cause costs whoever hits it an
+  // afternoon. `audit-graf.mjs` already reports this condition by name; so does
+  // this one now.
+  if (output === null) {
+    console.log(
+      "audit:translation DILEWATI — bukan repo git, `git ls-files` tak bisa dijalankan."
+    );
+    process.exit(0);
+  }
+
+  return gitLines(output);
 }
 
 /** @returns {string[]} English documents in scope. */
@@ -83,31 +98,6 @@ function listSources() {
  */
 function listMirrors() {
   return gitList("*.id.md");
-}
-
-/**
- * Read a file, or return null when it is not there.
- *
- * Deliberately not `existsSync` + `readFileSync`: that pair is a
- * time-of-check/time-of-use race, and this gate runs over a tree that git, an
- * editor, and `docs-i18n-stamp.mjs` may all be touching.
- *
- * @param {string} path
- * @returns {string | null}
- */
-function readFileIfPresent(path) {
-  try {
-    return readFileSync(path, "utf8");
-  } catch (error) {
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      /** @type {NodeJS.ErrnoException} */ (error).code === "ENOENT"
-    ) {
-      return null;
-    }
-    throw error;
-  }
 }
 
 /** @returns {Problem[]} */

@@ -43,51 +43,10 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { buangTrailingComma } from "./lib/lockfile.mjs";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-/**
- * `bun.lock` adalah JSONC: ia memakai trailing comma, yang ditolak `JSON.parse`.
- * Menghapusnya dengan regex sederhana salah — koma di dalam string ("a, b")
- * bisa ikut termakan. Pemindai di bawah melacak keadaan string dan escape, lalu
- * hanya membuang koma yang benar-benar di luar string dan diikuti `}` atau `]`.
- *
- * @param {string} teks
- * @returns {string}
- */
-function buangTrailingComma(teks) {
-  let hasil = "";
-  let diDalamString = false;
-  let terescape = false;
-
-  for (let i = 0; i < teks.length; i += 1) {
-    const c = teks[i];
-
-    if (diDalamString) {
-      hasil += c;
-      if (terescape) terescape = false;
-      else if (c === "\\") terescape = true;
-      else if (c === '"') diDalamString = false;
-      continue;
-    }
-
-    if (c === '"') {
-      diDalamString = true;
-      hasil += c;
-      continue;
-    }
-
-    if (c === ",") {
-      let j = i + 1;
-      while (j < teks.length && /\s/.test(teks[j])) j += 1;
-      if (teks[j] === "}" || teks[j] === "]") continue;
-    }
-
-    hasil += c;
-  }
-
-  return hasil;
-}
 
 /** @param {string} namaBerkas */
 function bacaJsonc(namaBerkas) {

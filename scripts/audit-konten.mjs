@@ -49,13 +49,30 @@
  */
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { posix } from "node:path";
+import { createReporter } from "./lib/reporter.mjs";
 
 const KELUARAN = "dist/client";
 
-/** @type {Array<{ gerbang: string, berkas: string, pesan: string }>} */
-const temuan = [];
-/** Yang dicetak apa pun hasilnya — gerbang yang diam saat tidak jalan tidak ada. */
-const catatan = [];
+/**
+ * Unlike its two siblings this gate takes no root argument — every caller
+ * (`package.json`, `ci.yml`, the `Dockerfile` under an explicit WORKDIR) runs
+ * it from the repo root, and routing ~15 literal paths through a join in a
+ * 1300-line gate buys diagnostics rather than correctness.
+ *
+ * What it DID need is this guard. Run from anywhere else the first read threw
+ * ENOENT and the gate exited **1** — the very code it reserves for "N
+ * violations" — so "cannot run here" and "your content is broken" were
+ * indistinguishable to any caller reading the exit code. Exit 2 is what the
+ * siblings already use for an unusable root.
+ */
+if (!existsSync("src/config/site.ts")) {
+  console.error(
+    "src/config/site.ts tidak ada — audit konten harus dijalankan dari akar repo"
+  );
+  process.exit(2);
+}
+
+const pelapor = createReporter("audit konten");
 
 /**
  * @param {string} gerbang
@@ -63,7 +80,12 @@ const catatan = [];
  * @param {string} pesan
  */
 function langgar(gerbang, berkas, pesan) {
-  temuan.push({ gerbang, berkas, pesan });
+  pelapor.violation(gerbang, berkas, pesan);
+}
+
+/** @param {string} baris */
+function catat(baris) {
+  pelapor.note(baris);
 }
 
 // ---------------------------------------------------------------------------
@@ -283,7 +305,7 @@ function auditKeluaran(halaman, { localeDefault, locales, namespaceKey }) {
     return;
   }
 
-  catatan.push(`origin situs terbaca dari canonical: ${asal}`);
+  catat(`origin situs terbaca dari canonical: ${asal}`);
 
   /** `true` bila URL menunjuk situs ini sendiri. */
   const internal = (url) =>
@@ -597,7 +619,7 @@ function auditKeluaran(halaman, { localeDefault, locales, namespaceKey }) {
     }
   }
 
-  catatan.push(`${halaman.length} halaman diperiksa (SEO, hreflang, aset, tautan, nama key)`);
+  catat(`${halaman.length} halaman diperiksa (SEO, hreflang, aset, tautan, nama key)`);
 
   // -- sitemap ---------------------------------------------------------------
   const sitemap = [...new Bun.Glob("sitemap*.xml").scanSync(KELUARAN)];
@@ -605,7 +627,7 @@ function auditKeluaran(halaman, { localeDefault, locales, namespaceKey }) {
   const locSitemap = new Set();
 
   if (sitemap.length === 0) {
-    catatan.push("sitemap: tidak ada berkas sitemap di keluaran — dilewati");
+    catat("sitemap: tidak ada berkas sitemap di keluaran — dilewati");
   } else {
     let jumlahLoc = 0;
 
@@ -626,7 +648,7 @@ function auditKeluaran(halaman, { localeDefault, locales, namespaceKey }) {
       }
     }
 
-    catatan.push(`${jumlahLoc} URL sitemap diperiksa di ${sitemap.length} berkas`);
+    catat(`${jumlahLoc} URL sitemap diperiksa di ${sitemap.length} berkas`);
   }
 
   auditFeed({ asal, internal, pathDari, namespaceKey, locSitemap, feedDideklarasikan });
@@ -894,12 +916,12 @@ function auditFeed({ asal, internal, pathDari, namespaceKey, locSitemap, feedDid
   }
 
   if (berkas.length === 0) {
-    catatan.push(
+    catat(
       "feed: tidak ada berkas .xml selain sitemap di keluaran — dilewati. " +
         "Template ini menyatakan nol seksi berita, jadi itu keadaan yang benar."
     );
   } else {
-    catatan.push(
+    catat(
       `${ditemukan.size} feed diperiksa, ${jumlahEntry} entry, ` +
         `${feedDideklarasikan.size} tautan penemuan-otomatis`
     );
@@ -945,7 +967,7 @@ function auditPrioritasGambar(halaman) {
     }
   }
 
-  catatan.push(`performa: ${eager} gambar eager diperiksa prioritasnya`);
+  catat(`performa: ${eager} gambar eager diperiksa prioritasnya`);
 }
 
 /**
@@ -1016,7 +1038,7 @@ function auditAnggaranGambar(halaman, { internal, pathDari }) {
     }
   }
 
-  catatan.push(
+  catat(
     terberat > 0
       ? `performa: halaman terberat ${namaTerberat} — ${(terberat / 1024).toFixed(0)} KB gambar terbitan`
       : "performa: tidak ada gambar terbitan yang bisa ditimbang (media awcms tidak ada di dist/)"
@@ -1219,13 +1241,13 @@ function auditGambar(rasio) {
 
   for (const { dir, periksaRasio } of akar) {
     if (!existsSync(dir)) {
-      catatan.push(`gambar: ${dir}/ belum ada — dilewati`);
+      catat(`gambar: ${dir}/ belum ada — dilewati`);
       continue;
     }
 
     const berkas = [...new Bun.Glob(pola).scanSync(dir)];
     jumlah += berkas.length;
-    catatan.push(
+    catat(
       `gambar: ${berkas.length} berkas di ${dir}/ ` +
         `(rasio ${periksaRasio ? "diperiksa" : "TIDAK diperiksa — perkakas situs, bukan ilustrasi"})`
     );
@@ -1275,7 +1297,7 @@ function auditGambar(rasio) {
   }
 
   if (jumlah === 0) {
-    catatan.push(
+    catat(
       "gambar: template ini belum membawa satu pun ilustrasi — gerbangnya jalan, " +
         "yang diperiksanya nol. Aturannya berlaku sejak gambar pertama masuk."
     );
@@ -1290,8 +1312,8 @@ const localeDefault = bacaLocaleDefault();
 const locales = bacaLocale();
 const rasio = bacaRasioVisual();
 
-catatan.push(`locale default "${localeDefault}", locale terdaftar: ${locales.join(", ") || "—"}`);
-catatan.push(`--ratio-visual dibaca dari global.css: ${rasio.teks}`);
+catat(`locale default "${localeDefault}", locale terdaftar: ${locales.join(", ") || "—"}`);
+catat(`--ratio-visual dibaca dari global.css: ${rasio.teks}`);
 
 auditGambar(rasio);
 
@@ -1302,36 +1324,15 @@ if (existsSync(KELUARAN)) {
     namespaceKey: bacaNamespaceKey(localeDefault)
   });
 } else {
-  catatan.push(
+  catat(
     `keluaran: ${KELUARAN} belum ada — SELURUH gerbang keluaran DILEWATI ` +
       "(SEO, klaim artikel JSON-LD, tanggal Open Graph, hreflang, aset " +
       "dijanjikan, tautan mati, sitemap, feed Atom, nama key bocor)."
   );
-  catatan.push(
+  catat(
     "  Ia lahir dari `bun run build`, yang butuh sumber konten awcms. Di repo " +
       "template ini itu normal; di sebuah SITUS, jalankan audit ini lagi setelah build."
   );
 }
 
-console.log("── audit konten ──");
-for (const baris of catatan) console.log(`  ${baris}`);
-
-if (temuan.length === 0) {
-  console.log("\n✓ Tidak ada pelanggaran.");
-  process.exit(0);
-}
-
-console.log(`\n✗ ${temuan.length} pelanggaran:\n`);
-
-const perGerbang = new Map();
-for (const t of temuan) {
-  perGerbang.set(t.gerbang, [...(perGerbang.get(t.gerbang) ?? []), t]);
-}
-
-for (const [gerbang, daftar] of perGerbang) {
-  console.log(`  [${gerbang}] ${daftar.length}`);
-  for (const { berkas, pesan } of daftar) console.log(`    ${berkas}: ${pesan}`);
-  console.log("");
-}
-
-process.exit(1);
+pelapor.finish();
