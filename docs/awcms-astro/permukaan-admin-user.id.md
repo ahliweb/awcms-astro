@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](permukaan-admin-user.md)
 
-<!-- i18n-source-hash: sha256:694d20f0d343b8f80e04d314fbd7716091a2dd4e3b049a25bb80996ff04d3e5f -->
+<!-- i18n-source-hash: sha256:ad5593421e7ac07fdd5a1950fc9c2d11b69a55ff22440bd8ad8cfc06e9417f45 -->
 
 # Permukaan admin USER — bentuk, prasyarat, dan batasnya
 
@@ -107,6 +107,7 @@ dipegang dokumen lain gugur bersamaan:
 | **A01, A07, dan A09 OWASP kembali berlaku** | Matriks di [`standar-performa-dan-keamanan.md`](standar-performa-dan-keamanan.md) menulis "tidak berlaku" untuk sebagian besar kategori, **beserta alasannya** — dan alasan itulah yang berhenti benar di sini |
 | **Target aksesibilitas naik ke WCAG 2.2 AA** | Permukaan berkontrol membawa fokus yang berpindah dan target sentuh; lihat [`ui-ux-design-system.md`](ui-ux-design-system.md) |
 | **Postur header lintas-origin wajib ditinjau ULANG** | Alasan resmi repo ini tidak mengirim COOP/CORP adalah "tidak punya sesi untuk dipagari", dan alasan penolakan SRI adalah "tidak ada sumber daya lintas-origin". Keduanya premis, bukan prinsip, dan keduanya gugur di sini |
+| **Dua nama `Vary` terlarang tetap berlaku, dan di sinilah ia mulai menggoda** | [ADR-0041](../adr/0041-locale-stays-at-the-root-and-two-vary-names-are-refused.md) menolak `Vary: Cookie` dan `Vary: Accept-Language` pada setiap respons. Permukaan admin adalah hal pertama yang punya cookie yang layak divariasikan — sementara halaman publik di sebelahnya tetap `public` dan tetap bisa di-cache. `awcms` menjawabnya dengan membuat `/admin` `private, no-store` dan mengeluarkannya sama sekali dari prefiks locale (ADR-0098 keputusan 6 di sana); permukaan yang dinyatakan di sini melakukan hal yang sama alih-alih menjangkau `Vary` |
 
 Empat aturan yang mengikat **setiap** permukaan terautentikasi di repo ini — BFF
 maupun admin situs — ada di [`AGENTS.md`](../../AGENTS.md) §Peran repo ini.
@@ -157,10 +158,13 @@ bukan latar belakang; masing-masing mengubah layar yang akan kamu gambar:
 | **Partner yang di-suspend berhenti menjangkau → `403 PARTNER_SUSPENDED`** (ADR-0093), dan grant yang memberinya akses **tetap ada** | Penolakan ketiga dengan bentuk yang sama, dan yang paling membingungkan untuk didiagnosis: baris grant-nya masih di sana, jadi layar mana pun yang menampilkan "akses yang diberikan" akan menunjukkan akses yang sudah tidak berlaku. Keberlakuan **dihitung**, tidak disimpan — jangan menyalin `status` ke sisi ini dan menyimpulkan darinya |
 | **Seorang subjek data dijawab PER TENANT** (ADR-0094): ekspor dan penghapusan adalah dua otoritas terpisah, dan penghapusan berpasangan maker/checker | **Jangan merancang tombol "lupakan saya di mana-mana"** — ia tidak ada dan sengaja tidak ada, karena tiap tenant adalah pengendali data yang terpisah. Permintaan seorang pengguna dijawab di tenant tempat ia bertanya, dan permukaannya `/admin/subject-requests` di `awcms`, bukan di sini |
 
-Seluruh baris di atas adalah keadaan `awcms` per **13 Agustus 2026 malam** —
-dua baris terakhirnya mendarat sesudah sinkronisasi sebelumnya pada hari yang
-sama. **Periksa ulang sebelum membangun**: daftar ini akan menua, dan tidak ada
-gerbang di repo ini yang bisa memberitahumu kapan.
+| **Preferensi bahasa milik PRINCIPAL** (ADR-0095): tabel global tanpa `tenant_id`, tanpa RLS, berkunci `principal_id` | Bentuk yang sama dengan MFA, satu lapis lebih dangkal — dan itu berarti **setelan bahasa di situsmu bukan setelan situsmu**. Pengguna yang memilih Bahasa Indonesia di sini memilihnya di setiap tenant yang ia ikuti, termasuk yang tidak bisa kaulihat. Layar yang melabelinya "bahasa situs ini" salah memerikan apa yang dilakukannya, persis seperti baris lockout di atas. Urutan resolusinya milik `awcms` dan lebih layak ditiru daripada dikarang: cookie → preferensi principal tersimpan → default tenant → `Accept-Language` → `en` |
+| **Rute swalayan TIDAK butuh izin** (ADR-0096), dan ia dikenali secara STRUKTURAL: ia tidak menerima parameter yang bisa menunjuk orang lain | **Jangan mengarang izin untuk "kelola profilmu sendiri".** ADR-0058 §E adalah jebakannya: aksi yang tidak di-seed menolak SEMUA ORANG termasuk owner tenant, sementara kodenya terbaca seolah dijaga dengan benar — jadi izin yang kautambahkan mendarat sebagai 403 universal di satu-satunya halaman yang tidak boleh berdinding. Tidak ada pula saudara ber-izin untuk dijangkau: mengubah nama tampilan atau bahasa ORANG LAIN adalah `PATCH /api/v1/profiles/{id}`, yang administratif dan tinggal di sana |
+| **Mengubah alamat sign-in adalah PEMULIHAN akun** (ADR-0099), dan per 15 Agustus 2026 statusnya **Accepted dan belum diimplementasikan** | Dua hal mengikutinya, dan yang pertama berlaku hari ini. **Hari ini:** endpoint-nya tidak ada, jadi layar profil di sini menampilkan alamat sign-in sebagai baca-saja dan menyebut alasannya — persis yang sudah dilakukan `/admin/account` di sana. **Ketika ia mendarat:** ia berupa autentikasi ulang (kata sandi, ditambah faktor kedua bila principal-nya punya), token yang dikirim ke alamat BARU, pemberitahuan bertautan batal ke alamat LAMA, dan konfirmasi yang mencabut setiap sesi lain beserta setiap token reset yang menggantung. Permukaan di sini yang membungkusnya tidak boleh "menyederhanakan" satu pun darinya, dan tidak ada saudara administratif untuk dibangun juga — mengubah alamat sign-in seseorang untuknya adalah pengambilalihan akun dengan izin ditempelkan |
+
+Seluruh baris di atas adalah keadaan `awcms` per **15 Agustus 2026**. **Periksa
+ulang sebelum membangun**: daftar ini akan menua, dan tidak ada gerbang di repo
+ini yang bisa memberitahumu kapan.
 
 ## 6. Yang tidak pernah dibangun di sini
 

@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](AGENTS.md)
 
-<!-- i18n-source-hash: sha256:0f276f2b9618bce0ddf562a9088882bdba7f98e2058dee9543d78214243a9e5d -->
+<!-- i18n-source-hash: sha256:aa50e9a3820e6d5553f10d09688ffaca28f3718fdf6dbb614896703f5ed7e7e2 -->
 
 # AGENTS.md — kontrak kerja `awcms-astro`
 
@@ -259,15 +259,28 @@ di sini:
 
 | Kosakata   | Repo yang melayani | Bentuknya di sana                                                                       |
 | ---------- | ------------------ | ----------------------------------------------------------------------------------------- |
-| `/blog/**` | `ahliweb/awcms`    | `/blog/{tenantCode}/**`, path-scoped dengan kode tenant di dalam path                     |
+| `/blog/**` | `ahliweb/awcms`    | `/{locale}/blog/{tenantCode}/**` sejak ADR-0098 di sana — path-scoped, dengan locale DAN kode tenant di dalam path. `/blog/{tenantCode}/**` telanjang tidak merender apa pun dan menjawab `307` |
 | `/news/**` | repo ini           | sebuah **tab** ber-slug `news` yang menyatakan `urutanSeksi: "terbaru"` — bukan keluarga rute baru |
+
+Baris pertama itulah sebabnya separuh kedua aturan ini akhirnya punya pemeriksa.
+URL publik kanonik `awcms` kini berbentuk persis seperti `/{lang}/{tab}/…` milik
+repo ini sendiri, jadi tab ber-slug `blog` bukan sekadar mirip dengan kosakata
+repo sebelah — ia bertabrakan huruf per huruf dengannya, pada build yang hijau.
+[`tests/kosakata-news.test.mjs`](tests/kosakata-news.test.mjs) menolak tiga
+bentuk: tab yang mengklaim slug itu, entri `permukaanAdmin.prefiks` di bawah
+`/blog`, dan berkas rute yang menuliskan segmennya secara harfiah
+([ADR-0041](docs/adr/0041-locale-stays-at-the-root-and-two-vary-names-are-refused.md)).
+Aturannya soal alamat, bukan soal katanya — `/blog-panduan/` adalah URL milik
+repo ini sendiri dan tidak bertabrakan dengan apa pun.
 
 Jangan membangun `/blog/**` di sini, dan jangan mengandaikan `awcms` masih
 melayani `/news/**`: keempat rutenya **dihapus** di sana pada 8 Agustus 2026 dan
 kini 301 ke `/blog/{tenantCode}/**` — **kecuali** untuk tenant ber-`legacyTenantRouteEnabled: false`, yang sudah mematikan seluruh permukaan konten publiknya dan karena itu tetap dijawab 404 alih-alih diberi 301 menuju 404 yang pasti (`awcms` ADR-0071 §4 butir 3)
 ([ADR-0036](docs/adr/0036-news-adalah-kosakata-repo-ini-dan-sebuah-tab-yang-memikulnya.md),
-`awcms` ADR-0071 yang men-supersede `awcms` ADR-0059). Yang dibelah adalah
-**URL**, bukan kepemilikan konten: modulnya sama, layar pengelolanya sama, dan
+`awcms` ADR-0071 yang men-supersede `awcms` ADR-0059). Sejak 15 Agustus 2026
+301 itu adalah **lompatan pertama dari dua**: ia mendarat di
+`/blog/{tenantCode}/…` telanjang, yang menjawab `307` ke URL berprefiks locale.
+Yang dibelah adalah **URL**, bukan kepemilikan konten: modulnya sama, layar pengelolanya sama, dan
 repo ini tetap tidak menyimpan satu pun artikel.
 
 `news` di sini **bukan** kata yang dipesan — ia slug tab yang dipilih situs, dan
@@ -751,7 +764,12 @@ performa:
 - [ ] Gambar baru berasio `--ratio-visual`, ekstensinya sesuai isi berkas, tanpa
       lambang instansi maupun data tiruan, dan teksnya terbaca pada lebar 360px.
 - [ ] Perubahan pada penyajian — header, CSP, `Cache-Control`, kompresi, port —
-      dibuktikan `tests/penyaji.test.mjs`, bukan diperiksa dengan mata.
+      dibuktikan `tests/penyaji.test.mjs`, bukan diperiksa dengan mata. **Sebuah
+      `Vary` termasuk di dalamnya**: `Cookie` dan `Accept-Language` ditolak
+      langsung
+      ([ADR-0041](docs/adr/0041-locale-stays-at-the-root-and-two-vary-names-are-refused.md)),
+      dan gerbang yang sama menolak setiap `Vary` lain yang ditulis dari berkas
+      itu, jadi nilai ketiga adalah sebuah ADR, bukan sebuah suntingan.
 - [ ] Perubahan yang menyentuh header, cache, kompresi, atau anggaran performa
       ikut memperbarui barisnya di
       `docs/awcms-astro/standar-performa-dan-keamanan.md`. Kolom "Keadaan" di
@@ -769,7 +787,8 @@ performa:
       yang menelan permukaan publik ditolak, deklarasi separuh ditolak, dan
       setiap rute `prerender = false` wajib berada di bawah prefiks yang
       dinyatakan) dan `tests/kosakata-news.test.mjs` (ADR-0036 — tab ber-slug
-      `news` wajib `urutanSeksi: "terbaru"`).
+      `news` wajib `urutanSeksi: "terbaru"`, dan **tidak ada** tab, prefiks
+      admin, atau berkas rute yang boleh mengklaim `blog`, yang milik `awcms`).
 - [ ] Menambah panggilan ke `awcms` berarti menyepakati kontraknya di SANA lebih
       dulu. `tests/kontrak-awcms.test.mjs` mengeraskan permukaan yang dipanggil
       build menjadi tepat tiga dan menuntutnya sama dua arah dengan tabel

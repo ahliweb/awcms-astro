@@ -25,7 +25,13 @@
  */
 import { test, describe, expect, afterEach } from "bun:test";
 import assert from "node:assert/strict";
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -42,7 +48,8 @@ import {
   headerKeamanan,
   jalurNormal,
   TIPE_FEED,
-  tipeIsi
+  tipeIsi,
+  VARY_DILARANG
 } from "../server/penyaji.mjs";
 import { NAMA_BERKAS_FEED } from "../src/lib/feed.ts";
 
@@ -292,6 +299,90 @@ describe("header pada respons sungguhan", () => {
     });
     assert.equal(res.headers.get("content-encoding"), null);
     assert.equal(await res.text(), HTML_PANJANG);
+  });
+});
+
+/**
+ * The forbidden-`Vary` gate (ADR-0041, importing `awcms` ADR-0098 decision 2).
+ *
+ * Its defect class is the one no gate in this repo could see before: every
+ * response this server sends is `public`, so a proxy, a CDN, or Traefik may
+ * hold one copy and hand it to everybody. A `Vary` naming `Cookie` or
+ * `Accept-Language` makes that copy depend on a header the cache is now
+ * expected to key on — and what a reader sees is a page in a stranger's
+ * language, minutes later, on a build that was green.
+ *
+ * The rule is checked in BOTH directions on purpose, because they fail at
+ * different times:
+ *
+ *   - over a real response, which catches a middleware adding the header
+ *     without anyone here writing it;
+ *   - over the source of `server/penyaji.mjs`, which catches the edit that
+ *     WOULD add it — the realistic path, since the obvious way to make this
+ *     server choose a reader's language is to negotiate `Accept-Language`
+ *     here, exactly as `awcms` rejected doing at its edge.
+ *
+ * `Vary: Accept-Encoding` from `compression` must keep passing: it names a
+ * transport encoding, not a different body, and a gate that swept it up would
+ * be turned off within a week.
+ */
+describe("Vary terlarang pada respons publik (ADR-0041)", () => {
+  test("the forbidden list is exactly the two names ADR-0098 refuses", () => {
+    // Pinned, not merely read: a third name added here would be a widening of
+    // the rule, and widening it is an ADR decision rather than an edit.
+    assert.deepEqual([...VARY_DILARANG], ["cookie", "accept-language"]);
+  });
+
+  test("a real response names neither, even when the request offers both", async () => {
+    const res = await lewatServer(handlerTiruan, "/panduan/", {
+      headers: {
+        "Accept-Encoding": "gzip",
+        "Accept-Language": "id-ID,id;q=0.9",
+        Cookie: "tema=gelap"
+      }
+    });
+
+    const vary = (res.headers.get("vary") ?? "").toLowerCase();
+
+    for (const nama of VARY_DILARANG) {
+      assert.ok(
+        !vary.split(",").some((bagian) => bagian.trim() === nama),
+        `respons membawa "Vary: ${nama}" — sebuah cache bersama akan ` +
+          `menyilangkan jawabannya antar pembaca (ADR-0041)`
+      );
+    }
+
+    // And the legitimate one is still there, so the assertion above is not
+    // passing because `Vary` went missing altogether.
+    assert.match(vary, /accept-encoding/);
+  });
+
+  test("the server source sets no Vary of its own", () => {
+    // Comments are stripped first for the reason `tests/peran-situs.test.mjs`
+    // gives: this file DESCRIBES the rule at length, and a gate counting
+    // docblocks would go red over the paragraph that explains it. The constant
+    // holding the rule is removed with them — it is the one place the names are
+    // supposed to appear.
+    const isi = readFileSync("server/penyaji.mjs", "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/^\s*\/\/.*$/gm, "")
+      .replaceAll("VARY_DILARANG", "");
+
+    // Deliberately STRICTER than the rule it guards, and said so rather than
+    // dressed up: it refuses every `Vary` written from this file, not only the
+    // two forbidden names. `Accept-Encoding` already arrives correctly from
+    // `compression`, so this file has no legitimate reason to write one — and a
+    // gate that has to parse a header value to judge it would be the gate
+    // getting the judgement wrong. A third value that is genuinely needed is an
+    // ADR, which is where the two forbidden names came from.
+    assert.ok(
+      !/vary/i.test(isi),
+      `server/penyaji.mjs menulis header "Vary" sendiri. Setiap respons di ` +
+        `sini publik, jadi itu keputusan caching: ADR-0041 MENOLAK "Cookie" ` +
+        `dan "Accept-Language" — menolak, bukan membuangnya, karena ` +
+        `membuangnya meng-cache badan yang penulisnya baru saja menyatakan ` +
+        `bervariasi. Nilai lain butuh ADR-nya sendiri.`
+    );
   });
 });
 

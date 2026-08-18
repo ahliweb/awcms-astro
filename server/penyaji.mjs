@@ -70,6 +70,41 @@ export const CACHE_ASET = "public, max-age=31536000, immutable";
 export const CACHE_HALAMAN = "public, max-age=0, must-revalidate";
 
 /**
+ * The `Vary` names a response from this server may NEVER carry (ADR-0041,
+ * importing `awcms` ADR-0098 decision 2).
+ *
+ * Every response here is public and cacheable — `CACHE_HALAMAN` above says
+ * `public`, and Traefik, a CDN, or a corporate proxy may all hold a copy. A
+ * `Vary` naming either of these two headers is what turns that shared copy into
+ * a cross-serving machine, and the two fail differently:
+ *
+ *   - `Cookie` puts a credential-bearing header into the cache key. The object
+ *     count then multiplies by the number of DISTINCT cookie strings, not by
+ *     the number of readers' languages, so the hit rate collapses toward zero —
+ *     worse than having no cache, because the origin now pays for the cache's
+ *     misses too.
+ *   - `Accept-Language` looks like the correct tool and is the one someone
+ *     reaches for when they decide this server should choose a reader's
+ *     language. It cannot see an explicit choice, so a reader who clicked
+ *     Indonesian keeps getting English while the switch behaves exactly as
+ *     specified.
+ *
+ * Neither is set today, and that is precisely why the rule is written where the
+ * next editor reads it rather than left to be inferred: the failure is silent —
+ * a stranger, minutes later, gets the wrong page, and no gate that measures
+ * this repo's own build would notice. `Vary: Accept-Encoding` from `compression`
+ * below is untouched by this and is correct: it names a TRANSPORT encoding, not
+ * a different body.
+ *
+ * ADR-0041 keeps `awcms`'s wording — the names are REFUSED, not stripped.
+ * Stripping would cache a body whose author had just declared it varies, which
+ * is the same defect arrived at politely. `tests/penyaji.test.mjs` reads this
+ * constant in both directions: no response may carry these names, and this file
+ * may not name them outside a comment.
+ */
+export const VARY_DILARANG = Object.freeze(["cookie", "accept-language"]);
+
+/**
  * Content-Security-Policy situs publik.
  *
  * ## Kenapa ia baru bisa ada sekarang

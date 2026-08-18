@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:bf1e14ce83411e92d80aa517a49d264f0a38d7969ed7e6ca5aa01c1ac23ed2c0 -->
+<!-- i18n-source-hash: sha256:d9a17ccab926132fd4deb9a9379c6689d24624d71e7a7462c1f9a798e085f1cf -->
 
 # Architecture Decision Records
 
@@ -47,6 +47,7 @@ menyesuaikan gaya, menambah tes.
 | [0038](0038-kebutuhan-backend-menjadi-modul-di-awcms.md) | Satuan sebuah kebutuhan backend adalah MODUL di `awcms`; repo ini membaca dan tidak menulis, dan keempat batasnya digerbangi | Diterima |
 | [0039](0039-english-is-the-source-language.md) | Inggris adalah bahasa sumber di jalur telanjang, Indonesia cerminnya di `<nama>.id.md`; buku besar yang hanya boleh menyusut, dan tiga gerbang yang bergerak lebih dulu | Diterima |
 | [0040](0040-changeset-menyatakan-bump-semver.md) | Sebuah changeset menyatakan `bump`-nya sendiri, dan rilis menurunkan `vX.Y.Z` dari yang terbesar di antara yang menunggu; penguraian ketat mengakhiri tag yang berbunyi `v0.2.NaN` | Diterima |
+| [0041](0041-locale-stays-at-the-root-and-two-vary-names-are-refused.md) | Locale default tetap memegang AKAR — prefiks `awcms` ADR-0098 tidak diadopsi, karena build statis tidak punya apa pun yang bisa dikelirukan cache bersama; yang DISERAP adalah penolakannya atas `Vary: Cookie` dan `Vary: Accept-Language`, dan `/blog/**` akhirnya mendapat pemeriksa yang tak pernah dimiliki ADR-0036 | Diterima |
 
 > **Kenapa penomoran mulai dari 0014.** ADR di repo ini melanjutkan urutan repo
 > rujukan yang identitasnya dilepas di [#11](https://github.com/ahliweb/awcms-astro/pull/11);

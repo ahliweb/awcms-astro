@@ -8,7 +8,9 @@ The AWCMS family template for **static public sites on Astro**, with
 Readers get static files; editors get an admin panel. Nothing waits on a
 database, and **this site does not call awcms when a reader asks for a page** —
 that is the claim, not that the CMS is hidden. awcms does face the internet:
-`/blog/{tenantCode}/**` is its permanent URL vocabulary.
+`/{locale}/blog/{tenantCode}/**` is its permanent URL vocabulary (the locale
+moved into the path on 15 August 2026, `awcms` ADR-0098; the bare path answers a
+`307`).
 
 **Public pages are its primary function, and that is the default.** A site may
 declare that it also carries an admin surface for **users** — authors,
@@ -84,8 +86,8 @@ Content is pulled **at build time**, not at request time. The consequences are
 plain and deliberate: the site stays up while awcms is down, there is no
 database and no call to awcms at request time, and new content appears after the
 next build — not instantly. If instant is what you need, the thing that answers
-it is **awcms's own** public surface (`/blog/{tenantCode}/**`), where publishing
-goes live without a rebuild. Not `awcms-micro`: that repo has been an **archive**
+it is **awcms's own** public surface (`/{locale}/blog/{tenantCode}/**`), where
+publishing goes live without a rebuild. Not `awcms-micro`: that repo has been an **archive**
 since 2 August 2026 and must not be recommended to anyone.
 
 What serves those files is a **Bun process**, not nginx (ADR-0016) — so "no
@@ -315,7 +317,8 @@ lets it need no `node_modules` at all.
   [`src/lib/content.ts`](src/lib/content.ts), and a section is decided by its
   tab, not by a term. ADR-0036 §5 declares this open rather than promising
   parity with four `awcms` routes that have since **been removed** there — since
-  8 August 2026 `/news/**` in `awcms` answers 301 to `/blog/{tenantCode}/**`
+  8 August 2026 `/news/**` in `awcms` answers 301 to `/blog/{tenantCode}/**`,
+  which since 15 August 2026 answers a further 307 to its locale-prefixed URL
   (**except** for a tenant with `legacyTenantRouteEnabled: false`, which has
   already switched off its whole public content surface and is therefore still
   answered 404 rather than given a 301 towards a certain 404 (`awcms` ADR-0071
