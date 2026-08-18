@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](0041-locale-stays-at-the-root-and-two-vary-names-are-refused.md)
 
-<!-- i18n-source-hash: sha256:a02658f3797430f4a711690884f37d2957a8522b7a610d7628fc264985467481 -->
+<!-- i18n-source-hash: sha256:135f7613d9e462b86cf5966cddde256fbbccfadd4690e4d4cbe37bfd0592175f -->
 
 # ADR-0041 — Locale default tetap di AKAR, dan dua nama `Vary` ditolak
 
@@ -69,9 +69,12 @@ ADR-0068 tempatnya di `awcms-family-compatibility.yaml` repo itu — repo ini ti
 bisa menulis entri tersebut sendiri, dan karena itu menyatakannya di sini,
 mengikuti preseden
 [ADR-0034](0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md)
-§Hubungan. Yang ditinjau pada tanggal itu bukan apakah kedua repo mengeja URL
-dengan cara yang sama, melainkan apakah premis di atas masih berlaku: bahwa tidak
-ada apa pun di jalur penyajian repo ini yang membaca header permintaan.
+§Hubungan. Entri yang diminta adalah yang **keenam**, di samping lima yang sudah
+dibawa berkas itu: `id: public-locale-url-shape`, `owner: "@ahliweb"`,
+`reviewDate: "2027-02-04"` supaya kadensi keluarganya tetap satu. Yang ditinjau
+pada tanggal itu bukan apakah kedua repo mengeja URL dengan cara yang sama,
+melainkan apakah premis di atas masih berlaku: bahwa tidak ada apa pun di jalur
+penyajian repo ini yang membaca header permintaan.
 
 ## Keputusan 2 — `Vary: Cookie` dan `Vary: Accept-Language` DITOLAK
 

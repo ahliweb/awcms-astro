@@ -245,7 +245,7 @@ Moving the data source does not move responsibility for presentation:
 
 [ADR-0034](../adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md) §4 requires every feature on a site's USER admin surface to **also** be manageable by an `owner` through `awcms`'s own `/admin/*`, and states plainly that this rule **cannot be machine-verified from this repo**: the permission catalogue and the screen registry live over there. What can be done here is to supply the material, so that judgement is not made from memory.
 
-As of 13 August 2026 (evening) `awcms` serves **40 top-level `/admin/*` screen files** — one of which is `index.astro`, that is `/admin` itself — out of **42 screen files** in total; two of them are nested (`modules/[moduleKey].astro` and `tenant/domains.astro`). Its number rose by two that same day, after the earlier synchronisation: `/admin/business-scope` and `/admin/subject-requests`. Those **relevant** as the manager of a USER admin surface — meaning the feature behind them can be switched off by an `owner` today:
+As of 15 August 2026 `awcms` serves **41 top-level `/admin/*` screen files** — one of which is `index.astro`, that is `/admin` itself — out of **43 screen files** in total; two of them are nested (`modules/[moduleKey].astro` and `tenant/domains.astro`). The one that arrived since the 13 August count is `/admin/account` (`awcms` ADR-0096), and it is the first addition in a while that lands in the table below rather than in the SYSTEM list under it. Those **relevant** as the manager of a USER admin surface — meaning the feature behind them can be switched off by an `owner` today:
 
 | `awcms` screen | The manager for |
 | --- | --- |
@@ -255,6 +255,9 @@ As of 13 August 2026 (evening) `awcms` serves **40 top-level `/admin/*` screen f
 | `/admin/media` | image and share card uploads |
 | `/admin/profiles`, `/admin/registrations`, `/admin/invitations` | user profiles, registrations, invitations |
 | `/admin/comments` | comments — only if a site enables them through an ADR of its own |
+| `/admin/account` | a person's OWN account — display name, language, password, sessions, MFA (`awcms` ADR-0096) |
+
+That last row is the odd one out, and the difference decides whether a screen you draw here works. Every other row names a screen whose feature is **permissioned**, so an `owner` switching it off is what makes ADR-0034 §4 satisfiable. `/admin/account` is the opposite by construction: its routes take no parameter that can point at anybody else, so they are deliberately NOT permissioned, and there is nothing for an `owner` to switch off. Projecting it here therefore does not need an `owner` screen to exist behind it — it needs you **not** to invent a permission for it, because an action that is not seeded denies everybody (`awcms` ADR-0058 §E). The permissioned sibling that does exist, `PATCH /api/v1/profiles/{id}`, changes SOMEBODY ELSE'S profile and is administrative; it is `/admin/profiles` in the row above, not this one.
 
 The rest are **SYSTEM** admin and **may have no projection here**, however easy they would be to draw: `/admin/modules`, `/admin/roles`, `/admin/users`, `/admin/user-groups`, `/admin/abac-policies`, `/admin/tenants`, `/admin/audit-trail`, `/admin/domain-events`, `/admin/security`, `/admin/machine-credentials`, `/admin/partners`, `/admin/partner-registry`, `/admin/business-scope`, `/admin/subject-requests`, `/admin/email-suppression`, `/admin/idn-regions`, `/admin/data-lifecycle`, `/admin/sync`, `/admin/tenant/domains`, and every other platform screen. The measure is not who uses it but what it changes — if a screen changes something **outside one site's contents**, it belongs to `awcms` (`awcms` ADR-0070 §1).
 

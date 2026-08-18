@@ -61,9 +61,12 @@ document. Here the bare path **is** that document, and
 it belongs in that repo's `awcms-family-compatibility.yaml` — this repo cannot
 write that entry itself, which is why it is stated here instead, following the
 precedent of [ADR-0034](0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md)
-§Relationship. What is reviewed on that date is not whether the two repos spell
-their URLs the same way, but whether the premise above still holds: that nothing
-in this repo's serving path reads a request header.
+§Relationship. The entry being asked for is a **sixth**, beside the five that
+file already carries: `id: public-locale-url-shape`, `owner: "@ahliweb"`,
+`reviewDate: "2027-02-04"` to keep the family's single cadence. What is reviewed
+on that date is not whether the two repos spell their URLs the same way, but
+whether the premise above still holds: that nothing in this repo's serving path
+reads a request header.
 
 ## Decision 2 — `Vary: Cookie` and `Vary: Accept-Language` are REFUSED
 
