@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](integrasi-awcms.md)
 
-<!-- i18n-source-hash: sha256:1ab30726576a2ba8835421ab92188c03f425afcbc7f233cbbc7dba838fbb88fd -->
+<!-- i18n-source-hash: sha256:9b9bef301b4573d1f38aaeb4bc29cb1085128597653802b54bc6797693cc70e4 -->
 
 # Integrasi awcms-astro → awcms
 
@@ -248,7 +248,7 @@ Perpindahan sumber data tidak memindahkan tanggung jawab presentasi:
 
 [ADR-0034](../adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md) §4 mewajibkan setiap fitur di permukaan admin USER sebuah situs **juga** bisa dikelola `owner` lewat `/admin/*` milik `awcms`, dan menyatakan terus terang bahwa aturan itu **tidak bisa diverifikasi mesin dari repo ini**: katalog permission dan registry layarnya tinggal di sana. Yang bisa dilakukan di sini adalah menyediakan bahannya, supaya penilaiannya tidak dilakukan dari ingatan.
 
-Per 13 Agustus 2026 (malam) `awcms` menyajikan **40 berkas layar `/admin/*` tingkat atas** — salah satunya `index.astro`, yaitu `/admin` sendiri — dari **42 berkas layar** seluruhnya; dua di antaranya bersarang (`modules/[moduleKey].astro` dan `tenant/domains.astro`). Angkanya naik dua pada hari itu juga, sesudah sinkronisasi sebelumnya: `/admin/business-scope` dan `/admin/subject-requests`. Yang **relevan** sebagai pengelola sebuah permukaan admin USER, artinya fitur di baliknya sudah bisa dimatikan `owner` hari ini:
+Per 15 Agustus 2026 `awcms` menyajikan **41 berkas layar `/admin/*` tingkat atas** — salah satunya `index.astro`, yaitu `/admin` sendiri — dari **43 berkas layar** seluruhnya; dua di antaranya bersarang (`modules/[moduleKey].astro` dan `tenant/domains.astro`). Yang datang sejak hitungan 13 Agustus adalah `/admin/account` (`awcms` ADR-0096), dan ia penambahan pertama sejak lama yang mendarat di tabel di bawah alih-alih di daftar SISTEM di bawahnya. Yang **relevan** sebagai pengelola sebuah permukaan admin USER, artinya fitur di baliknya sudah bisa dimatikan `owner` hari ini:
 
 | Layar `awcms` | Menjadi pengelola bagi |
 | --- | --- |
@@ -258,6 +258,9 @@ Per 13 Agustus 2026 (malam) `awcms` menyajikan **40 berkas layar `/admin/*` ting
 | `/admin/media` | unggahan gambar dan kartu share |
 | `/admin/profiles`, `/admin/registrations`, `/admin/invitations` | profil pengguna, pendaftaran, undangan |
 | `/admin/comments` | komentar — hanya bila sebuah situs mengaktifkannya lewat ADR-nya sendiri |
+| `/admin/account` | akun SENDIRI seseorang — nama tampilan, bahasa, kata sandi, sesi, MFA (`awcms` ADR-0096) |
+
+Baris terakhir itu ganjil sendiri, dan perbedaannya menentukan apakah layar yang kaugambar di sini berfungsi. Setiap baris lain menamai layar yang fiturnya **ber-izin**, sehingga `owner` yang mematikannya adalah yang membuat ADR-0034 §4 bisa dipenuhi. `/admin/account` justru kebalikannya secara konstruksi: rutenya tidak menerima parameter yang bisa menunjuk orang lain, jadi mereka sengaja TIDAK diberi izin, dan tidak ada apa pun untuk dimatikan seorang `owner`. Memproyeksikannya ke sini karena itu tidak menuntut ada layar `owner` di baliknya — ia menuntutmu **tidak** mengarang izin untuknya, karena aksi yang tidak di-seed menolak semua orang (`awcms` ADR-0058 §E). Saudara ber-izin yang memang ada, `PATCH /api/v1/profiles/{id}`, mengubah profil ORANG LAIN dan bersifat administratif; itu `/admin/profiles` di baris atas, bukan baris ini.
 
 Sisanya adalah admin **SISTEM** dan **tidak boleh punya proyeksi di sini**, seberapa pun mudahnya digambar: `/admin/modules`, `/admin/roles`, `/admin/users`, `/admin/user-groups`, `/admin/abac-policies`, `/admin/tenants`, `/admin/audit-trail`, `/admin/domain-events`, `/admin/security`, `/admin/machine-credentials`, `/admin/partners`, `/admin/partner-registry`, `/admin/business-scope`, `/admin/subject-requests`, `/admin/email-suppression`, `/admin/idn-regions`, `/admin/data-lifecycle`, `/admin/sync`, `/admin/tenant/domains`, dan seluruh layar platform lain. Ukurannya bukan siapa yang memakainya melainkan apa yang diubahnya — bila layarnya mengubah sesuatu **di luar isi satu situs**, ia milik `awcms` (`awcms` ADR-0070 §1).
 

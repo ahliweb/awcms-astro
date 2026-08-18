@@ -247,8 +247,19 @@ split runs both ways, so it is also a rule about what may NOT be built here:
 
 | Vocabulary | Repo that serves it | Its form there                                                                          |
 | ---------- | ------------------- | ----------------------------------------------------------------------------------------- |
-| `/blog/**` | `ahliweb/awcms`     | `/blog/{tenantCode}/**`, path-scoped with the tenant code inside the path                 |
+| `/blog/**` | `ahliweb/awcms`     | `/{locale}/blog/{tenantCode}/**` since its ADR-0098 — path-scoped, with both the locale and the tenant code inside the path. The bare `/blog/{tenantCode}/**` renders nothing and answers `307` |
 | `/news/**` | this repo           | a **tab** with slug `news` declaring `urutanSeksi: "terbaru"` — not a new route family    |
+
+That first row is why the second half of this rule finally has a checker.
+`awcms`'s canonical public URL is now shaped exactly like this repo's own
+`/{lang}/{tab}/…`, so a tab whose slug is `blog` would not merely resemble the
+other repo's vocabulary — it would collide with it character for character, on a
+green build. [`tests/kosakata-news.test.mjs`](tests/kosakata-news.test.mjs)
+refuses three shapes: a tab claiming the slug, a `permukaanAdmin.prefiks` entry
+under `/blog`, and a route file writing the segment literally
+([ADR-0041](docs/adr/0041-locale-stays-at-the-root-and-two-vary-names-are-refused.md)).
+The rule is about the address, not the word — `/blog-panduan/` is this repo's own
+URL and collides with nothing.
 
 Do not build `/blog/**` here, and do not assume `awcms` still serves `/news/**`:
 its four routes were **removed** there on 8 August 2026 and now 301 to
@@ -257,9 +268,11 @@ its four routes were **removed** there on 8 August 2026 and now 301 to
 public content surface and is therefore still answered 404 rather than given a
 301 towards a certain 404 (`awcms` ADR-0071 §4 item 3)
 ([ADR-0036](docs/adr/0036-news-adalah-kosakata-repo-ini-dan-sebuah-tab-yang-memikulnya.md),
-`awcms` ADR-0071 superseding `awcms` ADR-0059). What is split is the **URL**,
-not ownership of content: the module is the same, the managing screen is the
-same, and this repo still stores not one article.
+`awcms` ADR-0071 superseding `awcms` ADR-0059). Since 15 August 2026 that 301 is
+the **first of two hops**: it lands on the bare `/blog/{tenantCode}/…`, which
+answers `307` to the locale-prefixed URL. What is split is the **URL**, not
+ownership of content: the module is the same, the managing screen is the same,
+and this repo still stores not one article.
 
 `news` here is **not** a reserved word — it is a tab slug a site chooses, and
 this template does not ship it. Its gate is
@@ -736,7 +749,11 @@ Four things to know before touching headers, cache, or the performance budget:
       carries no institutional emblem or mock data, and its text is readable at
       360px wide.
 - [ ] A change to serving — headers, CSP, `Cache-Control`, compression, port —
-      is proven by `tests/penyaji.test.mjs`, not checked by eye.
+      is proven by `tests/penyaji.test.mjs`, not checked by eye. **A `Vary` is
+      part of that**: `Cookie` and `Accept-Language` are refused outright
+      ([ADR-0041](docs/adr/0041-locale-stays-at-the-root-and-two-vary-names-are-refused.md)),
+      and the same gate refuses every other `Vary` written from that file, so a
+      third value is an ADR rather than an edit.
 - [ ] A change touching headers, cache, compression, or the performance budget
       also updates its row in
       `docs/awcms-astro/standar-performa-dan-keamanan.md`. The "State" column
@@ -753,7 +770,8 @@ Four things to know before touching headers, cache, or the performance budget:
       swallows the public surface refused, a half declaration refused, and every
       `prerender = false` route required to sit under a declared prefix) and
       `tests/kosakata-news.test.mjs` (ADR-0036 — a tab with slug `news` must be
-      `urutanSeksi: "terbaru"`).
+      `urutanSeksi: "terbaru"`, and **no** tab, admin prefix, or route file may
+      claim `blog`, which belongs to `awcms`).
 - [ ] Adding a call to `awcms` means agreeing its contract THERE first.
       `tests/kontrak-awcms.test.mjs` hardens the surfaces the build calls to
       exactly three and requires them to match the marked table in the

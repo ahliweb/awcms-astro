@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:9b5ba8f493c0fe6c801ce310a16d5f4246bd50b89e094b49006466f0ea540865 -->
+<!-- i18n-source-hash: sha256:e4debcbd93a965d8cc5263dc9f467bebcafa6b539dac1eb164628a2253fc9bbf -->
 
 # awcms-astro
 
@@ -10,7 +10,9 @@ Template keluarga AWCMS untuk **situs publik statis di atas Astro**, dengan
 Pembaca mendapat berkas statis; redaksi mendapat panel admin. Tidak ada yang
 menunggu basis data, dan **situs ini tidak memanggil awcms saat pembaca meminta
 halaman** — klaimnya itu, bukan bahwa CMS-nya tersembunyi. awcms memang
-menghadap internet: `/blog/{tenantCode}/**` adalah kosakata URL permanennya.
+menghadap internet: `/{locale}/blog/{tenantCode}/**` adalah kosakata URL
+permanennya (locale-nya pindah ke dalam path pada 15 Agustus 2026, `awcms`
+ADR-0098; path telanjangnya menjawab `307`).
 
 **Fungsi utamanya halaman publik, dan itu bawaannya.** Sebuah situs boleh
 menyatakan dirinya juga membawa permukaan admin untuk **user** — penulis,
@@ -87,7 +89,7 @@ Konten ditarik **saat build**, bukan saat request. Konsekuensinya lugas dan
 memang disengaja: situs tetap tayang saat awcms mati, tidak ada basis data dan
 tidak ada panggilan ke awcms saat request, dan konten baru tayang setelah build
 berikutnya — bukan seketika. Kalau butuh seketika, yang menjawabnya adalah
-permukaan publik **awcms sendiri** (`/blog/{tenantCode}/**`), yang terbit
+permukaan publik **awcms sendiri** (`/{locale}/blog/{tenantCode}/**`), yang terbit
 langsung tayang tanpa rebuild. Bukan `awcms-micro`: repo itu **arsip** sejak
 2 Agustus 2026 dan tidak boleh direkomendasikan kepada siapa pun.
 
@@ -317,7 +319,8 @@ membuatnya tidak perlu `node_modules` sama sekali.
   [`src/lib/content.ts`](src/lib/content.ts), dan seksi ditentukan oleh tab,
   bukan oleh term. ADR-0036 §5 menyatakannya terbuka alih-alih menjanjikan
   paritas dengan empat rute `awcms` yang kini **sudah dihapus** di sana — sejak
-  8 Agustus 2026 `/news/**` di `awcms` menjawab 301 ke `/blog/{tenantCode}/**`
+  8 Agustus 2026 `/news/**` di `awcms` menjawab 301 ke `/blog/{tenantCode}/**`,
+  yang sejak 15 Agustus 2026 menjawab 307 lagi ke URL berprefiks locale-nya
   (**kecuali** untuk tenant ber-`legacyTenantRouteEnabled: false`, yang sudah mematikan seluruh permukaan konten publiknya dan karena itu tetap dijawab 404 alih-alih diberi 301 menuju 404 yang pasti (`awcms` ADR-0071 §4 butir 3)),
   jadi tidak ada lagi paritas yang bisa dikejar. Situs yang benar-benar
   membutuhkan arsip kategori/tag membawanya lewat ADR-nya sendiri di sini.
