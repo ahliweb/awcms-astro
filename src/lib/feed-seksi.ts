@@ -22,6 +22,8 @@ import {
 } from "../config/site";
 import { getArticles } from "./content";
 import { t } from "./po";
+import { profilSitus } from "./awcms/profil";
+import { namaSitus } from "./identitas";
 import { NAMA_BERKAS_FEED, bangunFeedAtom, seksiPunyaFeed } from "./feed";
 
 /** Path situs berkas feed sebuah seksi, mis. `/en/berita/feed.xml`. */
@@ -63,16 +65,24 @@ export async function isiFeed(locale: Locale, tab: TabSlug): Promise<string> {
     siteConfig.tabs.find((entry) => entry.slug === tab)?.label ?? tab;
   const tabLabel = t(locale, tabTitleKey(tab), tabFallback);
 
+  // Nama situs datang dari `site_profile` (`awcms` #596), sama seperti masthead.
+  // Sebuah feed yang menamai situsnya berbeda dari halamannya adalah langganan
+  // yang salah nama di daftar langganan pembaca — dan tidak ada gerbang yang
+  // bisa melihatnya, karena kedua nama ada dan keduanya masuk akal dibaca
+  // sendiri. Persis alasan `judul` feed dikirim sebagai satu objek bersama
+  // `href`-nya di `BaseLayout`.
+  const nama = namaSitus(await profilSitus());
+
   return bangunFeedAtom({
     // Judul feed membawa nama situs, bukan nama seksi saja. Pembaca feed
     // menampilkan judul ini di daftar langganan, tempat "Berita" saja tidak
     // memberi tahu siapa pun berita milik siapa.
-    judul: `${tabLabel} — ${siteConfig.name}`,
+    judul: `${tabLabel} — ${nama}`,
     ringkasan: t(locale, `tab.${tab}.metaDesc`, siteConfig.description),
     url: getSiteUrl(localePath(locale, `/${tab}/`)),
     urlDiri: getSiteUrl(jalurFeed(locale, tab)),
     bahasa: localeHtmlLang[locale],
-    penerbit: siteConfig.name,
+    penerbit: nama,
     butir: articles.map(({ entry, slug }) => ({
       judul: entry.data.title,
       url: getSiteUrl(localePath(locale, `/${tab}/${slug}/`)),
