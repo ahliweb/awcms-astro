@@ -16,7 +16,7 @@ import { getArticleVisual } from '../lib/article-images';
 import { SITE_SOCIAL_IMAGE } from '../lib/social-image';
 import { articleSchema, tipeArtikelSeksi } from '../lib/schema';
 import { profilSitus } from '../lib/awcms/profil';
-import { namaPenerbit } from '../lib/identitas';
+import { namaPenerbit, namaSitus } from '../lib/identitas';
 import { t } from '../lib/po';
 import type { LocalizedArticle } from '../lib/content';
 
@@ -105,7 +105,7 @@ const schema = articleSchema({
 // memanggil `getArticles` lagi hanya untuk menghitungnya akan menambah
 // pekerjaan per halaman untuk menjawab pertanyaan yang sudah terjawab.
 const feed = seksiPunyaFeed(urutanSeksiTab(data.kategori), 1)
-  ? { judul: `${tabName} — ${siteConfig.name}`, href: jalurFeed(locale, data.kategori) }
+  ? { judul: `${tabName} — ${namaSitus(await profilSitus())}`, href: jalurFeed(locale, data.kategori) }
   : undefined;
 ---
 

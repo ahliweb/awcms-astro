@@ -29,6 +29,7 @@
  */
 import { test, describe, beforeEach, afterEach } from "bun:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 
 import {
   bacaTautanSosial,
@@ -323,5 +324,48 @@ describe("nomor telepon menjadi tautan", () => {
     assert.equal(tautanTelepon("+62 536 123456"), "tel:+62536123456");
     assert.equal(tautanTelepon("(0536) 123-456"), "tel:0536123456");
     assert.equal(tautanTelepon(null), null);
+  });
+});
+
+describe("nama situs sampai ke SETIAP permukaan yang menamainya", () => {
+  /**
+   * Cacat yang ditutup di sini nyata dan sempat mendarat: masthead sudah
+   * memakai nama tenant sementara JUDUL FEED masih memakai `SITE_NAME`. Tidak
+   * ada gerbang yang bisa melihatnya — kedua nama ada, keduanya masuk akal
+   * dibaca sendiri — dan akibatnya adalah langganan yang salah nama di daftar
+   * langganan pembaca, di tempat yang justru paling jarang dibuka ulang.
+   *
+   * Diperiksa dari SUMBER, bukan dari keluaran build: build penuh butuh awcms
+   * yang hidup dan dilewati di repo template ini, jadi sebuah asersi atas
+   * `dist/` tidak akan pernah berjalan di sini.
+   */
+  const BERKAS = [
+    "src/lib/feed-seksi.ts",
+    "src/components/views/TabIndex.astro",
+    "src/layouts/ArtikelLayout.astro",
+    "src/layouts/BaseLayout.astro"
+  ];
+
+  test("tidak ada permukaan yang masih merakit nama dari siteConfig", () => {
+    for (const berkas of BERKAS) {
+      const isi = readFileSync(berkas, "utf8")
+        // Komentar justru tempat namanya PALING sering disebut — di sanalah
+        // alasan ia tidak lagi dipakai ditulis.
+        .replace(/\/\*[\s\S]*?\*\//g, "")
+        .replace(/^\s*\/\/.*$/gm, "")
+        .replace(/^\s*\{\/\*[\s\S]*?\*\/\}$/gm, "");
+
+      assert.equal(
+        isi.includes("siteConfig.name"),
+        false,
+        `${berkas} masih memakai siteConfig.name — namanya harus datang dari namaSitus(profil)`
+      );
+    }
+  });
+
+  test("satu-satunya tempat cadangan konfigurasi dibaca adalah lib/identitas.ts", () => {
+    // Urutan jatuh yang tinggal di dua tempat adalah dua urutan jatuh.
+    const identitas = readFileSync("src/lib/identitas.ts", "utf8");
+    assert.ok(identitas.includes("siteConfig.name"));
   });
 });
