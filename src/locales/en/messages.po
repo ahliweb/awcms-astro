@@ -295,6 +295,9 @@ msgstr "← Previous"
 msgid "paginasi.berikutnya"
 msgstr "Next →"
 
+msgid "lainnya.judul"
+msgstr "More in this section"
+
 msgid "sitemap.h1"
 msgstr "Sitemap"
 

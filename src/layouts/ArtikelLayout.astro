@@ -13,6 +13,8 @@ import { seksiPunyaFeed } from '../lib/feed';
 import { jalurFeed } from '../lib/feed-seksi';
 import { tanggalPanjang, tanggalMesin, pernahDiubahSetelahTerbit } from '../lib/tanggal';
 import { getArticleVisual } from '../lib/article-images';
+import { getArticles } from '../lib/content';
+import { artikelLainnya } from '../lib/terkait';
 import { SITE_SOCIAL_IMAGE } from '../lib/social-image';
 import { articleSchema, tipeArtikelSeksi } from '../lib/schema';
 import { profilSitus } from '../lib/awcms/profil';
@@ -73,6 +75,17 @@ const modifiedDateStr = diperbarui ? tanggalPanjang(locale, modifiedDate) : unde
 const reviewDueDateStr = data.reviewDueDate
   ? tanggalPanjang(locale, new Date(data.reviewDueDate))
   : undefined;
+
+// Apa yang dibaca seseorang setelah selesai. Diturunkan dari feed yang SUDAH
+// ditarik build — `getArticles` dimemoisasi per build — jadi ia tidak menambah
+// satu pun permintaan ke `awcms` dan tidak menuntut permukaan baru. Judulnya
+// mengatakan "lainnya di seksi ini" dan bukan "terkait", karena keterkaitan
+// sungguhan butuh taksonomi yang belum diresolusi repo ini; lihat `lib/terkait.ts`.
+const lainnya = artikelLainnya(
+  await getArticles(data.kategori as never, locale),
+  slug,
+  urutanSeksiTab(data.kategori)
+);
 
 const schema = articleSchema({
   locale,
@@ -172,11 +185,50 @@ const feed = seksiPunyaFeed(urutanSeksiTab(data.kategori), 1)
 
     <FaqAccordion faq={data.faq} />
 
+    {lainnya.length > 0 && (
+      <nav class="lainnya" aria-label={t(locale, 'lainnya.judul')}>
+        <h2 class="lainnya-judul">{t(locale, 'lainnya.judul')}</h2>
+        <ul class="lainnya-daftar">
+          {lainnya.map((artikel) => (
+            <li>
+              <a href={localePath(locale, `/${data.kategori}/${artikel.slug}/`)}>
+                {artikel.entry.data.title}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    )}
+
     <DisclaimerNote variant="general" />
   </article>
 </BaseLayout>
 
 <style>
+  .lainnya {
+    margin: 2.5rem 0 1rem;
+  }
+
+  .lainnya-judul {
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .lainnya-daftar {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .lainnya-daftar a {
+    /* Target sentuh ≥44px (AGENTS.md §Antarmuka). */
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
   .artikel-kepala {
     margin: 1.5rem 0;
     padding-bottom: 1rem;
