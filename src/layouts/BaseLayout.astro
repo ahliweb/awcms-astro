@@ -19,6 +19,15 @@ import {
 import { t } from '../lib/po';
 import { kartuSitus, type KartuShare } from '../lib/social-image';
 import { siteSchema } from '../lib/schema';
+import { profilSitus } from '../lib/awcms/profil';
+import {
+  adaKontak,
+  barisCopyright,
+  namaSitus,
+  taglineSitus,
+  tautanTelepon,
+  tautanWhatsapp,
+} from '../lib/identitas';
 import '../styles/global.css';
 
 interface Props {
@@ -100,13 +109,22 @@ const {
   feed,
 } = Astro.props;
 
-// Nama situs datang dari konfigurasi, bukan dari kode. Versi sebelumnya
-// menuliskan nama repo rujukan di sini secara harfiah, sehingga SETIAP judul
-// halaman di SETIAP situs yang lahir dari template ini berakhiran nama situs
-// orang lain — tanpa satu pun peringatan build.
-const fullTitle = title.includes(siteConfig.name)
+// Identitas situs datang dari `awcms` (`site_profile`, #596), dengan
+// konfigurasi sebagai cadangan. Versi paling awal menuliskan nama repo rujukan
+// di sini secara harfiah, sehingga SETIAP judul halaman di SETIAP situs yang
+// lahir dari template ini berakhiran nama situs orang lain — tanpa satu pun
+// peringatan build; versi berikutnya memindahkannya ke `.env`, yang menutup
+// cacat itu dan menyisakan yang ini: identitas hanya bisa diganti oleh orang
+// yang bisa menyunting deployment, bukan oleh redaksi yang memilikinya.
+//
+// Sekali per build (dimemoisasi), meski setiap halaman di setiap locale
+// memanggilnya.
+const profil = await profilSitus();
+const namaSitusIni = namaSitus(profil);
+
+const fullTitle = title.includes(namaSitusIni)
   ? title
-  : `${title} — ${siteConfig.name}`;
+  : `${title} — ${namaSitusIni}`;
 
 const metaDescription = description.slice(0, 160);
 
@@ -132,7 +150,7 @@ const ogLocale = localeMeta[locale].htmlLang.replace('-', '_');
 const pageSchemas = schema ? (Array.isArray(schema) ? schema : [schema]) : [];
 const jsonLd = {
   '@context': 'https://schema.org',
-  '@graph': [...siteSchema(locale, canonicalUrl), ...pageSchemas],
+  '@graph': [...siteSchema(locale, canonicalUrl, profil), ...pageSchemas],
 };
 ---
 
@@ -141,7 +159,13 @@ const jsonLd = {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    {/* Favicon tenant bila ada, berkas template bila tidak. `type` datang dari
+        registri media dan bukan ditebak dari ekstensi: `awcms` sudah menyimpan
+        MIME hasil sniffing saat unggah, dan menebaknya di sini akan membuat
+        satu-satunya nilai yang pernah salah justru yang paling sulit dilihat. */}
+    {profil.favicon
+      ? <link rel="icon" type={profil.favicon.mimeType} href={profil.favicon.publicUrl} />
+      : <link rel="icon" type="image/svg+xml" href="/favicon.svg" />}
     {!noindex && <link rel="canonical" href={canonicalUrl} />}
     {noindex && <meta name="robots" content="noindex, follow" />}
 
@@ -192,7 +216,7 @@ const jsonLd = {
       </>
     )}
     <meta property="og:locale" content={ogLocale} />
-    <meta property="og:site_name" content={siteConfig.name} />
+    <meta property="og:site_name" content={namaSitusIni} />
     {articleMeta && (
       <>
         {/* Dua nilai, bukan satu yang dipasang dua kali. Keduanya pernah
@@ -255,12 +279,19 @@ const jsonLd = {
             repo rujukan, tampil di header setiap situs yang lahir dari
             template ini. */}
         <a href={localePath(locale, '/')} class="brand-logo">
-          {siteConfig.mark && <span class="brand-mark" aria-hidden="true">{siteConfig.mark}</span>}
-          <span class="brand-name">{siteConfig.name}</span>
+          {/* Logo tenant menggantikan lambang `SITE_MARK`, tidak menemaninya:
+              keduanya menempati tempat yang sama dan sebuah situs yang memasang
+              keduanya menyatakan dua identitas di satu baris. `alt` dikosongkan
+              karena nama situs berdiri di sebelahnya sebagai teks — logo yang
+              beralt "nama situs" membuat pembaca layar menyebutnya dua kali. */}
+          {profil.logo
+            ? <img class="brand-logo-img" src={profil.logo.publicUrl} alt="" width={profil.logo.width ?? undefined} height={profil.logo.height ?? undefined} loading="eager" decoding="async" />
+            : siteConfig.mark && <span class="brand-mark" aria-hidden="true">{siteConfig.mark}</span>}
+          <span class="brand-name">{namaSitusIni}</span>
         </a>
         <div class="header-actions">
           <div class="header-tagline">
-            {t(locale, 'header.tagline')}
+            {taglineSitus(profil, locale)}
           </div>
           <LangSwitcher path={langSwitchPath} />
           <button
@@ -309,6 +340,60 @@ const jsonLd = {
               <li><a href={localePath(locale, '/sitemap/')}>{t(locale, 'footer.sitemap')}</a></li>
             </ul>
           </div>
+
+          {/* Dua kolom yang HANYA muncul bila tenant mengisinya (`awcms` #596).
+              Sebelum ini alamat redaksi dan kontak tidak punya tempat sama
+              sekali — bukan kosong, tidak ada — sehingga satu-satunya cara
+              menerbitkannya adalah menuliskannya ke dalam template ini, di
+              situs yang bukan pemiliknya. Judul kolomnya tetap string
+              antarmuka: yang datang dari tenant adalah ISINYA, bukan bahasa
+              situsnya. */}
+          {adaKontak(profil) && (
+            <div>
+              <h4 class="footer-judul">{t(locale, 'footer.contact.title')}</h4>
+              <ul class="footer-daftar footer-kontak">
+                {profil.editorialAddress && (
+                  <li>
+                    <span class="footer-kontak-label">{t(locale, 'footer.contact.address')}</span>
+                    <address class="footer-alamat">{profil.editorialAddress}</address>
+                  </li>
+                )}
+                {profil.contactEmail && (
+                  <li><a href={`mailto:${profil.contactEmail}`}>{profil.contactEmail}</a></li>
+                )}
+                {profil.contactPhone && tautanTelepon(profil.contactPhone) && (
+                  <li><a href={tautanTelepon(profil.contactPhone)!}>{profil.contactPhone}</a></li>
+                )}
+                {profil.whatsappNumber && tautanWhatsapp(profil.whatsappNumber) && (
+                  <li>
+                    {/* `rel="noopener"` karena ia keluar dari situs ini; tanpa
+                        `target="_blank"` supaya pembaca tidak kehilangan
+                        halamannya sendiri. */}
+                    <a href={tautanWhatsapp(profil.whatsappNumber)!} rel="noopener nofollow">
+                      {t(locale, 'footer.contact.whatsapp')}
+                    </a>
+                  </li>
+                )}
+              </ul>
+            </div>
+          )}
+
+          {profil.socialLinks.length > 0 && (
+            <div>
+              <h4 class="footer-judul">{t(locale, 'footer.social.title')}</h4>
+              <ul class="footer-daftar">
+                {profil.socialLinks.map((tautan) => (
+                  <li>
+                    {/* `nofollow` karena ini profil, bukan rekomendasi; URL-nya
+                        sudah ditolak-bukan-disanitasi kecuali http(s) absolut,
+                        dua kali: saat ditulis di `awcms` dan lagi saat dibaca
+                        di `lib/awcms/profil.ts`. */}
+                    <a href={tautan.url} rel="noopener nofollow">{tautan.platform}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
         <DisclaimerNote variant="footer" />
@@ -320,7 +405,7 @@ const jsonLd = {
               dibekukan saat build — situs ini dibangun ulang setidaknya sekali
               sehari (lihat .github/workflows/rebuild.yml), jadi ia tidak
               tertinggal. */}
-          &copy; {new Date().getFullYear()} {siteConfig.name}. {t(locale, 'footer.copyright')}
+          {barisCopyright(profil, locale, new Date().getFullYear())}
         </div>
       </div>
     </footer>
@@ -350,6 +435,29 @@ const jsonLd = {
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
+  }
+
+  /* Kolom kontak (`awcms` #596). Sedikit lebih longgar dari daftar tautan
+     biasa karena alamat redaksi membungkus jadi beberapa baris. */
+  .footer-kontak {
+    gap: 0.6rem;
+  }
+
+  .footer-kontak-label {
+    display: block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+  }
+
+  /* `<address>` dimiringkan peramban secara bawaan, dan alamat redaksi bukan
+     kutipan. */
+  .footer-alamat {
+    font-style: normal;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    white-space: pre-line;
   }
 
   .footer-bawah {

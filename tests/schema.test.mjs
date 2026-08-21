@@ -37,6 +37,11 @@ function buatMasukan(tambahan = {}) {
     modifiedDate: DIUBAH,
     section: "Berita",
     tipe: "NewsArticle",
+    // Sejak `awcms` #596 nama penerbit datang dari `site_profile` lewat
+    // `namaPenerbit(profil)` dan bukan dari `siteConfig.name`. Ia diteruskan
+    // sebagai nilai supaya fungsi ini tetap murni — tes ini tidak menyentuh
+    // `awcms` sama sekali, dan itulah yang membuatnya tetap bisa dijalankan.
+    penerbit: "Redaksi Contoh",
     ...tambahan
   };
 }
@@ -81,6 +86,11 @@ describe("articleSchema", () => {
     assert.equal(author["@type"], "Organization");
     assert.equal(typeof author.name, "string");
     assert.ok(author.name.length > 0, "author.name kosong");
+    // Ia adalah PENERBIT yang dikirim pemanggil, bukan nama yang ditulis di
+    // dalam berkas skema. Nama penerbit yang hanya bisa diganti dengan
+    // menyunting repo adalah identitas satu situs yang terbawa ke situs
+    // berikutnya — cacat yang ditutup `awcms` #596.
+    assert.equal(author.name, "Redaksi Contoh");
   });
 
   test("author ditulis INLINE, bukan sebagai rujukan @id", () => {

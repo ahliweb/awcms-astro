@@ -338,15 +338,27 @@ describe("permukaan awcms yang dipanggil build", () => {
     );
   }
 
-  test("kode sumber memanggil tepat tiga permukaan", () => {
-    // Angkanya ditulis eksplisit supaya permukaan KEEMPAT memerahkan gerbang ini
-    // meskipun penulisnya ingat memperbarui skill — dua pemeriksaan yang bisa
+  test("kode sumber memanggil tepat empat permukaan", () => {
+    // Daftarnya ditulis eksplisit supaya permukaan BERIKUTNYA memerahkan gerbang
+    // ini meskipun penulisnya ingat memperbarui skill — dua pemeriksaan yang bisa
     // salah bersama bukan dua pemeriksaan.
+    //
+    // Yang keempat, `/api/v1/site-profile/composed`, mendarat 22 Agustus 2026
+    // (`awcms` #596): identitas situs — masthead, footer, kontak, tautan sosial,
+    // simpul `Organization`. Ia dibekukan di `awcms` LEBIH DULU sebagai path
+    // COMMITTED, baru dipanggil dari sini; Definition of Done repo ini menuntut
+    // urutan itu, dan urutan sebaliknya berarti build di sini bersandar pada
+    // bentuk yang belum disanggupi repo sebelah.
     const sumber = permukaanDiSumber();
 
     assert.deepEqual(
       [...sumber].sort(),
-      ["/api/v1/blog/posts", "/api/v1/media/objects", "/api/v1/media/public-origin"],
+      [
+        "/api/v1/blog/posts",
+        "/api/v1/media/objects",
+        "/api/v1/media/public-origin",
+        "/api/v1/site-profile/composed"
+      ],
       "permukaan awcms yang dipanggil src/ berubah — bila ini disengaja, " +
         "perbarui tabel bertanda di skill integrasi DAN beri tahu `awcms`: " +
         "repo itu menyusun kontrak konsumennya dari daftar ini"

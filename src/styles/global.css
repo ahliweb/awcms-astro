@@ -303,6 +303,20 @@ p {
   line-height: 1;
 }
 
+/* Logo tenant (`awcms` #596). Tingginya dibatasi dan lebarnya mengikuti rasio
+   aslinya, karena berkas yang diunggah redaksi bisa berukuran apa pun — sebuah
+   logo 2000px yang dipasang apa adanya akan mendorong seluruh masthead keluar
+   layar di ponsel. `width`/`height` tetap dikirim sebagai atribut supaya
+   peramban memesan ruangnya sebelum gambarnya tiba (CLS); aturan di bawah yang
+   memutuskan ukuran TAMPILNYA. */
+.brand-logo-img {
+  flex-shrink: 0;
+  height: 2.25rem;
+  width: auto;
+  max-width: 12rem;
+  object-fit: contain;
+}
+
 .brand-name {
   line-height: 1.25;
   /* Pemenggalan dijaga di antara kata, bukan di tengah kata. */

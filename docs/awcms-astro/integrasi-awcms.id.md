@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](integrasi-awcms.md)
 
-<!-- i18n-source-hash: sha256:9b9bef301b4573d1f38aaeb4bc29cb1085128597653802b54bc6797693cc70e4 -->
+<!-- i18n-source-hash: sha256:5d50be119ea0c026ce6d49fefe73459a7d63452dbc1778d0b214f331c40d963f -->
 
 # Integrasi awcms-astro → awcms
 
@@ -227,7 +227,7 @@ flowchart TD
 
 Perpindahan sumber data tidak memindahkan tanggung jawab presentasi:
 
-- Metadata SEO, hreflang, structured data, dan kartu share tetap dibangun sisi Astro dari data yang diterima.
+- Metadata SEO, hreflang, structured data, dan kartu share tetap dibangun sisi Astro dari data yang diterima. Yang mereka bicarakan bukan lagi keputusan template: sejak `awcms` #596 identitas situs — nama, penerbit, logo, favicon, tagline, baris hak cipta, alamat redaksi, kontak, profil sosial — datang dari `site_profile` lewat `src/lib/awcms/profil.ts`, dan `src/lib/identitas.ts` adalah satu-satunya tempat yang memutuskan ke mana tiap bidang jatuh saat tenant belum mengisinya.
 - Aturan aksesibilitas dan tanpa-JavaScript tetap berlaku penuh.
 - Katalog PO untuk string antarmuka tetap di repo. Ia bukan konten redaksi — ia bagian dari antarmuka, dan penerjemahnya penutur asli, bukan admin tenant.
 - Larangan skrip pihak ketiga, pengumpulan data pribadi, dan atribut resmi instansi **tetap berlaku** dan tidak boleh dilonggarkan oleh kemampuan baru yang dibawa CMS.
@@ -239,6 +239,7 @@ Perpindahan sumber data tidak memindahkan tanggung jawab presentasi:
 | `blog-content` | Artikel, halaman, menu, revisi, penjadwalan, quality checklist |
 | `media-library` | Gambar artikel dan kartu share |
 | `seo-distribution` | Redirect, pemantauan 404, pengaturan SEO per tenant |
+| `site-profile` | Siapa situs ini — dibaca sekali per build lewat `GET /api/v1/site-profile/composed`, yang menggabungkan bagian modul ini dengan bagian `seo-distribution` sehingga sebuah template tidak pernah belajar bahwa pemisahannya ada |
 | `tenant-domain` | Pemetaan domain publik |
 | `site-search` | Pencarian — hanya bila jumlah artikel sudah melampaui apa yang bisa dijelajahi navigasi |
 | `theming` | Preferensi tema per tenant, menyambung rantai theming di [design system](ui-ux-design-system.md#theming) |

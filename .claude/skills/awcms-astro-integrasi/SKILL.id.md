@@ -5,7 +5,7 @@ description: Kontrak integrasi awcms-astro ↔ awcms — tenant dari token mesin
 
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](SKILL.md)
 
-<!-- i18n-source-hash: sha256:d747b8f51cee9d84be5d959c76023428ba9ba7717a23b07cdc3b7027b38b39d2 -->
+<!-- i18n-source-hash: sha256:508441b8026c0a09706af69cc956a2f66568b62dac5a9c831ea5026277300d02 -->
 
 # awcms-astro — kontrak integrasi dengan `awcms`
 
@@ -26,7 +26,7 @@ satu-satunya tempat komponen menyentuh hasilnya.
 | `publishedDate` dan `updatedDate` dibaca dari **satu baris** | Dipasangkan lintas baris → `dateModified` mendahului `datePublished` pada konten yang sah, dan crawler membuang seluruh bloknya |
 | Diam-diam memotong data = **kegagalan**, bukan optimasi | Lihat seluruh baris di atas |
 
-## Permukaan — TIGA yang dipanggil, dua yang tidak
+## Permukaan — EMPAT yang dipanggil, dua yang tidak
 
 Bedanya penting, dan pernah salah ditulis di berkas ini sebagai "lima permukaan
 yang dipakai". Penilaian `awcms` 4 Agustus 2026 sempat mencatat ENAM, dan
@@ -52,7 +52,18 @@ sebagai janji yang sudah dilanggar.
 Daftar di bawah karena itu **digerbangi**, bukan ditulis tangan:
 `tests/kontrak-awcms.test.mjs` mengekstrak jalur `/api/v1/…` dari kode sumber
 `src/` dan menolak bila daftar ini menyimpang darinya, dua arah. Ia yang membuat
-permukaan keempat tidak bisa mendarat tanpa berkas ini ikut berubah.
+permukaan baru tidak bisa mendarat tanpa berkas ini ikut berubah.
+
+**Permukaan keempat mendarat 22 Agustus 2026** — `/api/v1/site-profile/composed`
+(`awcms` #596, ADR-0102), tempat identitas situs ini sendiri berasal. Ia melewati
+gerbang ini dalam urutan yang diwajibkan Definition of Done, dan urutan itu layak
+dibaca sekali karena justru itulah inti sebuah kontrak lintas-repo: `awcms`
+membekukan bentuknya LEBIH DULU, memasukkannya sebagai **COMMITTED** — sebuah
+janji, karena belum ada yang memanggil — dan baru setelah itu repo ini mulai
+memanggilnya, saat mana entri itu berpindah ke CONSUMED di sana. Urutan
+sebaliknya akan menaruh build ini di atas bentuk yang belum disanggupi repo
+sebelah, persis kegagalan yang dipindahkan fixture itu ke tempat yang bisa
+dilihat orang.
 
 <!-- permukaan:dipanggil:mulai -->
 | Permukaan yang benar-benar dipanggil build | Dipanggil dari |
@@ -60,6 +71,7 @@ permukaan keempat tidak bisa mendarat tanpa berkas ini ikut berubah.
 | `/api/v1/blog/posts` | `src/lib/content.ts` — traversal build feed, `view=full` + `order=created_at` + cursor |
 | `/api/v1/media/objects` | `src/lib/awcms/media.ts` — resolusi media, maks 100 id per permintaan |
 | `/api/v1/media/public-origin` | `src/lib/awcms/media.ts` — asal media untuk `img-src` |
+| `/api/v1/site-profile/composed` | `src/lib/awcms/profil.ts` — identitas situs: masthead, footer, kontak, tautan sosial, `Organization` |
 <!-- permukaan:dipanggil:selesai -->
 
 ```

@@ -224,7 +224,7 @@ flowchart TD
 
 Moving the data source does not move responsibility for presentation:
 
-- SEO metadata, hreflang, structured data, and share cards are still built on the Astro side from the data received.
+- SEO metadata, hreflang, structured data, and share cards are still built on the Astro side from the data received. What they are built ABOUT is no longer the template's to decide: since awcms #596 the site's own identity — name, publisher, logo, favicon, tagline, copyright line, editorial address, contact details, social profiles — comes from `site_profile` through `src/lib/awcms/profil.ts`, and `src/lib/identitas.ts` is the one place that decides what each field falls back to when a tenant has not set it.
 - The accessibility and no-JavaScript rules still apply in full.
 - The PO catalogues for interface strings stay in the repo. They are not editorial content — they are part of the interface, and their translators are native speakers, not tenant admins.
 - The bans on third-party scripts, collecting personal data, and using an institution's official attributes **still apply** and may not be loosened by a new capability the CMS brings.
@@ -236,6 +236,7 @@ Moving the data source does not move responsibility for presentation:
 | `blog-content` | Articles, pages, menus, revisions, scheduling, the quality checklist |
 | `media-library` | Article images and share cards |
 | `seo-distribution` | Redirects, 404 monitoring, per-tenant SEO settings |
+| `site-profile` | Who the site IS — read once per build through `GET /api/v1/site-profile/composed`, which merges this module's half with `seo-distribution`'s so a template never learns the split exists |
 | `tenant-domain` | Public domain mapping |
 | `site-search` | Search — only once the number of articles exceeds what navigation can cover |
 | `theming` | Per-tenant theme preferences, joining the theming chain in the [design system](ui-ux-design-system.md#theming) |

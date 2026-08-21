@@ -6,8 +6,10 @@
  * sini: tidak ada satu pun properti yang boleh menyiratkan situs ini kanal
  * resmi instansi negara.
  */
-import { siteConfig, getSiteUrl, localeHtmlLang, urutanSeksiTab, type Locale } from '../config/site';
+import { getSiteUrl, localeHtmlLang, urutanSeksiTab, type Locale } from '../config/site';
+import { namaPenerbit, namaSitus } from './identitas';
 import { t } from './po';
+import type { ProfilSitus } from './awcms/profil';
 import { SITE_SOCIAL_IMAGE, SOCIAL_IMAGE_HEIGHT, SOCIAL_IMAGE_WIDTH } from './social-image';
 
 type Schema = Record<string, unknown>;
@@ -37,20 +39,59 @@ const PUBLISHER_ID = getSiteUrl('/#publisher');
  *
  * `Organization` di sini adalah penerbit situsnya sendiri, bukan instansi
  * layanan. Namanya nama situs dan tidak pernah nama satuan kepolisian.
+ *
+ * Sejak `awcms` #596 nilainya datang dari `site_profile`, bukan dari
+ * `src/config/site.ts`. Yang berubah bukan sekadar sumbernya: sebuah `logo`,
+ * `address`, `email`, `telephone`, dan `sameAs` hanya bisa BENAR bila tenant
+ * yang menyatakannya — sebelum ini satu-satunya cara memasangnya adalah
+ * menuliskan identitas satu situs ke dalam template yang dipakai situs lain.
+ * Properti yang tidak diisi tetap TIDAK MUNCUL, aturan yang sama seperti
+ * `image` di `articleSchema`: structured data yang salah lebih buruk daripada
+ * yang tidak lengkap, karena ia diklaim.
  */
-export function siteSchema(locale: Locale, canonicalUrl: string): Schema[] {
+export function siteSchema(
+  locale: Locale,
+  canonicalUrl: string,
+  profil: ProfilSitus
+): Schema[] {
+  const nama = namaSitus(profil);
+  const penerbit = namaPenerbit(profil);
+  const logo = profil.organizationLogo ?? profil.logo;
+  const sameAs = profil.socialLinks.map((tautan) => tautan.url);
+
   return [
     {
       '@type': 'Organization',
       '@id': PUBLISHER_ID,
-      name: siteConfig.name,
+      name: penerbit,
       url: getSiteUrl('/'),
       description: t(locale, 'footer.about.body'),
+      ...(logo
+        ? {
+            logo: {
+              '@type': 'ImageObject',
+              url: logo.publicUrl,
+              ...(logo.width ? { width: logo.width } : {}),
+              ...(logo.height ? { height: logo.height } : {}),
+            },
+          }
+        : {}),
+      ...(profil.editorialAddress
+        ? {
+            address: {
+              '@type': 'PostalAddress',
+              streetAddress: profil.editorialAddress,
+            },
+          }
+        : {}),
+      ...(profil.contactEmail ? { email: profil.contactEmail } : {}),
+      ...(profil.contactPhone ? { telephone: profil.contactPhone } : {}),
+      ...(sameAs.length > 0 ? { sameAs } : {}),
     },
     {
       '@type': 'WebSite',
       '@id': WEBSITE_ID,
-      name: siteConfig.name,
+      name: nama,
       url: getSiteUrl('/'),
       inLanguage: localeHtmlLang[locale],
       publisher: { '@id': PUBLISHER_ID },
@@ -103,6 +144,14 @@ export interface ArticleSchemaInput {
    * konfigurasi situs — bukan sesuatu yang bisa disimpulkan dari judul.
    */
   tipe: 'Article' | 'NewsArticle';
+  /**
+   * Nama penerbit — `namaPenerbit(profil)`, bukan `siteConfig.name`.
+   *
+   * Ia dikirim sebagai nilai dan bukan dibaca di dalam fungsi ini supaya
+   * `articleSchema` tetap murni dan tetap bisa diuji tanpa `awcms`; yang
+   * memutuskan urutan jatuhnya tetap satu tempat (`lib/identitas.ts`).
+   */
+  penerbit: string;
 }
 
 /**
@@ -110,13 +159,20 @@ export interface ArticleSchemaInput {
  *
  * ## `author` adalah ORGANISASI, dan itu keputusan yang ditiru
  *
- * Byline di sini adalah nama situs, tidak pernah nama seorang editor — sama
+ * Byline di sini adalah nama PENERBIT, tidak pernah nama seorang editor — sama
  * seperti `awcms`, yang memancarkan `authorName` dari nama tenant dan mencatat
  * alasannya di `structured-data-rendering.ts`: menaruh identitas pengguna
  * internal di structured data publik membuka permukaan PII baru. Kolom
  * `authorTenantUserId` memang ada pada baris post, tetapi meresolusinya menjadi
- * nama butuh permukaan `awcms` KEEMPAT, dan `tests/kontrak-awcms.test.mjs`
- * mengeraskan daftar tiga permukaan justru supaya penambahan seperti itu merah.
+ * nama butuh permukaan `awcms` yang tidak ada di daftar yang dikeraskan
+ * `tests/kontrak-awcms.test.mjs` — dan daftar itu dikeraskan justru supaya
+ * penambahan seperti itu merah.
+ *
+ * Yang BERUBAH sejak `awcms` #596 hanya dari mana namanya datang: `site_profile`
+ * lewat `namaPenerbit()`, bukan `siteConfig.name` yang ditulis di source. Sebuah
+ * nama penerbit yang hanya bisa diganti dengan menyunting repo adalah identitas
+ * satu situs yang terbawa ke situs berikutnya — persis cacat yang ditutup issue
+ * itu. Ia tetap organisasi, dan tetap bukan seseorang.
  *
  * Ia ditulis INLINE, bukan sebagai rujukan `@id` ke simpul Organization
  * halaman, karena pembaca structured data yang tidak menyelesaikan `@id` akan
@@ -157,7 +213,7 @@ export function articleSchema(input: ArticleSchemaInput): Schema {
     inLanguage: localeHtmlLang[input.locale],
     articleSection: input.section,
     isPartOf: { '@id': WEBSITE_ID },
-    author: { '@type': 'Organization', name: siteConfig.name },
+    author: { '@type': 'Organization', name: input.penerbit },
     publisher: { '@id': PUBLISHER_ID },
     isAccessibleForFree: true,
   };
