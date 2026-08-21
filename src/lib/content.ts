@@ -124,6 +124,16 @@ type AwcmsBlogPost = AwcmsBlogPostSummary & {
    * two answers to one question, and only one of them visible to the editor.
    */
   seoImageMediaId?: string | null;
+  /**
+   * The post's category/tag/channel/topic assignments, as awcms ids.
+   *
+   * OPTIONAL for the same reason the two above are: it rides on the full row
+   * and a summary response has none. It is also the field an older awcms omits
+   * entirely — it only joined `?view=full` in awcms Issue #649 — so the archive
+   * pages built from it simply do not exist against an instance that predates
+   * that, rather than the build failing.
+   */
+  termIds?: string[];
 };
 
 /**
@@ -202,6 +212,21 @@ export interface LocalizedArticle {
   };
   /** True when this locale has no translation and the default-locale article is shown. */
   isFallback: boolean;
+  /**
+   * The awcms term ids this article is filed under, read from the SOURCE post.
+   *
+   * Not optional, and never `undefined`: `toArticle` defaults it to `[]` for
+   * the same reason the list-shaped `entry.data` fields are defaulted — a
+   * component must not have to ask whether the field exists before mapping it,
+   * and "this article has no categories" is a state, not a missing value.
+   *
+   * From the SOURCE for the same reason `urutan` and `kategori` are (see
+   * `toArticle`): a translator who leaves the classification blank on their row
+   * would otherwise drop that article out of every archive in their language
+   * alone — every page still there, the archives quietly shorter, and nothing
+   * failing anywhere.
+   */
+  termIds: string[];
   /**
    * The article's image, resolved from awcms media ONCE PER BUILD.
    *
@@ -641,6 +666,11 @@ function readBlock(post: AwcmsBlogPost): AwcmsAstroBlock {
  *     chosen by the default-locale post in `getArticles()`; re-reading it from
  *     the translation would let a mistyped category there build a page whose
  *     own breadcrumb points at a different section.
+ *   - `termIds` decides which archives list the article. Read from the
+ *     translation, a translator who left the classification blank drops that
+ *     article out of every archive in their language alone: every page still
+ *     present, the archives quietly shorter, nothing failing. The same argument
+ *     as `urutan`, one dimension over.
  *
  * The two DATES go the other way, and deliberately: both come from `post`, the
  * row whose words this page shows. They are a matched pair describing one
@@ -687,6 +717,7 @@ function toArticle(
       bodyHtml: renderContentBlocks(post.contentJson, media)
     },
     isFallback,
+    termIds: source.termIds ?? [],
     // The TRANSLATED post's image, not the source's: an editor who gave a
     // locale its own artwork meant it for that locale. Falling back to the
     // source's image is correct and automatic — a fallback article IS the

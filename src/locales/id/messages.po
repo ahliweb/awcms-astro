@@ -298,6 +298,27 @@ msgstr "Berikutnya →"
 msgid "lainnya.judul"
 msgstr "Lainnya di seksi ini"
 
+msgid "arsip.category.label"
+msgstr "Kategori"
+
+msgid "arsip.tag.label"
+msgstr "Tag"
+
+msgid "arsip.category.deskripsi"
+msgstr "Seluruh artikel dalam kategori %s."
+
+msgid "arsip.tag.deskripsi"
+msgstr "Seluruh artikel bertag %s."
+
+msgid "arsip.jumlah"
+msgstr "%s artikel"
+
+msgid "arsip.category.judul"
+msgstr "Kategori"
+
+msgid "arsip.tag.judul"
+msgstr "Tag"
+
 msgid "sitemap.h1"
 msgstr "Peta situs"
 

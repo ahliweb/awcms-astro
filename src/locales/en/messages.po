@@ -298,6 +298,27 @@ msgstr "Next →"
 msgid "lainnya.judul"
 msgstr "More in this section"
 
+msgid "arsip.category.label"
+msgstr "Category"
+
+msgid "arsip.tag.label"
+msgstr "Tag"
+
+msgid "arsip.category.deskripsi"
+msgstr "Every article in the %s category."
+
+msgid "arsip.tag.deskripsi"
+msgstr "Every article tagged %s."
+
+msgid "arsip.jumlah"
+msgstr "%s articles"
+
+msgid "arsip.category.judul"
+msgstr "Categories"
+
+msgid "arsip.tag.judul"
+msgstr "Tags"
+
 msgid "sitemap.h1"
 msgstr "Sitemap"
 

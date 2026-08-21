@@ -5,7 +5,7 @@ description: Kontrak integrasi awcms-astro ↔ awcms — tenant dari token mesin
 
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](SKILL.md)
 
-<!-- i18n-source-hash: sha256:508441b8026c0a09706af69cc956a2f66568b62dac5a9c831ea5026277300d02 -->
+<!-- i18n-source-hash: sha256:09db5c9f6314139420afaa39b73e50b41e3792eeb196d1cd812e7890eab6ccbb -->
 
 # awcms-astro — kontrak integrasi dengan `awcms`
 
@@ -26,7 +26,7 @@ satu-satunya tempat komponen menyentuh hasilnya.
 | `publishedDate` dan `updatedDate` dibaca dari **satu baris** | Dipasangkan lintas baris → `dateModified` mendahului `datePublished` pada konten yang sah, dan crawler membuang seluruh bloknya |
 | Diam-diam memotong data = **kegagalan**, bukan optimasi | Lihat seluruh baris di atas |
 
-## Permukaan — EMPAT yang dipanggil, dua yang tidak
+## Permukaan — LIMA yang dipanggil, dua yang tidak
 
 Bedanya penting, dan pernah salah ditulis di berkas ini sebagai "lima permukaan
 yang dipakai". Penilaian `awcms` 4 Agustus 2026 sempat mencatat ENAM, dan
@@ -65,6 +65,23 @@ sebaliknya akan menaruh build ini di atas bentuk yang belum disanggupi repo
 sebelah, persis kegagalan yang dipindahkan fixture itu ke tempat yang bisa
 dilihat orang.
 
+**Yang kelima mendarat dengan cara yang sama** — `/api/v1/blog/terms` (`awcms`
+#597 butir 1, ADR-0104), kosakata tenant, yang membuat arsip kategori atau tag
+mungkin sama sekali. Dua hal tentangnya tidak opsional:
+
+- **Selalu `?order=created_at` dengan `nextCursor`, tidak pernah list
+  bawaannya.** List itu `name ASC` dengan `LIMIT` berbatas dan mengembalikan
+  array telanjang — tidak ada apa pun di dalamnya yang bisa berkata "masih ada
+  lagi". Kosakata tag yang tumbuh di atas arsip 23.906 artikel akan terpotong di
+  sekitar huruf B, dan situs akan membangun seratus halaman arsip dari ribuan
+  dengan setiap gerbang hijau.
+- **Role kredensial build butuh `blog_content.taxonomies.read`.** Kredensial
+  yang dicetak sebelum ADR-0104 di `awcms` memilikinya hanya bila role-nya
+  memang sudah. 403 atau 404 memperingatkan dan membangun tanpa arsip; selain
+  itu melempar — kosakata kosong adalah keadaan yang sah, jadi `catch`
+  menyeluruh akan menjadikan "CMS Anda mati" dan "redaksi ini tidak memakai
+  kategori" peristiwa yang sama.
+
 <!-- permukaan:dipanggil:mulai -->
 | Permukaan yang benar-benar dipanggil build | Dipanggil dari |
 | --- | --- |
@@ -72,6 +89,7 @@ dilihat orang.
 | `/api/v1/media/objects` | `src/lib/awcms/media.ts` — resolusi media, maks 100 id per permintaan |
 | `/api/v1/media/public-origin` | `src/lib/awcms/media.ts` — asal media untuk `img-src` |
 | `/api/v1/site-profile/composed` | `src/lib/awcms/profil.ts` — identitas situs: masthead, footer, kontak, tautan sosial, `Organization` |
+| `/api/v1/blog/terms` | `src/lib/awcms/taksonomi.ts` — kosakata tenant untuk arsip kategori/tag, `order=created_at` + cursor (tidak pernah list abjad bawaannya, yang memotong diam-diam) |
 <!-- permukaan:dipanggil:selesai -->
 
 ```
