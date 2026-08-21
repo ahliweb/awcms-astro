@@ -1,0 +1,33 @@
+---
+/**
+ * Arsip kategori halaman 1, locale BERPREFIKS (`/en/kategori/politik/`).
+ *
+ * Himpunan term diturunkan PER LOCALE dan tidak dibagi dengan locale bawaan.
+ * Menurunkannya di sini yang membuat jaminan "setiap locale punya himpunan
+ * artikel yang sama" bisa diperiksa alih-alih diasumsikan — bila keduanya
+ * menyimpang, gerbang resiprositas hreflang di `audit:konten` memerah alih-alih
+ * rute ini memancarkan alternate yang 404.
+ */
+import ArsipTaksonomi from '../../../../components/views/ArsipTaksonomi.astro';
+import { arsipUntuk } from '../../../../lib/arsip-taksonomi';
+import { prefixedLocales } from '../../../../config/site';
+
+export async function getStaticPaths() {
+  const jalur = [];
+
+  for (const lang of prefixedLocales) {
+    for (const entri of await arsipUntuk('category', lang)) {
+      jalur.push({
+        params: { lang, slug: entri.term.slug },
+        props: { slug: entri.term.slug }
+      });
+    }
+  }
+
+  return jalur;
+}
+
+const { slug } = Astro.props;
+---
+
+<ArsipTaksonomi jenis="category" slug={slug} />

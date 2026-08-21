@@ -1,0 +1,34 @@
+---
+/**
+ * Arsip kategori halaman 2..N, locale BERPREFIKS
+ * (`/en/kategori/politik/halaman/2/`).
+ *
+ * Jumlah halamannya diturunkan per locale, dengan alasan yang sama seperti
+ * `../index.astro` di sebelahnya.
+ */
+import ArsipTaksonomi from '../../../../../components/views/ArsipTaksonomi.astro';
+import { arsipUntuk } from '../../../../../lib/arsip-taksonomi';
+import { artikelPerHalaman, prefixedLocales } from '../../../../../config/site';
+import { nomorHalamanTambahan } from '../../../../../lib/paginasi';
+
+export async function getStaticPaths() {
+  const jalur = [];
+
+  for (const lang of prefixedLocales) {
+    for (const entri of await arsipUntuk('category', lang)) {
+      for (const nomor of nomorHalamanTambahan(entri.artikel.length, artikelPerHalaman)) {
+        jalur.push({
+          params: { lang, slug: entri.term.slug, nomor: String(nomor) },
+          props: { slug: entri.term.slug, nomor }
+        });
+      }
+    }
+  }
+
+  return jalur;
+}
+
+const { slug, nomor } = Astro.props;
+---
+
+<ArsipTaksonomi jenis="category" slug={slug} nomor={nomor} />

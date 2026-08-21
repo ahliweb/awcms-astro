@@ -1,0 +1,238 @@
+---
+/**
+ * Satu halaman arsip kategori atau tag (`awcms` #597 butir 1, ADR-0104).
+ *
+ * Sengaja SATU komponen untuk kedua kosakata: keduanya menampilkan kumpulan
+ * artikel yang melintasi seksi, dan satu-satunya perbedaannya adalah kata di
+ * URL dan label yang dibaca. Dua komponen berarti dua tempat memperbaiki
+ * paginasi, dan yang kedua akan terlupakan.
+ *
+ * Bedanya dengan `TabIndex.astro` bukan kosmetik:
+ *
+ *   - kartunya SELALU menampilkan tanggal, tidak pernah nomor urut redaksi.
+ *     `urutan` adalah posisi di dalam satu seksi, dan sebuah arsip melintasi
+ *     seksi — "Artikel 3" dari dua seksi berbeda tidak berada sebelum atau
+ *     sesudah satu sama lain;
+ *   - kartunya menyebut SEKSI asal artikel, karena di sini itu satu-satunya
+ *     petunjuk letak yang tersisa bagi pembaca;
+ *   - tidak ada feed yang diumumkan. Sebuah arsip taksonomi belum punya rute
+ *     feed, dan mengumumkan yang tidak diterbitkan adalah tautan mati.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumb from '../Breadcrumb.astro';
+import DisclaimerNote from '../DisclaimerNote.astro';
+import Ilustrasi from '../Ilustrasi.astro';
+import { artikelPerHalaman, getLocaleFromPath, getSiteUrl, localePath, tabTitleKey, siteConfig } from '../../config/site';
+import { potongHalaman } from '../../lib/paginasi';
+import { arsipMenurutSlug, jalurArsip } from '../../lib/arsip-taksonomi';
+import type { JenisArsip } from '../../lib/awcms/taksonomi';
+import { tanggalPanjang, tanggalMesin } from '../../lib/tanggal';
+import { getArticleVisual } from '../../lib/article-images';
+import { collectionSchema } from '../../lib/schema';
+import { t } from '../../lib/po';
+
+interface Props {
+  jenis: JenisArsip;
+  slug: string;
+  /** 1-based. Halaman 1 adalah jalur arsipnya sendiri — lihat `jalurArsip`. */
+  nomor?: number;
+}
+
+const { jenis, slug: slugTerm, nomor = 1 } = Astro.props;
+const locale = getLocaleFromPath(Astro.url.pathname);
+
+// Dibaca dari adapter di sini, sama seperti `TabIndex.astro` membaca
+// `getArticles` — dan bukan dikirim lewat props, karena props `getStaticPaths`
+// harus melewati serialisasi build dan sebuah `LocalizedArticle` membawa
+// `Date`. `arsipUntuk` di-memoise, jadi ribuan halaman arsip menyusunnya sekali.
+const arsip = await arsipMenurutSlug(jenis, locale, slugTerm);
+
+if (!arsip) {
+  // Tidak terjangkau lewat `getStaticPaths`, yang membangun daftarnya dari
+  // fungsi yang sama. Melempar alih-alih merender grid kosong: halaman arsip
+  // kosong terlihat persis seperti term yang artikelnya baru saja dicabut.
+  throw new Error(
+    `Arsip ${jenis} "${slugTerm}" tidak ada untuk locale ${locale}. ` +
+      `Rute ini dibangkitkan dari arsipUntuk(), jadi keduanya menyimpang.`
+  );
+}
+
+const halaman = potongHalaman(arsip.artikel, nomor, artikelPerHalaman);
+const articles = halaman.butir;
+
+const labelJenis = t(locale, `arsip.${jenis}.label`);
+
+// Judulnya menyebut NAMA term-nya, bukan slug-nya. Slug adalah alamat; nama
+// adalah yang ditulis redaksi, dan yang terbawa ke hasil pencarian.
+const judulArsip = `${labelJenis}: ${arsip.term.name}`;
+
+// Halaman 2..N membawa nomornya di `<title>`, dengan alasan yang sama seperti
+// paginasi seksi: judul identik di seluruh arsip adalah duplikat bagi perayap
+// dan satu-satunya pembeda yang terbawa ke hasil pencarian.
+const title =
+  halaman.nomor > 1
+    ? `${judulArsip} — ${t(locale, 'paginasi.halaman')} ${halaman.nomor}`
+    : judulArsip;
+
+const description = t(locale, `arsip.${jenis}.deskripsi`, '').replace(
+  '%s',
+  arsip.term.name
+);
+
+const breadcrumbItems = [
+  { name: judulArsip, url: jalurArsip(locale, jenis, arsip.term.slug) }
+];
+
+const schema = collectionSchema(
+  judulArsip,
+  description,
+  articles.map(({ entry, slug }) => ({
+    name: entry.data.title,
+    url: localePath(locale, `/${entry.data.kategori}/${slug}/`)
+  }))
+);
+
+/** Label seksi sebuah artikel, dari katalog PO seperti di mana pun. */
+function labelSeksi(tab: string): string {
+  const fallback = siteConfig.tabs.find((entry) => entry.slug === tab)?.label ?? tab;
+  return t(locale, tabTitleKey(tab), fallback);
+}
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonicalUrl={getSiteUrl(jalurArsip(locale, jenis, arsip.term.slug, halaman.nomor))}
+  schema={schema}
+>
+  <Breadcrumb items={breadcrumbItems} />
+
+  <section class="arsip-kepala">
+    <p class="arsip-jenis">{labelJenis}</p>
+    <h1>{arsip.term.name}</h1>
+    <p class="arsip-jumlah">
+      {t(locale, 'arsip.jumlah').replace('%s', String(arsip.artikel.length))}
+    </p>
+  </section>
+
+  <div class="grid-cards">
+    {articles.map((article) => {
+      const { entry, slug } = article;
+      const tab = entry.data.kategori;
+      const imgInfo = getArticleVisual(article, tab, slug);
+      return (
+        <a href={localePath(locale, `/${tab}/${slug}/`)} class="card">
+          <div class="card-img-wrapper">
+            <Ilustrasi
+              src={imgInfo.src}
+              alt={imgInfo.alt}
+              width={imgInfo.width}
+              height={imgInfo.height}
+            />
+          </div>
+          <div class="card-content">
+            <div class="kartu-baris-atas">
+              <time class="kartu-nomor" datetime={tanggalMesin(entry.data.publishedDate)}>
+                {tanggalPanjang(locale, entry.data.publishedDate)}
+              </time>
+              <span class="kartu-seksi">{labelSeksi(tab)}</span>
+            </div>
+            <h3 class="card-title">{entry.data.title}</h3>
+            <p class="card-desc">{entry.data.description}</p>
+            <div class="card-meta teks-aksen">
+              <span>{t(locale, 'tab.readMoreCta')}</span>
+            </div>
+          </div>
+        </a>
+      );
+    })}
+  </div>
+
+  {halaman.total > 1 && (
+    <nav class="paginasi" aria-label={t(locale, 'paginasi.aria')}>
+      {halaman.sebelumnya !== null ? (
+        <a class="paginasi-tautan" rel="prev" href={jalurArsip(locale, jenis, arsip.term.slug, halaman.sebelumnya)}>
+          {t(locale, 'paginasi.sebelumnya')}
+        </a>
+      ) : (
+        <span class="paginasi-tautan paginasi-mati" aria-hidden="true">{t(locale, 'paginasi.sebelumnya')}</span>
+      )}
+
+      <span class="paginasi-posisi">
+        {t(locale, 'paginasi.halaman')} {halaman.nomor} / {halaman.total}
+      </span>
+
+      {halaman.berikutnya !== null ? (
+        <a class="paginasi-tautan" rel="next" href={jalurArsip(locale, jenis, arsip.term.slug, halaman.berikutnya)}>
+          {t(locale, 'paginasi.berikutnya')}
+        </a>
+      ) : (
+        <span class="paginasi-tautan paginasi-mati" aria-hidden="true">{t(locale, 'paginasi.berikutnya')}</span>
+      )}
+    </nav>
+  )}
+
+  <DisclaimerNote variant="general" />
+</BaseLayout>
+
+<style>
+  .arsip-kepala {
+    margin: 1.5rem 0 2rem;
+  }
+
+  .arsip-jenis {
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 0.25rem;
+  }
+
+  .arsip-jumlah {
+    color: var(--text-muted);
+    margin: 0.35rem 0 0;
+  }
+
+  .kartu-baris-atas {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .kartu-nomor,
+  .kartu-seksi {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  .paginasi {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 2rem 0;
+    flex-wrap: wrap;
+  }
+
+  .paginasi-tautan {
+    padding: 0.5rem 0.9rem;
+    border: 1px solid var(--border-color, currentColor);
+    border-radius: 0.4rem;
+    text-decoration: none;
+    /* Target sentuh ≥44px (AGENTS.md §Antarmuka). */
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .paginasi-mati {
+    opacity: 0.45;
+  }
+
+  .paginasi-posisi {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+</style>

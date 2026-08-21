@@ -338,7 +338,7 @@ describe("permukaan awcms yang dipanggil build", () => {
     );
   }
 
-  test("kode sumber memanggil tepat empat permukaan", () => {
+  test("kode sumber memanggil tepat lima permukaan", () => {
     // Daftarnya ditulis eksplisit supaya permukaan BERIKUTNYA memerahkan gerbang
     // ini meskipun penulisnya ingat memperbarui skill — dua pemeriksaan yang bisa
     // salah bersama bukan dua pemeriksaan.
@@ -349,12 +349,17 @@ describe("permukaan awcms yang dipanggil build", () => {
     // COMMITTED, baru dipanggil dari sini; Definition of Done repo ini menuntut
     // urutan itu, dan urutan sebaliknya berarti build di sini bersandar pada
     // bentuk yang belum disanggupi repo sebelah.
+    //
+    // Yang kelima, `/api/v1/blog/terms`, mendarat dengan urutan yang sama
+    // (`awcms` #597 butir 1, ADR-0104): kosakata tenant, yang tanpa dia arsip
+    // kategori maupun tag tidak bisa dibangun sama sekali.
     const sumber = permukaanDiSumber();
 
     assert.deepEqual(
       [...sumber].sort(),
       [
         "/api/v1/blog/posts",
+        "/api/v1/blog/terms",
         "/api/v1/media/objects",
         "/api/v1/media/public-origin",
         "/api/v1/site-profile/composed"

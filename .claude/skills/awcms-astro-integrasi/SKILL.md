@@ -24,7 +24,7 @@ place a component touches the result.
 | `publishedDate` and `updatedDate` are read from **one row** | Paired across rows → `dateModified` precedes `datePublished` on valid content, and the crawler discards the whole block |
 | Silently truncating data is a **failure**, not an optimisation | See every row above |
 
-## Surfaces — FOUR that are called, two that are not
+## Surfaces — FIVE that are called, two that are not
 
 The difference matters, and it was once written wrongly in this file as "five
 surfaces in use". The `awcms` assessment of 4 August 2026 briefly recorded SIX,
@@ -63,6 +63,21 @@ other way round would put this build on a shape the other repo had not agreed
 to keep, which is exactly the failure the fixture exists to move back to where
 someone can see it.
 
+**The fifth landed the same way** — `/api/v1/blog/terms` (`awcms` #597 item 1,
+ADR-0104), the tenant's vocabulary, which is what makes a category or tag
+archive possible at all. Two things about it are not optional:
+
+- **Always `?order=created_at` with `nextCursor`, never the default list.** That
+  list is `name ASC` with a bounded `LIMIT` and returns a bare array — nothing
+  in it can say "there are more". A tag vocabulary grown over a 23,906-article
+  archive would be truncated at around the letter B, and the site would build a
+  hundred archive pages out of thousands with every gate green.
+- **The build credential's role needs `blog_content.taxonomies.read`.** A
+  credential minted before `awcms` ADR-0104 holds it only if its role already
+  did. A 403 or 404 warns and builds without archives; anything else throws — an
+  empty vocabulary is a legitimate state, so a blanket `catch` would make "your
+  CMS is down" and "this newsroom uses no categories" the same event.
+
 <!-- permukaan:dipanggil:mulai -->
 | Surface the build actually calls | Called from |
 | --- | --- |
@@ -70,6 +85,7 @@ someone can see it.
 | `/api/v1/media/objects` | `src/lib/awcms/media.ts` — media resolution, max 100 ids per request |
 | `/api/v1/media/public-origin` | `src/lib/awcms/media.ts` — the media origin for `img-src` |
 | `/api/v1/site-profile/composed` | `src/lib/awcms/profil.ts` — who the site is: masthead, footer, contact, social links, `Organization` |
+| `/api/v1/blog/terms` | `src/lib/awcms/taksonomi.ts` — the tenant's vocabulary for the category/tag archives, `order=created_at` + cursor (never the default alphabetical list, which truncates silently) |
 <!-- permukaan:dipanggil:selesai -->
 
 ```

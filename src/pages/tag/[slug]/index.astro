@@ -1,0 +1,26 @@
+---
+/**
+ * Arsip tag halaman 1, locale BAWAAN (`/tag/politik/`).
+ *
+ * Rutenya dibangkitkan dari term yang benar-benar DIPAKAI artikel terbit, bukan
+ * dari kosakata `awcms` — lihat `lib/arsip-taksonomi.ts`. Sebuah kosakata tag
+ * yang tumbuh bertahun-tahun memuat ribuan term yang tidak melekat pada satu
+ * pun artikel hari ini, dan satu halaman per term berarti ribuan grid kosong.
+ */
+import ArsipTaksonomi from '../../../components/views/ArsipTaksonomi.astro';
+import { arsipUntuk } from '../../../lib/arsip-taksonomi';
+import { defaultLocale } from '../../../config/site';
+
+export async function getStaticPaths() {
+  const arsip = await arsipUntuk('tag', defaultLocale);
+
+  return arsip.map((entri) => ({
+    params: { slug: entri.term.slug },
+    props: { slug: entri.term.slug }
+  }));
+}
+
+const { slug } = Astro.props;
+---
+
+<ArsipTaksonomi jenis="tag" slug={slug} />

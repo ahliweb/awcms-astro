@@ -1,0 +1,32 @@
+---
+/**
+ * Arsip kategori halaman 2..N, locale BAWAAN (`/kategori/politik/halaman/2/`).
+ *
+ * Halaman 1 TIDAK dibangkitkan di sini — ia `/kategori/politik/`, disajikan
+ * `../index.astro`. Kembaran `/halaman/1/` akan memberi satu halaman dua URL;
+ * `lib/paginasi.ts` memuat penalaran lengkapnya.
+ */
+import ArsipTaksonomi from '../../../../components/views/ArsipTaksonomi.astro';
+import { arsipUntuk } from '../../../../lib/arsip-taksonomi';
+import { artikelPerHalaman, defaultLocale } from '../../../../config/site';
+import { nomorHalamanTambahan } from '../../../../lib/paginasi';
+
+export async function getStaticPaths() {
+  const jalur = [];
+
+  for (const entri of await arsipUntuk('category', defaultLocale)) {
+    for (const nomor of nomorHalamanTambahan(entri.artikel.length, artikelPerHalaman)) {
+      jalur.push({
+        params: { slug: entri.term.slug, nomor: String(nomor) },
+        props: { slug: entri.term.slug, nomor }
+      });
+    }
+  }
+
+  return jalur;
+}
+
+const { slug, nomor } = Astro.props;
+---
+
+<ArsipTaksonomi jenis="category" slug={slug} nomor={nomor} />

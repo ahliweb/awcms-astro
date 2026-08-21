@@ -15,6 +15,8 @@ import { tanggalPanjang, tanggalMesin, pernahDiubahSetelahTerbit } from '../lib/
 import { getArticleVisual } from '../lib/article-images';
 import { getArticles } from '../lib/content';
 import { artikelLainnya } from '../lib/terkait';
+import { jalurArsip, termArtikel } from '../lib/arsip-taksonomi';
+import { JENIS_ARSIP, termMenurutId } from '../lib/awcms/taksonomi';
 import { SITE_SOCIAL_IMAGE } from '../lib/social-image';
 import { articleSchema, tipeArtikelSeksi } from '../lib/schema';
 import { profilSitus } from '../lib/awcms/profil';
@@ -30,9 +32,18 @@ interface Props {
   gambar?: LocalizedArticle['gambar'];
   /** Kartu share artikel ini; `undefined` jatuh ke kartu situs, lalu ke tanpa gambar. */
   kartuShare?: LocalizedArticle['kartuShare'];
+  /**
+   * Klasifikasi artikel ini di `awcms` (`#597` butir 1).
+   *
+   * Opsional dengan bawaan `[]` supaya rute yang belum meneruskannya merender
+   * halaman yang benar tanpa daftar, alih-alih meledak — dan supaya situs yang
+   * dibangun terhadap `awcms` yang lebih tua, yang belum membawa `termIds` di
+   * feed-nya, tetap terbangun.
+   */
+  termIds?: string[];
 }
 
-const { entry, slug, isFallback = false, gambar, kartuShare } = Astro.props;
+const { entry, slug, isFallback = false, gambar, kartuShare, termIds = [] } = Astro.props;
 const data = entry.data;
 const locale = getLocaleFromPath(Astro.url.pathname);
 
@@ -86,6 +97,16 @@ const lainnya = artikelLainnya(
   slug,
   urutanSeksiTab(data.kategori)
 );
+
+// Klasifikasi artikel ini, sebagai tautan ke arsipnya. Tanpa ini setiap
+// halaman arsip yang dibangkitkan `#597` butir 1 hanya bisa ditemukan lewat
+// sitemap — halaman yang ada, terindeks, dan tidak ditaut satu pun halaman
+// yang isinya. `termMenurutId` dimemoisasi per build.
+const katalogTerm = await termMenurutId();
+const klasifikasi = JENIS_ARSIP.map((jenis) => ({
+  jenis,
+  daftar: termArtikel(termIds, katalogTerm, jenis)
+})).filter((baris) => baris.daftar.length > 0);
 
 const schema = articleSchema({
   locale,
@@ -185,6 +206,25 @@ const feed = seksiPunyaFeed(urutanSeksiTab(data.kategori), 1)
 
     <FaqAccordion faq={data.faq} />
 
+    {klasifikasi.length > 0 && (
+      <div class="klasifikasi">
+        {klasifikasi.map((baris) => (
+          <div class="klasifikasi-baris">
+            <span class="klasifikasi-label">{t(locale, `arsip.${baris.jenis}.judul`)}</span>
+            <ul class="klasifikasi-daftar">
+              {baris.daftar.map((term) => (
+                <li>
+                  <a class="klasifikasi-tautan" href={jalurArsip(locale, baris.jenis, term.slug)}>
+                    {term.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    )}
+
     {lainnya.length > 0 && (
       <nav class="lainnya" aria-label={t(locale, 'lainnya.judul')}>
         <h2 class="lainnya-judul">{t(locale, 'lainnya.judul')}</h2>
@@ -205,6 +245,48 @@ const feed = seksiPunyaFeed(urutanSeksiTab(data.kategori), 1)
 </BaseLayout>
 
 <style>
+  .klasifikasi {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin: 2rem 0 0;
+  }
+
+  .klasifikasi-baris {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .klasifikasi-label {
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .klasifikasi-daftar {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .klasifikasi-tautan {
+    display: inline-flex;
+    align-items: center;
+    /* Target sentuh ≥44px (AGENTS.md §Antarmuka). */
+    min-height: 44px;
+    padding: 0.3rem 0.7rem;
+    border: 1px solid var(--border-color, currentColor);
+    border-radius: 999px;
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+
   .lainnya {
     margin: 2.5rem 0 1rem;
   }

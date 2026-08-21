@@ -133,6 +133,73 @@ export function urutanSeksiTab(slug: string): UrutanSeksi {
 export const SEGMEN_HALAMAN = "halaman" as const;
 
 /**
+ * The route segments the taxonomy archives live under (`awcms` #597 item 1).
+ *
+ * Two words rather than one shared prefix (`/arsip/kategori/…`): these are the
+ * URLs a reader shares and a search engine indexes, and `/kategori/politik/` is
+ * what both expect from a news site. The cost is one route directory per
+ * vocabulary, which is the same cost `[tab]/` already pays.
+ *
+ * Indonesian for the same reason `SEGMEN_HALAMAN` is, and NOT translated per
+ * locale for the same reason either: the same article set must not live at two
+ * different paths.
+ *
+ * They sit beside `SEGMEN_HALAMAN` because they answer the same question —
+ * which words this template reserves at the top of a path — and because an
+ * article slugged `kategori` would otherwise be shadowed by this route,
+ * producing exactly one article that 404s while every gate stays green.
+ */
+export const SEGMEN_KATEGORI = "kategori" as const;
+export const SEGMEN_TAG = "tag" as const;
+
+/**
+ * Every word this template claims at the top of a path.
+ *
+ * `[tab]/index.astro` matches `/kategori/` and `[tab]/[...slug].astro` matches
+ * `/kategori/politik/`, so a site that configures a tab slugged `kategori`
+ * declares two different pages at one URL. Astro builds both and one wins —
+ * the section index or the archive, silently, with every gate green and one
+ * whole part of the site unreachable.
+ */
+export const SEGMEN_TERPESAN = [
+  SEGMEN_KATEGORI,
+  SEGMEN_TAG,
+  SEGMEN_HALAMAN
+] as const;
+
+/**
+ * Refuses a tab whose slug collides with a reserved segment.
+ *
+ * Pure and exported so `tests/arsip-taksonomi.test.mjs` can prove it REFUSES
+ * rather than only that the shipped configuration happens to pass — a check
+ * that has never seen a failing input is a check nobody has tested.
+ */
+export function tabBentrokSegmen(
+  daftar: readonly { slug: string }[] = tabs
+): string[] {
+  return daftar
+    .map((tab) => tab.slug)
+    .filter((slug) => (SEGMEN_TERPESAN as readonly string[]).includes(slug));
+}
+
+// Thrown at import time, like the `SITE_POSTS_PER_PAGE` check above and for the
+// same reason: a configuration this template cannot serve correctly must fail
+// where it is written, not produce a site that is quietly missing pages.
+{
+  const bentrok = tabBentrokSegmen();
+
+  if (bentrok.length > 0) {
+    throw new Error(
+      `siteConfig.tabs uses ${bentrok.map((s) => `"${s}"`).join(", ")}, ` +
+        `which this template reserves for its own routes ` +
+        `(${SEGMEN_TERPESAN.join(", ")}). A section and an archive would ` +
+        `declare the same URL, and only one of them would be built. Rename ` +
+        `the section.`
+    );
+  }
+}
+
+/**
  * How many article cards one section page carries.
  *
  * PRD FR-DSC-006 asks for a BOUNDED archive before production volume, and the
