@@ -263,3 +263,98 @@ describe("shape tolerance", () => {
     }
   });
 });
+
+describe("galeri: id registri diresolusi, bukan diganti placeholder (awcms #597 butir 7)", () => {
+  const OBJEK = new Map([
+    [
+      "11111111-1111-4111-8111-111111111111",
+      {
+        publicUrl: "https://media.test/foto.jpg",
+        altText: "Banjir merendam jalan",
+        width: 1200,
+        height: 800
+      }
+    ]
+  ]);
+
+  const galeri = (items) => ({ blocks: [{ type: "gallery", items }] });
+
+  test("id yang resolve menjadi <img> sungguhan", () => {
+    // Cacat yang ditutup: setiap galeri yang ditempatkan editor merender
+    // sebaris placeholder abu-abu di situs yang gambar artikelnya justru
+    // bekerja — karena komentar di renderer menyatakan resolusi id "butuh
+    // endpoint media yang tidak dipanggil situs ini", kalimat yang berhenti
+    // benar saat `awcms/media.ts` mendarat dan tidak pernah dibaca ulang.
+    // Tidak ada gerbang yang bisa melihatnya: placeholder ITU perilaku
+    // terdokumentasi untuk item yang tidak bisa diresolusi, dan ia tampak
+    // seperti salah satunya.
+    const html = renderContentBlocks(
+      galeri([{ mediaType: "image", mediaObjectId: "11111111-1111-4111-8111-111111111111" }]),
+      OBJEK
+    );
+
+    assert.match(html, /<img src="https:\/\/media\.test\/foto\.jpg"/);
+    assert.equal(html.includes("blok-tak-tersedia"), false);
+  });
+
+  test("alt datang dari registri, ukurannya ikut", () => {
+    // `altText` ditulis UNTUK gambarnya; caption pilihan kedua yang jujur.
+    // Ukurannya ikut supaya peramban memesan ruang sebelum gambarnya tiba.
+    const html = renderContentBlocks(
+      galeri([
+        {
+          mediaType: "image",
+          mediaObjectId: "11111111-1111-4111-8111-111111111111",
+          caption: "Foto oleh redaksi"
+        }
+      ]),
+      OBJEK
+    );
+
+    assert.match(html, /alt="Banjir merendam jalan"/);
+    assert.match(html, /width="1200"/);
+    assert.match(html, /height="800"/);
+    // Caption tetap muncul sebagai figcaption — ia keterangan, bukan alt.
+    assert.match(html, /<figcaption>Foto oleh redaksi<\/figcaption>/);
+  });
+
+  test("id yang TIDAK resolve tetap placeholder, tidak pernah <img> rusak", () => {
+    // awcms melaporkan id yang tidak resolve alih-alih membuangnya, justru
+    // supaya pemanggil bisa membedakan "tidak ada gambar" dari "gambar ini
+    // hilang". Perbedaan itu diteruskan sampai ke sini.
+    const html = renderContentBlocks(
+      galeri([{ mediaType: "image", mediaObjectId: "99999999-9999-4999-8999-999999999999" }]),
+      OBJEK
+    );
+
+    assert.match(html, /blok-tak-tersedia/);
+    assert.equal(html.includes("<img"), false);
+  });
+
+  test("id registri menang atas url mentah yang menemaninya", () => {
+    // Sama seperti renderer awcms sendiri: id adalah rujukan terkelola, dan URL
+    // di sebelahnya adalah apa pun yang ada sebelum objeknya didaftarkan.
+    const html = renderContentBlocks(
+      galeri([
+        {
+          mediaType: "image",
+          mediaObjectId: "11111111-1111-4111-8111-111111111111",
+          url: "https://lama.test/lawas.jpg"
+        }
+      ]),
+      OBJEK
+    );
+
+    assert.match(html, /https:\/\/media\.test\/foto\.jpg/);
+    assert.equal(html.includes("lama.test"), false);
+  });
+
+  test("tanpa peta media, perilakunya persis seperti sebelumnya", () => {
+    // Parameternya opsional, jadi setiap pemanggil lama tetap benar.
+    const html = renderContentBlocks(
+      galeri([{ mediaType: "image", mediaObjectId: "11111111-1111-4111-8111-111111111111" }])
+    );
+
+    assert.match(html, /blok-tak-tersedia/);
+  });
+});
