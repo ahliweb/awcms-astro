@@ -45,11 +45,26 @@
  * ## Media, and what this renderer cannot resolve
  *
  * A gallery item is either `{ url }` (a direct URL) or `{ mediaObjectId }` (an
- * id in awcms's media registry). Only the first can be rendered here: resolving
- * an id needs a media endpoint this site does not call, the same backlog item
- * `article-images.ts` names. An unresolvable item renders as a labelled
- * placeholder rather than nothing, so a missing image shows up in a page review
- * instead of being discovered by a reader.
+ * id in awcms's media registry). BOTH render now.
+ *
+ * This paragraph used to read "only the first can be rendered here: resolving
+ * an id needs a media endpoint this site does not call". That stopped being
+ * true when `src/lib/awcms/media.ts` landed — the build has resolved featured
+ * images and share cards through `GET /api/v1/media/objects` ever since — and
+ * nothing re-read the sentence. So every gallery an editor placed rendered as a
+ * row of grey placeholders on a site whose article images worked, with no gate
+ * able to see it: the placeholder IS the documented behaviour for an
+ * unresolvable item, and it looked like one.
+ *
+ * The resolution happens in `content.ts`, in the SAME batch as the featured
+ * images, and arrives here as a map. This module stays pure: it renders what it
+ * is given and performs no I/O, which is what lets the whole vocabulary be
+ * tested without a network.
+ *
+ * An item that genuinely cannot be resolved — an id awcms reports as
+ * unresolved, or a URL that failed the scheme check — still renders as a
+ * labelled placeholder rather than nothing, so a missing image shows up in a
+ * page review instead of being discovered by a reader.
  *
  * `video_news` is rendered as a LINK, never an embed — deliberately, and not
  * because embedding is harder. An embedded player is a third-party surface that
@@ -67,6 +82,19 @@ type Block = {
   items?: unknown[];
   [key: string]: unknown;
 };
+
+/**
+ * `mediaObjectId` -> the registry object, built by `content.ts` from one batch
+ * per build. A `ReadonlyMap` because this module must not be able to add to it:
+ * an id that is not here is one awcms reported as unresolved, and inventing an
+ * entry would turn "this image is gone" into a broken `<img>`.
+ */
+export type MediaTerresolusi = ReadonlyMap<
+  string,
+  { publicUrl: string; altText: string | null; width: number | null; height: number | null }
+>;
+
+const TANPA_MEDIA: MediaTerresolusi = new Map();
 
 type GalleryItem = {
   mediaType?: string;
@@ -144,12 +172,26 @@ function renderList(block: Block): string {
   return `<${tag}>${rendered}</${tag}>`;
 }
 
-function renderGalleryItem(item: GalleryItem): string {
+function renderGalleryItem(
+  item: GalleryItem,
+  media: MediaTerresolusi
+): string {
   const caption = typeof item.caption === "string" ? item.caption : "";
   const captionHtml = caption
     ? `<figcaption>${escapeHtml(caption)}</figcaption>`
     : "";
-  const url = safeAbsoluteUrl(item.url);
+
+  // The registry id wins over a raw `url` when both are present, matching
+  // awcms's own renderer: the id is the managed reference, and the URL beside
+  // it is whatever was there before the object was registered.
+  const terresolusi =
+    typeof item.mediaObjectId === "string"
+      ? media.get(item.mediaObjectId)
+      : undefined;
+
+  const url = terresolusi
+    ? safeAbsoluteUrl(terresolusi.publicUrl)
+    : safeAbsoluteUrl(item.url);
 
   if (!url) {
     // Either a registry id this site cannot resolve, or a URL that failed the
@@ -163,10 +205,19 @@ function renderGalleryItem(item: GalleryItem): string {
     return `<figure class="galeri-item"><a href="${escapeHtml(url)}" rel="noopener noreferrer">${escapeHtml(caption || "Tonton video")}</a>${captionHtml}</figure>`;
   }
 
-  return `<figure class="galeri-item"><img src="${escapeHtml(url)}" alt="${escapeHtml(caption)}" loading="lazy">${captionHtml}</figure>`;
+  // `altText` from the registry was written FOR the image; the caption is the
+  // honest second choice. An empty string is treated as absent — a blank `alt`
+  // tells a screen reader the image is decorative, which a gallery image is not.
+  // Same precedence `content.ts` applies to an article's featured image.
+  const alt = terresolusi?.altText?.trim() || caption;
+  const ukuran = terresolusi
+    ? `${terresolusi.width ? ` width="${terresolusi.width}"` : ""}${terresolusi.height ? ` height="${terresolusi.height}"` : ""}`
+    : "";
+
+  return `<figure class="galeri-item"><img src="${escapeHtml(url)}" alt="${escapeHtml(alt)}"${ukuran} loading="lazy">${captionHtml}</figure>`;
 }
 
-function renderGallery(block: Block): string {
+function renderGallery(block: Block, media: MediaTerresolusi): string {
   const items = Array.isArray(block.items) ? block.items : [];
 
   const rendered = items
@@ -174,7 +225,7 @@ function renderGallery(block: Block): string {
       (item): item is GalleryItem =>
         typeof item === "object" && item !== null && !Array.isArray(item)
     )
-    .map(renderGalleryItem)
+    .map((item) => renderGalleryItem(item, media))
     .join("");
 
   if (!rendered) {
@@ -210,7 +261,7 @@ function renderVideoNews(block: Block): string {
   return `<figure class="video-berita"><a href="${escapeHtml(buildWatchUrl(videoId))}" rel="noopener noreferrer">${escapeHtml(label)}</a>${source}</figure>`;
 }
 
-function renderBlock(block: Block): string {
+function renderBlock(block: Block, media: MediaTerresolusi): string {
   const text = escapeHtml(String(block.text ?? ""));
 
   switch (block.type) {
@@ -230,7 +281,7 @@ function renderBlock(block: Block): string {
     case "quote":
       return `<blockquote><p>${text}</p></blockquote>`;
     case "gallery":
-      return renderGallery(block);
+      return renderGallery(block, media);
     case "video_news":
       return renderVideoNews(block);
     case "paragraph":
@@ -254,7 +305,8 @@ function renderBlock(block: Block): string {
  * `escapeHtml`. Do not feed this function's output anything it did not build.
  */
 export function renderContentBlocks(
-  contentJson: Record<string, unknown> | undefined
+  contentJson: Record<string, unknown> | undefined,
+  media: MediaTerresolusi = TANPA_MEDIA
 ): string {
   const blocks = contentJson?.blocks;
 
@@ -263,7 +315,7 @@ export function renderContentBlocks(
   }
 
   return blocks
-    .map((block) => renderBlock((block ?? {}) as Block))
+    .map((block) => renderBlock((block ?? {}) as Block, media))
     .filter(Boolean)
     .join("\n");
 }

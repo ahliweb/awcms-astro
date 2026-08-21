@@ -318,6 +318,38 @@ let mediaCache: Promise<Map<string, ObjekMedia>> | undefined;
  *
  * So: zero resolved out of N requested throws; anything else proceeds.
  */
+/**
+ * Every `mediaObjectId` a post's gallery blocks reference.
+ *
+ * Deliberately tolerant of shape: `contentJson` arrives from jsonb and a body
+ * written before a validator was tightened must not throw inside a build. Any
+ * node that is not what it claims contributes nothing, exactly as the renderer
+ * treats it.
+ */
+function idGaleri(contentJson: Record<string, unknown> | undefined): string[] {
+  const blocks = contentJson?.blocks;
+  if (!Array.isArray(blocks)) return [];
+
+  const ids: string[] = [];
+
+  for (const block of blocks) {
+    if (typeof block !== "object" || block === null) continue;
+
+    const { type, items } = block as { type?: unknown; items?: unknown };
+    if (type !== "gallery" || !Array.isArray(items)) continue;
+
+    for (const item of items) {
+      if (typeof item !== "object" || item === null) continue;
+      const { mediaObjectId } = item as { mediaObjectId?: unknown };
+      if (typeof mediaObjectId === "string" && mediaObjectId !== "") {
+        ids.push(mediaObjectId);
+      }
+    }
+  }
+
+  return ids;
+}
+
 async function fetchMedia(
   posts: AwcmsBlogPost[]
 ): Promise<Map<string, ObjekMedia>> {
@@ -328,7 +360,17 @@ async function fetchMedia(
         // a featured image uses it for both surfaces), and `resolveObjekMedia`
         // dedupes — so asking for the union costs nothing and asking twice
         // would double the round trips for no answer that differs.
-        .flatMap((post) => [post.featuredMediaId, post.seoImageMediaId])
+        // Gallery ids join the SAME batch (Issue #597 item 7). Before this,
+        // every gallery an editor placed rendered as a row of grey
+        // placeholders on a site whose article images worked — because
+        // `content-blocks.ts` said resolving an id "needs a media endpoint this
+        // site does not call", a sentence that stopped being true when
+        // `awcms/media.ts` landed and that nothing re-read.
+        .flatMap((post) => [
+          post.featuredMediaId,
+          post.seoImageMediaId,
+          ...idGaleri(post.contentJson)
+        ])
         .filter((id): id is string => typeof id === "string" && id !== "")
     )
   ];
@@ -642,7 +684,7 @@ function toArticle(
       },
       // Rendered here, once, from the SAME structured blocks awcms stores —
       // never from a raw-HTML field, because there is not one.
-      bodyHtml: renderContentBlocks(post.contentJson)
+      bodyHtml: renderContentBlocks(post.contentJson, media)
     },
     isFallback,
     // The TRANSLATED post's image, not the source's: an editor who gave a
