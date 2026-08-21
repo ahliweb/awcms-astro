@@ -1,0 +1,38 @@
+---
+/**
+ * Pages 2..N of a section in the DEFAULT locale (`/panduan/halaman/2/`).
+ *
+ * Page 1 is NOT generated here — it is `/panduan/`, served by
+ * `src/pages/[tab]/index.astro`. Generating a `/halaman/1/` twin would give one
+ * page two URLs and move an address that is already indexed; see
+ * `lib/paginasi.ts` for the full reasoning.
+ *
+ * A section with one page or none produces no route at all from this file,
+ * which is the template's own state.
+ */
+import TabIndex from "../../../components/views/TabIndex.astro";
+import { artikelPerHalaman, defaultLocale, siteConfig } from "../../../config/site";
+import { getArticles } from "../../../lib/content";
+import { nomorHalamanTambahan } from "../../../lib/paginasi";
+
+export async function getStaticPaths() {
+  const jalur = [];
+
+  for (const tab of siteConfig.tabs) {
+    const jumlah = (await getArticles(tab.slug, defaultLocale)).length;
+
+    for (const nomor of nomorHalamanTambahan(jumlah, artikelPerHalaman)) {
+      jalur.push({
+        params: { tab: tab.slug, nomor: String(nomor) },
+        props: { tab: tab.slug, nomor }
+      });
+    }
+  }
+
+  return jalur;
+}
+
+const { tab, nomor } = Astro.props;
+---
+
+<TabIndex tab={tab} nomor={nomor} />

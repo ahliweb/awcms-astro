@@ -283,6 +283,18 @@ msgstr "WhatsApp"
 msgid "footer.social.title"
 msgstr "Ikuti kami"
 
+msgid "paginasi.aria"
+msgstr "Navigasi halaman arsip"
+
+msgid "paginasi.halaman"
+msgstr "Halaman"
+
+msgid "paginasi.sebelumnya"
+msgstr "← Sebelumnya"
+
+msgid "paginasi.berikutnya"
+msgstr "Berikutnya →"
+
 msgid "sitemap.h1"
 msgstr "Peta situs"
 
