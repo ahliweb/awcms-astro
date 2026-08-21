@@ -271,6 +271,18 @@ msgstr "Sitemap"
 msgid "footer.copyright"
 msgstr "All rights reserved."
 
+msgid "footer.contact.title"
+msgstr "Contact"
+
+msgid "footer.contact.address"
+msgstr "Editorial address"
+
+msgid "footer.contact.whatsapp"
+msgstr "WhatsApp"
+
+msgid "footer.social.title"
+msgstr "Follow us"
+
 msgid "sitemap.h1"
 msgstr "Sitemap"
 

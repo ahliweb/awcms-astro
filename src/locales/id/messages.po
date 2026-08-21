@@ -271,6 +271,18 @@ msgstr "Peta situs"
 msgid "footer.copyright"
 msgstr "Seluruh hak cipta."
 
+msgid "footer.contact.title"
+msgstr "Kontak"
+
+msgid "footer.contact.address"
+msgstr "Alamat redaksi"
+
+msgid "footer.contact.whatsapp"
+msgstr "WhatsApp"
+
+msgid "footer.social.title"
+msgstr "Ikuti kami"
+
 msgid "sitemap.h1"
 msgstr "Peta situs"
 

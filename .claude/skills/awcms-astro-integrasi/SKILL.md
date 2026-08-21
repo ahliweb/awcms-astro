@@ -24,7 +24,7 @@ place a component touches the result.
 | `publishedDate` and `updatedDate` are read from **one row** | Paired across rows → `dateModified` precedes `datePublished` on valid content, and the crawler discards the whole block |
 | Silently truncating data is a **failure**, not an optimisation | See every row above |
 
-## Surfaces — THREE that are called, two that are not
+## Surfaces — FOUR that are called, two that are not
 
 The difference matters, and it was once written wrongly in this file as "five
 surfaces in use". The `awcms` assessment of 4 August 2026 briefly recorded SIX,
@@ -50,7 +50,18 @@ would read as a promise that has already been broken.
 The list below is therefore **gated**, not written by hand:
 `tests/kontrak-awcms.test.mjs` extracts the `/api/v1/…` paths from the `src/`
 source code and refuses the list if it diverges from them, in both directions. It
-is what makes a fourth surface unable to land without this file changing too.
+is what makes a new surface unable to land without this file changing too.
+
+**The fourth surface landed on 22 August 2026** — `/api/v1/site-profile/composed`
+(`awcms` #596, ADR-0102), which is where a site's own identity comes from. It
+went through this gate in the order the Definition of Done requires and that
+order is worth reading once, because it is the whole point of a cross-repo
+contract: `awcms` froze the shape FIRST, entering it as **COMMITTED** — a
+promise, since nothing called it yet — and only then did this repo start
+calling it, at which point the entry moves to CONSUMED over there. Doing it the
+other way round would put this build on a shape the other repo had not agreed
+to keep, which is exactly the failure the fixture exists to move back to where
+someone can see it.
 
 <!-- permukaan:dipanggil:mulai -->
 | Surface the build actually calls | Called from |
@@ -58,6 +69,7 @@ is what makes a fourth surface unable to land without this file changing too.
 | `/api/v1/blog/posts` | `src/lib/content.ts` — the build feed traversal, `view=full` + `order=created_at` + cursor |
 | `/api/v1/media/objects` | `src/lib/awcms/media.ts` — media resolution, max 100 ids per request |
 | `/api/v1/media/public-origin` | `src/lib/awcms/media.ts` — the media origin for `img-src` |
+| `/api/v1/site-profile/composed` | `src/lib/awcms/profil.ts` — who the site is: masthead, footer, contact, social links, `Organization` |
 <!-- permukaan:dipanggil:selesai -->
 
 ```

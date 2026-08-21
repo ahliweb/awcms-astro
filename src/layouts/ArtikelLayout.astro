@@ -15,6 +15,8 @@ import { tanggalPanjang, tanggalMesin, pernahDiubahSetelahTerbit } from '../lib/
 import { getArticleVisual } from '../lib/article-images';
 import { SITE_SOCIAL_IMAGE } from '../lib/social-image';
 import { articleSchema, tipeArtikelSeksi } from '../lib/schema';
+import { profilSitus } from '../lib/awcms/profil';
+import { namaPenerbit } from '../lib/identitas';
 import { t } from '../lib/po';
 import type { LocalizedArticle } from '../lib/content';
 
@@ -88,6 +90,10 @@ const schema = articleSchema({
   // dijangkau typecheck maupun tes, jadi terner di sini adalah keputusan yang
   // bisa dibalik tanpa satu gerbang pun berubah warna.
   tipe: tipeArtikelSeksi(data.kategori),
+  // Nama penerbit datang dari `site_profile` (`awcms` #596), bukan dari
+  // `siteConfig.name` yang ditulis di source — lihat `articleSchema`. Panggilan
+  // ini dimemoisasi per build; `BaseLayout` sudah memintanya lebih dulu.
+  penerbit: namaPenerbit(await profilSitus()),
 });
 
 // Feed seksi ini, diumumkan juga dari halaman artikelnya (ADR-0035) — tempat
