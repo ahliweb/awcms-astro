@@ -3,7 +3,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumb from '../Breadcrumb.astro';
 import DisclaimerNote from '../DisclaimerNote.astro';
 import Ilustrasi from '../Ilustrasi.astro';
-import { getLocaleFromPath, getSiteUrl, localePath, siteConfig, tabTitleKey, urutanSeksiTab, type TabSlug } from '../../config/site';
+import { artikelPerHalaman, getLocaleFromPath, getSiteUrl, localePath, siteConfig, tabTitleKey, urutanSeksiTab, type TabSlug } from '../../config/site';
+import { jalurHalaman, potongHalaman } from '../../lib/paginasi';
 import { tanggalPanjang, tanggalMesin } from '../../lib/tanggal';
 import { getArticles } from '../../lib/content';
 import { getArticleVisual, getTabImage } from '../../lib/article-images';
@@ -16,12 +17,20 @@ import { t } from '../../lib/po';
 
 interface Props {
   tab: TabSlug;
+  /**
+   * 1-based. Page 1 is the section's own path and is what every existing route
+   * renders by omitting this — see `lib/paginasi.ts` for why the `/halaman/1/`
+   * twin is never generated.
+   */
+  nomor?: number;
 }
 
-const { tab } = Astro.props;
+const { tab, nomor = 1 } = Astro.props;
 const locale = getLocaleFromPath(Astro.url.pathname);
 
-const articles = await getArticles(tab, locale);
+const semuaArtikel = await getArticles(tab, locale);
+const halaman = potongHalaman(semuaArtikel, nomor, artikelPerHalaman);
+const articles = halaman.butir;
 
 // Seksi berita menampilkan TANGGAL pada kartunya; seksi manual menampilkan
 // nomor urut redaksi. Keduanya membaca hal yang sama: field yang menentukan
@@ -35,7 +44,15 @@ const seksiBerita = urutanSeksiTab(tab) === 'terbaru';
 // mana pun yang ejaannya tidak sekadar huruf besar.
 const tabFallback = siteConfig.tabs.find((entry) => entry.slug === tab)?.label ?? tab;
 const tabLabel = t(locale, tabTitleKey(tab), tabFallback);
-const title = t(locale, `tab.${tab}.pageTitle`, tabFallback);
+const judulSeksi = t(locale, `tab.${tab}.pageTitle`, tabFallback);
+
+// Halaman 2..N membawa nomornya di `<title>`. Judul yang identik di seluruh
+// halaman arsip adalah duplikat bagi perayap DAN bagi pembaca yang punya lima
+// tab terbuka — dan ia satu-satunya pembeda yang terbawa ke hasil pencarian.
+const title =
+  halaman.nomor > 1
+    ? `${judulSeksi} — ${t(locale, 'paginasi.halaman')} ${halaman.nomor}`
+    : judulSeksi;
 const description = t(locale, `tab.${tab}.metaDesc`, '');
 
 const breadcrumbItems = [
@@ -52,7 +69,10 @@ const tabVisual = { ...getTabImage(tab), alt: tabLabel };
 // dibaca dari keadaan halaman ini apa adanya — seksi yang diurutkan tanggal DAN
 // benar-benar berisi artikel — sehingga sebuah halaman tidak akan pernah
 // mengumumkan feed yang rutenya tidak menerbitkan berkasnya.
-const feed = seksiPunyaFeed(urutanSeksiTab(tab), articles.length)
+// `semuaArtikel`, not `articles`: a section HAS a feed because the section has
+// articles, not because this particular page does. Reading the page would make
+// the announcement disappear from page 2 of a section that publishes one.
+const feed = seksiPunyaFeed(urutanSeksiTab(tab), semuaArtikel.length)
   ? { judul: `${tabLabel} — ${namaSitus(await profilSitus())}`, href: jalurFeed(locale, tab) }
   : undefined;
 
@@ -70,7 +90,7 @@ const schema = collectionSchema(
   title={title}
   description={description}
   currentTab={tab}
-  canonicalUrl={getSiteUrl(localePath(locale, `/${tab}/`))}
+  canonicalUrl={getSiteUrl(jalurHalaman(locale, tab, halaman.nomor))}
   schema={schema}
   feed={feed}
 >
@@ -125,12 +145,72 @@ const schema = collectionSchema(
     })}
   </div>
 
+  {halaman.total > 1 && (
+    <nav class="paginasi" aria-label={t(locale, 'paginasi.aria')}>
+      {/* Tautan sebenarnya, bukan tombol ber-JavaScript: seluruh situs ini
+          harus terbaca dengan JavaScript dimatikan, dan sebuah arsip yang
+          hanya bisa ditelusuri oleh skrip adalah arsip yang tidak bisa
+          ditelusuri perayap juga. */}
+      {halaman.sebelumnya !== null ? (
+        <a class="paginasi-tautan" rel="prev" href={jalurHalaman(locale, tab, halaman.sebelumnya)}>
+          {t(locale, 'paginasi.sebelumnya')}
+        </a>
+      ) : (
+        <span class="paginasi-tautan paginasi-mati" aria-hidden="true">{t(locale, 'paginasi.sebelumnya')}</span>
+      )}
+
+      <span class="paginasi-posisi">
+        {t(locale, 'paginasi.halaman')} {halaman.nomor} / {halaman.total}
+      </span>
+
+      {halaman.berikutnya !== null ? (
+        <a class="paginasi-tautan" rel="next" href={jalurHalaman(locale, tab, halaman.berikutnya)}>
+          {t(locale, 'paginasi.berikutnya')}
+        </a>
+      ) : (
+        <span class="paginasi-tautan paginasi-mati" aria-hidden="true">{t(locale, 'paginasi.berikutnya')}</span>
+      )}
+    </nav>
+  )}
+
   <DisclaimerNote variant="general" />
 </BaseLayout>
 
 <style>
   .kartu-nomor {
     font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  .paginasi {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 2rem 0;
+    flex-wrap: wrap;
+  }
+
+  .paginasi-tautan {
+    padding: 0.5rem 0.9rem;
+    border: 1px solid var(--border-color, currentColor);
+    border-radius: 0.4rem;
+    text-decoration: none;
+    /* Target sentuh ≥44px (AGENTS.md §Antarmuka). */
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* Ujung arsip ditampilkan sebagai teks mati, bukan disembunyikan: posisi
+     kedua tombol tetap sama di setiap halaman, sehingga penunjuk pembaca tidak
+     berpindah tempat saat ia sampai di ujung. */
+  .paginasi-mati {
+    opacity: 0.45;
+  }
+
+  .paginasi-posisi {
+    font-size: 0.9rem;
     color: var(--text-muted);
   }
 </style>

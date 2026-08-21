@@ -119,6 +119,66 @@ export function urutanSeksiTab(slug: string): UrutanSeksi {
 }
 
 /**
+ * The route segment that carries a section's page number: `/panduan/halaman/2/`.
+ *
+ * A CONSTANT rather than a literal in four route files, because it is also what
+ * `tests/paginasi.test.mjs` refuses an article slug from colliding with — a post
+ * slugged `halaman` would be shadowed by the pagination route, and the symptom
+ * is one article that 404s while every gate stays green.
+ *
+ * Indonesian, like `feed.xml` is not: this is a reader-facing URL segment in a
+ * template whose default locale is Indonesian, and translating it per locale
+ * would make the same article set live at two different paths.
+ */
+export const SEGMEN_HALAMAN = "halaman" as const;
+
+/**
+ * How many article cards one section page carries.
+ *
+ * PRD FR-DSC-006 asks for a BOUNDED archive before production volume, and the
+ * volume that made it urgent is real: a 23,906-article migration renders its
+ * entire history into one document without this. That page is not merely slow —
+ * it is a single HTML response holding every headline the newsroom has ever
+ * published, which no reader scrolls and no crawler treats as a useful index.
+ *
+ * A malformed value THROWS rather than falling back, the same rule
+ * `AWCMS_API_TIMEOUT_MS` follows in `lib/awcms/client.ts`: a setting that
+ * silently ignores what an operator wrote is a value that reads like
+ * configuration and decides nothing.
+ */
+export const artikelPerHalaman = (() => {
+  const raw = readEnv("SITE_POSTS_PER_PAGE");
+  if (raw === undefined) return 12;
+
+  const parsed = Number(raw);
+
+  if (!Number.isInteger(parsed) || parsed < 1) {
+    throw new Error(
+      `SITE_POSTS_PER_PAGE is not a positive whole number of articles: ` +
+        `${JSON.stringify(raw)}. Remove it to use the default of 12.`
+    );
+  }
+
+  return parsed;
+})();
+
+/**
+ * How many entries one section feed carries.
+ *
+ * A feed is the RECENT items, not the archive — and until this cap existed
+ * `isiFeed` emitted every article a section had, which on the migration target
+ * is a 23,906-entry Atom document produced on every build and re-downloaded by
+ * every subscriber's reader on every poll. The pagination this constant sits
+ * beside bounds the same history for a human; this bounds it for a machine.
+ *
+ * Deliberately not the same number as `artikelPerHalaman`: a page is a browsing
+ * unit and a feed is a polling window, and tying them would mean a site that
+ * shows 6 cards per page also forgets everything older than its last 6 posts
+ * between two polls.
+ */
+export const artikelPerFeed = 50;
+
+/**
  * The USER-level admin surface this site carries — **empty by default**.
  *
  * A site built from this template is a PUBLIC site. It may also carry an admin

@@ -1,0 +1,39 @@
+---
+/**
+ * Pages 2..N of a section in a PREFIXED locale (`/en/panduan/halaman/2/`).
+ *
+ * The page COUNT is derived per locale rather than shared with the default
+ * one, even though `src/lib/content.ts` guarantees every locale has the same
+ * article set. Deriving it here is what keeps that guarantee checkable instead
+ * of assumed: if the two ever disagree, `tests/paginasi.test.mjs` and the
+ * hreflang reciprocity gate in `audit:konten` both go red, rather than this
+ * route silently emitting an alternate that 404s.
+ */
+import TabIndex from "../../../../components/views/TabIndex.astro";
+import { artikelPerHalaman, prefixedLocales, siteConfig } from "../../../../config/site";
+import { getArticles } from "../../../../lib/content";
+import { nomorHalamanTambahan } from "../../../../lib/paginasi";
+
+export async function getStaticPaths() {
+  const jalur = [];
+
+  for (const lang of prefixedLocales) {
+    for (const tab of siteConfig.tabs) {
+      const jumlah = (await getArticles(tab.slug, lang)).length;
+
+      for (const nomor of nomorHalamanTambahan(jumlah, artikelPerHalaman)) {
+        jalur.push({
+          params: { lang, tab: tab.slug, nomor: String(nomor) },
+          props: { tab: tab.slug, nomor }
+        });
+      }
+    }
+  }
+
+  return jalur;
+}
+
+const { tab, nomor } = Astro.props;
+---
+
+<TabIndex tab={tab} nomor={nomor} />

@@ -76,7 +76,8 @@ The variables (all **Build Variables**, except where marked):
 | Variable | Note |
 | --- | --- |
 | `SITE_URL` | The absolute origin. Filling it in wrongly does not fail the build — it publishes a site pointing crawlers somewhere else |
-| `SITE_NAME`, `SITE_DESCRIPTION` | The site's identity |
+| `SITE_NAME`, `SITE_DESCRIPTION` | The site's identity — the FALLBACK, since awcms #596: a tenant that fills its `site_profile` in overrides both, along with the logo, favicon, tagline, copyright line, contact block and social links |
+| `SITE_POSTS_PER_PAGE` | Optional, default 12. Article cards per section page; a section past that bound continues at `/<section>/halaman/2/` |
 | `SITE_LOCALES` | The locale prefixes other than the default locale, comma-separated |
 | `AWCMS_API_URL` | The awcms instance's origin |
 | `AWCMS_API_TOKEN` | **A secret.** A machine credential (`awcmsm_…`), scoped `blog_content.posts.read` **and** `media_library.media.read` — the second is used by `build:asal-media`, and without it the build fails with a 403 after every page has finished rendering. It is also what decides the tenant |

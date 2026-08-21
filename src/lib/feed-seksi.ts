@@ -9,6 +9,7 @@
  * yang menerbitkannya di locale berprefiks.
  */
 import {
+  artikelPerFeed,
   defaultLocale,
   getSiteUrl,
   localeHtmlLang,
@@ -83,7 +84,13 @@ export async function isiFeed(locale: Locale, tab: TabSlug): Promise<string> {
     urlDiri: getSiteUrl(jalurFeed(locale, tab)),
     bahasa: localeHtmlLang[locale],
     penerbit: nama,
-    butir: articles.map(({ entry, slug }) => ({
+    // Dibatasi `artikelPerFeed`. Sebuah feed adalah jendela TERBARU, bukan
+    // arsip: tanpa batas ini seksi target migrasi memancarkan 23.906 entry di
+    // setiap build, dan setiap pembaca feed mengunduh ulang seluruhnya pada
+    // setiap polling. Pemotongan dilakukan SETELAH `getArticles`, yang sudah
+    // mengurutkan seksi menurut aturannya sendiri, sehingga yang tersisa benar
+    // benar yang terbaru dan bukan sekadar yang pertama datang dari API.
+    butir: articles.slice(0, artikelPerFeed).map(({ entry, slug }) => ({
       judul: entry.data.title,
       url: getSiteUrl(localePath(locale, `/${tab}/${slug}/`)),
       ringkasan: entry.data.description,

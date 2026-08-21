@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](deploy-coolify.md)
 
-<!-- i18n-source-hash: sha256:54160b08d6fbd2f688c3bafeb678cedfcb9a303ce31a4aee7a8bd0a3404f10f8 -->
+<!-- i18n-source-hash: sha256:b01b55a664f3c85638f371081e69696d5c45f5449d2b3cb9d24d50db8e0afebc -->
 
 # Deploy dan rebuild lewat webhook (Coolify)
 
@@ -78,7 +78,8 @@ Variabel (semua **Build Variable**, kecuali yang ditandai):
 | Variabel | Catatan |
 | --- | --- |
 | `SITE_URL` | Origin absolut. Salah isi tidak menggagalkan build — ia menerbitkan situs yang menunjuk crawler ke tempat lain |
-| `SITE_NAME`, `SITE_DESCRIPTION` | Identitas situs |
+| `SITE_NAME`, `SITE_DESCRIPTION` | Identitas situs — CADANGANNYA, sejak `awcms` #596: tenant yang mengisi `site_profile` menimpa keduanya, berikut logo, favicon, tagline, baris hak cipta, blok kontak, dan tautan sosial |
+| `SITE_POSTS_PER_PAGE` | Opsional, bawaan 12. Kartu artikel per halaman seksi; seksi yang melewati batas itu berlanjut di `/<seksi>/halaman/2/` |
 | `SITE_LOCALES` | Prefix locale selain locale default, dipisah koma |
 | `AWCMS_API_URL` | Origin instans awcms |
 | `AWCMS_API_TOKEN` | **Secret.** Kredensial mesin (`awcmsm_…`), scope `blog_content.posts.read` **dan** `media_library.media.read` — yang kedua dipakai `build:asal-media`, dan tanpanya build gagal 403 setelah seluruh halaman selesai dirender. Ia juga yang menentukan tenant |
