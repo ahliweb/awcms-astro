@@ -5,7 +5,7 @@ description: Kontrak integrasi awcms-astro ↔ awcms — tenant dari token mesin
 
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](SKILL.md)
 
-<!-- i18n-source-hash: sha256:09db5c9f6314139420afaa39b73e50b41e3792eeb196d1cd812e7890eab6ccbb -->
+<!-- i18n-source-hash: sha256:2fb736a036ba047cbd463d6eea8985c6ccf7cce8614b2998d2d95af622c0ffdb -->
 
 # awcms-astro — kontrak integrasi dengan `awcms`
 
@@ -26,7 +26,7 @@ satu-satunya tempat komponen menyentuh hasilnya.
 | `publishedDate` dan `updatedDate` dibaca dari **satu baris** | Dipasangkan lintas baris → `dateModified` mendahului `datePublished` pada konten yang sah, dan crawler membuang seluruh bloknya |
 | Diam-diam memotong data = **kegagalan**, bukan optimasi | Lihat seluruh baris di atas |
 
-## Permukaan — LIMA yang dipanggil, dua yang tidak
+## Permukaan — TUJUH yang dipanggil, dua yang tidak
 
 Bedanya penting, dan pernah salah ditulis di berkas ini sebagai "lima permukaan
 yang dipakai". Penilaian `awcms` 4 Agustus 2026 sempat mencatat ENAM, dan
@@ -82,6 +82,28 @@ mungkin sama sekali. Dua hal tentangnya tidak opsional:
   menyeluruh akan menjadikan "CMS Anda mati" dan "redaksi ini tidak memakai
   kategori" peristiwa yang sama.
 
+**Yang keenam dan ketujuh mendarat bersama** — `/api/v1/blog/menus` dan
+`/api/v1/blog/widgets` (`awcms` #597 butir 6, ADR-0105 di `awcms`). Keduanya
+baru bisa dibekukan SETELAH `awcms` #652 memberi kedua responsnya skema
+sungguhan: sebelum itu masing-masing mendeklarasikan array `object` telanjang,
+yang bukan bentuk yang salah melainkan tanpa bentuk, dan membekukannya sama
+dengan membekukan janji yang tidak bisa gagal terhadap apa pun.
+
+Dua aturan atas keduanya, dan tak satu pun opsional:
+
+- **Menu CMS TIDAK menggantikan bilah tab.** Item menu `awcms` membawa SATU
+  label — tidak ada label per-locale di skemanya — jadi navigasi primer yang
+  digerakkan CMS akan mengembalikan antarmuka utama situs ini ke satu bahasa.
+  Bilah tab merender lewat katalog PO dan tetap tinggal; menu CMS adalah wilayah
+  sekunder di footer.
+- **`bodyText` di-escape, tidak pernah dirender sebagai HTML.** Jalur tulis di
+  sana MENOLAK markup alih-alih menyanitasinya, jadi merendernya sebagai HTML
+  akan memberikan kepercayaan yang justru ditolak jalur itu.
+
+Item menu bertipe `page` dibuang dengan peringatan yang menyebutnya: template
+ini tidak punya rute page, dan tautan mati yang terbit adalah masalah pembaca
+sementara peringatannya sampai ke editor yang bisa memperbaikinya.
+
 <!-- permukaan:dipanggil:mulai -->
 | Permukaan yang benar-benar dipanggil build | Dipanggil dari |
 | --- | --- |
@@ -90,6 +112,8 @@ mungkin sama sekali. Dua hal tentangnya tidak opsional:
 | `/api/v1/media/public-origin` | `src/lib/awcms/media.ts` — asal media untuk `img-src` |
 | `/api/v1/site-profile/composed` | `src/lib/awcms/profil.ts` — identitas situs: masthead, footer, kontak, tautan sosial, `Organization` |
 | `/api/v1/blog/terms` | `src/lib/awcms/taksonomi.ts` — kosakata tenant untuk arsip kategori/tag, `order=created_at` + cursor (tidak pernah list abjad bawaannya, yang memotong diam-diam) |
+| `/api/v1/blog/menus` | `src/lib/awcms/navigasi.ts` — menu navigasi tenant, dirender sebagai wilayah SEKUNDER di footer; bilah tab yang terlokalkan TIDAK diganti |
+| `/api/v1/blog/widgets` | `src/lib/awcms/navigasi.ts` — widget di posisi yang dinyatakannya; `bodyText` teks biasa dan di-escape, tidak pernah dirender sebagai HTML |
 <!-- permukaan:dipanggil:selesai -->
 
 ```

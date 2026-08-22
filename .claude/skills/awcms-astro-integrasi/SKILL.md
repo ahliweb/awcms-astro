@@ -24,7 +24,7 @@ place a component touches the result.
 | `publishedDate` and `updatedDate` are read from **one row** | Paired across rows → `dateModified` precedes `datePublished` on valid content, and the crawler discards the whole block |
 | Silently truncating data is a **failure**, not an optimisation | See every row above |
 
-## Surfaces — FIVE that are called, two that are not
+## Surfaces — SEVEN that are called, two that are not
 
 The difference matters, and it was once written wrongly in this file as "five
 surfaces in use". The `awcms` assessment of 4 August 2026 briefly recorded SIX,
@@ -78,6 +78,28 @@ archive possible at all. Two things about it are not optional:
   empty vocabulary is a legitimate state, so a blanket `catch` would make "your
   CMS is down" and "this newsroom uses no categories" the same event.
 
+**The sixth and seventh landed together** — `/api/v1/blog/menus` and
+`/api/v1/blog/widgets` (`awcms` #597 item 6, `awcms` ADR-0105). They could only
+be frozen AFTER `awcms` #652 gave both responses an actual schema: before that
+each declared an array of bare `object`, which is not a wrong shape but no
+shape, and freezing it would have frozen a promise nothing can ever fail
+against.
+
+Two rules on them, and neither is optional:
+
+- **The CMS menu does NOT replace the tab bar.** An `awcms` menu item carries
+  ONE label — there is no per-locale label in the schema — so a CMS-driven
+  primary navigation would put this site's main interface back into a single
+  language. The tab bar renders through the PO catalogue and stays; the CMS menu
+  is a secondary footer region.
+- **`bodyText` is escaped, never rendered as HTML.** The write path over there
+  REFUSES markup rather than sanitizing it, so rendering it as HTML would grant
+  the trust that path declined.
+
+A menu item of type `page` is dropped with a warning naming it: this template
+has no page route, and a published dead link is a reader's problem while the
+warning reaches the editor who can fix it.
+
 <!-- permukaan:dipanggil:mulai -->
 | Surface the build actually calls | Called from |
 | --- | --- |
@@ -86,6 +108,8 @@ archive possible at all. Two things about it are not optional:
 | `/api/v1/media/public-origin` | `src/lib/awcms/media.ts` — the media origin for `img-src` |
 | `/api/v1/site-profile/composed` | `src/lib/awcms/profil.ts` — who the site is: masthead, footer, contact, social links, `Organization` |
 | `/api/v1/blog/terms` | `src/lib/awcms/taksonomi.ts` — the tenant's vocabulary for the category/tag archives, `order=created_at` + cursor (never the default alphabetical list, which truncates silently) |
+| `/api/v1/blog/menus` | `src/lib/awcms/navigasi.ts` — the tenant's navigation menus, rendered as a SECONDARY footer region; the localised tab bar is NOT replaced |
+| `/api/v1/blog/widgets` | `src/lib/awcms/navigasi.ts` — widgets in their declared positions; `bodyText` is plain text and is escaped, never rendered as HTML |
 <!-- permukaan:dipanggil:selesai -->
 
 ```
