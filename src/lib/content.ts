@@ -58,6 +58,8 @@ import { resolveObjekMedia, type ObjekMedia } from "./awcms/media";
 import { renderContentBlocks } from "./content-blocks";
 import {
   defaultLocale,
+  locales,
+  siteConfig,
   urutanSeksiTab,
   type Locale,
   type TabSlug,
@@ -913,8 +915,58 @@ export async function getArticle(
   return articles.find((article) => article.slug === slug);
 }
 
+let indeksPostCache: Promise<Map<string, { tab: string; slug: string }>>
+  | undefined;
+
+/**
+ * Which page an awcms POST ID lives at (`awcms` #597 item 6).
+ *
+ * A menu item of type `post` carries a post id, and the only thing that can
+ * turn it into a URL is this feed — so the adapter answers it rather than
+ * letting a component reach for the raw posts.
+ *
+ * ## Every locale's ids, mapping to ONE page
+ *
+ * The map is keyed by every post id the build saw, in every locale, and each
+ * one maps to the SOURCE article's tab and slug. That is not redundancy: an
+ * editor who points a menu at the Indonesian original and an editor who points
+ * it at the English translation both mean the same page, and the page's address
+ * is the source slug in every language (`toArticle` takes the source for
+ * exactly that reason).
+ *
+ * Keying only the default locale's ids would resolve one of those two and drop
+ * the other — and it would drop it in one language only, which is the kind of
+ * difference nobody finds by looking at the site they built.
+ *
+ * The tab and slug are locale-independent, so this is memoised once per build
+ * rather than once per locale.
+ */
+export async function indeksPost(): Promise<
+  ReadonlyMap<string, { tab: string; slug: string }>
+> {
+  indeksPostCache ??= (async () => {
+    const indeks = new Map<string, { tab: string; slug: string }>();
+
+    for (const locale of locales) {
+      for (const tab of siteConfig.tabs) {
+        for (const article of await getArticles(tab.slug, locale)) {
+          indeks.set(article.entry.id, {
+            tab: article.entry.data.kategori,
+            slug: article.slug
+          });
+        }
+      }
+    }
+
+    return indeks;
+  })();
+
+  return indeksPostCache;
+}
+
 /** Test seam: drops the per-build memoised fetch. */
 export function resetContentCacheForTests(): void {
   mediaCache = undefined;
   postsCache = undefined;
+  indeksPostCache = undefined;
 }

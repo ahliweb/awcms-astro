@@ -28,6 +28,9 @@ import {
   tautanTelepon,
   tautanWhatsapp,
 } from '../lib/identitas';
+import { daftarMenu, daftarWidget, peringatkanSekali } from '../lib/awcms/navigasi';
+import { menuDenganKey, pesanTerbuang, susunMenu } from '../lib/menu';
+import { indeksPost } from '../lib/content';
 import '../styles/global.css';
 
 interface Props {
@@ -121,6 +124,35 @@ const {
 // memanggilnya.
 const profil = await profilSitus();
 const namaSitusIni = namaSitus(profil);
+
+// Navigasi sekunder dan widget dari CMS (`awcms` #597 butir 6, ADR-0105 di
+// sana). Bilah tab TIDAK diganti: sebuah item menu `awcms` membawa satu label
+// tanpa varian per-locale, jadi navigasi utama yang digerakkan CMS akan
+// mengembalikan antarmuka primer situs ini ke satu bahasa.
+//
+// Ketiga panggilan di-memoise per build, jadi merendernya di setiap halaman
+// tidak menambah satu pun permintaan.
+const menuFooter = menuDenganKey(await daftarMenu(), 'footer');
+const hasilMenu = menuFooter
+  ? susunMenu(menuFooter, await indeksPost(), locale)
+  : undefined;
+
+// SEKALI per build, bukan sekali per halaman: apa yang terbuang diketahui saat
+// render, dan sebuah situs merender ratusan halaman. Diukur pada build
+// verifikasi: 108 halaman, 108 salinan pesan yang identik — yang menenggelamkan
+// log build, satu-satunya tempat pesan ini sampai ke editor yang bisa
+// memperbaikinya.
+const peringatanMenu = hasilMenu
+  ? pesanTerbuang(menuFooter!.key, hasilMenu.terbuang)
+  : null;
+if (peringatanMenu) peringatkanSekali(menuFooter!.key, peringatanMenu);
+
+// Nonaktif disaring DI SINI, bukan di endpoint: `awcms` mengembalikan keduanya
+// dengan sengaja, supaya "dimatikan" dan "dihapus" tidak menjadi jawaban yang
+// sama.
+const widgetSemua = (await daftarWidget()).filter((widget) => widget.isActive);
+const widgetFooter = widgetSemua.filter((widget) => widget.position === 'footer');
+const widgetHeader = widgetSemua.filter((widget) => widget.position === 'header');
 
 const fullTitle = title.includes(namaSitusIni)
   ? title
@@ -308,6 +340,23 @@ const jsonLd = {
       <div class="container">
         <TabNav currentTab={currentTab} />
       </div>
+
+      {widgetHeader.length > 0 && (
+        <div class="container">
+          <div class="widget-baris">
+            {widgetHeader.map((widget) => (
+              <div class="widget">
+                <h2 class="widget-judul">{widget.title}</h2>
+                {/* Teks, tidak pernah markup. `awcms` MENOLAK HTML tidak aman
+                    saat tulis alih-alih menyanitasinya, jadi merendernya
+                    sebagai HTML di sini akan memberikan kepercayaan yang justru
+                    ditolak jalur tulis. Astro meng-escape ekspresi. */}
+                {widget.bodyText && <p class="widget-teks">{widget.bodyText}</p>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </header>
 
     <main class="container my-6" id="main-content">
@@ -340,6 +389,41 @@ const jsonLd = {
               <li><a href={localePath(locale, '/sitemap/')}>{t(locale, 'footer.sitemap')}</a></li>
             </ul>
           </div>
+
+          {/* Navigasi sekunder dari CMS (`awcms` #597 butir 6). Kolom ini hanya
+              muncul bila tenant menyusun menu ber-key `footer`, dan labelnya
+              datang APA ADANYA dari CMS — tidak lewat katalog PO, karena tidak
+              ada terjemahan untuk teks yang baru ditulis editor lima menit
+              lalu. Itu batasan yang dicatat ADR-0105 di `awcms`, bukan
+              kelalaian: judul kolomnya tetap string antarmuka yang
+              diterjemahkan, isinya yang tidak. */}
+          {hasilMenu && hasilMenu.tautan.length > 0 && (
+            <div>
+              <h4 class="footer-judul">{menuFooter!.name}</h4>
+              <ul class="footer-daftar">
+                {hasilMenu.tautan.map((tautan) => (
+                  <li>
+                    <a href={tautan.href}>{tautan.label}</a>
+                    {tautan.anak.length > 0 && (
+                      <ul class="footer-daftar footer-daftar--anak">
+                        {tautan.anak.map((anak) => (
+                          <li><a href={anak.href}>{anak.label}</a></li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {widgetFooter.length > 0 &&
+            widgetFooter.map((widget) => (
+              <div>
+                <h4 class="footer-judul">{widget.title}</h4>
+                {widget.bodyText && <p class="footer-teks">{widget.bodyText}</p>}
+              </div>
+            ))}
 
           {/* Dua kolom yang HANYA muncul bila tenant mengisinya (`awcms` #596).
               Sebelum ini alamat redaksi dan kontak tidak punya tempat sama
@@ -422,6 +506,28 @@ const jsonLd = {
 
   .footer-judul--utama {
     font-size: 1.1rem;
+  }
+
+  .widget-baris {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    padding: 0.75rem 0;
+  }
+
+  .widget-judul {
+    font-size: 0.95rem;
+    margin: 0 0 0.2rem;
+  }
+
+  .widget-teks {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  .footer-daftar--anak {
+    margin-left: 0.9rem;
   }
 
   .footer-teks {

@@ -338,7 +338,7 @@ describe("permukaan awcms yang dipanggil build", () => {
     );
   }
 
-  test("kode sumber memanggil tepat lima permukaan", () => {
+  test("kode sumber memanggil tepat tujuh permukaan", () => {
     // Daftarnya ditulis eksplisit supaya permukaan BERIKUTNYA memerahkan gerbang
     // ini meskipun penulisnya ingat memperbarui skill — dua pemeriksaan yang bisa
     // salah bersama bukan dua pemeriksaan.
@@ -353,13 +353,21 @@ describe("permukaan awcms yang dipanggil build", () => {
     // Yang kelima, `/api/v1/blog/terms`, mendarat dengan urutan yang sama
     // (`awcms` #597 butir 1, ADR-0104): kosakata tenant, yang tanpa dia arsip
     // kategori maupun tag tidak bisa dibangun sama sekali.
+    //
+    // Keenam dan ketujuh, `/api/v1/blog/menus` dan `/api/v1/blog/widgets`
+    // (`awcms` #597 butir 6, ADR-0105 di sana). Keduanya baru bisa dibekukan
+    // SETELAH `awcms` #652 memberi responsnya skema sungguhan: sebelum itu
+    // keduanya array `object` telanjang, dan membekukannya sama dengan
+    // membekukan janji yang tidak bisa gagal terhadap apa pun.
     const sumber = permukaanDiSumber();
 
     assert.deepEqual(
       [...sumber].sort(),
       [
+        "/api/v1/blog/menus",
         "/api/v1/blog/posts",
         "/api/v1/blog/terms",
+        "/api/v1/blog/widgets",
         "/api/v1/media/objects",
         "/api/v1/media/public-origin",
         "/api/v1/site-profile/composed"
