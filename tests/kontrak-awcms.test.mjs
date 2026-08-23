@@ -148,7 +148,13 @@ function buatPost(
     // menentukan `dateModified`. Nilai bawaannya tetap seperti sebelumnya
     // supaya setiap tes lama menguji hal yang sama persis.
     publishedAt = "2026-07-01T00:00:00.000Z",
-    updatedAt = "2026-07-02T00:00:00.000Z"
+    updatedAt = "2026-07-02T00:00:00.000Z",
+    // Byline opt-in penulis (`awcms` ADR-0109). Dihilangkan seluruhnya bila
+    // tidak disetel — bukan disetel ke `null` — supaya fixture bawaannya
+    // menirukan sebuah awcms yang MENDAHULUI ADR itu dan tidak mengirim field
+    // ini sama sekali. Itu keadaan yang harus tetap terbangun, dan sebuah
+    // fixture yang selalu membawa field-nya tidak akan pernah mengujinya.
+    authorByline
   } = {}
 ) {
   return {
@@ -163,6 +169,7 @@ function buatPost(
     canonicalUrl: null,
     locale,
     ...(grup === undefined ? {} : { translationGroupId: grup }),
+    ...(authorByline === undefined ? {} : { authorByline }),
     publishedAt,
     updatedAt,
     createdAt: `2026-07-01T00:00:${String(index).padStart(2, "0")}.000Z`
@@ -572,6 +579,88 @@ describe("traversal build feed", () => {
     assert.equal(artikel.length, 1);
     assert.equal(artikel[0].isFallback, false);
     assert.equal(artikel[0].slug, "artikel-0");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Byline penulis — `awcms` ADR-0109, #597 butir 4.
+//
+// Empat keadaan, dan tidak satu pun bisa dilihat typecheck: ketiganya bertipe
+// `string | undefined` sesudah adapter, dan yang membedakannya adalah BARIS
+// MANA yang dibaca dan apa yang terjadi pada nilai kosong. Yang membuatnya
+// pantas diuji: setiap kesalahan di sini menerbitkan nama seseorang di halaman
+// publik — bukan halaman yang rusak, melainkan halaman yang tampak benar dan
+// mengkredit orang yang salah.
+// ---------------------------------------------------------------------------
+describe("byline penulis (awcms ADR-0109)", () => {
+  let getArticles;
+  let resetContentCacheForTests;
+
+  beforeEach(async () => {
+    process.env.AWCMS_API_URL = "http://awcms.uji";
+    process.env.AWCMS_API_TOKEN = TOKEN;
+    delete process.env.AWCMS_TENANT_CODE;
+    delete process.env.AWCMS_DEFAULT_TENANT_CODE;
+
+    ({ getArticles, resetContentCacheForTests } = await import("../src/lib/content.ts"));
+    resetContentCacheForTests();
+  });
+
+  afterEach(() => {
+    globalThis.fetch = fetchAsli;
+  });
+
+  test("awcms yang tidak mengirim field ini menghasilkan artikel tanpa byline, bukan build gagal", async () => {
+    pasangFetchTiruan([buatPost(0)]);
+
+    const artikel = await getArticles("panduan", "id");
+    assert.equal(artikel[0].authorByline, undefined);
+  });
+
+  test("null — keadaan setiap baris sebelum ADR-0109 — berarti atribusi organisasi", async () => {
+    // `null` dan "field tidak ada" harus tiba di komponen sebagai SATU keadaan.
+    // Dua ejaan untuk satu keadaan adalah bagaimana salah satunya berakhir tidak
+    // ditangani — di sini akibatnya adalah `null` yang tercetak sebagai kata.
+    pasangFetchTiruan([buatPost(0, { authorByline: null })]);
+
+    const artikel = await getArticles("panduan", "id");
+    assert.equal(artikel[0].authorByline, undefined);
+  });
+
+  test("byline yang hanya spasi diperlakukan sebagai tidak ada", async () => {
+    // Kalau ia lolos, halamannya memasang baris "Ditulis oleh" dan tidak
+    // menyebut siapa pun — sebuah klaim kepenulisan tanpa penulis.
+    pasangFetchTiruan([buatPost(0, { authorByline: "   " })]);
+
+    const artikel = await getArticles("panduan", "id");
+    assert.equal(artikel[0].authorByline, undefined);
+  });
+
+  test("byline dibaca dari baris TERJEMAHAN, bukan dari baris sumber", async () => {
+    // Ini keputusan yang membedakannya dari `termIds`/`urutan`/`kategori`, yang
+    // semuanya dibaca dari sumber supaya klasifikasi tidak berbeda antar bahasa.
+    // Kepenulisan bukan klasifikasi: terjemahan sering ditulis orang lain, dan
+    // mengambil nama penulis sumber untuknya mengkredit seseorang atas teks yang
+    // tidak ia tulis. Membaliknya lolos typecheck dan lolos setiap gerbang lain.
+    pasangFetchTiruan([
+      buatPost(0, { grup: "grup-1", authorByline: "Penulis Sumber" }),
+      buatPost(1, { locale: "en", grup: "grup-1", authorByline: "Translating Author" })
+    ]);
+
+    const [artikel] = await getArticles("panduan", "en");
+    assert.equal(artikel.isFallback, false);
+    assert.equal(artikel.authorByline, "Translating Author");
+  });
+
+  test("artikel fallback membawa byline penulis SUMBER, karena kata-katanya memang miliknya", async () => {
+    // Sisi lain dari tes di atas, dan bukan pengecualian terhadapnya: sebuah
+    // artikel fallback ADALAH post sumber, ditampilkan di locale lain. Nama yang
+    // benar untuknya adalah nama orang yang menulis kata-kata di layar.
+    pasangFetchTiruan([buatPost(0, { authorByline: "Penulis Sumber" })]);
+
+    const [artikel] = await getArticles("panduan", "en");
+    assert.equal(artikel.isFallback, true);
+    assert.equal(artikel.authorByline, "Penulis Sumber");
   });
 });
 

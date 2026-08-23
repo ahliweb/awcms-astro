@@ -47,6 +47,7 @@ styling, adding tests.
 | [0039](0039-english-is-the-source-language.md) | English is the source language at the bare path, Indonesian its mirror at `<name>.id.md`; a shrink-only ledger, and three gates that had to move first | Accepted |
 | [0040](0040-changeset-menyatakan-bump-semver.md) | A changeset declares its own `bump`, and the release derives `vX.Y.Z` from the largest one waiting; strict parsing ends the tag that read `v0.2.NaN` | Accepted |
 | [0041](0041-locale-stays-at-the-root-and-two-vary-names-are-refused.md) | The default locale keeps the ROOT — `awcms` ADR-0098's prefix is not adopted, because a static build has nothing for a shared cache to get wrong; what IS imported is its refusal of `Vary: Cookie` and `Vary: Accept-Language`, and `/blog/**` finally gets the checker ADR-0036 never had | Accepted |
+| [0042](0042-a-byline-is-the-first-per-person-data-this-template-publishes.md) | A byline is rendered on all three surfaces that name an author, absent stays absent rather than falling back to the publisher name, the `Person` node carries a name and nothing else, and the "zero per-person data" property three documents stated is retired for the obligation behind it | Accepted |
 
 > **Why the numbering starts at 0014.** The ADRs in this repo continue the
 > sequence of the reference repo whose identity was released in

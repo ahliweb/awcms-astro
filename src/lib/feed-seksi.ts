@@ -90,12 +90,17 @@ export async function isiFeed(locale: Locale, tab: TabSlug): Promise<string> {
     // setiap polling. Pemotongan dilakukan SETELAH `getArticles`, yang sudah
     // mengurutkan seksi menurut aturannya sendiri, sehingga yang tersisa benar
     // benar yang terbaru dan bukan sekadar yang pertama datang dari API.
-    butir: articles.slice(0, artikelPerFeed).map(({ entry, slug }) => ({
+    butir: articles.slice(0, artikelPerFeed).map(({ entry, slug, authorByline }) => ({
       judul: entry.data.title,
       url: getSiteUrl(localePath(locale, `/${tab}/${slug}/`)),
       ringkasan: entry.data.description,
       terbit: entry.data.publishedDate,
-      diubah: entry.data.updatedDate
+      diubah: entry.data.updatedDate,
+      // Byline penulis (`awcms` ADR-0109), bila penulisnya memilih punya satu.
+      // Ia hidup di `LocalizedArticle`, bukan di `entry.data`, karena ia bukan
+      // bagian dari isi artikel — ia fakta tentang barisnya di `awcms`, sama
+      // seperti `isFallback` dan `termIds`.
+      penulis: authorByline
     }))
   });
 }

@@ -145,6 +145,9 @@ msgstr "Article "
 msgid "tab.readMoreCta"
 msgstr "Read more"
 
+msgid "artikel.penulis"
+msgstr "Written by"
+
 msgid "artikel.diterbitkan"
 msgstr "Published"
 

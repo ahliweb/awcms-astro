@@ -132,8 +132,87 @@ describe("bangunFeedAtom — bentuk yang dihasilkan", () => {
     assert.ok(kepala.includes("<updated>2026-08-03T09:00:00.000Z</updated>"));
   });
 
-  test("penulis tingkat organisasi, tanpa byline editor", () => {
+  test("penulis feed adalah organisasi, dan butir tanpa byline tidak memancarkan author sendiri", () => {
+    // Bukan dua pernyataan yang kebetulan bersebelahan. Atom (RFC 4287 §4.2.1)
+    // menetapkan `<author>` tingkat feed berlaku bagi setiap entry yang tidak
+    // punya sendiri, jadi butir tanpa byline SUDAH beratribusi organisasi —
+    // menuliskannya sekali lagi di setiap entry hanya menambah byte.
     assert.ok(xml.includes("<name>Situs Contoh</name>"));
+
+    const entri = xml.slice(xml.indexOf("<entry>"));
+    assert.equal(entri.includes("<author>"), false, "entry tanpa byline tidak boleh punya author");
+  });
+
+  test("byline penulis muncul pada ENTRY-nya sendiri, bukan menggantikan penulis feed", () => {
+    // `awcms` ADR-0109. Ketiga permukaan yang menyebut penulis sebuah artikel —
+    // halaman, JSON-LD, dan feed — harus menyebut orang yang sama; sebuah feed
+    // yang mengkredit organisasi sementara halamannya mengkredit seseorang
+    // adalah dua jawaban atas satu pertanyaan, dan pelanggan feed hanya melihat
+    // salah satunya.
+    const xmlByline = bangunFeedAtom(
+      feed({
+        butir: [
+          {
+            judul: "Artikel berbyline",
+            url: "https://contoh.test/berita/berbyline/",
+            ringkasan: "Ringkasan.",
+            terbit: new Date("2026-08-02T03:00:00.000Z"),
+            diubah: new Date("2026-08-02T03:00:00.000Z"),
+            penulis: "Sari Wulandari"
+          }
+        ]
+      })
+    );
+
+    const kepala = xmlByline.slice(0, xmlByline.indexOf("<entry>"));
+    const entri = xmlByline.slice(xmlByline.indexOf("<entry>"));
+
+    assert.ok(kepala.includes("<name>Situs Contoh</name>"), "penulis feed tetap organisasi");
+    assert.ok(entri.includes("<name>Sari Wulandari</name>"));
+  });
+
+  test("byline entry membawa NAMA saja — tidak pernah uri atau email", () => {
+    // Atom mengizinkan `<uri>` dan `<email>` di dalam `<author>`. Alamat surel
+    // seorang editor adalah data pribadi yang tidak pernah diminta, dan sebuah
+    // feed adalah tempat yang paling mudah disalin ulang oleh siapa pun.
+    const xmlByline = bangunFeedAtom(
+      feed({
+        butir: [
+          {
+            judul: "Artikel berbyline",
+            url: "https://contoh.test/berita/berbyline/",
+            ringkasan: "Ringkasan.",
+            terbit: new Date("2026-08-02T03:00:00.000Z"),
+            diubah: new Date("2026-08-02T03:00:00.000Z"),
+            penulis: "Sari Wulandari"
+          }
+        ]
+      })
+    );
+
+    assert.equal(xmlByline.includes("<email>"), false);
+    assert.equal(xmlByline.includes("<uri>"), false);
+  });
+
+  test("byline dilepas seperti setiap teks lain", () => {
+    // Sebuah `&` pada nama penulis membuat pembaca feed menolak SELURUH berkas
+    // sebagai XML yang tidak berbentuk, bukan hanya entry itu.
+    const xmlAmp = bangunFeedAtom(
+      feed({
+        butir: [
+          {
+            judul: "Artikel",
+            url: "https://contoh.test/berita/a/",
+            ringkasan: "Ringkasan.",
+            terbit: new Date("2026-08-02T03:00:00.000Z"),
+            diubah: new Date("2026-08-02T03:00:00.000Z"),
+            penulis: "Tim R&D"
+          }
+        ]
+      })
+    );
+
+    assert.ok(xmlAmp.includes("<name>Tim R&amp;D</name>"));
   });
 
   test("teks dilepas, sehingga satu ampersand tidak merusak SELURUH berkas", () => {
