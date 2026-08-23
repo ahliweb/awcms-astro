@@ -43,6 +43,7 @@ import {
   HSTS,
   PERMISSIONS_POLICY,
   asalMediaTerkonfigurasi,
+  asalPencarianTerkonfigurasi,
   aturanCache,
   buatServer,
   headerKeamanan,
@@ -436,7 +437,38 @@ describe.skipIf(!adaArtefak)("artefak produksi menyajikan hasil build", () => {
     assert.equal(beranda.status, 200);
     assert.equal(beranda.headers.get("cache-control"), CACHE_HALAMAN);
     assert.equal(beranda.headers.get("x-frame-options"), "DENY");
-    assert.equal(beranda.headers.get("content-security-policy"), CSP);
+
+    // CSP dibandingkan DIREKTIF demi direktif, bukan sebagai satu string, dan
+    // itu bukan pelonggaran.
+    //
+    // `CSP` yang diimpor di sini dirakit dari `server/penyaji.mjs` di pohon
+    // sumber, yang tidak punya `asal-media.json` maupun `asal-pencarian.json` di
+    // sebelahnya. Yang MENYAJIKAN adalah `dist/server/penyaji.mjs`, yang punya
+    // keduanya — jadi build terhadap `awcms` sungguhan melebarkan `img-src` dan
+    // `connect-src`, dengan benar, dan perbandingan string persis akan memerah
+    // di setiap situs yang menjalankan Definition of Done repo ini apa adanya.
+    //
+    // Yang dijaga karena itu: setiap direktif LAIN identik karakter demi
+    // karakter, dan kedua yang boleh melebar hanya boleh MELEBAR — nilai
+    // sumbernya harus tetap menjadi awalannya, sehingga sebuah build tidak bisa
+    // mengganti `'self'` dengan sesuatu yang lain tanpa gerbang ini melihatnya.
+    const disajikan = beranda.headers.get("content-security-policy").split("; ");
+    const sumber = CSP.split("; ");
+    const BOLEH_MELEBAR = ["img-src", "connect-src"];
+
+    assert.equal(disajikan.length, sumber.length, "jumlah direktif berubah");
+
+    for (const [i, direktifSumber] of sumber.entries()) {
+      const nama = direktifSumber.split(" ")[0];
+      if (BOLEH_MELEBAR.includes(nama)) {
+        assert.ok(
+          disajikan[i].startsWith(direktifSumber),
+          `${nama} tidak lagi diawali nilai sumbernya: ${disajikan[i]}`
+        );
+      } else {
+        assert.equal(disajikan[i], direktifSumber);
+      }
+    }
 
     // `/tema.js` tinggal di `public/`, bukan di `/_astro/`, jadi ia sengaja
     // TIDAK immutable: namanya tidak ber-hash, dan cache setahun berarti
@@ -631,5 +663,78 @@ describe("asal media dari build", () => {
     // bawaannya harus tetap yang paling ketat. Gerbang ini yang menangkap
     // sebuah berkas yang tanpa sengaja ikut ter-commit.
     assert.match(CSP, /img-src 'self'(;|$)/);
+  });
+});
+
+describe("asal pencarian yang melebarkan connect-src (ADR-0043)", () => {
+  /** @type {string[]} */
+  const sementara = [];
+
+  afterEach(() => {
+    while (sementara.length) rmSync(sementara.pop(), { recursive: true, force: true });
+  });
+
+  function berkas(isi) {
+    const dir = mkdtempSync(join(tmpdir(), "asal-pencarian-"));
+    sementara.push(dir);
+    const jalur = join(dir, "asal-pencarian.json");
+    writeFileSync(jalur, typeof isi === "string" ? isi : JSON.stringify(isi));
+    return jalur;
+  }
+
+  test("origin yang sah dipakai", () => {
+    assert.equal(
+      asalPencarianTerkonfigurasi(berkas({ configured: true, origin: "https://cms.contoh.test" })),
+      "https://cms.contoh.test"
+    );
+  });
+
+  test("berkas yang tidak ada BUKAN kesalahan", () => {
+    // Build tanpa `awcms` tidak menerbitkan kotak pencarian sama sekali, jadi
+    // `connect-src 'self'` justru kebijakan yang benar untuknya. Keduanya
+    // diturunkan dari nilai yang sama, jadi keduanya tidak bisa berselisih.
+    assert.equal(asalPencarianTerkonfigurasi(join(tmpdir(), "tidak-ada.json")), undefined);
+  });
+
+  test("pemeriksaannya SATU, dipakai dua berkas", () => {
+    // Bukan pengujian ulang atas hal yang sama. Sampai ADR-0043 pemeriksa ini
+    // hanya punya satu pemanggil, jadi menyalinnya untuk pemanggil kedua akan
+    // lolos setiap gerbang — dan salinan itulah yang akan tertinggal pada hari
+    // seseorang mengeraskan yang asli. Kasus-kasus di bawah dijalankan lewat
+    // pintu yang BARU, bukan lewat pintu yang sudah diuji di atas.
+    assert.equal(asalPencarianTerkonfigurasi(berkas({ configured: false, origin: null })), undefined);
+    assert.equal(asalPencarianTerkonfigurasi(berkas("{ bukan json")), undefined);
+    assert.equal(asalPencarianTerkonfigurasi(berkas({ configured: true, origin: 42 })), undefined);
+
+    for (const origin of ["javascript:alert(1)", "file:///etc/passwd", "ftp://cms.test"]) {
+      assert.equal(asalPencarianTerkonfigurasi(berkas({ configured: true, origin })), undefined);
+    }
+  });
+
+  test("nilai yang membawa direktif kedua dipangkas menjadi origin saja", () => {
+    // Di dalam `connect-src` sebuah nilai berspasi tidak sekadar menambah satu
+    // host: ia menyelundupkan token yang dibaca peramban sebagai direktif, dan
+    // satu nilai cacat membuat peramban menolak SELURUH kebijakan.
+    assert.equal(
+      asalPencarianTerkonfigurasi(
+        berkas({ configured: true, origin: "https://cms.contoh.test/api; script-src *" })
+      ),
+      "https://cms.contoh.test"
+    );
+  });
+
+  test("CSP repo template ini tetap `connect-src 'self'`", () => {
+    // Sama seperti `img-src`: template ini tidak membawa berkasnya, jadi
+    // kebijakan bawaannya harus tetap yang paling ketat.
+    assert.match(CSP, /connect-src 'self'(;|$)/);
+  });
+
+  test("`'self'` tidak pernah hilang saat direktifnya dilebarkan", () => {
+    // Yang menggantikan `'self'` alih-alih menemaninya akan memblokir setiap
+    // permintaan same-origin yang ditambahkan kemudian — termasuk yang tidak
+    // berhubungan dengan pencarian, dan tanpa apa pun di halaman yang
+    // menyebutkan sebabnya.
+    const baris = CSP.split("; ").find((d) => d.startsWith("connect-src"));
+    assert.ok(baris?.includes("'self'"), `connect-src kehilangan 'self': ${baris}`);
   });
 });

@@ -343,3 +343,62 @@ msgstr "Page not found"
 msgid "404.metaDesc"
 msgstr "The page you were looking for does not exist."
 
+msgid "cari.judul"
+msgstr "Search"
+
+msgid "cari.deskripsi"
+msgstr "Search the articles on this site."
+
+msgid "cari.label"
+msgstr "Keywords"
+
+msgid "cari.placeholder"
+msgstr "Type a keyword…"
+
+msgid "cari.tombol"
+msgstr "Search"
+
+msgid "cari.lanjut"
+msgstr "Load more"
+
+msgid "cari.noscript"
+msgstr "Search needs JavaScript. Turn it on to use the box, or browse by category and tag instead."
+
+msgid "cari.takAktif"
+msgstr "Search is not switched on for this site."
+
+msgid "cari.status.mulai"
+msgstr "Type a keyword to start searching."
+
+msgid "cari.status.mencari"
+msgstr "Searching…"
+
+msgid "cari.status.kosong"
+msgstr "No article matches."
+
+msgid "cari.status.hasil"
+msgstr "%s results shown."
+
+msgid "cari.status.galat"
+msgstr "Search could not run just now. Try again in a moment."
+
+msgid "cari.facet.type"
+msgstr "Content type"
+
+msgid "cari.facet.channel"
+msgstr "Channel"
+
+msgid "cari.facet.topic"
+msgstr "Topic"
+
+msgid "cari.facet.institution"
+msgstr "Institution"
+
+msgid "cari.facet.region"
+msgstr "Region"
+
+msgid "cari.tipe.blog_post"
+msgstr "Article"
+
+msgid "cari.tipe.blog_page"
+msgstr "Page"

@@ -16,7 +16,7 @@
   },
   "scripts": {
     "dev": "bun --bun astro dev",
-    "build": "bun run check && bun --bun astro build && bun run build:penyaji && bun run build:asal-media",
+    "build": "bun run check && bun --bun astro build && bun run build:penyaji && bun run build:asal-media && bun run build:asal-pencarian",
     "build:penyaji": "bun build server/penyaji.mjs --target=bun --outfile dist/server/penyaji.mjs",
     "check": "bun run check:lockfile && bun --bun astro check",
     "check:lockfile": "bun scripts/cek-lockfile.mjs",
@@ -31,7 +31,8 @@
     "preview": "bun run serve",
     "release": "bun scripts/rilis.mjs",
     "sbom": "bun scripts/sbom.mjs",
-    "build:asal-media": "bun scripts/asal-media.mjs"
+    "build:asal-media": "bun scripts/asal-media.mjs",
+    "build:asal-pencarian": "bun scripts/asal-pencarian.mjs"
   },
   "overrides": {
     "fast-uri": "^3.1.5",

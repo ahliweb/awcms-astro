@@ -1,0 +1,13 @@
+---
+/**
+ * Halaman pencarian, locale BAWAAN (`/cari/`).
+ *
+ * Satu berkas statis, seperti setiap halaman lain di situs ini. Yang membuatnya
+ * berbeda tinggal di komponennya: hasilnya diambil peramban pembaca dari
+ * `awcms` saat halaman ini dibuka, bukan ditulis ke berkas ini saat build
+ * (ADR-0043). Bangun-waktu tidak tahu apa yang akan dicari siapa pun.
+ */
+import HalamanCari from '../components/views/HalamanCari.astro';
+---
+
+<HalamanCari />

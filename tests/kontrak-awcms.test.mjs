@@ -345,7 +345,7 @@ describe("permukaan awcms yang dipanggil build", () => {
     );
   }
 
-  test("kode sumber memanggil tepat tujuh permukaan", () => {
+  test("kode sumber memanggil tepat sembilan permukaan", () => {
     // Daftarnya ditulis eksplisit supaya permukaan BERIKUTNYA memerahkan gerbang
     // ini meskipun penulisnya ingat memperbarui skill — dua pemeriksaan yang bisa
     // salah bersama bukan dua pemeriksaan.
@@ -366,6 +366,17 @@ describe("permukaan awcms yang dipanggil build", () => {
     // SETELAH `awcms` #652 memberi responsnya skema sungguhan: sebelum itu
     // keduanya array `object` telanjang, dan membekukannya sama dengan
     // membekukan janji yang tidak bisa gagal terhadap apa pun.
+    //
+    // Kedelapan dan kesembilan, `/api/v1/site-search/query` dan `/suggest`
+    // (`awcms` #607 + #597 butir 3, ADR-0107 di sana; ADR-0043 di sini).
+    // Keduanya BERBEDA KELAS dari tujuh di atasnya dan itu pantas dibaca
+    // sebelum yang kesepuluh datang: yang memanggilnya adalah peramban
+    // PEMBACA saat runtime, bukan build ini. Konsekuensinya bagi gerbang ini
+    // nol — ia mengekstrak string literal dari `src/`, dan siapa yang
+    // mengeksekusinya bukan sesuatu yang bisa dilihat sebuah regex.
+    // Konsekuensinya bagi yang membacanya tidak nol: sebuah perubahan bentuk
+    // pada kedua permukaan itu gagal di peramban orang asing, bukan di build
+    // yang bisa dilihat siapa pun.
     const sumber = permukaanDiSumber();
 
     assert.deepEqual(
@@ -377,7 +388,9 @@ describe("permukaan awcms yang dipanggil build", () => {
         "/api/v1/blog/widgets",
         "/api/v1/media/objects",
         "/api/v1/media/public-origin",
-        "/api/v1/site-profile/composed"
+        "/api/v1/site-profile/composed",
+        "/api/v1/site-search/query",
+        "/api/v1/site-search/suggest"
       ],
       "permukaan awcms yang dipanggil src/ berubah — bila ini disengaja, " +
         "perbarui tabel bertanda di skill integrasi DAN beri tahu `awcms`: " +

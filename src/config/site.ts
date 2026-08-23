@@ -8,6 +8,7 @@
  * that those are now inputs.
  */
 import { readEnv, readEnvOr } from "../lib/env";
+import { asalPencarian } from "../lib/pencarian";
 
 /**
  * The locale whose article set is the SOURCE OF TRUTH.
@@ -153,6 +154,19 @@ export const SEGMEN_KATEGORI = "kategori" as const;
 export const SEGMEN_TAG = "tag" as const;
 
 /**
+ * The reader's search page (`awcms` #607, `awcms` #597 item 3).
+ *
+ * Reserved for the same reason and with the same cost as the two above: a tab
+ * slugged `cari` would declare a section index at the URL the search page
+ * already occupies, Astro would build both, and one would win silently.
+ *
+ * Indonesian, like `kategori` and `tag` — and NOT translated per locale, so a
+ * reader who switches language keeps the search they were looking at rather
+ * than landing on a path that does not exist.
+ */
+export const SEGMEN_CARI = "cari" as const;
+
+/**
  * Every word this template claims at the top of a path.
  *
  * `[tab]/index.astro` matches `/kategori/` and `[tab]/[...slug].astro` matches
@@ -164,7 +178,8 @@ export const SEGMEN_TAG = "tag" as const;
 export const SEGMEN_TERPESAN = [
   SEGMEN_KATEGORI,
   SEGMEN_TAG,
-  SEGMEN_HALAMAN
+  SEGMEN_HALAMAN,
+  SEGMEN_CARI
 ] as const;
 
 /**
@@ -198,6 +213,30 @@ export function tabBentrokSegmen(
     );
   }
 }
+
+/**
+ * The `awcms` origin the READER's browser may call for search, or `undefined`.
+ *
+ * Derived from `AWCMS_API_URL` — the same variable the build already reads —
+ * rather than from a second setting, because two settings for one address is
+ * one of them being edited and the other not. Reduced to its origin here so
+ * exactly one string reaches both places that need it: the search box (as a
+ * `data-` attribute rendered at build time) and the `connect-src` directive in
+ * `server/penyaji.mjs` (through `dist/server/asal-pencarian.json`).
+ *
+ * `undefined` — a template with no CMS configured — means NO SEARCH BOX. Not a
+ * box that fails, and not a box that calls the site's own origin: a control
+ * that does nothing when used is worse than a control that is not there
+ * (`AGENTS.md` §Interface).
+ *
+ * It is deliberately NOT a `PUBLIC_` variable. Nothing is inlined into the
+ * client bundle by Vite; the origin travels as a rendered attribute, which is
+ * also what stops a second site's build from inheriting it.
+ */
+export const asalPencarianSitus = asalPencarian(readEnv("AWCMS_API_URL"));
+
+/** Whether this build can render a working search box at all. */
+export const pencarianAktif = asalPencarianSitus !== undefined;
 
 /**
  * How many article cards one section page carries.
