@@ -1,0 +1,75 @@
+---
+/**
+ * Halaman privasi (ADR-0044).
+ *
+ * Dikirimkan template, bukan diserahkan ke tiap situs untuk ditulis tangan, dan
+ * alasannya bukan kenyamanan: teks halaman ini harus menyatakan apa yang
+ * BENAR-BENAR dilakukan build ini, dan hanya build ini yang tahu apakah situsnya
+ * menyatakan sebuah beacon. Halaman yang ditulis tangan adalah halaman yang
+ * memerikan apa yang diasumsikan penulisnya berlaku.
+ *
+ * Karena itu isinya BERCABANG pada satu nilai — `beaconKunjungan` — dan tidak
+ * pada nilai lain. Tanpa beacon, halaman ini menyatakan bahwa situs tidak
+ * mengumpulkan apa pun, dan itu benar. Dengan beacon, ia menyatakan persis apa
+ * yang terkirim dan apa yang TIDAK: tanpa cookie, tanpa pengenal, dan tanpa cara
+ * mengaitkan dua kunjungan dengan orang yang sama.
+ *
+ * Yang TIDAK dilakukannya adalah membuat janji atas nama `awcms`. Kalimat
+ * tentang penyimpanan di sana ditulis sebagai apa yang dikirim situs ini, bukan
+ * sebagai jaminan tentang basis data yang tidak bisa dilihat repo ini.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumb from '../Breadcrumb.astro';
+import { SEGMEN_PRIVASI, beaconKunjungan, getLocaleFromPath, getSiteUrl, localePath } from '../../config/site';
+import { t } from '../../lib/po';
+
+const locale = getLocaleFromPath(Astro.url.pathname);
+const jalur = localePath(locale, `/${SEGMEN_PRIVASI}/`);
+
+const judul = t(locale, 'privasi.judul');
+---
+
+<BaseLayout title={judul} description={t(locale, 'privasi.deskripsi')} canonicalUrl={getSiteUrl(jalur)}>
+  <Breadcrumb items={[{ name: judul, url: jalur }]} />
+
+  <article class="privasi">
+    <h1>{judul}</h1>
+
+    <p>{t(locale, 'privasi.intro')}</p>
+
+    <h2>{t(locale, 'privasi.cookie.judul')}</h2>
+    <p>{t(locale, 'privasi.cookie.isi')}</p>
+
+    <h2>{t(locale, 'privasi.kunjungan.judul')}</h2>
+    {beaconKunjungan ? (
+      <>
+        <p>{t(locale, 'privasi.kunjungan.aktif')}</p>
+        <ul>
+          <li>{t(locale, 'privasi.kunjungan.aktif.butir1')}</li>
+          <li>{t(locale, 'privasi.kunjungan.aktif.butir2')}</li>
+          <li>{t(locale, 'privasi.kunjungan.aktif.butir3')}</li>
+        </ul>
+      </>
+    ) : (
+      <p>{t(locale, 'privasi.kunjungan.mati')}</p>
+    )}
+
+    <h2>{t(locale, 'privasi.pencarian.judul')}</h2>
+    <p>{t(locale, 'privasi.pencarian.isi')}</p>
+
+    <h2>{t(locale, 'privasi.pihakketiga.judul')}</h2>
+    <p>{t(locale, 'privasi.pihakketiga.isi')}</p>
+  </article>
+</BaseLayout>
+
+<style>
+  .privasi h2 {
+    margin-top: 1.75rem;
+    font-size: 1.1rem;
+  }
+
+  .privasi p,
+  .privasi li {
+    color: var(--text-secondary);
+  }
+</style>

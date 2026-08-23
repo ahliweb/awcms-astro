@@ -1,0 +1,103 @@
+---
+/**
+ * Satu kunjungan halaman, dikirim ke `awcms` TANPA kredensial (ADR-0044).
+ *
+ * Dirender `BaseLayout` hanya bila situs ini MENYATAKAN beacon-nya, jadi
+ * template dan setiap situs turunan yang tidak menyatakannya tidak mengirim
+ * satu permintaan pun — bukan permintaan yang diabaikan di sisi server,
+ * melainkan permintaan yang tidak pernah dibuat. (Bundel skripnya sendiri tetap
+ * ikut terbit dan inert; lihat bagian terakhir docblock ini.)
+ *
+ * ## Kenapa tidak ada apa pun yang terlihat di sini
+ *
+ * Komponen ini tidak merender antarmuka. Ia memancarkan satu simpul data
+ * tersembunyi yang membawa kode tenant dan origin, lalu satu skrip yang
+ * mengirim satu `fetch`. Tidak ada tombol, tidak ada banner, dan itu bukan
+ * kelalaian: karena panggilannya tanpa kredensial, `Set-Cookie` dari `awcms`
+ * dibuang peramban dan tidak ada apa pun yang persisten mendarat di perangkat
+ * pembaca — sehingga tidak ada yang perlu diminta persetujuannya.
+ *
+ * ## Yang membedakannya dari kotak pencarian, dan keduanya harus tetap berbeda
+ *
+ * Kotak pencarian TIDAK BOLEH membawa header apa pun, karena `awcms` sengaja
+ * tidak menyajikan `OPTIONS` untuk permukaannya. Beacon ini HARUS membawa satu:
+ * `security.checkOrigin` di sana menolak POST lintas-origin yang tipe isinya
+ * mirip form, dan `fetch` tanpa tipe isi jatuh ke penolakan yang sama — hanya
+ * `application/json` yang lolos, dan `awcms` #637 memasang handler `OPTIONS`
+ * justru untuk preflight yang ditimbulkannya.
+ *
+ * Yang TIDAK boleh dipakai adalah `navigator.sendBeacon`: ia mengirim
+ * `text/plain`, salah satu tipe yang ditolak. Ia terlihat seperti alat yang
+ * tepat untuk pekerjaan ini, dan itulah sebabnya penolakannya ditulis di sini.
+ *
+ * ## Skripnya IKUT terbit meski situs tidak menyatakan beacon, dan itu diterima
+ *
+ * Astro membundel `<script>` sebuah komponen berdasarkan IMPOR-nya, bukan
+ * berdasarkan apakah komponen itu merender sesuatu. `BaseLayout` mengimpor
+ * berkas ini tanpa syarat, jadi bundelnya (588 byte) ikut di setiap halaman
+ * setiap situs — termasuk yang tidak menyatakan apa pun.
+ *
+ * Ia INERT di sana, dan itu diperiksa alih-alih diasumsikan: tanpa deklarasi
+ * tidak ada simpul `[data-beacon]` yang dipancarkan, jadi `querySelector`
+ * menjawab `null` dan skripnya berhenti sebelum menyentuh apa pun. Nol
+ * permintaan, nol cookie, nol pengaruh.
+ *
+ * Alternatifnya — memindahkan skripnya ke `public/` sebagai berkas klasik yang
+ * ditaut hanya saat dinyatakan — menukar 588 byte inert dengan sebuah bundel
+ * yang di-commit dengan tangan dan bisa menyimpang dari sumbernya. Repo ini
+ * sudah pernah membayar kelas cacat itu; 588 byte lebih murah daripada dua
+ * salinan satu skrip.
+ */
+import { beaconKunjungan } from '../config/site';
+---
+
+{beaconKunjungan && (
+  <span
+    hidden
+    data-beacon
+    data-asal={beaconKunjungan.asal}
+    data-tenant={beaconKunjungan.tenantCode}
+  ></span>
+)}
+
+<script>
+  import { TIPE_ISI_BEACON, alamatBeacon, muatanBeacon } from '../lib/beacon';
+
+  const simpul = document.querySelector<HTMLElement>('[data-beacon]');
+
+  if (simpul) {
+    const asal = simpul.dataset.asal ?? '';
+    const tenantCode = simpul.dataset.tenant ?? '';
+
+    // `document.referrer` kosong pada kunjungan langsung, dan kosong BUKAN
+    // string kosong yang dikirim: `awcms` menyimpan domainnya, dan domain dari
+    // string kosong adalah baris yang mengaku tahu sesuatu yang tidak
+    // diketahuinya.
+    const muatan = muatanBeacon({
+      tenantCode,
+      path: location.pathname + location.search,
+      referrer: document.referrer || undefined
+    });
+
+    if (muatan) {
+      // TANPA `credentials`. Itu keseluruhan ADR-0044 dalam satu hal yang
+      // TIDAK ditulis: menambahkannya membuat cookie 30 hari `awcms_visitor_key`
+      // tersimpan di perangkat pembaca sebagai cookie pihak ketiga, dan sejak
+      // saat itu situs ini berutang pemberitahuan cookie di setiap halaman.
+      // Kegagalan kebalikannya tidak terlihat — ia BEKERJA, dan biayanya jatuh
+      // pada pembaca.
+      void fetch(alamatBeacon(asal), {
+        method: 'POST',
+        headers: { 'content-type': TIPE_ISI_BEACON },
+        body: JSON.stringify(muatan)
+        // `keepalive` sengaja tidak dipasang: ia hanya berguna untuk permintaan
+        // yang dikirim saat halaman sedang dibongkar, dan yang ini dikirim saat
+        // halaman selesai dimuat.
+      }).catch(() => {
+        /* Sebuah kunjungan yang tidak terhitung adalah angka yang meleset satu.
+           Ia tidak boleh menghasilkan apa pun di layar, dan tidak boleh
+           menghasilkan apa pun di konsol pembaca. */
+      });
+    }
+  }
+</script>

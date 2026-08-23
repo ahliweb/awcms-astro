@@ -3,6 +3,7 @@ import TabNav from '../components/TabNav.astro';
 import DisclaimerNote from '../components/DisclaimerNote.astro';
 import LangSwitcher from '../components/LangSwitcher.astro';
 import ShareButtons from '../components/ShareButtons.astro';
+import BeaconKunjungan from '../components/BeaconKunjungan.astro';
 import {
   siteConfig,
   getSiteUrl,
@@ -15,6 +16,7 @@ import {
   defaultLocale,
   tabTitleKey,
   SEGMEN_CARI,
+  SEGMEN_PRIVASI,
   pencarianAktif,
   type Locale,
 } from '../config/site';
@@ -402,6 +404,12 @@ const jsonLd = {
             <h4 class="footer-judul">{t(locale, 'footer.more.title')}</h4>
             <ul class="footer-daftar">
               <li><a href={localePath(locale, '/sitemap/')}>{t(locale, 'footer.sitemap')}</a></li>
+              {/* Halaman privasi ditaut TANPA syarat, termasuk pada situs yang
+                  tidak menyatakan beacon (ADR-0044). Halaman yang kadang ada dan
+                  kadang tidak adalah tautan mati di separuh situs turunan — dan
+                  situs yang tidak mengumpulkan apa pun tetap punya sesuatu yang
+                  benar untuk dikatakan. */}
+              <li><a href={localePath(locale, `/${SEGMEN_PRIVASI}/`)}>{t(locale, 'privasi.judul')}</a></li>
             </ul>
           </div>
 
@@ -509,6 +517,11 @@ const jsonLd = {
       </div>
     </footer>
 
+    {/* Satu kunjungan halaman, tanpa kredensial (ADR-0044). Terakhir di
+        `<body>` karena ia tidak punya apa pun untuk digambar dan tidak boleh
+        mendahului satu piksel pun; komponennya sendiri yang memutuskan apakah
+        ia memancarkan sesuatu sama sekali. */}
+    <BeaconKunjungan />
   </body>
 </html>
 

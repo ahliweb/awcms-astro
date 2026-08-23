@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](0044-what-a-page-view-may-cost-a-reader.md)
 
-<!-- i18n-source-hash: sha256:ac45e4d7329e4dd8436538edd2c0e9e8e20071f71f81997ddf1d8c9e94943740 -->
+<!-- i18n-source-hash: sha256:8d52f109d17699e15fd4d279454c89a6c0520831e60dce8f75abc30b8f43286f -->
 
 # ADR-0044 — Berapa harga satu kunjungan halaman bagi pembacanya
 
@@ -133,6 +133,47 @@ selalu tanpa kredensial.**
   satu klausa yang menyebut ADR ini sebagai yang membuatnya tetap benar.
 - Halaman privasi menjadi sesuatu yang dikirimkan template, bukan sesuatu yang
   sebuah situs disuruh menulisnya sendiri.
+
+## Amandemen — 23 Agustus 2026, ditulis saat mengimplementasikannya
+
+Dua hal yang tidak diperkirakan dokumen ini, dicatat di sini alih-alih ditemukan
+pembaca berikutnya.
+
+**1. Ini satu-satunya permintaan di repo ini yang HARUS membawa header, dan ia
+kebalikan dari aturan yang diikuti kotak pencarian.** ADR-0043 menetapkan bahwa
+panggilan menghadap-pembaca tidak membawa header tambahan, karena `awcms` sengaja
+tidak menyajikan handler `OPTIONS` di belakang pencarian. Beacon membalikkannya:
+`security.checkOrigin` di sana menolak POST lintas-origin yang tipe isinya mirip
+form, dan `fetch` tanpa tipe isi jatuh ke penolakan yang sama — hanya
+`application/json` yang lolos, yang menjadikannya permintaan ber-preflight, dan
+`awcms` #637 memasang handler `OPTIONS` justru untuk itu. `navigator.sendBeacon`
+karena itu tidak bisa dipakai: ia mengirim `text/plain`, salah satu tipe yang
+ditolak.
+
+Menyeragamkan keduanya, ke arah mana pun, mematikan salah satunya di peramban
+pembaca dan tidak di log mana pun.
+
+**2. Gerbang "repo ini membaca `awcms`, ia tidak menulis" harus diamandemen, dan
+amandemennya MEMBELI dua jaminan alih-alih membuka lubang.**
+`tests/tanpa-backend.test.mjs` menolak `fetch` ber-`method` selain `GET`, dan
+pesannya sendiri sudah mengantisipasi kasus ini. Pengecualiannya SATU BERKAS —
+`src/components/BeaconKunjungan.astro` — bukan sebuah pola, dan aturan yang
+dilonggarkannya bukan aturan yang dijaganya: gerbang itu ada supaya kredensial
+mesin baca-saja milik build tidak diam-diam menumbuhkan aksi tulis, dan panggilan
+ini tidak menyentuhnya sama sekali. Ia berjalan di peramban pembaca, anonim,
+tanpa kredensial jenis apa pun, ke endpoint ingest publik yang selalu menjawab
+`202` dan memiliki barisnya sendiri. Ia tidak menulis satu pun data yang dimiliki
+situs ini.
+
+Di sebelah pengecualian itu berdiri dua asersi baru yang sebelumnya tidak ada:
+berkas beacon tidak boleh membawa **`credentials`** maupun **header otorisasi**,
+dan pengecualiannya harus menamai berkas yang ADA dan benar-benar mem-POST —
+sebuah pengecualian basi adalah pengecualian yang diam-diam berhenti
+mengecualikan sambil membuat gerbangnya terbaca lebih ketat daripada kenyataannya.
+
+**3. Daftar permukaan naik dari sembilan menjadi sepuluh.**
+`/api/v1/analytics/collect` dibekukan di kontrak konsumen `awcms` seperti yang
+lain.
 
 ## Bila pemilik lebih memilih Opsi A
 

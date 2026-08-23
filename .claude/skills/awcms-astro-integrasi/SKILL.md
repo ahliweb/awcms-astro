@@ -24,12 +24,20 @@ place a component touches the result.
 | `publishedDate` and `updatedDate` are read from **one row** | Paired across rows → `dateModified` precedes `datePublished` on valid content, and the crawler discards the whole block |
 | Silently truncating data is a **failure**, not an optimisation | See every row above |
 
-## Surfaces — NINE that are called, two that are not
+## Surfaces — TEN that are called, two that are not
 
-**Two of the nine are a different CLASS, and reading past that is how the next
-one lands wrong.** `/api/v1/site-search/query` and `/suggest` are called from
-the READER's browser at runtime; the other seven are called by `astro build`
-from a machine holding a read-only credential. The gate below cannot see the
+**Three of the ten are a different CLASS, and reading past that is how the next
+one lands wrong.** `/api/v1/site-search/query`, `/suggest` and
+`/api/v1/analytics/collect` are called from the READER's browser at runtime; the
+other seven are called by `astro build` from a machine holding a read-only
+credential.
+
+**And the three do not share one rule.** The two search paths must carry NO
+header — there is no `OPTIONS` handler behind them. The beacon MUST carry one
+(`content-type: application/json`), because `checkOrigin` over there refuses a
+form-like content type and the `OPTIONS` handler exists for the preflight that
+follows. Making them consistent, in either direction, kills one of them in the
+browser. The gate below cannot see the
 difference — it extracts string literals from `src/`, and who executes them is
 not something a regex can know. What the difference decides is where a broken
 contract surfaces: in a stranger's browser, silently, rather than in a build
@@ -121,6 +129,7 @@ warning reaches the editor who can fix it.
 | `/api/v1/blog/widgets` | `src/lib/awcms/navigasi.ts` — widgets in their declared positions; `bodyText` is plain text and is escaped, never rendered as HTML |
 | `/api/v1/site-search/query` | `src/lib/pencarian.ts` — the reader's search results. The ONLY surface called from the READER's browser at runtime rather than from the build: no headers, no credentials, tenant from the `Origin` (`awcms` ADR-0107) |
 | `/api/v1/site-search/suggest` | `src/lib/pencarian.ts` — the typeahead behind the same box, same origin rule, same anonymity |
+| `/api/v1/analytics/collect` | `src/lib/beacon.ts` — one page view, posted from the READER's browser WITHOUT credentials so the `awcms_visitor_key` cookie never lands (ADR-0044). The only request in this repo that carries a header, and it MUST: `checkOrigin` over there refuses a form-like content type, so only `application/json` gets through — which is what the `OPTIONS` handler exists for |
 <!-- permukaan:dipanggil:selesai -->
 
 ```

@@ -194,6 +194,25 @@ describe("tidak ada kemampuan backend yang masuk lewat dependency", () => {
   });
 });
 
+/**
+ * Satu-satunya berkas yang boleh memancarkan `method` selain GET, dan APA yang
+ * dibeli pengecualian itu (ADR-0044 §Amandemen).
+ *
+ * Beacon kunjungan mem-POST satu kunjungan halaman ke
+ * `POST /api/v1/analytics/collect`. Aturan "repo ini membaca `awcms`, ia tidak
+ * menulis" ada untuk menjaga token build — kredensial mesin baca-saja yang
+ * dipegang mesin build — tidak diam-diam menumbuhkan aksi tulis. Panggilan ini
+ * tidak menyentuhnya sama sekali: ia berjalan di peramban pembaca, ANONIM,
+ * tanpa kredensial jenis apa pun, ke endpoint publik yang selalu menjawab
+ * `202` dan memiliki barisnya sendiri. Ia tidak menulis satu pun data yang
+ * dimiliki situs ini.
+ *
+ * Pengecualiannya SATU BERKAS, bukan satu pola, dan ia dibayar dengan dua
+ * jaminan baru di bawahnya — tanpa kredensial, dan tanpa header otorisasi.
+ * Sebuah lubang yang menambah dua asersi bukan lubang.
+ */
+const BERKAS_BEACON = "src/components/BeaconKunjungan.astro";
+
 describe("repo ini membaca awcms, ia tidak menulis", () => {
   test("tidak ada permintaan ber-`method` selain GET di src/ dan scripts/", () => {
     // Literal, bukan variabel: sebuah verb yang disimpan di variabel lolos, dan
@@ -203,6 +222,8 @@ describe("repo ini membaca awcms, ia tidak menulis", () => {
     const pelanggaran = [];
 
     for (const nama of berkasKode()) {
+      if (nama === BERKAS_BEACON) continue;
+
       const isi = tanpaKomentar(readFileSync(nama, "utf8"));
 
       for (const cocok of isi.matchAll(
@@ -220,6 +241,36 @@ describe("repo ini membaca awcms, ia tidak menulis", () => {
         "`awcms` ADR-0092 itu properti barisnya — bukan sifat kelasnya. Bila " +
         "jalur tulis memang disengaja (BFF ADR-0014), ia butuh kredensial " +
         "kelas tulis di sana dan amandemen ADR di sini."
+    );
+  });
+
+  test("pengecualian beacon menunjuk berkas yang ADA, dan yang benar-benar mem-POST", () => {
+    // Sebuah pengecualian yang menamai berkas yang sudah dihapus adalah
+    // pengecualian yang diam-diam berhenti mengecualikan apa pun — dan yang
+    // lebih buruk, ia membuat gerbang di atas terbaca lebih ketat daripada
+    // kenyataannya bagi orang berikutnya yang membacanya.
+    assert.ok(existsSync(BERKAS_BEACON), `${BERKAS_BEACON} tidak ada lagi — hapus pengecualiannya`);
+    assert.match(readFileSync(BERKAS_BEACON, "utf8"), /method:\s*'POST'/);
+  });
+
+  test("beacon TIDAK membawa kredensial, dan tidak pernah membawa header otorisasi", () => {
+    // Inilah yang dibeli pengecualian di atas, dan ia adalah keseluruhan
+    // ADR-0044 dalam satu hal yang TIDAK ditulis. `credentials: "include"`
+    // membuat cookie 30 hari `awcms_visitor_key` tersimpan di perangkat pembaca
+    // sebagai cookie pihak ketiga — dan sejak saat itu situs ini berutang
+    // pemberitahuan cookie di setiap halaman, sementara `AGENTS.md` §Keamanan
+    // berhenti benar.
+    //
+    // Kegagalannya tidak terlihat dari mana pun: menambahkannya BEKERJA. Yang
+    // berubah hanya biayanya, dan biayanya jatuh pada pembaca.
+    const isi = tanpaKomentar(readFileSync(BERKAS_BEACON, "utf8"));
+
+    assert.equal(/\bcredentials\b/.test(isi), false, "beacon membawa `credentials`");
+    assert.equal(/authorization/i.test(isi), false, "beacon membawa header otorisasi");
+    assert.equal(
+      /sendBeacon/.test(isi),
+      false,
+      "`navigator.sendBeacon` mengirim text/plain, yang ditolak `checkOrigin` di `awcms`"
     );
   });
 });

@@ -130,6 +130,44 @@ without credentials.**
 - The privacy page becomes something the template ships rather than something a
   site is told to write.
 
+## Amendment — 23 August 2026, written while implementing it
+
+Two things this document did not foresee, recorded here rather than discovered
+by the next reader.
+
+**1. This is the one request in this repo that MUST carry a header, and it is
+the opposite of the rule the search box follows.** ADR-0043 established that a
+reader-facing call carries no custom headers, because `awcms` deliberately ships
+no `OPTIONS` handler behind search. The beacon inverts it: `security.checkOrigin`
+over there refuses a cross-origin POST whose content type is form-like, and a
+`fetch` with no content type falls into the same refusal — only
+`application/json` gets through, which makes this a preflighted request, and
+`awcms` #637 shipped an `OPTIONS` handler for exactly that. `navigator.sendBeacon`
+is therefore unusable: it sends `text/plain`, one of the refused types.
+
+Making the two consistent, in either direction, kills one of them in the
+reader's browser and in no log.
+
+**2. The "this repo reads `awcms`, it does not write" gate had to be amended,
+and the amendment buys two guarantees rather than opening a hole.**
+`tests/tanpa-backend.test.mjs` refuses a `fetch` carrying any method other than
+`GET`, and its own message anticipated this case. The exemption is ONE FILE —
+`src/components/BeaconKunjungan.astro` — never a pattern, and the rule it relaxes
+is not the rule it protects: that gate exists so the build's read-only machine
+credential cannot quietly grow write actions, and this call touches it not at
+all. It runs in the reader's browser, anonymously, with no credential of any
+kind, against a public ingest endpoint that always answers `202` and owns its own
+row. It writes no data this site owns.
+
+Beside the exemption sit two new assertions that did not exist before: the
+beacon file may carry **no `credentials`** and **no authorization header**, and
+the exemption must name a file that exists and really does POST — a stale
+exemption is one that silently stops exempting while making the gate read
+stricter than it is.
+
+**3. The surface list goes from nine to ten.** `/api/v1/analytics/collect` is
+frozen in `awcms`'s consumer contract like the rest.
+
 ## If the owner prefers Option A instead
 
 It is a defensible choice and this document is not written to foreclose it, so
