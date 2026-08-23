@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:86ec8974fde2708e54dddcd841c504e0baa3a172adae6599a0e250a455a08c18 -->
+<!-- i18n-source-hash: sha256:a65240e5b17d092f09c45c9015ae7e01d65b988517a19541e663e34853808729 -->
 
 # Architecture Decision Records
 
@@ -50,6 +50,7 @@ menyesuaikan gaya, menambah tes.
 | [0041](0041-locale-stays-at-the-root-and-two-vary-names-are-refused.md) | Locale default tetap memegang AKAR — prefiks `awcms` ADR-0098 tidak diadopsi, karena build statis tidak punya apa pun yang bisa dikelirukan cache bersama; yang DISERAP adalah penolakannya atas `Vary: Cookie` dan `Vary: Accept-Language`, dan `/blog/**` akhirnya mendapat pemeriksa yang tak pernah dimiliki ADR-0036 | Diterima |
 | [0042](0042-a-byline-is-the-first-per-person-data-this-template-publishes.md) | Byline dirender pada ketiga permukaan yang menyebut penulis, yang tidak ada tetap tidak ada alih-alih jatuh ke nama penerbit, simpul `Person` membawa nama dan tidak lebih, dan properti "nol data per-orang" yang dinyatakan tiga dokumen dipensiunkan demi kewajiban di baliknya | Diterima |
 | [0043](0043-the-readers-browser-calls-awcms-and-nothing-else-changes.md) | Peramban pembaca memanggil pencarian `awcms` langsung — tanpa header, tanpa kredensial, tenant dari `Origin`; snippet tidak pernah menjadi HTML dan tidak ada markup yang dirakit di JavaScript; nilai facet tanpa label yang bisa dibaca tidak merender chip; `connect-src` menempuh jalan yang sama dengan `img-src` | Diterima |
+| [0044](0044-what-a-page-view-may-cost-a-reader.md) | Sebuah situs boleh memanggil beacon pengunjung hanya bila ia menyatakannya, dan selalu TANPA kredensial — sehingga cookie `awcms_visitor_key` tidak pernah tersimpan, "tanpa analitik yang mengikat identitas" selamat kata demi kata, dan tidak ada yang perlu diberi banner persetujuan | Diterima |
 
 > **Kenapa penomoran mulai dari 0014.** ADR di repo ini melanjutkan urutan repo
 > rujukan yang identitasnya dilepas di [#11](https://github.com/ahliweb/awcms-astro/pull/11);
