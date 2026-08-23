@@ -41,9 +41,19 @@ interface Props {
    * feed-nya, tetap terbangun.
    */
   termIds?: string[];
+  /**
+   * Byline penulis artikel ini, bila penulisnya memilih punya satu
+   * (`awcms` ADR-0109). `undefined` berarti atribusi tingkat ORGANISASI, dan
+   * itu keadaan normal — bukan nilai yang hilang.
+   *
+   * Halaman ini tidak boleh menggantinya dengan apa pun saat kosong. Nama
+   * akun bukan byline, dan menampilkan nama seseorang yang tidak memilihnya
+   * adalah persis permukaan PII yang ADR itu tolak buka.
+   */
+  authorByline?: string;
 }
 
-const { entry, slug, isFallback = false, gambar, kartuShare, termIds = [] } = Astro.props;
+const { entry, slug, isFallback = false, gambar, kartuShare, termIds = [], authorByline } = Astro.props;
 const data = entry.data;
 const locale = getLocaleFromPath(Astro.url.pathname);
 
@@ -128,6 +138,10 @@ const schema = articleSchema({
   // `siteConfig.name` yang ditulis di source — lihat `articleSchema`. Panggilan
   // ini dimemoisasi per build; `BaseLayout` sudah memintanya lebih dulu.
   penerbit: namaPenerbit(await profilSitus()),
+  // Byline penulis, bila ada. Diteruskan apa adanya: `articleSchema` yang
+  // memutuskan bahwa `Person` menggantikan `Organization` dan apa saja yang
+  // BOLEH ikut di simpul itu, karena keputusan itu harus bisa diuji.
+  authorByline,
 });
 
 // Feed seksi ini, diumumkan juga dari halaman artikelnya (ADR-0035) — tempat
@@ -187,6 +201,12 @@ const feed = seksiPunyaFeed(urutanSeksiTab(data.kategori), 1)
           pernah tampil, dan `entry: any` membuat typecheck tidak bisa
           mengatakannya. */}
       <div class="artikel-meta">
+        {/* Byline lebih dulu dari tanggal: ia menjawab "siapa yang menulis ini",
+            pertanyaan pertama seorang pembaca berita tentang sebuah artikel.
+            Barisnya hilang seluruhnya saat penulisnya tidak memilih byline —
+            bukan tampil dengan nama penerbit di belakangnya, yang akan membuat
+            atribusi organisasi terbaca seolah seseorang bernama begitu. */}
+        {authorByline && <div>✍️ {t(locale, 'artikel.penulis')} <strong>{authorByline}</strong></div>}
         <div>📅 {t(locale, 'artikel.diterbitkan')} <strong><time datetime={tanggalMesin(publishedDate)}>{publishedDateStr}</time></strong></div>
         {modifiedDateStr && <div>✏️ {t(locale, 'artikel.updated')} <strong><time datetime={tanggalMesin(modifiedDate)}>{modifiedDateStr}</time></strong></div>}
         {reviewDueDateStr && <div>🔍 {t(locale, 'artikel.review')} <strong>{reviewDueDateStr}</strong></div>}

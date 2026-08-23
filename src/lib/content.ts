@@ -136,6 +136,28 @@ type AwcmsBlogPost = AwcmsBlogPostSummary & {
    * that, rather than the build failing.
    */
   termIds?: string[];
+  /**
+   * The author's OPT-IN public byline, or `null` — awcms ADR-0109.
+   *
+   * `null` is the NORMAL state and is not a missing value: it means the article
+   * keeps the organisation-level attribution, which is what every article
+   * published before that ADR has and what every author who never opted in
+   * keeps. So the absence of a name here is a decision, and a consumer that
+   * substituted something for it would be publishing a person's name against
+   * their choice.
+   *
+   * It is deliberately NOT the author's account display name. awcms refused to
+   * publish that field (its Issue #649, then ADR-0109): an internal account
+   * name becoming public the moment somebody presses Publish is a PII surface
+   * nobody opted into, and in a newsroom the byline is frequently not the
+   * account name anyway.
+   *
+   * OPTIONAL for the same reason `termIds` is — it rides on the full row, a
+   * summary response has none, and an awcms that predates ADR-0109 simply omits
+   * it. That instance builds a site with no individual bylines rather than a
+   * build that fails.
+   */
+  authorByline?: string | null;
 };
 
 /**
@@ -229,6 +251,26 @@ export interface LocalizedArticle {
    * failing anywhere.
    */
   termIds: string[];
+  /**
+   * The byline this article is published under, when its author opted into one
+   * (awcms ADR-0109). `undefined` means organisation-level attribution.
+   *
+   * Read from the TRANSLATED post rather than from the source, unlike
+   * `termIds`/`urutan`/`kategori` above — and the difference is not an
+   * inconsistency. Those three are CLASSIFICATION, which must be identical
+   * across a translation group or an article drops out of one language's
+   * archives alone. A byline is authorship of the words on this page: a
+   * translated article is frequently written by somebody else, and taking the
+   * source author's name for it would credit a person for text they did not
+   * write. `publishedDate`, `updatedDate` and `gambar` are read from the same
+   * row for the same reason.
+   *
+   * `undefined` rather than `null` so a component can test it with `&&` like
+   * every other optional field here; `toArticle` folds awcms's `null` into it,
+   * because "no byline" and "field absent" mean the same thing to a renderer
+   * and two spellings of one state is how one of them ends up unhandled.
+   */
+  authorByline?: string;
   /**
    * The article's image, resolved from awcms media ONCE PER BUILD.
    *
@@ -720,6 +762,11 @@ function toArticle(
     },
     isFallback,
     termIds: source.termIds ?? [],
+    // Trimmed, and an all-whitespace value treated as absent: awcms bounds the
+    // length of this field but a byline of spaces would still render as an
+    // empty "Ditulis oleh" line — a metadata row that says a person wrote this
+    // and then names nobody.
+    authorByline: post.authorByline?.trim() || undefined,
     // The TRANSLATED post's image, not the source's: an editor who gave a
     // locale its own artwork meant it for that locale. Falling back to the
     // source's image is correct and automatic — a fallback article IS the

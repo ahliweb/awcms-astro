@@ -76,11 +76,17 @@ describe("articleSchema", () => {
     assert.equal(terbalik.dateModified, TERBIT.toISOString());
   });
 
-  test("author selalu ada, dan ia ORGANISASI — tidak pernah nama seorang editor", () => {
+  test("author BAWAANNYA organisasi — tidak pernah nama seorang editor", () => {
     // Paritas dengan awcms, yang memancarkan byline tingkat organisasi dan
     // mencatat alasannya: identitas pengguna internal di structured data publik
     // adalah permukaan PII baru. `NewsArticle` tanpa author sekaligus lebih
     // miskin daripada `Article` yang digantikannya.
+    //
+    // Judul tes ini dulu berbunyi "author selalu ada, dan ia ORGANISASI".
+    // Separuh pertamanya masih berlaku; separuh keduanya DISEMPITKAN oleh
+    // `awcms` ADR-0109, dan tes byline di bawah adalah separuh yang lain.
+    // Membiarkan judul lama berdiri akan membuat gerbang ini terbaca sebagai
+    // larangan terhadap perilaku yang justru sengaja ditambahkan.
     const { author } = articleSchema(buatMasukan());
 
     assert.equal(author["@type"], "Organization");
@@ -99,6 +105,39 @@ describe("articleSchema", () => {
     // untuk mengakhirinya.
     const { author } = articleSchema(buatMasukan());
     assert.equal("@id" in author, false);
+  });
+
+  test("byline opt-in menggantikan Organization dengan Person", () => {
+    // `awcms` ADR-0109. Ia tiba lewat permukaan yang SUDAH dikonsumsi
+    // (`/api/v1/blog/posts?view=full`), jadi tidak ada permukaan baru yang
+    // dipanggil — yang berubah hanya isi respons.
+    const { author } = articleSchema(buatMasukan({ authorByline: "Sari Wulandari" }));
+
+    assert.equal(author["@type"], "Person");
+    assert.equal(author.name, "Sari Wulandari");
+  });
+
+  test("simpul Person membawa NAMA dan tidak membawa apa pun lagi", () => {
+    // Bukan kerapian. `url`, `sameAs`, atau `@id` mengubah sebuah kredit atas
+    // satu tulisan menjadi identitas yang bisa diikuti lintas artikel dan lintas
+    // situs — sesuatu yang tidak diminta siapa pun saat mengisi satu kolom nama.
+    // Menambahkannya kelak adalah tiga karakter yang lolos setiap gerbang lain.
+    const { author } = articleSchema(buatMasukan({ authorByline: "Sari Wulandari" }));
+
+    assert.deepEqual(Object.keys(author).sort(), ["@type", "name"]);
+  });
+
+  test("byline kosong jatuh kembali ke organisasi, tidak menerbitkan Person tanpa nama", () => {
+    // Adapter di `content.ts` sudah membuang nilai kosong, jadi cabang ini
+    // adalah lapis kedua — dan ia ada karena `articleSchema` murni dan bisa
+    // dipanggil dari mana saja. Sebuah `Person` bernama string kosong lebih
+    // buruk daripada `Organization`: ia menyatakan seorang manusia menulis ini
+    // lalu menolak menyebut siapa.
+    for (const kosong of ["", "   "]) {
+      const { author } = articleSchema(buatMasukan({ authorByline: kosong }));
+      assert.equal(author["@type"], "Organization");
+      assert.equal(author.name, "Redaksi Contoh");
+    }
   });
 
   test("properti image hanya muncul bila gambarnya benar-benar ada", () => {

@@ -46,6 +46,16 @@ export type ButirFeed = {
   ringkasan: string;
   terbit: Date;
   diubah: Date;
+  /**
+   * Byline OPT-IN penulis butir ini (`awcms` ADR-0109), atau `undefined`.
+   *
+   * `undefined` berarti butir ini TIDAK memancarkan `<author>` sendiri, dan
+   * Atom sudah punya jawaban yang benar untuk itu: RFC 4287 §4.2.1 menyatakan
+   * `<author>` tingkat feed berlaku bagi setiap entry yang tidak punya sendiri.
+   * Jadi butir tanpa byline tetap beratribusi organisasi tanpa satu baris pun
+   * ditulis untuknya — bukan tanpa penulis.
+   */
+  penulis?: string;
 };
 
 /** Satu berkas feed, yaitu satu seksi berita dalam satu locale. */
@@ -217,6 +227,19 @@ export function bangunFeedAtom(feed: BerkasFeed): string {
         `    <published>${item.terbit.toISOString()}</published>`,
         `    <updated>${item.diubah.toISOString()}</updated>`,
         `    <summary type="text">${lepasXml(item.ringkasan)}</summary>`,
+        // Byline penulis, hanya bila ada. Ketiga permukaan yang menyebut
+        // penulis sebuah artikel — halaman, JSON-LD, dan feed ini — harus
+        // menyebut orang yang sama; sebuah feed yang mengkredit organisasi
+        // sementara halamannya mengkredit seseorang adalah dua jawaban atas
+        // satu pertanyaan, dan pembaca feed hanya melihat salah satunya.
+        //
+        // `<name>` dan tidak lebih: Atom mengizinkan `<uri>` dan `<email>` di
+        // dalam `<author>`, dan tidak satu pun boleh muncul di sini. Alamat
+        // surel seorang editor adalah data pribadi yang tidak pernah diminta,
+        // dan sebuah feed adalah tempat yang paling mudah disalin ulang.
+        ...(item.penulis
+          ? ["    <author>", `      <name>${lepasXml(item.penulis)}</name>`, "    </author>"]
+          : []),
         "  </entry>"
       ].join("\n")
     )
@@ -237,9 +260,15 @@ export function bangunFeedAtom(feed: BerkasFeed): string {
     `  <updated>${diperbarui.toISOString()}</updated>`,
     "  <author>",
     // Penulis tingkat ORGANISASI, sama dengan `author` pada JSON-LD artikel
-    // (ADR-0033 §5). Byline seorang editor tidak ada di sini karena `awcms`
-    // menolaknya lebih dulu sebagai permukaan PII — bukan karena Atom tidak
-    // punya tempatnya.
+    // (ADR-0033 §5). Ia BAWAAN feed ini, bukan satu-satunya kemungkinan: sejak
+    // `awcms` ADR-0109 sebuah entry boleh membawa `<author>` sendiri, dan Atom
+    // menetapkan bahwa yang di sini berlaku bagi setiap entry yang tidak.
+    //
+    // Kalimat yang dulu berdiri di sini — "byline seorang editor tidak ada di
+    // sini karena `awcms` menolaknya lebih dulu sebagai permukaan PII" — sudah
+    // tidak benar dan diganti alih-alih dihapus: yang ditolak `awcms` adalah
+    // menerbitkan nama AKUN seseorang karena ia menulis artikel, dan itu masih
+    // ditolak. Yang boleh terbit adalah nama yang penulisnya sendiri pilih.
     `    <name>${lepasXml(feed.penerbit)}</name>`,
     "  </author>",
     entri,

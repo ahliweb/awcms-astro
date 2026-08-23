@@ -152,27 +152,52 @@ export interface ArticleSchemaInput {
    * memutuskan urutan jatuhnya tetap satu tempat (`lib/identitas.ts`).
    */
   penerbit: string;
+  /**
+   * Byline OPT-IN penulis artikel ini (`awcms` ADR-0109), atau `undefined`.
+   *
+   * Opsional, dan `undefined` adalah keadaan normal: artikel itu tetap
+   * beratribusi organisasi. Ia TIDAK boleh diisi dengan nama akun penulis —
+   * `awcms` menolak menerbitkan field itu, dan repo ini tidak punya permukaan
+   * untuk membacanya sekalipun mau.
+   */
+  authorByline?: string;
 }
 
 /**
  * Artikel. `isAccessibleForFree` menegaskan tidak ada dinding bayar.
  *
- * ## `author` adalah ORGANISASI, dan itu keputusan yang ditiru
+ * ## `author` adalah ORGANISASI sampai seorang penulis memutuskan sebaliknya
  *
- * Byline di sini adalah nama PENERBIT, tidak pernah nama seorang editor — sama
+ * Bawaannya adalah nama PENERBIT, tidak pernah nama seorang editor — sama
  * seperti `awcms`, yang memancarkan `authorName` dari nama tenant dan mencatat
  * alasannya di `structured-data-rendering.ts`: menaruh identitas pengguna
- * internal di structured data publik membuka permukaan PII baru. Kolom
- * `authorTenantUserId` memang ada pada baris post, tetapi meresolusinya menjadi
- * nama butuh permukaan `awcms` yang tidak ada di daftar yang dikeraskan
- * `tests/kontrak-awcms.test.mjs` — dan daftar itu dikeraskan justru supaya
- * penambahan seperti itu merah.
+ * internal di structured data publik membuka permukaan PII baru.
  *
- * Yang BERUBAH sejak `awcms` #596 hanya dari mana namanya datang: `site_profile`
- * lewat `namaPenerbit()`, bukan `siteConfig.name` yang ditulis di source. Sebuah
- * nama penerbit yang hanya bisa diganti dengan menyunting repo adalah identitas
- * satu situs yang terbawa ke situs berikutnya — persis cacat yang ditutup issue
- * itu. Ia tetap organisasi, dan tetap bukan seseorang.
+ * Paragraf ini dulu melanjutkan dengan "meresolusi `authorTenantUserId` menjadi
+ * nama butuh permukaan `awcms` yang tidak ada di daftar yang dikeraskan
+ * `tests/kontrak-awcms.test.mjs`". Alasan itu SUDAH TIDAK BERLAKU dan
+ * dituliskan ulang alih-alih dihapus, karena ia menjelaskan kenapa kode di
+ * bawah pernah berbentuk begitu: `awcms` ADR-0109 menambahkan `authorByline`
+ * pada baris post yang SUDAH ditarik build ini lewat
+ * `GET /api/v1/blog/posts?view=full`. Tidak ada permukaan baru yang dipanggil,
+ * jadi daftar yang dikeraskan itu tidak berubah — yang berubah adalah isi
+ * respons permukaan yang memang sudah dikonsumsi.
+ *
+ * Yang membuat ini BUKAN pembalikan dari keberatan PII di atas: namanya
+ * bukan nama akun, dan tidak diterbitkan karena seseorang menulis artikel. Ia
+ * ada hanya bila penulisnya sendiri mengisinya lewat `PATCH /api/v1/auth/profile`;
+ * `null` — keadaan setiap baris yang ada sebelum ADR itu — tetap organisasi.
+ * Simpul `Person` karena itu membawa NAMA dan tidak membawa apa pun lagi: tanpa
+ * `@id`, tanpa `url`, tanpa `sameAs`. Sebuah byline adalah kredit atas sebuah
+ * tulisan, dan menambahkan tautan profil akan mengubahnya menjadi identitas yang
+ * bisa diikuti lintas artikel — sesuatu yang tidak diminta siapa pun saat
+ * mengisi satu kolom nama.
+ *
+ * Yang BERUBAH sejak `awcms` #596 hanya dari mana nama ORGANISASInya datang:
+ * `site_profile` lewat `namaPenerbit()`, bukan `siteConfig.name` yang ditulis di
+ * source. Sebuah nama penerbit yang hanya bisa diganti dengan menyunting repo
+ * adalah identitas satu situs yang terbawa ke situs berikutnya — persis cacat
+ * yang ditutup issue itu.
  *
  * Ia ditulis INLINE, bukan sebagai rujukan `@id` ke simpul Organization
  * halaman, karena pembaca structured data yang tidak menyelesaikan `@id` akan
@@ -181,6 +206,11 @@ export interface ArticleSchemaInput {
  * `Article` yang digantikannya.
  */
 export function articleSchema(input: ArticleSchemaInput): Schema {
+  // Dipangkas di sini JUGA, bukan hanya di adapter: fungsi ini murni dan bisa
+  // dipanggil dari mana pun, dan sebuah `Person` bernama string kosong
+  // menyatakan seorang manusia menulis artikel ini lalu menolak menyebut siapa.
+  const byline = input.authorByline?.trim();
+
   return {
     '@type': input.tipe,
     '@id': `${input.canonicalUrl}#article`,
@@ -213,7 +243,9 @@ export function articleSchema(input: ArticleSchemaInput): Schema {
     inLanguage: localeHtmlLang[input.locale],
     articleSection: input.section,
     isPartOf: { '@id': WEBSITE_ID },
-    author: { '@type': 'Organization', name: input.penerbit },
+    author: byline
+      ? { '@type': 'Person', name: byline }
+      : { '@type': 'Organization', name: input.penerbit },
     publisher: { '@id': PUBLISHER_ID },
     isAccessibleForFree: true,
   };
