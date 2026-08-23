@@ -402,3 +402,48 @@ msgstr "Article"
 
 msgid "cari.tipe.blog_page"
 msgstr "Page"
+
+msgid "privasi.judul"
+msgstr "Privacy"
+
+msgid "privasi.deskripsi"
+msgstr "What this site collects, and what it does not."
+
+msgid "privasi.intro"
+msgstr "This page states what this site actually does, not what is usually written. It is rewritten every time the site is built, so it cannot age more slowly than the code."
+
+msgid "privasi.cookie.judul"
+msgstr "Cookies"
+
+msgid "privasi.cookie.isi"
+msgstr "This site sets no cookie to recognise you, and stores no identifier on your device. Your light or dark theme choice is kept in your own browser and is never sent anywhere."
+
+msgid "privasi.kunjungan.judul"
+msgstr "Page-view counts"
+
+msgid "privasi.kunjungan.mati"
+msgstr "This site does not count page views. No analytics request is sent when you open a page."
+
+msgid "privasi.kunjungan.aktif"
+msgstr "This site counts page views. When a page finishes loading, your browser sends one message carrying the address of the page you opened and, if there is one, the address of the site that linked to it."
+
+msgid "privasi.kunjungan.aktif.butir1"
+msgstr "That message is sent WITHOUT credentials, so no cookie is stored on your device."
+
+msgid "privasi.kunjungan.aktif.butir2"
+msgstr "So there is no way to tie two visits to the same person. Every visit is counted as a first visit."
+
+msgid "privasi.kunjungan.aktif.butir3"
+msgstr "No name, email address, or identifier of your own is sent with it."
+
+msgid "privasi.pencarian.judul"
+msgstr "Search"
+
+msgid "privasi.pencarian.isi"
+msgstr "What you type into the search box is sent to this site's content system to be answered, and to nobody else. Search sets no cookie and does not ask you to sign in."
+
+msgid "privasi.pihakketiga.judul"
+msgstr "Third parties"
+
+msgid "privasi.pihakketiga.isi"
+msgstr "This site loads no third-party script, widget, pixel, or share button. Share links are ordinary links: nobody knows you clicked one until you actually arrive."

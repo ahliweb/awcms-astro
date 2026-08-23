@@ -402,3 +402,48 @@ msgstr "Artikel"
 
 msgid "cari.tipe.blog_page"
 msgstr "Halaman"
+
+msgid "privasi.judul"
+msgstr "Privasi"
+
+msgid "privasi.deskripsi"
+msgstr "Apa yang situs ini kumpulkan, dan apa yang tidak."
+
+msgid "privasi.intro"
+msgstr "Halaman ini menyatakan apa yang benar-benar dilakukan situs ini, bukan apa yang lazim ditulis. Isinya ditulis ulang setiap kali situs dibangun, sehingga ia tidak bisa menua lebih lambat daripada kodenya."
+
+msgid "privasi.cookie.judul"
+msgstr "Cookie"
+
+msgid "privasi.cookie.isi"
+msgstr "Situs ini tidak memasang cookie apa pun untuk mengenali Anda, dan tidak menyimpan pengenal apa pun di perangkat Anda. Pilihan tema terang atau gelap disimpan di peramban Anda sendiri dan tidak pernah dikirim ke mana pun."
+
+msgid "privasi.kunjungan.judul"
+msgstr "Hitungan kunjungan"
+
+msgid "privasi.kunjungan.mati"
+msgstr "Situs ini tidak menghitung kunjungan halaman. Tidak ada permintaan analitik yang dikirim saat Anda membuka sebuah halaman."
+
+msgid "privasi.kunjungan.aktif"
+msgstr "Situs ini menghitung kunjungan halaman. Saat sebuah halaman selesai dimuat, peramban Anda mengirim satu pesan berisi alamat halaman yang dibuka dan, bila ada, alamat situs yang menautkannya."
+
+msgid "privasi.kunjungan.aktif.butir1"
+msgstr "Pesan itu dikirim TANPA kredensial, sehingga tidak ada cookie yang tersimpan di perangkat Anda."
+
+msgid "privasi.kunjungan.aktif.butir2"
+msgstr "Karena itu tidak ada cara mengaitkan dua kunjungan dengan orang yang sama. Setiap kunjungan terhitung sebagai kunjungan pertama."
+
+msgid "privasi.kunjungan.aktif.butir3"
+msgstr "Tidak ada nama, alamat surel, maupun pengenal yang Anda pilih sendiri yang ikut dikirim."
+
+msgid "privasi.pencarian.judul"
+msgstr "Pencarian"
+
+msgid "privasi.pencarian.isi"
+msgstr "Kata yang Anda ketik di kotak pencarian dikirim ke sistem konten situs ini untuk dijawab, dan tidak dikirim ke pihak lain mana pun. Pencarian tidak memasang cookie dan tidak menuntut Anda masuk."
+
+msgid "privasi.pihakketiga.judul"
+msgstr "Pihak ketiga"
+
+msgid "privasi.pihakketiga.isi"
+msgstr "Situs ini tidak memuat skrip, widget, piksel, maupun tombol berbagi milik pihak ketiga. Tautan berbagi adalah tautan biasa: tidak ada yang mengetahui Anda mengkliknya sampai Anda benar-benar tiba di sana."

@@ -5,7 +5,7 @@ description: Kontrak integrasi awcms-astro ↔ awcms — tenant dari token mesin
 
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](SKILL.md)
 
-<!-- i18n-source-hash: sha256:8530f3dad5f1b986b6985b9302c44aaf2f30c865afcb2802b425b4c2440c7893 -->
+<!-- i18n-source-hash: sha256:cc43ae87a382cd3e05d6a588feb4751bcecec1dcf9a8afea458e214ad3b4373c -->
 
 # awcms-astro — kontrak integrasi dengan `awcms`
 
@@ -26,12 +26,19 @@ satu-satunya tempat komponen menyentuh hasilnya.
 | `publishedDate` dan `updatedDate` dibaca dari **satu baris** | Dipasangkan lintas baris → `dateModified` mendahului `datePublished` pada konten yang sah, dan crawler membuang seluruh bloknya |
 | Diam-diam memotong data = **kegagalan**, bukan optimasi | Lihat seluruh baris di atas |
 
-## Permukaan — SEMBILAN yang dipanggil, dua yang tidak
+## Permukaan — SEPULUH yang dipanggil, dua yang tidak
 
-**Dua dari sembilan itu BERBEDA KELAS, dan melewatkannya adalah bagaimana yang
-berikutnya mendarat salah.** `/api/v1/site-search/query` dan `/suggest`
-dipanggil dari peramban PEMBACA saat runtime; tujuh lainnya dipanggil
-`astro build` dari mesin yang memegang kredensial baca-saja. Gerbang di bawah
+**Tiga dari sepuluh itu BERBEDA KELAS, dan melewatkannya adalah bagaimana yang
+berikutnya mendarat salah.** `/api/v1/site-search/query`, `/suggest`, dan
+`/api/v1/analytics/collect` dipanggil dari peramban PEMBACA saat runtime; tujuh
+lainnya dipanggil `astro build` dari mesin yang memegang kredensial baca-saja.
+
+**Dan ketiganya TIDAK berbagi satu aturan.** Kedua jalur pencarian tidak boleh
+membawa header — tidak ada handler `OPTIONS` di belakangnya. Beacon HARUS
+membawa satu (`content-type: application/json`), karena `checkOrigin` di sana
+menolak tipe isi mirip form dan handler `OPTIONS` ada justru untuk preflight yang
+menyusul. Menyeragamkannya, ke arah mana pun, mematikan salah satunya di
+peramban. Gerbang di bawah
 tidak bisa melihat bedanya — ia mengekstrak string literal dari `src/`, dan
 siapa yang mengeksekusinya bukan sesuatu yang bisa diketahui sebuah regex. Yang
 ditentukan perbedaan itu adalah DI MANA kontrak yang patah muncul: di peramban
@@ -126,6 +133,7 @@ sementara peringatannya sampai ke editor yang bisa memperbaikinya.
 | `/api/v1/blog/widgets` | `src/lib/awcms/navigasi.ts` — widget di posisi yang dinyatakannya; `bodyText` teks biasa dan di-escape, tidak pernah dirender sebagai HTML |
 | `/api/v1/site-search/query` | `src/lib/pencarian.ts` — hasil pencarian pembaca. SATU-SATUNYA permukaan yang dipanggil dari peramban PEMBACA saat runtime, bukan dari build: tanpa header, tanpa kredensial, tenant dari `Origin` (`awcms` ADR-0107) |
 | `/api/v1/site-search/suggest` | `src/lib/pencarian.ts` — typeahead di balik kotak yang sama, aturan origin yang sama, anonimitas yang sama |
+| `/api/v1/analytics/collect` | `src/lib/beacon.ts` — satu kunjungan halaman, dikirim dari peramban PEMBACA TANPA kredensial sehingga cookie `awcms_visitor_key` tidak pernah mendarat (ADR-0044). Satu-satunya permintaan di repo ini yang membawa header, dan ia HARUS: `checkOrigin` di sana menolak tipe isi mirip form, jadi hanya `application/json` yang lolos — dan untuk itulah handler `OPTIONS` ada |
 <!-- permukaan:dipanggil:selesai -->
 
 ```

@@ -167,6 +167,16 @@ export const SEGMEN_TAG = "tag" as const;
 export const SEGMEN_CARI = "cari" as const;
 
 /**
+ * The privacy page (ADR-0044).
+ *
+ * Reserved for the same reason as its neighbours, and SHIPPED rather than left
+ * to each site to write: the page's text has to say what this build actually
+ * does, and only this build knows whether it declared a beacon. A page a site
+ * is told to write by hand is a page that describes what somebody assumed.
+ */
+export const SEGMEN_PRIVASI = "privasi" as const;
+
+/**
  * Every word this template claims at the top of a path.
  *
  * `[tab]/index.astro` matches `/kategori/` and `[tab]/[...slug].astro` matches
@@ -179,7 +189,8 @@ export const SEGMEN_TERPESAN = [
   SEGMEN_KATEGORI,
   SEGMEN_TAG,
   SEGMEN_HALAMAN,
-  SEGMEN_CARI
+  SEGMEN_CARI,
+  SEGMEN_PRIVASI
 ] as const;
 
 /**
@@ -237,6 +248,42 @@ export const asalPencarianSitus = asalPencarian(readEnv("AWCMS_API_URL"));
 
 /** Whether this build can render a working search box at all. */
 export const pencarianAktif = asalPencarianSitus !== undefined;
+
+/**
+ * The visitor beacon this site sends, or `undefined` — ADR-0044.
+ *
+ * **Off by default, and a site turns it on by NAMING ITS TENANT CODE.** There
+ * is no separate boolean: a switch and a value that must both be set is a pair
+ * that gets half-set, and the half-set state here would be a site sending page
+ * views nowhere or, worse, into whichever tenant a stale code happens to name.
+ *
+ * `SITE_BEACON_TENANT_CODE` is **not** the retired `AWCMS_TENANT_CODE`, and
+ * the difference is worth stating because the two look alike and one of them
+ * THROWS. That one used to SELECT which tenant the build published — a
+ * selection that could silently disagree with the token, which is why
+ * `src/lib/awcms/tenant.ts` refuses it rather than ignoring it. This one
+ * selects nothing: it is the public code `awcms` needs in the beacon's body to
+ * know whose page view this is, the same code that already appears in that
+ * repo's own public URLs. It cannot change what this site builds.
+ *
+ * It also requires `asalPencarianSitus`, because the beacon is posted to the
+ * same origin the search box calls, named in the same `connect-src` directive.
+ * A tenant code with no origin to send it to is a declaration that does nothing,
+ * so it produces no beacon rather than a broken one.
+ *
+ * **What this repo CANNOT check, and says so instead of pretending:** whether
+ * that `awcms` tenant has `rawIpEnabled` switched on, which makes it store
+ * readers' IP addresses rather than only a salted hash. ADR-0044 refuses the
+ * declaration in that case, and the refusal lives with the person who can see
+ * it — `.env.example` and the privacy page — because nothing here can read it.
+ */
+export const beaconKunjungan = (() => {
+  const tenantCode = readEnv("SITE_BEACON_TENANT_CODE");
+
+  if (!tenantCode || !asalPencarianSitus) return undefined;
+
+  return { tenantCode, asal: asalPencarianSitus };
+})();
 
 /**
  * How many article cards one section page carries.

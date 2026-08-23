@@ -345,7 +345,7 @@ describe("permukaan awcms yang dipanggil build", () => {
     );
   }
 
-  test("kode sumber memanggil tepat sembilan permukaan", () => {
+  test("kode sumber memanggil tepat sepuluh permukaan", () => {
     // Daftarnya ditulis eksplisit supaya permukaan BERIKUTNYA memerahkan gerbang
     // ini meskipun penulisnya ingat memperbarui skill — dua pemeriksaan yang bisa
     // salah bersama bukan dua pemeriksaan.
@@ -377,11 +377,22 @@ describe("permukaan awcms yang dipanggil build", () => {
     // Konsekuensinya bagi yang membacanya tidak nol: sebuah perubahan bentuk
     // pada kedua permukaan itu gagal di peramban orang asing, bukan di build
     // yang bisa dilihat siapa pun.
+    //
+    // Yang kesepuluh, `/api/v1/analytics/collect` (`awcms` #597 butir 9,
+    // ADR-0044 di sini), termasuk kelas yang sama — peramban pembaca — dengan
+    // satu perbedaan yang PENTING dan berlawanan arah: ia satu-satunya
+    // permintaan di repo ini yang membawa header, dan HARUS membawanya.
+    // `security.checkOrigin` di `awcms` menolak POST lintas-origin yang tipe
+    // isinya mirip form, jadi hanya `application/json` yang lolos — dan handler
+    // `OPTIONS` di sana ada justru untuk preflight yang ditimbulkannya.
+    // Menyamakan aturannya dengan dua permukaan pencarian, ke arah mana pun,
+    // mematikan salah satunya di peramban.
     const sumber = permukaanDiSumber();
 
     assert.deepEqual(
       [...sumber].sort(),
       [
+        "/api/v1/analytics/collect",
         "/api/v1/blog/menus",
         "/api/v1/blog/posts",
         "/api/v1/blog/terms",
