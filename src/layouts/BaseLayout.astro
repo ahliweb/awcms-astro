@@ -14,6 +14,8 @@ import {
   locales,
   defaultLocale,
   tabTitleKey,
+  SEGMEN_CARI,
+  pencarianAktif,
   type Locale,
 } from '../config/site';
 import { t } from '../lib/po';
@@ -325,6 +327,19 @@ const jsonLd = {
           <div class="header-tagline">
             {taglineSitus(profil, locale)}
           </div>
+          {/* Tautan, bukan kotak. Sebuah kotak di kepala setiap halaman harus
+              disembunyikan tanpa JavaScript (hasilnya butuh JS), dan yang
+              tersisa bagi pembaca tanpa JS adalah tidak ada jalan sama sekali.
+              Sebuah tautan bekerja tanpa JS: ia mendarat di `/cari/`, yang
+              mengatakan dengan jujur apa yang dibutuhkannya.
+
+              Hanya tampil bila build ini punya `awcms` untuk dicari — lihat
+              `pencarianAktif`. */}
+          {pencarianAktif && (
+            <a class="chip cari-tautan" href={localePath(locale, `/${SEGMEN_CARI}/`)}>
+              {t(locale, 'cari.tombol')}
+            </a>
+          )}
           <LangSwitcher path={langSwitchPath} />
           <button
             type="button"

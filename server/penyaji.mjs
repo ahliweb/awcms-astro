@@ -138,6 +138,16 @@ export const VARY_DILARANG = Object.freeze(["cookie", "accept-language"]);
  * kegagalannya tidak menyebut sebabnya di mana pun: gambar diblokir diam-diam
  * oleh kebijakan yang tampak baik-baik saja.
  *
+ * `connect-src` dilonggarkan lewat jalur yang SAMA persis, dan itu disengaja
+ * (ADR-0043): `scripts/asal-pencarian.mjs` menulis `dist/server/asal-pencarian.json`
+ * dari `AWCMS_API_URL`, dan satu fungsi membaca kedua berkas. Yang dibukanya
+ * adalah kotak pencarian pembaca — panggilan pertama dari situs ini yang terjadi
+ * di peramban seorang asing dan bukan saat build. Nilainya diturunkan dari
+ * variabel yang sama dengan yang dipakai halaman untuk merender kotaknya, jadi
+ * kebijakan dan kotaknya tidak bisa berselisih: sebuah situs yang menerbitkan
+ * kotak tanpa direktifnya adalah kotak yang setiap permintaannya diblokir
+ * peramban, tanpa satu pun kesalahan di sisi server.
+ *
  * Origin LAIN — CDN, host gambar pihak ketiga — tetap ditambahkan di berkas
  * ini dengan tangan, lalu `tests/penyaji.test.mjs` diperbarui. Yang tidak boleh
  * berubah: kebijakan tetap dirangkai **di sini saja**. Berkas JSON itu data,
@@ -165,9 +175,7 @@ export const VARY_DILARANG = Object.freeze(["cookie", "accept-language"]);
  * ada, karena satu nilai cacat di dalam header membuat browser menolak SELURUH
  * kebijakan — bersama setiap direktif lain di dalamnya.
  */
-export function asalMediaTerkonfigurasi(
-  berkas = new URL("./asal-media.json", import.meta.url).pathname
-) {
+export function asalTerkonfigurasi(berkas) {
   if (!existsSync(berkas)) return undefined;
 
   let isi;
@@ -193,7 +201,34 @@ export function asalMediaTerkonfigurasi(
   return parsed.origin;
 }
 
+export function asalMediaTerkonfigurasi(
+  berkas = new URL("./asal-media.json", import.meta.url).pathname
+) {
+  return asalTerkonfigurasi(berkas);
+}
+
+/**
+ * Origin `awcms` yang boleh dihubungi kotak pencarian, atau `undefined`.
+ *
+ * Ditulis `scripts/asal-pencarian.mjs` dari `AWCMS_API_URL`, dan dibaca dengan
+ * pemeriksa yang SAMA dengan origin media — satu fungsi, dua berkas. Sebuah
+ * salinan kedua dari pemeriksaan itu adalah tempat kedua yang harus diingat
+ * ketika seseorang mengeraskannya.
+ *
+ * Berkas yang tidak ada berarti `connect-src 'self'`, dan itu kebijakan yang
+ * benar: build tanpa `awcms` tidak menerbitkan kotak pencarian sama sekali
+ * (`pencarianAktif` di `src/config/site.ts`), jadi tidak ada yang perlu
+ * dihubungi. Keduanya diturunkan dari nilai yang sama, jadi keduanya tidak bisa
+ * berselisih.
+ */
+export function asalPencarianTerkonfigurasi(
+  berkas = new URL("./asal-pencarian.json", import.meta.url).pathname
+) {
+  return asalTerkonfigurasi(berkas);
+}
+
 const ASAL_MEDIA = asalMediaTerkonfigurasi();
+const ASAL_PENCARIAN = asalPencarianTerkonfigurasi();
 
 export const CSP = [
   "default-src 'self'",
@@ -201,7 +236,12 @@ export const CSP = [
   "style-src 'self'",
   ASAL_MEDIA ? `img-src 'self' ${ASAL_MEDIA}` : "img-src 'self'",
   "font-src 'self'",
-  "connect-src 'self'",
+  // Dilebarkan hanya ke origin `awcms` deployment ini, dan hanya bila build
+  // menuliskannya. `'self'` tetap ada: skrip situs ini tidak pernah memanggil
+  // origin lain, dan `connect-src` yang menghilangkannya akan memblokir
+  // permintaan same-origin apa pun yang ditambahkan kemudian — termasuk yang
+  // tidak berhubungan dengan pencarian.
+  ASAL_PENCARIAN ? `connect-src 'self' ${ASAL_PENCARIAN}` : "connect-src 'self'",
   "frame-src 'none'",
   "object-src 'none'",
   // `'none'`, bukan `'self'`: situs statis tidak pernah memakai `<base>`, dan

@@ -24,7 +24,16 @@ place a component touches the result.
 | `publishedDate` and `updatedDate` are read from **one row** | Paired across rows → `dateModified` precedes `datePublished` on valid content, and the crawler discards the whole block |
 | Silently truncating data is a **failure**, not an optimisation | See every row above |
 
-## Surfaces — SEVEN that are called, two that are not
+## Surfaces — NINE that are called, two that are not
+
+**Two of the nine are a different CLASS, and reading past that is how the next
+one lands wrong.** `/api/v1/site-search/query` and `/suggest` are called from
+the READER's browser at runtime; the other seven are called by `astro build`
+from a machine holding a read-only credential. The gate below cannot see the
+difference — it extracts string literals from `src/`, and who executes them is
+not something a regex can know. What the difference decides is where a broken
+contract surfaces: in a stranger's browser, silently, rather than in a build
+somebody is watching. See ADR-0043.
 
 The difference matters, and it was once written wrongly in this file as "five
 surfaces in use". The `awcms` assessment of 4 August 2026 briefly recorded SIX,
@@ -101,7 +110,7 @@ has no page route, and a published dead link is a reader's problem while the
 warning reaches the editor who can fix it.
 
 <!-- permukaan:dipanggil:mulai -->
-| Surface the build actually calls | Called from |
+| Surface called | Called from |
 | --- | --- |
 | `/api/v1/blog/posts` | `src/lib/content.ts` — the build feed traversal, `view=full` + `order=created_at` + cursor |
 | `/api/v1/media/objects` | `src/lib/awcms/media.ts` — media resolution, max 100 ids per request |
@@ -110,6 +119,8 @@ warning reaches the editor who can fix it.
 | `/api/v1/blog/terms` | `src/lib/awcms/taksonomi.ts` — the tenant's vocabulary for the category/tag archives, `order=created_at` + cursor (never the default alphabetical list, which truncates silently) |
 | `/api/v1/blog/menus` | `src/lib/awcms/navigasi.ts` — the tenant's navigation menus, rendered as a SECONDARY footer region; the localised tab bar is NOT replaced |
 | `/api/v1/blog/widgets` | `src/lib/awcms/navigasi.ts` — widgets in their declared positions; `bodyText` is plain text and is escaped, never rendered as HTML |
+| `/api/v1/site-search/query` | `src/lib/pencarian.ts` — the reader's search results. The ONLY surface called from the READER's browser at runtime rather than from the build: no headers, no credentials, tenant from the `Origin` (`awcms` ADR-0107) |
+| `/api/v1/site-search/suggest` | `src/lib/pencarian.ts` — the typeahead behind the same box, same origin rule, same anonymity |
 <!-- permukaan:dipanggil:selesai -->
 
 ```

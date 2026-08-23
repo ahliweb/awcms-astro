@@ -59,7 +59,7 @@ What [`server/penyaji.mjs`](../../server/penyaji.mjs) actually sends, and what
 
 | Header | Its value here | Its value in `awcms` | The OWASP Secure Headers recommendation |
 | --- | --- | --- | --- |
-| `Content-Security-Policy` | `default-src 'self'`; `script-src`/`style-src` without `'unsafe-inline'`; `img-src` + the media origin | the same, plus the theme script hash and the Turnstile origin when active | Required |
+| `Content-Security-Policy` | `default-src 'self'`; `script-src`/`style-src` without `'unsafe-inline'`; `img-src` + the media origin; `connect-src` + the `awcms` origin when the search box is published (ADR-0043) | the same, plus the theme script hash and the Turnstile origin when active | Required |
 | `X-Content-Type-Options` | `nosniff` | `nosniff` | Required |
 | `X-Frame-Options` | `DENY` | `DENY` | Required (along with `frame-ancestors`) |
 | `Referrer-Policy` | `strict-origin-when-cross-origin` | the same | Required |

@@ -5,7 +5,7 @@ description: Kontrak integrasi awcms-astro ↔ awcms — tenant dari token mesin
 
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](SKILL.md)
 
-<!-- i18n-source-hash: sha256:e84c61335649b6eb08ac0f925ac347b45c5352594376f6e4576a3b0a2ac4538e -->
+<!-- i18n-source-hash: sha256:8530f3dad5f1b986b6985b9302c44aaf2f30c865afcb2802b425b4c2440c7893 -->
 
 # awcms-astro — kontrak integrasi dengan `awcms`
 
@@ -26,7 +26,17 @@ satu-satunya tempat komponen menyentuh hasilnya.
 | `publishedDate` dan `updatedDate` dibaca dari **satu baris** | Dipasangkan lintas baris → `dateModified` mendahului `datePublished` pada konten yang sah, dan crawler membuang seluruh bloknya |
 | Diam-diam memotong data = **kegagalan**, bukan optimasi | Lihat seluruh baris di atas |
 
-## Permukaan — TUJUH yang dipanggil, dua yang tidak
+## Permukaan — SEMBILAN yang dipanggil, dua yang tidak
+
+**Dua dari sembilan itu BERBEDA KELAS, dan melewatkannya adalah bagaimana yang
+berikutnya mendarat salah.** `/api/v1/site-search/query` dan `/suggest`
+dipanggil dari peramban PEMBACA saat runtime; tujuh lainnya dipanggil
+`astro build` dari mesin yang memegang kredensial baca-saja. Gerbang di bawah
+tidak bisa melihat bedanya — ia mengekstrak string literal dari `src/`, dan
+siapa yang mengeksekusinya bukan sesuatu yang bisa diketahui sebuah regex. Yang
+ditentukan perbedaan itu adalah DI MANA kontrak yang patah muncul: di peramban
+seorang asing, diam-diam, alih-alih di build yang sedang dilihat seseorang.
+Lihat ADR-0043.
 
 Bedanya penting, dan pernah salah ditulis di berkas ini sebagai "lima permukaan
 yang dipakai". Penilaian `awcms` 4 Agustus 2026 sempat mencatat ENAM, dan
@@ -105,7 +115,7 @@ ini tidak punya rute page, dan tautan mati yang terbit adalah masalah pembaca
 sementara peringatannya sampai ke editor yang bisa memperbaikinya.
 
 <!-- permukaan:dipanggil:mulai -->
-| Permukaan yang benar-benar dipanggil build | Dipanggil dari |
+| Permukaan yang dipanggil | Dipanggil dari |
 | --- | --- |
 | `/api/v1/blog/posts` | `src/lib/content.ts` — traversal build feed, `view=full` + `order=created_at` + cursor |
 | `/api/v1/media/objects` | `src/lib/awcms/media.ts` — resolusi media, maks 100 id per permintaan |
@@ -114,6 +124,8 @@ sementara peringatannya sampai ke editor yang bisa memperbaikinya.
 | `/api/v1/blog/terms` | `src/lib/awcms/taksonomi.ts` — kosakata tenant untuk arsip kategori/tag, `order=created_at` + cursor (tidak pernah list abjad bawaannya, yang memotong diam-diam) |
 | `/api/v1/blog/menus` | `src/lib/awcms/navigasi.ts` — menu navigasi tenant, dirender sebagai wilayah SEKUNDER di footer; bilah tab yang terlokalkan TIDAK diganti |
 | `/api/v1/blog/widgets` | `src/lib/awcms/navigasi.ts` — widget di posisi yang dinyatakannya; `bodyText` teks biasa dan di-escape, tidak pernah dirender sebagai HTML |
+| `/api/v1/site-search/query` | `src/lib/pencarian.ts` — hasil pencarian pembaca. SATU-SATUNYA permukaan yang dipanggil dari peramban PEMBACA saat runtime, bukan dari build: tanpa header, tanpa kredensial, tenant dari `Origin` (`awcms` ADR-0107) |
+| `/api/v1/site-search/suggest` | `src/lib/pencarian.ts` — typeahead di balik kotak yang sama, aturan origin yang sama, anonimitas yang sama |
 <!-- permukaan:dipanggil:selesai -->
 
 ```

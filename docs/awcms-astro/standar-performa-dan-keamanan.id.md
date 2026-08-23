@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](standar-performa-dan-keamanan.md)
 
-<!-- i18n-source-hash: sha256:ae19990c7011fc4bf44fb2aae31b614edca39cf78040114c3c625b9630d5140f -->
+<!-- i18n-source-hash: sha256:642f8dc919077ed0486bcf05965bd7b2fa1b7a049862d882d7bf4aeaeaee0af4 -->
 
 # awcms-astro — Standar Performa dan Keamanan
 
@@ -61,7 +61,7 @@ dibuktikan [`tests/penyaji.test.mjs`](../../tests/penyaji.test.mjs):
 
 | Header | Nilai di sini | Nilai di `awcms` | Rekomendasi OWASP Secure Headers |
 | --- | --- | --- | --- |
-| `Content-Security-Policy` | `default-src 'self'`; `script-src`/`style-src` tanpa `'unsafe-inline'`; `img-src` + origin media | sama, plus hash skrip tema dan origin Turnstile bila aktif | Wajib |
+| `Content-Security-Policy` | `default-src 'self'`; `script-src`/`style-src` tanpa `'unsafe-inline'`; `img-src` + origin media; `connect-src` + origin `awcms` bila kotak pencarian diterbitkan (ADR-0043) | sama, plus hash skrip tema dan origin Turnstile bila aktif | Wajib |
 | `X-Content-Type-Options` | `nosniff` | `nosniff` | Wajib |
 | `X-Frame-Options` | `DENY` | `DENY` | Wajib (bersama `frame-ancestors`) |
 | `Referrer-Policy` | `strict-origin-when-cross-origin` | sama | Wajib |

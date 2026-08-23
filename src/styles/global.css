@@ -167,6 +167,26 @@ body {
   flex-direction: column;
 }
 
+/*
+ * `hidden` menang atas setiap aturan `display` di berkas ini.
+ *
+ * Atribut `hidden` bekerja lewat aturan `display: none` bawaan peramban, dan
+ * aturan itu KALAH dari aturan penulis mana pun yang menyetel `display` pada
+ * selektor yang sama — termasuk `.chip { display: inline-flex }` beberapa ratus
+ * baris di bawah. Akibatnya bukan kosmetik: sebuah tombol atau form yang
+ * `hidden` di sumber, dan yang baru boleh dipakai setelah skripnya menyalakan,
+ * tetap terlihat dan tetap bisa diklik — kontrol yang diam saat dipakai, yang
+ * `AGENTS.md` §Antarmuka sebut lebih buruk daripada kontrol yang tidak ada.
+ *
+ * `!important` di sini justru yang benar: pertanyaannya bukan "seberapa kuat
+ * aturan ini" melainkan "apakah elemen ini sedang ada", dan tidak ada aturan
+ * tata letak yang boleh menjawabnya. Kotak pencarian (`awcms` #607) adalah
+ * pemakai pertamanya.
+ */
+[hidden] {
+  display: none !important;
+}
+
 /* Base Accessibility: Skip Link */
 .skip-link {
   position: absolute;

@@ -1,0 +1,562 @@
+---
+/**
+ * Halaman pencarian pembaca (`awcms` #607, `awcms` #597 butir 3, ADR-0043).
+ *
+ * Satu komponen untuk kedua rute (`/cari/` dan `/{lang}/cari/`), sama seperti
+ * `ArsipTaksonomi.astro` melayani kategori dan tag: dua salinan berarti dua
+ * tempat memperbaiki hal yang sama, dan yang kedua akan terlupakan.
+ *
+ * ## Tidak ada satu pun HTML yang dirangkai di JavaScript
+ *
+ * Setiap bentuk yang bisa muncul di halaman ini ditulis di bawah sebagai
+ * `<template>` — kartu hasil, grup facet, chip. Skripnya meng-KLON template itu
+ * lalu mengisi `textContent`. Konsekuensinya bukan gaya:
+ *
+ *   - tidak ada `innerHTML`, jadi jalur HTML-mentah yang `AGENTS.md` §Keamanan
+ *     tutup tidak dibuka dari sisi klien;
+ *   - setiap kata yang dibaca pembaca tetap datang dari katalog PO, karena ia
+ *     ditulis di template oleh `t()` saat build. Sebuah string yang dirangkai di
+ *     skrip akan menjadi satu-satunya teks di situs ini yang tidak pernah
+ *     diterjemahkan — persis cacat yang pernah dibayar bilah navigasi.
+ *
+ * ## Kotaknya disembunyikan sampai skripnya jalan
+ *
+ * Situs ini statis: `/cari/` adalah satu berkas, dan tanpa JavaScript tidak ada
+ * yang bisa mengambil hasil. Sebuah form yang tampil tanpa JS adalah kontrol
+ * yang diam saat dipakai, yang `AGENTS.md` §Antarmuka sebut lebih buruk
+ * daripada kontrol yang tidak ada. Jadi form-nya `hidden` di sumber dan skripnya
+ * yang membukanya; `<noscript>` mengatakannya dengan jujur.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumb from '../Breadcrumb.astro';
+import DisclaimerNote from '../DisclaimerNote.astro';
+import {
+  SEGMEN_CARI,
+  asalPencarianSitus,
+  getLocaleFromPath,
+  getSiteUrl,
+  localePath
+} from '../../config/site';
+import { FACET_TERM, PANJANG_KUERI_MAKS, PARAM_TIPE } from '../../lib/pencarian';
+import { t } from '../../lib/po';
+
+const locale = getLocaleFromPath(Astro.url.pathname);
+const jalurCari = localePath(locale, `/${SEGMEN_CARI}/`);
+
+const judul = t(locale, 'cari.judul');
+const deskripsi = t(locale, 'cari.deskripsi');
+
+/**
+ * Setiap facet yang bisa dirender, dengan labelnya yang SUDAH diterjemahkan.
+ *
+ * `awcms` memancarkan facet dengan kunci mesin (`channel`, `topic`, …) dan
+ * tanpa label yang bisa dibaca dalam bahasa pembaca. Facet yang tidak ada di
+ * daftar ini karena itu TIDAK dirender: menampilkan kunci mesinnya akan
+ * menerbitkan `channel` sebagai judul di layar, yaitu bentuk yang sama dengan
+ * kunci PO yang pernah terbit sebagai teks di repo ini.
+ *
+ * `type` ikut meski ia bukan term facet — bagi pembaca ia satu baris chip
+ * seperti yang lain, dan memisahkannya hanya akan menduplikasi kode render.
+ */
+const facetBerlabel = [
+  { kunci: PARAM_TIPE, label: t(locale, 'cari.facet.type') },
+  ...FACET_TERM.map((kunci) => ({ kunci, label: t(locale, `cari.facet.${kunci}`) }))
+];
+
+/**
+ * Label yang bisa dibaca untuk setiap NILAI facet jenis konten.
+ *
+ * Facet term membawa `label` sendiri dari `awcms` — teks yang ditulis redaksi.
+ * Facet jenis konten TIDAK: nilainya adalah `resource_type` apa adanya
+ * (`blog_post`, `blog_page`), yaitu pengenal mesin milik registry modul di sana.
+ * Merendernya berarti menerbitkan `blog_post` sebagai kata yang dibaca pembaca,
+ * dalam kedua bahasa — bentuk yang sama dengan kunci PO yang pernah terbit
+ * sebagai teks di repo ini, dan yang ditemukan di sini oleh verifikasi peramban
+ * sungguhan alih-alih oleh sebuah gerbang.
+ *
+ * Nilai yang tidak ada di sini tidak dirender chip-nya. Konsekuensinya nyata dan
+ * disengaja: sebuah tipe konten baru di `awcms` tidak bisa disaring dari sini
+ * sampai baris di bawah menyebutnya — arah yang sama dengan `FACET_TERM`, dan
+ * arah yang benar, karena yang hilang adalah satu chip dan bukan hasilnya.
+ */
+const tipeBerlabel = ['blog_post', 'blog_page'].map((nilai) => ({
+  nilai,
+  label: t(locale, `cari.tipe.${nilai}`)
+}));
+---
+
+<BaseLayout
+  title={judul}
+  description={deskripsi}
+  canonicalUrl={getSiteUrl(jalurCari)}
+>
+  <Breadcrumb items={[{ name: judul, url: jalurCari }]} />
+
+  <section class="cari-kepala">
+    <h1>{judul}</h1>
+    <p class="cari-lead">{deskripsi}</p>
+  </section>
+
+  {asalPencarianSitus ? (
+    <div
+      class="cari-wadah"
+      data-cari
+      data-asal={asalPencarianSitus}
+      data-locale={locale}
+      data-dasar={jalurCari}
+      data-teks-mencari={t(locale, 'cari.status.mencari')}
+      data-teks-kosong={t(locale, 'cari.status.kosong')}
+      data-teks-hasil={t(locale, 'cari.status.hasil')}
+      data-teks-galat={t(locale, 'cari.status.galat')}
+      data-teks-mulai={t(locale, 'cari.status.mulai')}
+    >
+      {/* `hidden` di sumber, dibuka skrip. Aturan `[hidden]` di `global.css`
+          memakai `!important` justru untuk baris ini: sebuah aturan `display`
+          pada `.cari-form` akan mengalahkan atribut `hidden` dan menampilkan
+          form yang belum berfungsi. */}
+      <form class="cari-form" data-cari-form hidden role="search">
+        <label class="cari-label" for="cari-kueri">{t(locale, 'cari.label')}</label>
+        <div class="cari-baris">
+          <input
+            id="cari-kueri"
+            class="cari-input"
+            type="search"
+            name="q"
+            list="cari-saran"
+            autocomplete="off"
+            maxlength={PANJANG_KUERI_MAKS}
+            placeholder={t(locale, 'cari.placeholder')}
+            data-cari-input
+          />
+          <button type="submit" class="chip cari-tombol">{t(locale, 'cari.tombol')}</button>
+        </div>
+        {/* `<datalist>` dan bukan listbox buatan sendiri: ia sudah membawa
+            navigasi papan ketik, pengumuman pembaca layar, dan perilaku sentuh
+            asli peramban. Sebuah combobox ARIA rakitan tangan harus memenuhi
+            semuanya lagi, dan kegagalannya tidak terlihat di layar. */}
+        <datalist id="cari-saran" data-cari-saran></datalist>
+      </form>
+
+      <noscript>
+        <p class="cari-noscript">{t(locale, 'cari.noscript')}</p>
+      </noscript>
+
+      {/* `role="status"` + `aria-live="polite"`: hasil tiba tanpa halaman
+          berpindah, jadi tanpa ini seorang pembaca yang memakai pembaca layar
+          tidak diberi tahu apa pun telah terjadi. */}
+      <p class="cari-status" role="status" aria-live="polite" data-cari-status></p>
+
+      <div class="cari-facet" data-cari-facet></div>
+
+      <div class="cari-hasil" data-cari-hasil></div>
+
+      <div class="cari-lanjut">
+        <button type="button" class="chip" data-cari-lanjut hidden>
+          {t(locale, 'cari.lanjut')}
+        </button>
+      </div>
+
+      {/* --- Template. Tidak dirender; dikloning skrip. --- */}
+      <template data-tpl-hasil>
+        <a class="cari-kartu" href="#">
+          <h3 class="cari-kartu-judul" data-kartu-judul></h3>
+          <p class="cari-snippet" data-kartu-snippet></p>
+        </a>
+      </template>
+
+      <template data-tpl-sorot><mark></mark></template>
+
+      <template data-tpl-facet-grup>
+        <section class="cari-facet-grup">
+          <h2 class="cari-facet-judul" data-grup-judul></h2>
+          <ul class="cari-facet-daftar" data-grup-daftar></ul>
+        </section>
+      </template>
+
+      <template data-tpl-facet-chip>
+        <li>
+          <a class="chip cari-chip" href="#">
+            <span data-chip-label></span>
+            <span class="cari-chip-jumlah" data-chip-jumlah></span>
+          </a>
+        </li>
+      </template>
+
+      <template data-tpl-saran><option></option></template>
+
+      {facetBerlabel.map((facet) => (
+        <span hidden data-facet-label={facet.kunci}>{facet.label}</span>
+      ))}
+
+      {tipeBerlabel.map((tipe) => (
+        <span hidden data-tipe-label={tipe.nilai}>{tipe.label}</span>
+      ))}
+    </div>
+  ) : (
+    /* Tidak ada `awcms` yang dikonfigurasi. Yang terbit adalah kalimat yang
+       menjelaskannya, bukan kotak yang memanggil ke mana-mana — dan bukan
+       halaman yang hilang, karena tautan di kepala situs sudah menunjuk ke
+       sini. */
+    <p class="cari-noscript">{t(locale, 'cari.takAktif')}</p>
+  )}
+
+  <DisclaimerNote variant="general" />
+</BaseLayout>
+
+<script>
+  import {
+    JEDA_SARAN_MS,
+    PANJANG_SARAN_MIN,
+    alamatKueri,
+    alamatSaran,
+    bacaFilter,
+    dengan,
+    jalurPencarian,
+    potongSnippet,
+    type FacetTerm,
+    type FilterPencarian,
+    type HasilPencarian
+  } from '../../lib/pencarian';
+
+  const wadah = document.querySelector<HTMLElement>('[data-cari]');
+
+  if (wadah) {
+    const asal = wadah.dataset.asal ?? '';
+    const locale = wadah.dataset.locale ?? '';
+    const dasar = wadah.dataset.dasar ?? '/';
+
+    const form = wadah.querySelector<HTMLFormElement>('[data-cari-form]')!;
+    const input = wadah.querySelector<HTMLInputElement>('[data-cari-input]')!;
+    const saranList = wadah.querySelector<HTMLDataListElement>('[data-cari-saran]')!;
+    const status = wadah.querySelector<HTMLElement>('[data-cari-status]')!;
+    const wadahFacet = wadah.querySelector<HTMLElement>('[data-cari-facet]')!;
+    const wadahHasil = wadah.querySelector<HTMLElement>('[data-cari-hasil]')!;
+    const tombolLanjut = wadah.querySelector<HTMLButtonElement>('[data-cari-lanjut]')!;
+
+    const tplHasil = wadah.querySelector<HTMLTemplateElement>('[data-tpl-hasil]')!;
+    const tplSorot = wadah.querySelector<HTMLTemplateElement>('[data-tpl-sorot]')!;
+    const tplGrup = wadah.querySelector<HTMLTemplateElement>('[data-tpl-facet-grup]')!;
+    const tplChip = wadah.querySelector<HTMLTemplateElement>('[data-tpl-facet-chip]')!;
+    const tplSaran = wadah.querySelector<HTMLTemplateElement>('[data-tpl-saran]')!;
+
+    // Kotaknya baru muncul di sini — sesudah setiap simpul yang dibutuhkannya
+    // benar-benar ditemukan. Membukanya lebih awal berarti sebuah template yang
+    // hilang menghasilkan kotak yang menerima ketikan dan tidak pernah menjawab.
+    form.hidden = false;
+
+    const labelFacet = new Map<string, string>();
+    wadah.querySelectorAll<HTMLElement>('[data-facet-label]').forEach((simpul) => {
+      labelFacet.set(simpul.dataset.facetLabel ?? '', simpul.textContent ?? '');
+    });
+
+    // Label per NILAI, dan hanya untuk facet jenis konten: facet term membawa
+    // labelnya sendiri dari `awcms`, jenis konten tidak — lihat `tipeBerlabel`.
+    const labelTipe = new Map<string, string>();
+    wadah.querySelectorAll<HTMLElement>('[data-tipe-label]').forEach((simpul) => {
+      labelTipe.set(simpul.dataset.tipeLabel ?? '', simpul.textContent ?? '');
+    });
+
+    let filter: FilterPencarian = bacaFilter(new URLSearchParams(location.search));
+    let cursor: string | null = null;
+    /** Naik pada setiap pencarian; jawaban dari nomor lama dibuang. */
+    let putaran = 0;
+
+    input.value = filter.kueri;
+
+    function teks(nama: string): string {
+      return wadah!.dataset[nama] ?? '';
+    }
+
+    function segarkanAlamat(): void {
+      // `replaceState`, bukan `pushState`: setiap chip yang diklik menambah satu
+      // langkah ke riwayat, dan tombol Kembali yang harus ditekan sebelas kali
+      // untuk meninggalkan satu halaman adalah tombol yang rusak.
+      history.replaceState(null, '', jalurPencarian(dasar, filter));
+    }
+
+    function bersihkan(simpul: HTMLElement): void {
+      simpul.replaceChildren();
+    }
+
+    function renderSnippet(target: HTMLElement, snippet: string): void {
+      bersihkan(target);
+      for (const segmen of potongSnippet(snippet)) {
+        if (segmen.sorot) {
+          const mark = tplSorot.content.cloneNode(true) as DocumentFragment;
+          const el = mark.querySelector('mark')!;
+          el.textContent = segmen.teks;
+          target.append(mark);
+        } else {
+          target.append(document.createTextNode(segmen.teks));
+        }
+      }
+    }
+
+    function renderHasil(items: HasilPencarian['items'], tambah: boolean): void {
+      if (!tambah) bersihkan(wadahHasil);
+
+      for (const butir of items) {
+        const frag = tplHasil.content.cloneNode(true) as DocumentFragment;
+        const tautan = frag.querySelector<HTMLAnchorElement>('a')!;
+
+        // `href` dari `awcms` diperlakukan sebagai data, bukan dipercaya:
+        // apa pun yang bukan http(s) tidak menjadi tautan sama sekali. Sebuah
+        // `javascript:` yang lolos ke sini akan berjalan di origin situs INI.
+        let aman = false;
+        try {
+          const url = new URL(butir.url, location.origin);
+          aman = url.protocol === 'https:' || url.protocol === 'http:';
+          if (aman) tautan.href = url.toString();
+        } catch {
+          aman = false;
+        }
+        if (!aman) continue;
+
+        frag.querySelector<HTMLElement>('[data-kartu-judul]')!.textContent = butir.title;
+        renderSnippet(frag.querySelector<HTMLElement>('[data-kartu-snippet]')!, butir.snippet);
+
+        wadahHasil.append(frag);
+      }
+    }
+
+    function renderFacet(facets: HasilPencarian['facets']): void {
+      bersihkan(wadahFacet);
+
+      const grup: Array<[string, HasilPencarian['facets']['terms'][string]]> = [
+        ['type', facets.resourceTypes],
+        ...Object.entries(facets.terms)
+      ];
+
+      for (const [kunci, nilai] of grup) {
+        const label = labelFacet.get(kunci);
+        // Facet yang situs ini tidak punya labelnya tidak dirender. Menampilkan
+        // kunci mesinnya berarti menerbitkan `channel` sebagai judul di layar,
+        // dalam kedua bahasa.
+        if (!label || nilai.length === 0) continue;
+
+        const frag = tplGrup.content.cloneNode(true) as DocumentFragment;
+        frag.querySelector<HTMLElement>('[data-grup-judul]')!.textContent = label;
+        const daftar = frag.querySelector<HTMLElement>('[data-grup-daftar]')!;
+
+        for (const item of nilai) {
+          // Chip jenis konten tanpa label yang bisa dibaca tidak dirender:
+          // `blog_post` di layar adalah pengenal mesin, bukan kata.
+          const teksChip = kunci === 'type' ? labelTipe.get(item.value) : item.label ?? item.value;
+          if (!teksChip) continue;
+
+          const chipFrag = tplChip.content.cloneNode(true) as DocumentFragment;
+          const tautan = chipFrag.querySelector<HTMLAnchorElement>('a')!;
+          const berikut = dengan(filter, kunci as FacetTerm | 'type', item.value);
+
+          tautan.href = jalurPencarian(dasar, berikut);
+          const aktif =
+            kunci === 'type' ? filter.tipe === item.value : filter.term[kunci as FacetTerm] === item.value;
+          tautan.setAttribute('aria-pressed', String(aktif));
+          if (aktif) tautan.classList.add('cari-chip-aktif');
+
+          chipFrag.querySelector<HTMLElement>('[data-chip-label]')!.textContent = teksChip;
+          chipFrag.querySelector<HTMLElement>('[data-chip-jumlah]')!.textContent = String(item.count);
+
+          tautan.addEventListener('click', (event) => {
+            event.preventDefault();
+            filter = berikut;
+            segarkanAlamat();
+            void cari(false);
+          });
+
+          daftar.append(chipFrag);
+        }
+
+        wadahFacet.append(frag);
+      }
+    }
+
+    async function cari(tambah: boolean): Promise<void> {
+      if (!filter.kueri) {
+        bersihkan(wadahHasil);
+        bersihkan(wadahFacet);
+        tombolLanjut.hidden = true;
+        status.textContent = teks('teksMulai');
+        return;
+      }
+
+      const nomor = (putaran += 1);
+      status.textContent = teks('teksMencari');
+
+      let data: HasilPencarian;
+      try {
+        // Tanpa header apa pun, dan tanpa kredensial. Keduanya bukan
+        // penyederhanaan: satu header saja mengubah ini menjadi permintaan
+        // ber-preflight, dan `awcms` sengaja tidak menyajikan `OPTIONS`
+        // (ADR-0107 di sana). Gagalnya terjadi di peramban pembaca, bukan di log
+        // mana pun.
+        const respons = await fetch(
+          alamatKueri(asal, filter, { locale, cursor: tambah && cursor ? cursor : undefined })
+        );
+        const amplop = await respons.json();
+        if (!respons.ok || amplop?.success !== true) throw new Error('gagal');
+        data = amplop.data as HasilPencarian;
+      } catch {
+        if (nomor !== putaran) return;
+        status.textContent = teks('teksGalat');
+        tombolLanjut.hidden = true;
+        return;
+      }
+
+      // Jawaban dari pencarian yang sudah usang dibuang. Tanpa ini, hasil
+      // permintaan lambat untuk kata lama menimpa hasil kata yang sedang
+      // dibaca — dan itu terjadi tepat pada koneksi yang paling sering
+      // mengalaminya.
+      if (nomor !== putaran) return;
+
+      cursor = data.nextCursor;
+      renderHasil(data.items, tambah);
+      renderFacet(data.facets);
+      tombolLanjut.hidden = cursor === null;
+
+      const jumlah = wadahHasil.childElementCount;
+      status.textContent =
+        jumlah === 0 ? teks('teksKosong') : teks('teksHasil').replace('%s', String(jumlah));
+    }
+
+    let jedaSaran: number | undefined;
+
+    async function ambilSaran(): Promise<void> {
+      const kueri = input.value.trim();
+      if (kueri.length < PANJANG_SARAN_MIN) {
+        bersihkan(saranList);
+        return;
+      }
+
+      try {
+        const respons = await fetch(alamatSaran(asal, kueri, locale));
+        const amplop = await respons.json();
+        if (!respons.ok || amplop?.success !== true) return;
+
+        bersihkan(saranList);
+        for (const butir of amplop.data.items as Array<{ title: string }>) {
+          const frag = tplSaran.content.cloneNode(true) as DocumentFragment;
+          frag.querySelector<HTMLOptionElement>('option')!.value = butir.title;
+          saranList.append(frag);
+        }
+      } catch {
+        /* Saran adalah kenyamanan. Kegagalannya tidak boleh menampilkan apa pun:
+           kotaknya tetap bisa diketik dan tombolnya tetap mencari. */
+      }
+    }
+
+    input.addEventListener('input', () => {
+      window.clearTimeout(jedaSaran);
+      jedaSaran = window.setTimeout(() => void ambilSaran(), JEDA_SARAN_MS);
+    });
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      filter = { ...filter, kueri: input.value.trim() };
+      cursor = null;
+      segarkanAlamat();
+      void cari(false);
+    });
+
+    tombolLanjut.addEventListener('click', () => void cari(true));
+
+    void cari(false);
+  }
+</script>
+
+<style>
+  .cari-kepala {
+    margin: 1.5rem 0 1.5rem;
+  }
+
+  .cari-lead {
+    color: var(--text-muted);
+  }
+
+  .cari-form {
+    margin-bottom: 1rem;
+  }
+
+  .cari-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+  }
+
+  .cari-baris {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .cari-input {
+    flex: 1 1 16rem;
+    min-width: 0;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    font: inherit;
+  }
+
+  .cari-tombol {
+    cursor: pointer;
+  }
+
+  .cari-status,
+  .cari-noscript {
+    color: var(--text-muted);
+    margin: 0.75rem 0;
+  }
+
+  .cari-facet-grup {
+    margin-bottom: 0.75rem;
+  }
+
+  .cari-facet-judul {
+    font-size: 0.9rem;
+    margin: 0 0 0.35rem;
+  }
+
+  .cari-facet-daftar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .cari-chip-jumlah {
+    opacity: 0.7;
+    margin-left: 0.35rem;
+  }
+
+  .cari-chip-aktif {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+  }
+
+  .cari-kartu {
+    display: block;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--border-color);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .cari-kartu-judul {
+    margin: 0 0 0.25rem;
+    font-size: 1.05rem;
+  }
+
+  .cari-snippet {
+    margin: 0;
+    color: var(--text-muted);
+  }
+
+  .cari-lanjut {
+    margin-top: 1rem;
+  }
+</style>

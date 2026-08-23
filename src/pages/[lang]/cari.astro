@@ -1,0 +1,22 @@
+---
+/**
+ * Halaman pencarian, locale BERPREFIKS (`/en/cari/`).
+ *
+ * Pasangan `cari.astro` di akar. Keduanya merender komponen yang sama supaya
+ * jumlah halaman kedua locale tetap sama — properti yang dijaga gerbang
+ * resiprositas hreflang di `audit:konten`, dan yang akan patah diam-diam bila
+ * salah satu rute ini punya syarat yang tidak dimiliki pasangannya.
+ *
+ * Segmen `cari` TIDAK diterjemahkan per locale, sama seperti `kategori` dan
+ * `tag`: pembaca yang mengganti bahasa harus mendarat di pencarian yang sedang
+ * ia lihat, bukan di jalur yang tidak dibangun.
+ */
+import HalamanCari from '../../components/views/HalamanCari.astro';
+import { prefixedLocales } from '../../config/site';
+
+export function getStaticPaths() {
+  return prefixedLocales.map((lang) => ({ params: { lang } }));
+}
+---
+
+<HalamanCari />

@@ -343,3 +343,62 @@ msgstr "Halaman tidak ditemukan"
 msgid "404.metaDesc"
 msgstr "Halaman yang Anda cari tidak ada."
 
+msgid "cari.judul"
+msgstr "Pencarian"
+
+msgid "cari.deskripsi"
+msgstr "Cari artikel di situs ini."
+
+msgid "cari.label"
+msgstr "Kata kunci"
+
+msgid "cari.placeholder"
+msgstr "Ketik kata kunci…"
+
+msgid "cari.tombol"
+msgstr "Cari"
+
+msgid "cari.lanjut"
+msgstr "Muat lebih banyak"
+
+msgid "cari.noscript"
+msgstr "Pencarian membutuhkan JavaScript. Aktifkan JavaScript untuk memakainya, atau telusuri lewat kategori dan tag."
+
+msgid "cari.takAktif"
+msgstr "Pencarian belum aktif di situs ini."
+
+msgid "cari.status.mulai"
+msgstr "Ketik kata kunci untuk mulai mencari."
+
+msgid "cari.status.mencari"
+msgstr "Mencari…"
+
+msgid "cari.status.kosong"
+msgstr "Tidak ada artikel yang cocok."
+
+msgid "cari.status.hasil"
+msgstr "%s hasil ditampilkan."
+
+msgid "cari.status.galat"
+msgstr "Pencarian tidak bisa dijalankan saat ini. Coba lagi sebentar lagi."
+
+msgid "cari.facet.type"
+msgstr "Jenis konten"
+
+msgid "cari.facet.channel"
+msgstr "Kanal"
+
+msgid "cari.facet.topic"
+msgstr "Topik"
+
+msgid "cari.facet.institution"
+msgstr "Instansi"
+
+msgid "cari.facet.region"
+msgstr "Wilayah"
+
+msgid "cari.tipe.blog_post"
+msgstr "Artikel"
+
+msgid "cari.tipe.blog_page"
+msgstr "Halaman"
