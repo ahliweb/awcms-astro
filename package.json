@@ -23,6 +23,7 @@
     "audit:konten": "bun scripts/audit-konten.mjs",
     "audit:dokumen": "bun scripts/audit-dokumen.mjs",
     "audit:graf": "bun scripts/audit-graf.mjs",
+    "audit:aset": "bun scripts/audit-aset.mjs",
     "audit:serapan": "bun scripts/audit-serapan.mjs",
     "ukur:skala": "bun scripts/ukur-skala-build.mjs",
     "audit:translation": "bun scripts/check-docs-translation.mjs",
