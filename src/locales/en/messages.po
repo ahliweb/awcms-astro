@@ -447,3 +447,84 @@ msgstr "Third parties"
 
 msgid "privasi.pihakketiga.isi"
 msgstr "This site loads no third-party script, widget, pixel, or share button. Share links are ordinary links: nobody knows you clicked one until you actually arrive."
+
+msgid "buletin.judul"
+msgstr "Newsletter"
+
+msgid "buletin.ajakan"
+msgstr "The news, summarised, in your inbox. Leave at any time through the link in every issue."
+
+msgid "buletin.label"
+msgstr "Email address"
+
+msgid "buletin.placeholder"
+msgstr "name@example.com"
+
+msgid "buletin.tombol"
+msgstr "Subscribe"
+
+msgid "buletin.mengirim"
+msgstr "Sending…"
+
+msgid "buletin.diterima"
+msgstr "If that address can be subscribed, a confirmation email is on its way."
+
+msgid "buletin.takValid"
+msgstr "That does not read as an email address. Check the spelling and try again."
+
+msgid "buletin.terlaluSering"
+msgstr "Too many attempts from this network. Try again in a few minutes."
+
+msgid "buletin.gagal"
+msgstr "The request did not get through. Check your connection and try again."
+
+msgid "buletin.noscript"
+msgstr "Subscribing needs JavaScript: this page is static, and the sign-up is sent straight from your browser."
+
+msgid "buletin.takAktif"
+msgstr "This site does not publish a newsletter."
+
+msgid "buletin.token.takValid"
+msgstr "That link did not arrive intact. Copy the whole address from your email again."
+
+msgid "buletin.token.tanpaToken"
+msgstr "This link arrived without its code. Open the full link from your email again."
+
+msgid "buletin.konfirmasi.judul"
+msgstr "Confirm your subscription"
+
+msgid "buletin.konfirmasi.deskripsi"
+msgstr "One last step: press the button below to confirm this address is really yours."
+
+msgid "buletin.konfirmasi.tombol"
+msgstr "Confirm subscription"
+
+msgid "buletin.konfirmasi.diterima"
+msgstr "If that link was still valid, the subscription is now confirmed."
+
+msgid "buletin.berhenti.judul"
+msgstr "Unsubscribe"
+
+msgid "buletin.berhenti.deskripsi"
+msgstr "Press the button below to stop receiving the newsletter. We ask for nothing else."
+
+msgid "buletin.berhenti.tombol"
+msgstr "Unsubscribe"
+
+msgid "buletin.berhenti.diterima"
+msgstr "If that link was valid, you will not receive any further newsletters."
+
+msgid "privasi.buletin.judul"
+msgstr "Newsletter"
+
+msgid "privasi.buletin.isi"
+msgstr "If you subscribe to the newsletter, your email address is stored in the CMS that publishes this site. It is the only personal data this site ever asks you for, and you type it yourself."
+
+msgid "privasi.buletin.butir1"
+msgstr "A subscription takes effect only after you follow the confirmation link in the email — before that, nothing is recorded as consent."
+
+msgid "privasi.buletin.butir2"
+msgstr "Every issue carries an unsubscribe link that works in one click, with no sign-in and no questions asked."
+
+msgid "privasi.buletin.butir3"
+msgstr "Your address is not used for anything else, and is not shared with any third party."

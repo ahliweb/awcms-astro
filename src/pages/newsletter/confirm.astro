@@ -1,0 +1,12 @@
+---
+/**
+ * `/newsletter/confirm` — tempat tautan konfirmasi email mendarat (ADR-0049).
+ *
+ * Jalurnya ditentukan `awcms` (`NEWSLETTER_CONFIRM_PATH`), bukan repo ini, jadi
+ * ia berbahasa Inggris dan tanpa prefiks locale sementara rute lain di situs ini
+ * tidak. Alasannya ada di `src/components/views/HalamanTokenBuletin.astro`.
+ */
+import HalamanTokenBuletin from '../../components/views/HalamanTokenBuletin.astro';
+---
+
+<HalamanTokenBuletin jenis="konfirmasi" />

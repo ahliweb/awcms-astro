@@ -404,7 +404,7 @@ describe("permukaan awcms yang dipanggil build", () => {
     );
   }
 
-  test("kode sumber memanggil tepat sepuluh permukaan", () => {
+  test("kode sumber memanggil tepat tiga belas permukaan", () => {
     // Daftarnya ditulis eksplisit supaya permukaan BERIKUTNYA memerahkan gerbang
     // ini meskipun penulisnya ingat memperbarui skill — dua pemeriksaan yang bisa
     // salah bersama bukan dua pemeriksaan.
@@ -446,6 +446,22 @@ describe("permukaan awcms yang dipanggil build", () => {
     // `OPTIONS` di sana ada justru untuk preflight yang ditimbulkannya.
     // Menyamakan aturannya dengan dua permukaan pencarian, ke arah mana pun,
     // mematikan salah satunya di peramban.
+    //
+    // Yang kesebelas sampai ketiga belas — `/api/v1/newsletter/subscribe`,
+    // `/confirm`, `/unsubscribe` (ADR-0049 di sini, `awcms` ADR-0103/0118) —
+    // kelas peramban-pembaca yang sama dengan satu perbedaan yang belum pernah
+    // ada di daftar ini: mereka MENULIS. Sebuah kiriman membuat `awcms`
+    // mengirim surat ke alamat yang diketik seseorang, jadi bentuk yang salah
+    // di sini tidak sekadar membuat halaman kosong — ia mengirimkan sesuatu,
+    // atau diam-diam berhenti mengirim, kepada orang yang memintanya.
+    //
+    // Ketiganya duduk di blok `dijanjikan` selama satu hari. Empat hal terukur
+    // di `awcms` membuat endpoint-nya tak terjangkau dari situs statis — tanpa
+    // `OPTIONS`, tanpa `Access-Control-Allow-Origin`, tenant diselesaikan dari
+    // HOST yang adalah CMS itu sendiri, dan tautan konfirmasi dibangun di
+    // origin CMS tempat halamannya tidak ada — dan ADR-0118 di sana menutup
+    // keempatnya lalu membekukan ketiga jalurnya sebagai COMMITTED. Urutan itu
+    // yang membuat baris ini boleh ada.
     const sumber = permukaanDiSumber();
     const dijanjikan = permukaanDijanjikan(SKILL_BERKAS[0].berkas);
 
@@ -465,6 +481,9 @@ describe("permukaan awcms yang dipanggil build", () => {
         "/api/v1/blog/widgets",
         "/api/v1/media/objects",
         "/api/v1/media/public-origin",
+        "/api/v1/newsletter/confirm",
+        "/api/v1/newsletter/subscribe",
+        "/api/v1/newsletter/unsubscribe",
         "/api/v1/site-profile/composed",
         "/api/v1/site-search/query",
         "/api/v1/site-search/suggest"
@@ -512,18 +531,38 @@ describe("permukaan awcms yang dipanggil build", () => {
     });
   }
 
-  test("permukaan yang DIJANJIKAN benar-benar tidak bisa dipanggil hari ini", async () => {
+  test("tidak ada permukaan yang DIJANJIKAN sekaligus sudah bisa dipanggil", async () => {
     // Yang dibeli blok kedua itu. Sebuah jalur boleh duduk di sana hanya
     // selama fiturnya mati; begitu flag-nya menyala, ia permukaan yang
     // dipanggil dan harus pindah ke tabel pertama beserta seluruh kewajibannya.
+    //
+    // Blok itu KOSONG sejak 28 Agustus 2026, dan kosong adalah keadaan yang sah
+    // — bukan alasan untuk menghapus pemeriksaan ini. Yang diperiksa bukan
+    // "ada berapa", melainkan bahwa tidak satu pun yang tersisa di sana sambil
+    // fiturnya sudah menyala. Menuntut isinya tidak kosong akan memerahkan repo
+    // ini setiap kali sebuah janji akhirnya ditepati, yang justru saat tidak
+    // ada yang berbuat salah.
+    const dijanjikan = permukaanDijanjikan(SKILL_BERKAS[0].berkas);
     const { newsletterAktif } = await import("../src/config/site.ts");
 
+    if (dijanjikan.has("/api/v1/newsletter/subscribe")) {
+      assert.equal(
+        newsletterAktif,
+        false,
+        "newsletterAktif menyala sementara /api/v1/newsletter/subscribe masih di " +
+          "blok `dijanjikan`. Pindahkan barisnya ke tabel permukaan yang dipanggil."
+      );
+    }
+
+    // Repo TEMPLATE ini sendiri tidak menyatakan `SITE_NEWSLETTER`, jadi
+    // formulirnya tidak terbit di sini apa pun keadaan blok di atas. Sebuah
+    // SITUS turunan yang menyatakannya adalah yang menerbitkannya — dan di sana
+    // ketiga jalurnya sudah ada di tabel yang dipanggil, tempat kewajibannya
+    // ikut terbaca.
     assert.equal(
       newsletterAktif,
       false,
-      "newsletterAktif menyala sementara /api/v1/newsletter/subscribe masih di " +
-        "blok `dijanjikan`. Pindahkan barisnya ke tabel permukaan yang dipanggil " +
-        "— dan pastikan awcms sudah membekukan jalurnya DAN mengekspor OPTIONS."
+      "template ini menerbitkan formulir buletin tanpa SITE_NEWSLETTER dinyatakan"
     );
   });
 });

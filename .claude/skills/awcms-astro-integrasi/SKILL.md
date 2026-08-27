@@ -24,20 +24,25 @@ place a component touches the result.
 | `publishedDate` and `updatedDate` are read from **one row** | Paired across rows → `dateModified` precedes `datePublished` on valid content, and the crawler discards the whole block |
 | Silently truncating data is a **failure**, not an optimisation | See every row above |
 
-## Surfaces — TEN that are called, two that are not
+## Surfaces — THIRTEEN that are called, three that are not
 
-**Three of the ten are a different CLASS, and reading past that is how the next
-one lands wrong.** `/api/v1/site-search/query`, `/suggest` and
-`/api/v1/analytics/collect` are called from the READER's browser at runtime; the
-other seven are called by `astro build` from a machine holding a read-only
-credential.
+**Six of the thirteen are a different CLASS, and reading past that is how the
+next one lands wrong.** `/api/v1/site-search/query`, `/suggest`,
+`/api/v1/analytics/collect` and the three `/api/v1/newsletter/*` paths are
+called from the READER's browser at runtime; the other seven are called by
+`astro build` from a machine holding a read-only credential.
 
-**And the three do not share one rule.** The two search paths must carry NO
-header — there is no `OPTIONS` handler behind them. The beacon MUST carry one
-(`content-type: application/json`), because `checkOrigin` over there refuses a
-form-like content type and the `OPTIONS` handler exists for the preflight that
-follows. Making them consistent, in either direction, kills one of them in the
-browser. The gate below cannot see the
+**One of the six WRITES**, and it is the only one that does: a subscribe POST
+makes `awcms` send mail to an address somebody typed. A wrong shape there does
+not leave a page empty — it sends something, or silently stops sending, to a
+person who asked for it (ADR-0049).
+
+**And the six do not share one rule.** The two search paths must carry NO
+header — there is no `OPTIONS` handler behind them. The beacon and the three
+newsletter paths MUST carry one (`content-type: application/json`), because
+`checkOrigin` over there refuses a form-like content type and their `OPTIONS`
+handlers exist for the preflight that follows. Making them consistent, in either
+direction, kills one of them in the browser. The gate below cannot see the
 difference — it extracts string literals from `src/`, and who executes them is
 not something a regex can know. What the difference decides is where a broken
 contract surfaces: in a stranger's browser, silently, rather than in a build
@@ -130,9 +135,12 @@ warning reaches the editor who can fix it.
 | `/api/v1/site-search/query` | `src/lib/pencarian.ts` — the reader's search results. The ONLY surface called from the READER's browser at runtime rather than from the build: no headers, no credentials, tenant from the `Origin` (`awcms` ADR-0107) |
 | `/api/v1/site-search/suggest` | `src/lib/pencarian.ts` — the typeahead behind the same box, same origin rule, same anonymity |
 | `/api/v1/analytics/collect` | `src/lib/beacon.ts` — one page view, posted from the READER's browser WITHOUT credentials so the `awcms_visitor_key` cookie never lands (ADR-0044). The only request in this repo that carries a header, and it MUST: `checkOrigin` over there refuses a form-like content type, so only `application/json` gets through — which is what the `OPTIONS` handler exists for |
+| `/api/v1/newsletter/subscribe` | `src/lib/newsletter.ts` — a reader subscribes from the site's own footer form. The FIRST call in this repo that WRITES from a stranger's browser: it makes `awcms` send mail to an address somebody typed. Carries `content-type: application/json` and no credentials; the tenant comes from the `Origin`, verified against `awcms_tenant_domains` (`awcms` ADR-0118) |
+| `/api/v1/newsletter/confirm` | `src/lib/newsletter.ts`, from the page at `/newsletter/confirm` — where the link in the confirmation email lands. This is where consent is recorded, so the token is posted on a CLICK and never on page load: a link scanner in a mail client would otherwise record consent no human ever gave |
+| `/api/v1/newsletter/unsubscribe` | `src/lib/newsletter.ts`, from the page at `/newsletter/unsubscribe`. Same shape, and `awcms` PRD §30 makes it the one surface that must never ask a reader to prove who they are first |
 <!-- permukaan:dipanggil:selesai -->
 
-### Promised, not yet called — ONE surface
+### Promised, not yet called — NONE today
 
 `awcms`'s own contract keeps CONSUMED and COMMITTED apart, and its reason
 transfers exactly: *"a promise and a dependency both deserve stability, but they
@@ -143,10 +151,16 @@ it is switched off. The gate over the table above refuses a path that is in the
 source and in neither block, so a surface still cannot land silently; what it can
 now do is land as a promise rather than as a lie about what the build calls.
 
+**The block is empty, and that is a state rather than an omission.** Its one
+entry, `/api/v1/newsletter/subscribe`, sat here from 27 to 28 August 2026 while
+four measured things in `awcms` made the endpoint unreachable from a static
+site. `awcms` ADR-0118 closed all four and froze the three newsletter paths as
+COMMITTED, so they moved up into the called table above — in that order, which
+is the order both repos' Definition of Done requires.
+
 <!-- permukaan:dijanjikan:mulai -->
 | Surface promised | Blocked on |
 | --- | --- |
-| `/api/v1/newsletter/subscribe` | TWO things in `awcms`, both read off its source rather than inferred. **(1)** The path is not in its `CONSUMER_PATHS`, so its shape is not frozen — and every surface since `/site-profile/composed` has followed the order "COMMITTED there first, called here second". **(2)** `src/pages/api/v1/newsletter/subscribe.ts` exports **no `OPTIONS`**, while `analytics/collect.ts` does; its contract requires `application/json`, which makes every cross-origin submission preflighted, and a preflight with no handler never reaches the endpoint. `src/lib/newsletter.ts` is written, tested against those refusals, and `newsletterAktif` is hard-coded `false` |
 <!-- permukaan:dijanjikan:selesai -->
 
 ```
@@ -386,6 +400,9 @@ predating this consumer, and this repo has **not** examined them systematically
 | 0114 | diserap | The edge owns the legacy 301s, and an article is found by its id. 67 rules replayed against this repo's real built server: 404 on every one, zero `Location` headers. This origin has no redirect capability at all |
 | 0115 | diserap | The migrated archive lands on ONE origin — `/{section}/{slug}/` here — and the importer DECLARES the section into `content_json.awcmsAstro.kategori`, which is why [ADR-0045](../../../docs/adr/0045-a-section-comes-from-the-cms-vocabulary-not-from-a-sidecar-only-we-write.md) keeps the sidecar winning |
 | 0116 | diserap | The legacy site is a feature reference, not a migration source. Withdraws the obligation 0113–0115 serve while leaving their mechanics standing — without this row those three read as live work orders |
+
+| 0117 | diperiksa | `:latest` moves only after the release environment's approval signs it. Entirely `awcms`'s own release workflow — this repo builds no container from that pipeline and pulls no `:latest` — so nothing here changes. Recorded because silence and irrelevance read identically |
+| 0118 | diserap | The newsletter endpoints answer a cross-origin browser and resolve that origin's tenant, the four blockers this repo measured are closed, and the three paths are frozen as COMMITTED. Absorbed by [ADR-0049](../../../docs/adr/0049-a-reader-may-subscribe-and-the-first-write-from-a-strangers-browser.md), which turns the caller on |
 
 <!-- serapan:adr-awcms:selesai -->
 

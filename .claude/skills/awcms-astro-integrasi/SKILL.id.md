@@ -5,7 +5,7 @@ description: Kontrak integrasi awcms-astro ↔ awcms — tenant dari token mesin
 
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](SKILL.md)
 
-<!-- i18n-source-hash: sha256:e53eee1a6403d6bc8e0cb02dde2ff6c8b61e51ba759ecd60e01e00486793e16e -->
+<!-- i18n-source-hash: sha256:d5f4a9f242e1867d5f65087f0fc9d04dce13deedae999a55ba1ac07a56087923 -->
 
 # awcms-astro — kontrak integrasi dengan `awcms`
 
@@ -26,19 +26,25 @@ satu-satunya tempat komponen menyentuh hasilnya.
 | `publishedDate` dan `updatedDate` dibaca dari **satu baris** | Dipasangkan lintas baris → `dateModified` mendahului `datePublished` pada konten yang sah, dan crawler membuang seluruh bloknya |
 | Diam-diam memotong data = **kegagalan**, bukan optimasi | Lihat seluruh baris di atas |
 
-## Permukaan — SEPULUH yang dipanggil, dua yang tidak
+## Permukaan — TIGA BELAS yang dipanggil, tiga yang tidak
 
-**Tiga dari sepuluh itu BERBEDA KELAS, dan melewatkannya adalah bagaimana yang
-berikutnya mendarat salah.** `/api/v1/site-search/query`, `/suggest`, dan
-`/api/v1/analytics/collect` dipanggil dari peramban PEMBACA saat runtime; tujuh
-lainnya dipanggil `astro build` dari mesin yang memegang kredensial baca-saja.
+**Enam dari tiga belas itu BERBEDA KELAS, dan melewatkannya adalah bagaimana
+yang berikutnya mendarat salah.** `/api/v1/site-search/query`, `/suggest`,
+`/api/v1/analytics/collect`, dan ketiga jalur `/api/v1/newsletter/*` dipanggil
+dari peramban PEMBACA saat runtime; tujuh lainnya dipanggil `astro build` dari
+mesin yang memegang kredensial baca-saja.
 
-**Dan ketiganya TIDAK berbagi satu aturan.** Kedua jalur pencarian tidak boleh
-membawa header — tidak ada handler `OPTIONS` di belakangnya. Beacon HARUS
-membawa satu (`content-type: application/json`), karena `checkOrigin` di sana
-menolak tipe isi mirip form dan handler `OPTIONS` ada justru untuk preflight yang
-menyusul. Menyeragamkannya, ke arah mana pun, mematikan salah satunya di
-peramban. Gerbang di bawah
+**Satu dari keenamnya MENULIS**, dan hanya satu itu: sebuah kiriman langganan
+membuat `awcms` mengirim surat ke alamat yang diketik seseorang. Bentuk yang
+salah di sana tidak membuat halaman kosong — ia mengirimkan sesuatu, atau
+diam-diam berhenti mengirim, kepada orang yang memintanya (ADR-0049).
+
+**Dan keenamnya TIDAK berbagi satu aturan.** Kedua jalur pencarian tidak boleh
+membawa header — tidak ada handler `OPTIONS` di belakangnya. Beacon dan ketiga
+jalur buletin HARUS membawa satu (`content-type: application/json`), karena
+`checkOrigin` di sana menolak tipe isi mirip form dan handler `OPTIONS` mereka
+ada justru untuk preflight yang menyusul. Menyeragamkannya, ke arah mana pun,
+mematikan salah satunya di peramban. Gerbang di bawah
 tidak bisa melihat bedanya — ia mengekstrak string literal dari `src/`, dan
 siapa yang mengeksekusinya bukan sesuatu yang bisa diketahui sebuah regex. Yang
 ditentukan perbedaan itu adalah DI MANA kontrak yang patah muncul: di peramban
@@ -134,25 +140,35 @@ sementara peringatannya sampai ke editor yang bisa memperbaikinya.
 | `/api/v1/site-search/query` | `src/lib/pencarian.ts` — hasil pencarian pembaca. SATU-SATUNYA permukaan yang dipanggil dari peramban PEMBACA saat runtime, bukan dari build: tanpa header, tanpa kredensial, tenant dari `Origin` (`awcms` ADR-0107) |
 | `/api/v1/site-search/suggest` | `src/lib/pencarian.ts` — typeahead di balik kotak yang sama, aturan origin yang sama, anonimitas yang sama |
 | `/api/v1/analytics/collect` | `src/lib/beacon.ts` — satu kunjungan halaman, dikirim dari peramban PEMBACA TANPA kredensial sehingga cookie `awcms_visitor_key` tidak pernah mendarat (ADR-0044). Satu-satunya permintaan di repo ini yang membawa header, dan ia HARUS: `checkOrigin` di sana menolak tipe isi mirip form, jadi hanya `application/json` yang lolos — dan untuk itulah handler `OPTIONS` ada |
+| `/api/v1/newsletter/subscribe` | `src/lib/newsletter.ts` — pembaca berlangganan dari formulir di footer situs. Panggilan PERTAMA di repo ini yang MENULIS dari peramban orang asing: ia membuat `awcms` mengirim surat ke alamat yang diketik seseorang. Membawa `content-type: application/json` dan tanpa kredensial; tenant-nya datang dari `Origin`, diverifikasi terhadap `awcms_tenant_domains` (`awcms` ADR-0118) |
+| `/api/v1/newsletter/confirm` | `src/lib/newsletter.ts`, dari halaman `/newsletter/confirm` — tempat tautan di email konfirmasi mendarat. Di sinilah persetujuan dicatat, jadi tokennya dikirim saat DIKLIK dan tidak pernah saat halaman dimuat: pemindai tautan di klien email akan mencatat persetujuan yang tidak pernah diberikan manusia |
+| `/api/v1/newsletter/unsubscribe` | `src/lib/newsletter.ts`, dari halaman `/newsletter/unsubscribe`. Bentuk yang sama, dan PRD §30 `awcms` membuatnya satu-satunya permukaan yang tidak boleh menuntut pembaca membuktikan identitasnya lebih dulu |
 <!-- permukaan:dipanggil:selesai -->
 
-### Dijanjikan, belum dipanggil — SATU permukaan
+### Dijanjikan, belum dipanggil — TIDAK ADA hari ini
 
-Kontrak `awcms` sendiri memisahkan CONSUMED dari COMMITTED, dan alasannya
-berpindah persis: *"sebuah janji dan sebuah ketergantungan sama-sama layak
-stabil, tetapi keduanya gagal dengan cara berbeda."* Blok ini daftar kedua itu,
-di sisi sini.
+Kontrak `awcms` sendiri memisahkan CONSUMED dan COMMITTED, dan alasannya
+berpindah persis: *"sebuah janji dan sebuah dependensi sama-sama pantas stabil,
+tetapi keduanya gagal dengan cara yang berbeda."* Blok ini daftar kedua itu, di
+sisi sini.
 
-Sebuah jalur di sini muncul di `src/` dan **tidak dipanggil** — fitur yang akan
-memanggilnya dimatikan. Gerbang atas tabel di atasnya menolak jalur yang ada di
+Sebuah jalur di sini ADA di `src/` dan **tidak dipanggil** — fitur yang akan
+memanggilnya sedang mati. Gerbang atas tabel di atas menolak jalur yang ada di
 sumber dan tidak ada di kedua blok, jadi sebuah permukaan tetap tidak bisa
-mendarat diam-diam; yang kini bisa dilakukannya adalah mendarat sebagai janji
+mendarat diam-diam; yang kini bisa ia lakukan adalah mendarat sebagai janji
 alih-alih sebagai kebohongan tentang apa yang dipanggil build.
 
+**Bloknya kosong, dan itu sebuah keadaan, bukan kelalaian.** Satu-satunya
+entrinya, `/api/v1/newsletter/subscribe`, duduk di sini dari 27 ke 28 Agustus
+2026 selama empat hal terukur di `awcms` membuat endpoint-nya tak terjangkau
+dari situs statis. ADR-0118 `awcms` menutup keempatnya dan membekukan ketiga
+jalur buletin sebagai COMMITTED, jadi ketiganya naik ke tabel yang dipanggil di
+atas — dalam urutan itu, yang merupakan urutan yang dituntut Definition of Done
+kedua repo.
+
 <!-- permukaan:dijanjikan:mulai -->
-| Permukaan yang dijanjikan | Tertahan pada |
+| Permukaan dijanjikan | Tertahan pada |
 | --- | --- |
-| `/api/v1/newsletter/subscribe` | DUA hal di `awcms`, keduanya dibaca dari sumbernya alih-alih disimpulkan. **(1)** Jalurnya tidak ada di `CONSUMER_PATHS`-nya, jadi bentuknya belum dibekukan — dan setiap permukaan sejak `/site-profile/composed` mengikuti urutan "COMMITTED di sana dulu, dipanggil di sini kemudian". **(2)** `src/pages/api/v1/newsletter/subscribe.ts` TIDAK mengekspor `OPTIONS`, sementara `analytics/collect.ts` melakukannya; kontraknya menuntut `application/json`, yang membuat setiap pengiriman lintas-origin ter-preflight, dan preflight tanpa handler tidak pernah sampai ke endpoint-nya. `src/lib/newsletter.ts` sudah ditulis, diuji terhadap penolakan itu, dan `newsletterAktif` di-hard-code `false` |
 <!-- permukaan:dijanjikan:selesai -->
 
 ```
@@ -327,7 +343,7 @@ dua salinan yang boleh menyimpang, dan yang menyimpang selalu yang tidak dibaca
 mesin. Yang ada di sini penjelasannya; yang ada di sana buku besarnya.
 
 Ringkasannya per 27 Agustus 2026: **lantai ADR-0049**, 68 ADR bervonis sampai
-ADR-0116, **nol** bervonis `belum`. Lantainya ADR-0049 karena di situlah
+ADR-0118, **nol** bervonis `belum`. Lantainya ADR-0049 karena di situlah
 hubungannya bermula — kredensial mesin dan serah-terima sesi BFF adalah keputusan
 `awcms` pertama yang melibatkan repo ini. Di bawahnya, ADR 0000–0048 adalah
 fondasi platform yang mendahului konsumen ini, dan repo ini **belum**
