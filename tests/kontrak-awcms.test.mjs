@@ -154,7 +154,16 @@ function buatPost(
     // menirukan sebuah awcms yang MENDAHULUI ADR itu dan tidak mengirim field
     // ini sama sekali. Itu keadaan yang harus tetap terbangun, dan sebuah
     // fixture yang selalu membawa field-nya tidak akan pernah mengujinya.
-    authorByline
+    authorByline,
+    // Seksi artikel ini, dan bagaimana ia dinyatakan.
+    //
+    // `kategori` bawaannya `"panduan"` sehingga setiap kasus lama di berkas ini
+    // menguji hal yang sama persis. `null` menghilangkan sidecar `awcmsAstro`
+    // SELURUHNYA — bukan menyetelnya kosong — dan itulah bentuk sebuah post
+    // yang ditulis editor di layar admin `awcms`, satu-satunya bentuk yang tak
+    // pernah dilihat suite ini sampai sekarang.
+    kategori = "panduan",
+    termIds
   } = {}
 ) {
   return {
@@ -162,7 +171,10 @@ function buatPost(
     title: `Artikel ${index}`,
     slug: `artikel-${index}`,
     excerpt: null,
-    contentJson: { awcmsAstro: { schemaVersion: 1, urutan: index, kategori: "panduan" } },
+    contentJson:
+      kategori === null
+        ? { blocks: [] }
+        : { awcmsAstro: { schemaVersion: 1, urutan: index, kategori } },
     status,
     visibility,
     metaDescription: `Meta ${index}`,
@@ -170,6 +182,7 @@ function buatPost(
     locale,
     ...(grup === undefined ? {} : { translationGroupId: grup }),
     ...(authorByline === undefined ? {} : { authorByline }),
+    ...(termIds === undefined ? {} : { termIds }),
     publishedAt,
     updatedAt,
     createdAt: `2026-07-01T00:00:${String(index).padStart(2, "0")}.000Z`
@@ -201,10 +214,29 @@ function ringkas(post) {
  * `jejak` mencatat setiap permintaan supaya tes bisa membuktikan tidak ada
  * lagi satu permintaan per post (N+1 yang dulu ada).
  */
-function pasangFetchTiruan(posts, { ukuranHalaman = 100, jejak = [], media = new Map() } = {}) {
+function pasangFetchTiruan(
+  posts,
+  { ukuranHalaman = 100, jejak = [], media = new Map(), term = [] } = {}
+) {
   globalThis.fetch = async (input) => {
     const url = new URL(String(input));
     jejak.push(url.pathname + url.search);
+
+    // Kosakata taksonomi. Sejak seksi sebuah artikel bisa datang dari term
+    // `awcms` — bukan hanya dari sidecar milik repo ini — `content.ts`
+    // membaca endpoint ini di setiap build, jadi double ini harus tahu ia ada.
+    //
+    // Bawaannya larik KOSONG dan itu bukan kemalasan: sebuah tenant yang tidak
+    // memakai kategori sama sekali adalah keadaan yang sah, dan seluruh kasus
+    // lama di berkas ini menempatkan artikelnya lewat sidecar. Bawaan yang
+    // berisi term akan membuat kasus-kasus itu lulus lewat jalur yang bukan
+    // jalur yang mereka uji.
+    if (url.pathname === "/api/v1/blog/terms") {
+      return Response.json({
+        success: true,
+        data: { terms: term, nextCursor: null }
+      });
+    }
 
     if (url.pathname === "/api/v1/media/objects") {
       const ids = (url.searchParams.get("ids") ?? "").split(",").filter(Boolean);
@@ -477,7 +509,29 @@ describe("traversal build feed", () => {
 
     const perId = jejak.filter((j) => /\/api\/v1\/blog\/posts\/[^?]/.test(j));
     assert.deepEqual(perId, [], "tidak boleh ada permintaan per post");
-    assert.equal(jejak.length, 1, "satu halaman = satu permintaan");
+
+    // Dihitung PER ENDPOINT, bukan sebagai total.
+    //
+    // Asersi ini semula berbunyi `jejak.length === 1`, dan itu berhenti benar
+    // saat seksi artikel mulai dibaca dari taksonomi: build kini juga memanggil
+    // `/blog/terms` sekali. Melonggarkannya menjadi "dua" akan membuat ia
+    // berhenti menjaga apa pun — angka yang naik satu setiap kali seseorang
+    // menambah permintaan.
+    //
+    // Yang dijaga adalah bentuknya: daftar post ditelusuri sekali per halaman,
+    // dan kosakata diambil sekali untuk seluruh build betapa pun banyak tab
+    // yang meminta artikel. Keduanya BUKAN per-post, dan itulah yang tidak
+    // boleh kembali.
+    const daftarPost = jejak.filter((j) => j.startsWith("/api/v1/blog/posts?"));
+    const daftarTerm = jejak.filter((j) => j.startsWith("/api/v1/blog/terms"));
+
+    assert.equal(daftarPost.length, 1, "satu halaman post = satu permintaan");
+    assert.equal(daftarTerm.length, 1, "kosakata diambil sekali per build");
+    assert.equal(
+      jejak.length,
+      daftarPost.length + daftarTerm.length,
+      `tidak ada permintaan lain yang diharapkan; jejak: ${jejak.join(", ")}`
+    );
   });
 
   test("adapter meminta view=full atas urutan yang stabil", async () => {
@@ -1375,5 +1429,167 @@ describe("kartu situs", () => {
     assert.equal(kartu.width, SOCIAL_IMAGE_WIDTH);
     assert.equal(kartu.height, SOCIAL_IMAGE_HEIGHT);
     assert.equal(kartu.alt, "Kartu berbagi situs");
+  });
+});
+
+/**
+ * Seksi sebuah artikel: dari mana ia datang, dan apa yang terjadi bila tidak
+ * datang dari mana pun.
+ *
+ * Sampai perbaikan ini, seksi HANYA dibaca dari `contentJson.awcmsAstro.kategori`
+ * — sidecar milik repo ini yang jalur authoring `awcms` tidak pernah menulisnya.
+ * Setiap artikel yang ditulis editor di layar admin `awcms` tidak pernah terbit:
+ * bukan salah render, tidak dibangun sama sekali, dengan build hijau.
+ *
+ * Suite ini tidak bisa melihatnya karena `buatPost` menulis sidecar pada SETIAP
+ * baris fixture — sehingga satu-satunya bentuk yang gagal di produksi adalah
+ * satu-satunya bentuk yang tidak pernah dihasilkan double-nya.
+ */
+describe("seksi artikel datang dari taksonomi, bukan hanya dari sidecar", () => {
+  let getArticles;
+  let resetContentCacheForTests;
+
+  const TERM_PANDUAN = {
+    id: "aaaaaaaa-0000-4000-8000-000000000001",
+    taxonomyType: "category",
+    name: "Panduan",
+    slug: "panduan"
+  };
+  const TERM_ASING = {
+    id: "aaaaaaaa-0000-4000-8000-000000000002",
+    taxonomyType: "category",
+    name: "Tak Dipetakan",
+    slug: "tak-dipetakan"
+  };
+
+  beforeEach(async () => {
+    process.env.AWCMS_API_URL = "http://awcms.uji";
+    process.env.AWCMS_API_TOKEN = TOKEN;
+    delete process.env.AWCMS_TENANT_CODE;
+    delete process.env.AWCMS_DEFAULT_TENANT_CODE;
+
+    ({ getArticles, resetContentCacheForTests } = await import("../src/lib/content.ts"));
+    resetContentCacheForTests();
+  });
+
+  afterEach(() => {
+    globalThis.fetch = fetchAsli;
+  });
+
+  test("artikel TANPA sidecar, hanya dengan term awcms, akhirnya terbit", async () => {
+    // Inilah bentuk yang dihasilkan layar admin `awcms`, dan inilah kasus yang
+    // sebelumnya membangun NOL halaman.
+    const posts = [buatPost(0, { kategori: null, termIds: [TERM_PANDUAN.id] })];
+    pasangFetchTiruan(posts, { term: [TERM_PANDUAN] });
+
+    const artikel = await getArticles("panduan", "id");
+
+    assert.equal(artikel.length, 1);
+    assert.equal(artikel[0].slug, "artikel-0");
+    // Seksinya harus ikut sampai ke kontrak komponen: `kategori` kosong akan
+    // membuat breadcrumb tidak menyebut apa pun dan `urutanSeksiTab("")`
+    // menjawab "manual", sehingga seksi berita diam-diam merender sebagai
+    // seksi rujukan.
+    assert.equal(artikel[0].entry.data.kategori, "panduan");
+  });
+
+  test("artikel DENGAN sidecar tetap berperilaku persis seperti sebelumnya", async () => {
+    const posts = [buatPost(0)];
+    pasangFetchTiruan(posts, { term: [TERM_PANDUAN] });
+
+    const artikel = await getArticles("panduan", "id");
+
+    assert.equal(artikel.length, 1);
+    assert.equal(artikel[0].entry.data.kategori, "panduan");
+  });
+
+  test("sidecar MENANG atas term yang tidak sepakat dengannya", async () => {
+    // `awcms` ADR-0115 §4 MENOLAK mengimpor baris yang tak bisa ditempatkan
+    // `--section-map`-nya. Membiarkan taksonomi menimpa instruksi eksplisit itu
+    // akan membuat sebuah migrasi mendarat di tempat yang bukan pilihan
+    // operatornya.
+    const posts = [
+      buatPost(0, { kategori: "panduan", termIds: [TERM_ASING.id] })
+    ];
+    pasangFetchTiruan(posts, { term: [TERM_PANDUAN, TERM_ASING] });
+
+    assert.equal((await getArticles("panduan", "id")).length, 1);
+  });
+
+  test("post yang tak tertempatkan DISEBUT namanya, dan build tetap lanjut", async () => {
+    const peringatan = [];
+    const warnAsli = console.warn;
+    console.warn = (...args) => peringatan.push(args.join(" "));
+
+    try {
+      const posts = [
+        buatPost(0, { kategori: null, termIds: [TERM_PANDUAN.id] }),
+        buatPost(1, { kategori: null, termIds: [TERM_ASING.id] })
+      ];
+      pasangFetchTiruan(posts, { term: [TERM_PANDUAN, TERM_ASING] });
+
+      const artikel = await getArticles("panduan", "id");
+
+      // Satu artikel salah tempat tidak boleh menghentikan seluruh redaksi
+      // menerbitkan.
+      assert.equal(artikel.length, 1);
+
+      const teks = peringatan.join("\n");
+      assert.match(teks, /artikel-1/);
+      assert.match(teks, /tak-dipetakan/);
+      // Yang hilang harus terbaca sebagai HALAMAN yang tidak dibangun, bukan
+      // sebagai catatan kecil tentang sebuah field.
+      assert.match(teks, /no page is built/i);
+    } finally {
+      console.warn = warnAsli;
+    }
+  });
+
+  test("NOL dari N tertempatkan menggagalkan build, alih-alih menerbitkan situs kosong", async () => {
+    // Bukan kesalahan tingkat artikel. Penyebab yang lazim adalah `termSlugs`
+    // menyebut kosakata yang tidak dipakai tenant ini, kredensial build tanpa
+    // `blog_content.taxonomies.read`, atau tab yang diganti nama sementara
+    // `site.ts` tidak. Ketiganya menerbitkan SITUS KOSONG dari build hijau.
+    const posts = [
+      buatPost(0, { kategori: null, termIds: [TERM_ASING.id] }),
+      buatPost(1, { kategori: null, termIds: [TERM_ASING.id] })
+    ];
+    pasangFetchTiruan(posts, { term: [TERM_ASING] });
+
+    await assert.rejects(
+      () => getArticles("panduan", "id"),
+      /All 2 published post\(s\) belong to no section/
+    );
+  });
+
+  test("kosakata KOSONG bukan kegagalan — situs yang hanya memakai sidecar tetap terbangun", async () => {
+    // Sebuah tenant yang tidak memakai kategori sama sekali adalah keadaan yang
+    // sah, dan `taksonomi.ts` memperingatkan lalu mengembalikan `[]` pada 403
+    // atau 404. Situs yang menempatkan artikelnya lewat sidecar harus tetap
+    // bekerja persis seperti sebelum penempatan taksonomi ada.
+    const posts = [buatPost(0)];
+    pasangFetchTiruan(posts, { term: [] });
+
+    assert.equal((await getArticles("panduan", "id")).length, 1);
+  });
+
+  test("respons /blog/terms tanpa field `terms` gagal dengan pesan yang menyebut endpoint-nya", async () => {
+    // Sebelumnya ini meledak sebagai `Spread syntax requires ...iterable` dari
+    // dalam `taksonomi.ts` — pesan yang tidak menyebut endpoint, tenant, maupun
+    // apa yang harus diperbaiki.
+    const posts = [buatPost(0)];
+    pasangFetchTiruan(posts);
+    const tiruan = globalThis.fetch;
+    globalThis.fetch = async (input) => {
+      if (String(input).includes("/api/v1/blog/terms")) {
+        return Response.json({ success: true, data: { nextCursor: null } });
+      }
+      return tiruan(input);
+    };
+
+    await assert.rejects(
+      () => getArticles("panduan", "id"),
+      /GET \/api\/v1\/blog\/terms answered without a "terms" array/
+    );
   });
 });

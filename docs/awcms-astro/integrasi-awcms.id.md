@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](integrasi-awcms.md)
 
-<!-- i18n-source-hash: sha256:5d50be119ea0c026ce6d49fefe73459a7d63452dbc1778d0b214f331c40d963f -->
+<!-- i18n-source-hash: sha256:658693c04d6dcab08678000e8615420a71d84f4f0e4eaed99506119409aa385b -->
 
 # Integrasi awcms-astro → awcms
 
@@ -67,13 +67,37 @@ Sisi kanan mengacu tabel `awcms_blog_posts` dan modul `blog-content` di awcms.
 | badan markdown | `content_json` + `content_text` | `content_text` dipakai `search_vector` |
 | `publishedDate` | `published_at` | Wajib ada — adapter menolak membangun post `published` tanpa kolom ini |
 | `updatedDate` | `updated_at` | Bergerak pada SETIAP tulis, termasuk transisi status. Dibaca dari baris yang sama dengan `publishedDate` |
-| `kategori` (tab) | `awcms_blog_terms` bertaksonomi kategori | |
+| `kategori` (tab) | `awcms_blog_terms` bertaksonomi kategori | **Inilah cara seksi benar-benar diselesaikan sekarang** — lihat di bawah. Sidecar `awcmsAstro.kategori` dipertahankan sebagai penimpa eksplisit ([ADR-0045](../adr/0045-a-section-comes-from-the-cms-vocabulary-not-from-a-sidecar-only-we-write.id.md)) |
 | `tags[]` | `awcms_blog_terms` + `awcms_blog_post_terms` | |
 | locale folder | `locale` | |
 | pasangan antar locale | `translation_group_id` | Satu grup per slug; versi `id` tetap sumber kebenaran |
 | gambar artikel | `featured_media_id` | Lewat modul `media-library` |
 | kartu share | `seo_image_media_id` | Kolom terpisah, sudah ada — dipakai apa adanya |
 | canonical | `canonical_url` | |
+
+### Bagaimana seksi diselesaikan (ADR-0045)
+
+Seksi sebuah artikel datang dari **taksonomi** tenant, bukan dari kunci yang
+hanya repo ini yang menulisnya.
+
+1. Tiap tab di `src/config/site.ts` menyatakan `termSlugs` — slug kategori yang
+   menempatkan artikel di dalamnya. Bawaannya slug tab itu sendiri, dan tetap
+   ditulis, karena kasus yang menarik adalah situs yang seksinya `berita`
+   sementara editornya mengarsipkan di bawah `berita-daerah` dan `berita-kota`.
+2. `contentJson.awcmsAstro.kategori`, bila ada, **MENANG**. Ia instruksi yang
+   disengaja dari satu-satunya alat yang menulisnya —
+   `blog:legacy:import --section-map` (`awcms` ADR-0115 §2), yang MENOLAK
+   mengimpor baris yang tak bisa ditempatkan petanya.
+3. Post yang tidak mendarat di tab mana pun **disebut namanya di keluaran build**
+   dan tidak diterbitkan. Bila SETIAP post tidak mendarat di tab mana pun dari
+   N > 0, build **GAGAL**: itu bukan kesalahan penyuntingan melainkan `termSlugs`
+   yang menyebut kosakata yang salah, kredensial tanpa
+   `blog_content.taxonomies.read`, atau tab yang diganti nama — dan ketiganya
+   menerbitkan situs kosong dari build hijau.
+
+Sebelum ADR-0045 hanya langkah 2 yang ada, dan karena layar authoring awcms tidak
+pernah menulis kunci itu, **setiap artikel yang ditulis editor terbuang dari
+build tanpa satu pun kegagalan di mana pun.**
 
 ### Field khas domain — tidak punya kolom
 

@@ -68,9 +68,9 @@ export function isLocale(value: string): value is Locale {
  * multilingual.
  */
 export const tabs = [
-  { slug: "panduan", label: "Panduan", urutanSeksi: "manual" },
-  { slug: "layanan", label: "Layanan", urutanSeksi: "manual" },
-  { slug: "informasi", label: "Informasi", urutanSeksi: "manual" }
+  { slug: "panduan", label: "Panduan", urutanSeksi: "manual", termSlugs: ["panduan"] },
+  { slug: "layanan", label: "Layanan", urutanSeksi: "manual", termSlugs: ["layanan"] },
+  { slug: "informasi", label: "Informasi", urutanSeksi: "manual", termSlugs: ["informasi"] }
 ] as const satisfies readonly TabDef[];
 
 export type TabSlug = (typeof tabs)[number]["slug"];
@@ -104,7 +104,47 @@ export type UrutanSeksi = "manual" | "terbaru";
  * `astro check`: the element type becomes a union, and `tab.urutanSeksi` is
  * then a property that does not exist on some members of it.
  */
-export type TabDef = { slug: string; label: string; urutanSeksi: UrutanSeksi };
+export type TabDef = {
+  slug: string;
+  label: string;
+  urutanSeksi: UrutanSeksi;
+  /**
+   * Slug term `awcms` yang menempatkan sebuah artikel di seksi ini.
+   *
+   * ## Kenapa field ini ada, dan kenapa ia bukan kenyamanan
+   *
+   * Sebelum ini, seksi sebuah artikel HANYA dibaca dari
+   * `contentJson.awcmsAstro.kategori` — sebuah sidecar milik repo ini yang
+   * jalur authoring `awcms` tidak pernah menulisnya. Satu-satunya penulisnya di
+   * seluruh CMS adalah `blog:legacy:import --section-map`, sebuah CLI sekali
+   * jalan. Akibatnya: setiap artikel yang ditulis editor di layar admin `awcms`
+   * TIDAK PERNAH TERBIT di situs ini. Bukan salah render — tidak dibangun sama
+   * sekali, dengan build hijau.
+   *
+   * Term taksonomi adalah klasifikasi yang benar-benar bisa disetel editor, dan
+   * repo ini sudah membacanya untuk arsip kategori/tag (`/api/v1/blog/terms`).
+   * Field ini menghubungkan keduanya.
+   *
+   * ## Ditulis di SETIAP tab, seperti `urutanSeksi`
+   *
+   * Alasannya sama persis dengan tetangganya di atas, dan bukan kerapian: array
+   * `as const` yang heterogen — field ada di satu entri dan hilang di entri lain
+   * — membuat tipe elemennya menjadi union, dan `tab.termSlugs` lalu menjadi
+   * properti yang tidak ada pada sebagian anggotanya. `astro check` merah.
+   *
+   * ## Bawaannya adalah slug tab itu sendiri, dan itu tetap DITULIS
+   *
+   * Sebuah situs yang kategorinya dinamai sama dengan seksinya menulis
+   * `termSlugs: ["panduan"]` — terlihat mubazir, dan tidak. Sebuah situs yang
+   * seksinya `berita` sementara kategori redaksinya `berita-daerah` dan
+   * `berita-kota` menulis keduanya, dan tanpa field ini ia tidak punya tempat
+   * untuk menyatakannya selain mengubah nama kategori di CMS.
+   *
+   * Beberapa tab boleh menyebut slug yang sama; yang menang adalah tab yang
+   * lebih dulu dideklarasikan di `tabs`. Lihat `src/lib/content.ts`.
+   */
+  termSlugs: readonly string[];
+};
 
 /**
  * How a section is ordered, by slug.
