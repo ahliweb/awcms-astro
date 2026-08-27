@@ -23,6 +23,7 @@
     "audit:konten": "bun scripts/audit-konten.mjs",
     "audit:dokumen": "bun scripts/audit-dokumen.mjs",
     "audit:graf": "bun scripts/audit-graf.mjs",
+    "audit:serapan": "bun scripts/audit-serapan.mjs",
     "audit:translation": "bun scripts/check-docs-translation.mjs",
     "docs:i18n:stamp": "bun scripts/docs-i18n-stamp.mjs",
     "test": "bun test",
