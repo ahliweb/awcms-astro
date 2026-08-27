@@ -5,7 +5,7 @@ description: Kontrak integrasi awcms-astro ↔ awcms — tenant dari token mesin
 
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](SKILL.md)
 
-<!-- i18n-source-hash: sha256:14910d2b8cfcaa31ecc40c0cb31475de67006cd902260abfa6226a09b1087a29 -->
+<!-- i18n-source-hash: sha256:e53eee1a6403d6bc8e0cb02dde2ff6c8b61e51ba759ecd60e01e00486793e16e -->
 
 # awcms-astro — kontrak integrasi dengan `awcms`
 
@@ -135,6 +135,25 @@ sementara peringatannya sampai ke editor yang bisa memperbaikinya.
 | `/api/v1/site-search/suggest` | `src/lib/pencarian.ts` — typeahead di balik kotak yang sama, aturan origin yang sama, anonimitas yang sama |
 | `/api/v1/analytics/collect` | `src/lib/beacon.ts` — satu kunjungan halaman, dikirim dari peramban PEMBACA TANPA kredensial sehingga cookie `awcms_visitor_key` tidak pernah mendarat (ADR-0044). Satu-satunya permintaan di repo ini yang membawa header, dan ia HARUS: `checkOrigin` di sana menolak tipe isi mirip form, jadi hanya `application/json` yang lolos — dan untuk itulah handler `OPTIONS` ada |
 <!-- permukaan:dipanggil:selesai -->
+
+### Dijanjikan, belum dipanggil — SATU permukaan
+
+Kontrak `awcms` sendiri memisahkan CONSUMED dari COMMITTED, dan alasannya
+berpindah persis: *"sebuah janji dan sebuah ketergantungan sama-sama layak
+stabil, tetapi keduanya gagal dengan cara berbeda."* Blok ini daftar kedua itu,
+di sisi sini.
+
+Sebuah jalur di sini muncul di `src/` dan **tidak dipanggil** — fitur yang akan
+memanggilnya dimatikan. Gerbang atas tabel di atasnya menolak jalur yang ada di
+sumber dan tidak ada di kedua blok, jadi sebuah permukaan tetap tidak bisa
+mendarat diam-diam; yang kini bisa dilakukannya adalah mendarat sebagai janji
+alih-alih sebagai kebohongan tentang apa yang dipanggil build.
+
+<!-- permukaan:dijanjikan:mulai -->
+| Permukaan yang dijanjikan | Tertahan pada |
+| --- | --- |
+| `/api/v1/newsletter/subscribe` | DUA hal di `awcms`, keduanya dibaca dari sumbernya alih-alih disimpulkan. **(1)** Jalurnya tidak ada di `CONSUMER_PATHS`-nya, jadi bentuknya belum dibekukan — dan setiap permukaan sejak `/site-profile/composed` mengikuti urutan "COMMITTED di sana dulu, dipanggil di sini kemudian". **(2)** `src/pages/api/v1/newsletter/subscribe.ts` TIDAK mengekspor `OPTIONS`, sementara `analytics/collect.ts` melakukannya; kontraknya menuntut `application/json`, yang membuat setiap pengiriman lintas-origin ter-preflight, dan preflight tanpa handler tidak pernah sampai ke endpoint-nya. `src/lib/newsletter.ts` sudah ditulis, diuji terhadap penolakan itu, dan `newsletterAktif` di-hard-code `false` |
+<!-- permukaan:dijanjikan:selesai -->
 
 ```
 TIDAK DIPANGGIL (3)
