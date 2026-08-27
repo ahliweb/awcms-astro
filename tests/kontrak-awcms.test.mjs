@@ -1727,3 +1727,84 @@ describe("badan artikel datang dari kolom kanonik", () => {
     assert.match(artikel.entry.bodyHtml, /media\.uji\/kanonik\.webp/);
   });
 });
+
+/**
+ * Pengaman putaran liar, dan angka yang diukur alih-alih diasumsikan.
+ *
+ * Plafonnya dulu 400 halaman — 20.000 post — dengan komentar bahwa ia "duduk
+ * jauh di atas situs mana pun yang masuk akal". Angka itu tebakan, dan pada 26
+ * Agustus 2026 ia berhenti benar: `awcms` mengukur arsip rujukan keluarga ini
+ * dan mendapat 25.029 artikel. Plafonnya ada DI BAWAH korpus yang sudah diukur
+ * keluarga ini sendiri, sehingga kegagalannya — yang jujur, karena ia MELEMPAR
+ * alih-alih memotong diam-diam — menyala pada situs yang sekadar besar.
+ */
+describe("plafon skala build", () => {
+  let getArticles;
+  let resetContentCacheForTests;
+
+  beforeEach(async () => {
+    process.env.AWCMS_API_URL = "http://awcms.uji";
+    process.env.AWCMS_API_TOKEN = TOKEN;
+    delete process.env.AWCMS_TENANT_CODE;
+    delete process.env.AWCMS_DEFAULT_TENANT_CODE;
+
+    ({ getArticles, resetContentCacheForTests } = await import("../src/lib/content.ts"));
+    resetContentCacheForTests();
+  });
+
+  afterEach(() => {
+    globalThis.fetch = fetchAsli;
+  });
+
+  test("korpus 25.029 artikel milik keluarga ini muat di bawah plafonnya", async () => {
+    // Angka yang persis. Ini bukan uji beban — fixture-nya tidak membangun
+    // 25.029 post — melainkan penegasan bahwa PLAFONNYA berada di atas korpus
+    // yang sudah diukur, yang justru hal yang salah selama ini.
+    const { MAX_PAGES_UNTUK_UJI, PAGE_SIZE_UNTUK_UJI } = await import(
+      "../src/lib/content.ts"
+    );
+
+    assert.ok(
+      MAX_PAGES_UNTUK_UJI * PAGE_SIZE_UNTUK_UJI > 25029,
+      `plafon ${MAX_PAGES_UNTUK_UJI * PAGE_SIZE_UNTUK_UJI} post masih di bawah ` +
+        `korpus 25.029 artikel yang diukur awcms ADR-0114`
+    );
+  });
+
+  test("cursor yang tidak maju MELEMPAR, bukan menerbitkan daftar pendek", async () => {
+    // Yang paling berbahaya bukan situs besar melainkan cursor yang macet:
+    // awcms mengembalikan halaman yang sama selamanya, dan mengembalikan apa
+    // yang sudah terkumpul akan menerbitkan situs yang kehilangan artikel tanpa
+    // ada yang menghitungnya.
+    const posts = Array.from({ length: 50 }, (_, i) => buatPost(i));
+
+    globalThis.fetch = async (input) => {
+      const url = new URL(String(input));
+
+      if (url.pathname === "/api/v1/blog/terms") {
+        return Response.json({ success: true, data: { terms: [], nextCursor: null } });
+      }
+
+      // Selalu halaman yang sama, selalu dengan cursor. Persis bentuk cursor
+      // yang macet.
+      return Response.json({
+        success: true,
+        data: { posts, nextCursor: "cursor-yang-tidak-pernah-maju" }
+      });
+    };
+
+    await assert.rejects(
+      () => getArticles("panduan", "id"),
+      (galat) => {
+        assert.match(galat.message, /still returned a cursor/);
+        // Pesannya harus menyebut KEDUA sebabnya dan alat untuk memilih di
+        // antaranya. Pesan lama hanya menyebut keduanya ada.
+        assert.match(galat.message, /cursor is not advancing/);
+        assert.match(galat.message, /ukur:skala/);
+        // Dan harus menolak "kembalikan yang sudah ada" secara eksplisit.
+        assert.match(galat.message, /short list that looks complete/);
+        return true;
+      }
+    );
+  });
+});

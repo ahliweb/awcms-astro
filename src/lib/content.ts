@@ -337,12 +337,59 @@ export interface LocalizedArticle {
 const PAGE_SIZE = 50;
 
 /**
- * A runaway-loop backstop, not a content limit. It sits far above any plausible
- * site (20 000 posts) and it THROWS rather than returning what it has — because
- * the one thing this file must never do is return a short list that looks
- * complete.
+ * A runaway-loop backstop, not a content limit — and a number that is MEASURED
+ * rather than assumed.
+ *
+ * ## Why it moved
+ *
+ * This was 400, with a comment saying it sat "far above any plausible site
+ * (20 000 posts)". That number was a guess, and on 26 August 2026 it stopped
+ * being true: `awcms` measured this family's own reference archive and got
+ * **25 029 articles** (its ADR-0114, which also records that 23 906 was quoted
+ * for weeks before anyone counted). The backstop was therefore BELOW a corpus
+ * the family had already measured, and its failure — honest, because it throws
+ * rather than truncating — fired on a site that was merely large.
+ *
+ * Raising the constant on its own would repeat the same mistake one level up.
+ * `bun run ukur:skala` is how the number is obtained now, and here is what it
+ * reported on this hardware:
+ *
+ *     artikel   halaman   traversal   +render   heap korpus   RSS puncak
+ *       1 000        20        8 ms     27 ms       0.0 MiB      52 MiB
+ *       5 000       100       25 ms     68 ms      24.2 MiB     127 MiB
+ *      25 000       500      102 ms    355 ms     170.0 MiB     605 MiB
+ *
+ * ## What the measurement actually says
+ *
+ * **Time is not the constraint.** The whole adapter costs under half a second
+ * for 25 000 articles; a build that size is dominated by the 500 sequential
+ * HTTP requests and by Astro writing one file per page per locale, neither of
+ * which is this loop.
+ *
+ * **Memory is the constraint, and it is linear.** Every row holds its canonical
+ * body AND the derived projection at once, because that is what awcms sends. At
+ * the measured slope, 60 000 articles is roughly 1.5 GiB of peak RSS — real,
+ * survivable on a CI runner, and close enough to the edge that going further
+ * should be a decision somebody takes with numbers in hand rather than by
+ * editing a constant.
+ *
+ * So: **1 200 pages, 60 000 posts.** That is 2.4× the largest corpus this
+ * family has measured. Anyone who needs more should re-run the harness on the
+ * hardware that will do the build, and change this comment along with the
+ * number — a ceiling whose justification is stale is the state this file was
+ * just in.
  */
-const MAX_PAGES = 400;
+const MAX_PAGES = 1200;
+
+/**
+ * Test seam over the two numbers above.
+ *
+ * Exported rather than re-declared in the suite: a test that writes `25029 <
+ * 60000` proves only that somebody typed two numbers, and would stay green on
+ * the day the constant moved back down.
+ */
+export const MAX_PAGES_UNTUK_UJI = MAX_PAGES;
+export const PAGE_SIZE_UNTUK_UJI = PAGE_SIZE;
 
 /**
  * A post this build is willing to publish: everything `AwcmsBlogPost` carries,
@@ -630,10 +677,22 @@ async function listPublishedPosts(): Promise<AwcmsBlogPost[]> {
     if (page >= MAX_PAGES) {
       throw new Error(
         `Stopped after ${MAX_PAGES} pages (${posts.length} posts) and awcms ` +
-          `still returned a cursor. Either this site is far larger than this ` +
-          `backstop assumes, or the cursor is not advancing. Both are worth ` +
-          `looking at before publishing; neither is worth shipping a site that ` +
-          `is missing articles nobody counted.`
+          `still returned a cursor.\n\n` +
+          `This backstop is set at ${MAX_PAGES * PAGE_SIZE} posts, measured — not ` +
+          `assumed — as roughly 1.5 GiB of peak memory on the machine that ` +
+          `chose it, and 2.4x the largest corpus this family has counted ` +
+          `(awcms ADR-0114: 25,029 articles).\n\n` +
+          `Two causes, and they need different answers:\n` +
+          `  - The cursor is not advancing. awcms would have to be returning the ` +
+          `same page forever; the post count above tells you which, because it ` +
+          `would be a multiple of ${PAGE_SIZE} with duplicate slugs.\n` +
+          `  - This site really is that large. Then run ` +
+          `\`bun run ukur:skala ${MAX_PAGES * PAGE_SIZE} ${MAX_PAGES * PAGE_SIZE * 2}\` ` +
+          `on the machine that will do the build, read the peak RSS, and raise ` +
+          `MAX_PAGES together with the measurement recorded beside it.\n\n` +
+          `What is NOT an answer is returning what has been collected so far: a ` +
+          `short list that looks complete publishes a site missing its newest ` +
+          `articles, with every gate green.`
       );
     }
 
