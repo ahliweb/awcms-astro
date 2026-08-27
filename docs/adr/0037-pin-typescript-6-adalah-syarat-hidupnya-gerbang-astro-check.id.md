@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](0037-pin-typescript-6-adalah-syarat-hidupnya-gerbang-astro-check.md)
 
-<!-- i18n-source-hash: sha256:62e29439eb9a34203b4af2279bf6e15b28cde4233543f578369d504a900cd9ed -->
+<!-- i18n-source-hash: sha256:a8234a935baa45bae4e3998db7d39c2b18d7fd6cb25ceca8b1d5a9b11f7a17d6 -->
 
 # ADR-0037 — Pin TypeScript 6.x adalah syarat hidupnya gerbang `astro check`
 

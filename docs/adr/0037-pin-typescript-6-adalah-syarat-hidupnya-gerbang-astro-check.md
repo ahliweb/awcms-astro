@@ -100,6 +100,19 @@ moves alone.**
     reviewed and a decision that happens.
   - The `awcms` divergence record stops resting on a state nobody in this repo
     knew they were carrying.
+  - **`awcms` ADR-0112 (23 August 2026) narrowed the other half of that
+    divergence, and it names this pin as load-bearing.** Unable to run
+    `astro check` at all on TypeScript 7, that repo extracts every `.astro`
+    frontmatter to a sibling `.ts` and runs its own `tsc` over it — closing 61
+    files that were checked by nothing, and finding a screen that had answered
+    404 on every request since it shipped. The `astro-files-not-type-checked`
+    entry in `awcms-family-compatibility.yaml` now says this repo is on `^6.0.3`
+    and that this *"is the only reason its gate runs"*.
+
+    Recorded here because the citation ran one way. That entry describes a
+    decision made in THIS file, and until now nothing in this file knew it was
+    being depended on — which is precisely how a pin gets bumped by someone
+    tidying a dependency list.
 - **Negative / accepted trade-offs:**
   - **This repo is held at TypeScript 6.x until `@astrojs/check` catches up**,
     including away from 7.x language features and compiler fixes. That is a real

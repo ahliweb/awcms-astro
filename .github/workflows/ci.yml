@@ -117,6 +117,23 @@ jobs:
       - name: Audit graf (artefak graphify, nama komunitas)
         run: bun run audit:graf
 
+      # Satu-satunya gerbang di repo ini yang MELIHAT KE LUAR. Dua dari tiga
+      # pemeriksaannya murni membaca berkas; yang ketiga mengambil daftar
+      # `docs/adr/` milik `ahliweb/awcms` lewat API GitHub dan memerah bila ada
+      # keputusan di sana yang tidak punya vonis di sini.
+      #
+      # Ia lahir dari dua belas ADR — 0100 sampai 0116, sembilan hari — yang
+      # hanyut tanpa terserap sementara `audit:dokumen` hijau sepanjang waktu:
+      # gerbang itu memeriksa apakah kutipan RESOLVE, dan tidak ada yang bisa
+      # menanyakan kebalikannya. Dua yang terlewat menyebut repo ini secara
+      # langsung.
+      #
+      # Pemeriksaan ketiga DILEWATI dan mengatakannya bila jaringan tidak ada —
+      # gerbang yang memerah karena GitHub mati akan dimatikan orang dalam
+      # sepekan, dan yang menghijau diam-diam berbohong ke arah yang nyaman.
+      - name: Audit serapan (ADR awcms yang belum dibaca siapa pun)
+        run: bun run audit:serapan
+
       # `bun audit` (dependency) dan `bun run audit:konten` adalah dua hal yang
       # berbeda dan namanya sengaja tidak dibuat mirip.
       - name: Audit dependency

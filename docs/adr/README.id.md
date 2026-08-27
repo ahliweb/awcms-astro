@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:668d6a5097bb0a0bb2c7f2bc97662346912537cfd6f02d1f1bcef24ecd046e74 -->
+<!-- i18n-source-hash: sha256:6d60b7382b515b1da36f33f08796be6ebdf53f6d4a30874ef7bf6e5b5b9a1226 -->
 
 # Architecture Decision Records
 
@@ -52,6 +52,7 @@ menyesuaikan gaya, menambah tes.
 | [0043](0043-the-readers-browser-calls-awcms-and-nothing-else-changes.md) | Peramban pembaca memanggil pencarian `awcms` langsung — tanpa header, tanpa kredensial, tenant dari `Origin`; snippet tidak pernah menjadi HTML dan tidak ada markup yang dirakit di JavaScript; nilai facet tanpa label yang bisa dibaca tidak merender chip; `connect-src` menempuh jalan yang sama dengan `img-src` | Diterima |
 | [0044](0044-what-a-page-view-may-cost-a-reader.md) | Sebuah situs boleh memanggil beacon pengunjung hanya bila ia menyatakannya, dan selalu TANPA kredensial — sehingga cookie `awcms_visitor_key` tidak pernah tersimpan, "tanpa analitik yang mengikat identitas" selamat kata demi kata, dan tidak ada yang perlu diberi banner persetujuan | Diterima |
 | [0045](0045-a-section-comes-from-the-cms-vocabulary-not-from-a-sidecar-only-we-write.md) | Seksi sebuah artikel diselesaikan dari taksonomi tenant, dengan `contentJson.awcmsAstro` dipertahankan sebagai penimpa eksplisit — karena sidecar itu ditulis SATU CLI migrasi dan bukan oleh jalur authoring mana pun, sehingga setiap artikel yang ditulis editor di awcms terbuang dari build tanpa satu pun kegagalan | Diterima |
+| [0046](0046-a-video-embed-is-refused-here-and-that-is-a-divergence-not-an-omission.md) | Embed video ditolak di sini pada setiap deployment tanpa saklar — `awcms` ADR-0110 memberi operatornya sebuah origin `frame-src`, sementara operator template ini adalah organisasi pemilik domain, dan perbedaan yang tak dicatat terbaca sebagai satu sisi yang belum sempat mengerjakannya | Diterima |
 
 > **Kenapa penomoran mulai dari 0014.** ADR di repo ini melanjutkan urutan repo
 > rujukan yang identitasnya dilepas di [#11](https://github.com/ahliweb/awcms-astro/pull/11);

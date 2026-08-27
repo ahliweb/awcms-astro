@@ -5,7 +5,7 @@ description: Kontrak integrasi awcms-astro ↔ awcms — tenant dari token mesin
 
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](SKILL.md)
 
-<!-- i18n-source-hash: sha256:cc43ae87a382cd3e05d6a588feb4751bcecec1dcf9a8afea458e214ad3b4373c -->
+<!-- i18n-source-hash: sha256:555d6ed2388c3b9ff45cae27cb6531112c00c160767a37046790335e90763be4 -->
 
 # awcms-astro — kontrak integrasi dengan `awcms`
 
@@ -272,6 +272,48 @@ Dua hal yang jangan diubah tanpa membaca alasannya:
   build gagal — kebalikan dari gunanya.
 - **Nilai yang cacat DITOLAK, termasuk `0`.** `0` terlihat seperti "tanpa batas"
   dan justru mengembalikan gantungan yang gerbang ini ada untuk mencegah.
+
+## Buku besar serapan — setiap keputusan `awcms`, dengan vonisnya
+
+Tabel di atas mencatat KONSEKUENSI. Blok ini mencatat CAKUPAN, dan inilah
+separuh yang tidak punya pemeriksa: `audit:dokumen` bertanya apakah kutipan ADR
+resolve; tidak ada yang bertanya apakah ada keputusan `awcms` yang tidak dikutip
+apa pun di sini. Jawaban pertanyaan itu hanyut selama dua belas keputusan —
+ADR-0100 sampai ADR-0116, diterima dalam sembilan hari, dan repo ini mengutip
+lima. Dua di antara yang terlewat bukan hal kecil: ADR-0100 §5 menyebut sebuah
+pull request DI REPO INI sebagai syarat `awcms` menghapus compatibility writer
+yang masih ia pikul, dan ADR-0114 memutar-ulang 67 aturan redirect terhadap
+server hasil build repo ini dan mendapat 404 pada setiap satunya.
+
+`bun run audit:serapan` membaca blok itu dan menolak tiga hal: nomor yang
+bolong, jumlah `belum` yang tidak sepakat dengan plafonnya, dan — bila jaringan
+mengizinkan — sebuah ADR `awcms` yang sama sekali tidak punya baris. Pemeriksaan
+terakhir itu satu-satunya yang bisa menangkap "`awcms` menerbitkan ADR-0117 dan
+tidak ada yang melihatnya"; ia DILEWATI dan mengatakannya bila indeksnya tidak
+bisa diambil, karena gerbang yang memerah saat jaringan mati akan dimatikan
+orang, dan gerbang yang menghijau saat jaringan mati berbohong ke arah yang
+nyaman.
+
+Tiga vonis, dan yang tengah itulah intinya: **kesenyapan harus bisa dibedakan
+dari kelalaian.**
+
+- `diserap` — konsekuensinya tercatat di sebuah dokumen bernama di repo ini.
+- `diperiksa` — dibaca, tidak menyentuh jalur build statis, alasannya ditulis.
+- `belum` — belum ada yang membacanya di sini. Buku besar yang hanya boleh
+  menyusut, seperti milik ADR-0039.
+
+Blok bertandanya — yang dibaca gerbang — ada di [versi Inggrisnya](SKILL.md),
+dan sengaja TIDAK diduplikasi di sini: dua salinan data yang digerbangi adalah
+dua salinan yang boleh menyimpang, dan yang menyimpang selalu yang tidak dibaca
+mesin. Yang ada di sini penjelasannya; yang ada di sana buku besarnya.
+
+Ringkasannya per 27 Agustus 2026: **lantai ADR-0049**, 68 ADR bervonis sampai
+ADR-0116, **nol** bervonis `belum`. Lantainya ADR-0049 karena di situlah
+hubungannya bermula — kredensial mesin dan serah-terima sesi BFF adalah keputusan
+`awcms` pertama yang melibatkan repo ini. Di bawahnya, ADR 0000–0048 adalah
+fondasi platform yang mendahului konsumen ini, dan repo ini **belum**
+memeriksanya secara sistematis — itu dinyatakan, bukan disiratkan oleh
+ketiadaannya.
 
 ## Rujukan
 

@@ -270,6 +270,108 @@ Two things not to change without reading why:
 - **A malformed value is REFUSED, including `0`.** `0` looks like "no limit" and
   in fact restores exactly the hang this gate exists to prevent.
 
+## The absorption ledger — every `awcms` decision, with a verdict
+
+The table above records CONSEQUENCES. This block records COVERAGE, and it is
+the half that had no checker: `audit:dokumen` asks whether a cited ADR
+resolves; nothing asked whether an `awcms` decision exists that nothing here
+cites. That question's answer drifted for twelve decisions — ADR-0100 through
+ADR-0116, accepted in nine days, of which this repo cited five. Two of the
+misses were not small: ADR-0100 §5 names a pull request IN THIS REPO as the
+condition for deleting a compatibility writer `awcms` still carries, and
+ADR-0114 replayed 67 redirect rules against this repo's built server and got
+404 on every one.
+
+`bun run audit:serapan` reads the block below and refuses three things: a gap
+in the numbering, a `belum` count that disagrees with its stated ceiling, and —
+when the network allows — an `awcms` ADR that has no row here at all. That last
+check is the only one that can catch "`awcms` shipped ADR-0117 and nobody
+looked"; it is SKIPPED and says so when the index cannot be fetched, because a
+gate that reddens on a dead network gets switched off and a gate that greens on
+one lies in the comfortable direction.
+
+Three verdicts, and the middle one is the point: **silence has to be
+distinguishable from oversight.**
+
+- `diserap` — its consequence is recorded in a named document here.
+- `diperiksa` — read, does not touch the static build path, reason stated.
+- `belum` — nobody here has read it. A shrink-only ledger, like ADR-0039's.
+
+<!-- serapan:adr-awcms:mulai -->
+
+    lantai: 0049
+    plafon-belum: 0
+
+`lantai` is ADR-0049 because that is where the relationship starts: machine
+credentials and the BFF session handover are the first `awcms` decisions this
+repo is a party to. Below it, `awcms` ADRs 0000–0048 are platform foundations
+predating this consumer, and this repo has **not** examined them systematically
+— that is stated here rather than implied by their absence.
+
+| ADR | Verdict | Where, or why not |
+| --- | --- | --- |
+| 0049 | diserap | The tenant comes from the token — table above, and `src/lib/awcms/tenant.ts` refuses the retired header variables |
+| 0050 | diserap | BFF session handover — table above; the BFF does not exist yet, and `/auth/session` is COMMITTED, not consumed |
+| 0051 | diserap | Admin screens consolidated in `awcms` — narrowed by ADR-0070, which [ADR-0034](../../../docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md) absorbs |
+| 0052 | diperiksa | Region dataset activation becomes a CLI job and its HTTP surface is deleted. No surface this build calls |
+| 0053 | diperiksa | Platform-scoped permissions. Shapes an authenticated grant, not a build credential's read path |
+| 0054 | diperiksa | Tenant provisioning. One creation path inside `awcms`; a site is provisioned before this repo exists for it |
+| 0055 | diserap | Development confined to `awcms` and `awcms-astro` — the premise of [ADR-0023](../../../docs/adr/0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md)'s test |
+| 0056 | diserap | A purged media object goes inert — table above; one id missing → placeholder, zero of N → the build fails |
+| 0057 | diperiksa | Blog PAGE lifecycle. This template has no page route; a `page` menu item is dropped with a warning naming it |
+| 0058 | diperiksa | Disposition of unenforced permissions. Authenticated surface |
+| 0059 | diserap | Host-resolved public content routes — SUPERSEDED by ADR-0071, which the table above absorbs |
+| 0060 | diperiksa | Business-scope hierarchy supplied by a tenant admin. Authenticated surface |
+| 0061 | diserap | Host-resolved surfaces are edge-cacheable — table above; not applicable, this site does not go through Varnish |
+| 0062 | diserap | Skills are gated against their code — table above; `bun run audit:dokumen` is this repo's answer |
+| 0063 | diperiksa | Ownership grants run through the chokepoint. Authenticated surface |
+| 0064 | diperiksa | Foreign-key columns must be index-reachable. A database rule; this repo has no database |
+| 0065 | diserap | The consumer contract is frozen — table above; the boundary is guarded from both sides |
+| 0066 | diperiksa | Shared rate limiting and full auth-surface coverage. The three reader-browser calls are rate-limited THERE, and this repo's debounce is a courtesy, not a control (ADR-0043) |
+| 0067 | diperiksa | Core Web Vitals collection. `awcms` collects; this repo REFUSES field/RUM measurement and says so — [ADR-0032](../../../docs/adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) closes the same gap in a lab |
+| 0068 | diserap | Family standards posture and recorded divergences — [ADR-0028](../../../docs/adr/0028-jangkar-standar-performa-dan-keamanan.md) states this repo matches those editions |
+| 0069 | diserap | Cross-origin isolation divergence — recorded over there at this repo's request; this repo sends neither COOP nor CORP |
+| 0070 | diserap | The family roles: this repo bears public + USER admin — table above, and [ADR-0034](../../../docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md) |
+| 0071 | diserap | The URL vocabulary is split — table above, and [ADR-0036](../../../docs/adr/0036-news-adalah-kosakata-repo-ini-dan-sebuah-tab-yang-memikulnya.md) |
+| 0072 | diperiksa | Decision-log retention. `awcms` internals |
+| 0073 | diserap | `suspended` is a SERVICE status — table above; a new build failure mode no token scope fixes |
+| 0074 | diperiksa | The outbox. Authenticated/infrastructure; the publish→webhook→build path is documented in `docs/deploy-coolify.md`, not consumed as an API |
+| 0075 | diperiksa | SSE. No streaming surface in a static build |
+| 0076 | diperiksa | Retention descriptors for infrastructure tables. No consumer surface |
+| 0077 | diperiksa | Sync pull. Authenticated surface |
+| 0078–0082 | diperiksa | Grant shapes, user groups, invitations. All authenticated; their consequences for this repo's SECOND role live in [`permukaan-admin-user.md`](../../../docs/awcms-astro/permukaan-admin-user.md) |
+| 0083 | diserap | The `awcms` template deploys to ONE environment — table above; `"staging"` left the deployment-profile union |
+| 0084 | diserap | An entitlement REFUSES, never grants — table above; recorded for its shape, it cannot yet reach this build |
+| 0085–0088 | diperiksa | Identity, lockout, MFA, tenant selection. Authenticated; see `permukaan-admin-user.md` |
+| 0089–0091 | diperiksa | Partners, delegated access, attribution. Authenticated; see `permukaan-admin-user.md` |
+| 0092 | diserap | Machine credentials may WRITE — table above; this build's token MUST stay read-class |
+| 0093 | diserap | A suspended partner stops reaching — table above; the first failure mode that depends on who ISSUED the token |
+| 0094 | diserap | A data subject is answered per tenant — table above, retired in part by [ADR-0042](../../../docs/adr/0042-a-byline-is-the-first-per-person-data-this-template-publishes.md) |
+| 0095 | diserap | The reader's language lives on the PRINCIPAL — `permukaan-admin-user.md` §5 |
+| 0096 | diserap | The self-service account surface — `permukaan-admin-user.md` §5 |
+| 0097 | diserap | English is the source language — [ADR-0039](../../../docs/adr/0039-english-is-the-source-language.md) landed the same decision here first |
+| 0098 | diserap | The cache key carries the locale in the PATH — [ADR-0041](../../../docs/adr/0041-locale-stays-at-the-root-and-two-vary-names-are-refused.md); this repo keeps its default locale at the root and refuses two `Vary` names |
+| 0099 | diserap | The login address and what a transfer must prove — `permukaan-admin-user.md` §5 |
+| 0100 | diserap | Portable Text is the canonical body. Its §4 keeps `content_json` alive as the ENVELOPE **because this repo stores a sidecar in it**, and its §5 names a pull request here as the condition for deleting the compatibility writer. The projection is LOSSY: every mark an editor writes flattens on the way across |
+| 0101 | diserap | The client asset budget splits by audience — `READER_BUDGET_BYTES` = 24,000 there. This repo carries the family's reader surface and has no byte budget at all; that gap is now tracked, not merely true |
+| 0102 | diserap | Tenant site identity is its own module — the fourth consumed surface, `src/lib/awcms/profil.ts` |
+| 0103 | diserap | Newsletter is its own module — three anonymous public endpoints exist and no reader here can reach them. A fourth reader-browser call when it lands, and it must be COMMITTED there first |
+| 0104 | diserap | The build reads the taxonomy — the fifth consumed surface, and since [ADR-0045](../../../docs/adr/0045-a-section-comes-from-the-cms-vocabulary-not-from-a-sidecar-only-we-write.md) it is also what decides an article's SECTION |
+| 0105 | diserap | Navigation is CMS data and the localised tab bar stays — surfaces six and seven |
+| 0106 | diserap | Domain verification proves control of the zone: `_awcms-verify.<host>` TXT, 32 server-minted random bytes, and supplying either half is REFUSED with a 400 naming the field. Zero adapter work — it is how a site's own domain becomes `active`, done once by a human before this repo builds anything for it |
+| 0107 | diserap | A reader's browser may search, and the Origin names the tenant — surfaces eight and nine, [ADR-0043](../../../docs/adr/0043-the-readers-browser-calls-awcms-and-nothing-else-changes.md) |
+| 0108 | diserap | What an export withholds and what an erasure destroys are different questions. `anonymizedColumns` is now declared separately from `redactedColumns`. Zero adapter work and it sharpens [ADR-0042](../../../docs/adr/0042-a-byline-is-the-first-per-person-data-this-template-publishes.md)'s stated-not-gated obligation: an erasure over there still reaches no already-published file here until a rebuild |
+| 0109 | diserap | A byline is opted into — [ADR-0042](../../../docs/adr/0042-a-byline-is-the-first-per-person-data-this-template-publishes.md), the first per-person data this template publishes |
+| 0110 | diserap | A video-embed origin is an OPERATOR's decision — `BLOG_VIDEO_EMBED_ENABLED` adds `youtube-nocookie.com` to `frame-src` there. This repo REFUSES an embed and renders `video_news` as a link; recorded as [ADR-0046](../../../docs/adr/0046-a-video-embed-is-refused-here-and-that-is-a-divergence-not-an-omission.md) |
+| 0111 | diserap | A tenant's exact redirect beats the retired `/news` family rewrite. Precedence over paths whose vocabulary this repo owns — and it is resolved in a middleware that runs THERE, which is exactly the gap ADR-0114 measures |
+| 0112 | diserap | `.astro` frontmatter is type-checked by extraction, because `astro check` cannot run there. The family manifest's `astro-files-not-type-checked` divergence says this repo's TypeScript 6 pin *"is the only reason its gate runs"* — cross-cited from [ADR-0037](../../../docs/adr/0037-pin-typescript-6-adalah-syarat-hidupnya-gerbang-astro-check.md) |
+| 0113 | diserap | A legacy rubrik pair flattens to its rubrik, landing on `/kategori/{slug}` — a route THIS repo serves. Its shape-4 decision is retracted; its §Consequences claim that this repo needs no change is false, and ADR-0114 supersedes that half |
+| 0114 | diserap | The edge owns the legacy 301s, and an article is found by its id. 67 rules replayed against this repo's real built server: 404 on every one, zero `Location` headers. This origin has no redirect capability at all |
+| 0115 | diserap | The migrated archive lands on ONE origin — `/{section}/{slug}/` here — and the importer DECLARES the section into `content_json.awcmsAstro.kategori`, which is why [ADR-0045](../../../docs/adr/0045-a-section-comes-from-the-cms-vocabulary-not-from-a-sidecar-only-we-write.md) keeps the sidecar winning |
+| 0116 | diserap | The legacy site is a feature reference, not a migration source. Withdraws the obligation 0113–0115 serve while leaving their mechanics standing — without this row those three read as live work orders |
+
+<!-- serapan:adr-awcms:selesai -->
+
 ## References
 
 - [`docs/adr/0018-kontrak-build-token-mesin-dan-traversal-konten.md`](../../../docs/adr/0018-kontrak-build-token-mesin-dan-traversal-konten.md)
