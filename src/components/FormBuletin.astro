@@ -1,0 +1,186 @@
+---
+/**
+ * Formulir langganan buletin — ADR-0049, `awcms` ADR-0103/ADR-0118.
+ *
+ * Panggilan KEEMPAT dari situs ini yang terjadi di peramban seorang asing
+ * (ADR-0043: kotak cari, saran cari, beacon kunjungan), dan yang PERTAMA yang
+ * MENULIS. Bedanya bukan sekadar metode HTTP: sebuah kiriman di sini membuat
+ * `awcms` mengirim surat ke alamat yang diketik seseorang, jadi yang dijaga
+ * bukan hanya bentuk permintaannya melainkan juga apa yang boleh dikatakan
+ * halaman ini setelahnya.
+ *
+ * ## Yang TIDAK boleh ditambahkan komponen ini
+ *
+ * `awcms` menjawab **kalimat yang sama** untuk alamat baru, alamat yang sudah
+ * aktif, alamat yang di-suppress, dan host yang tidak menyelesaikan tenant. Ia
+ * tidak pernah menyebut yang mana. Menambahkan "alamat itu sudah terdaftar" di
+ * sisi klien — dari respons, dari waktunya, dari apa pun — akan membangun ulang
+ * oracle yang ditolak endpoint-nya, dari satu tempat yang tidak akan terpikir
+ * untuk diperiksa siapa pun. Jadi jawaban server dirender apa adanya.
+ *
+ * ## Tersembunyi sampai skripnya jalan
+ *
+ * Situs ini statis. Sebuah `<form>` tanpa `action` yang tampil sebelum
+ * skripnya siap adalah kontrol yang diam saat ditekan — yang `AGENTS.md`
+ * §Antarmuka sebut lebih buruk daripada kontrol yang tidak ada. Formulirnya
+ * `hidden` di sumber, skripnya yang membukanya, dan `<noscript>` mengatakannya.
+ *
+ * Sama seperti kotak cari, tidak ada satu pun HTML yang dirangkai di
+ * JavaScript: setiap kata datang dari katalog PO saat build.
+ */
+import { asalPencarianSitus, getLocaleFromPath, newsletterAktif } from '../config/site';
+import { t } from '../lib/po';
+
+const locale = getLocaleFromPath(Astro.url.pathname);
+---
+
+{newsletterAktif && (
+  <section class="buletin" data-buletin data-asal={asalPencarianSitus}>
+    <h4 class="footer-judul">{t(locale, 'buletin.judul')}</h4>
+    <p class="footer-teks buletin-teks">{t(locale, 'buletin.ajakan')}</p>
+
+    <form class="buletin-form" data-buletin-form hidden>
+      <label class="buletin-label" for="buletin-email">{t(locale, 'buletin.label')}</label>
+      <div class="buletin-baris">
+        {/* `type="email"` dan `required`: peramban memvalidasi bentuknya
+            sebelum satu permintaan pun dikirim, jadi alamat yang salah ketik
+            tidak menghabiskan jatah limiter per-IP yang dibagi bersama
+            konfirmasi. Ia bukan pengganti pemeriksaan server — ia menghemat
+            perjalanan yang tidak berguna bagi siapa pun. */}
+        <input
+          id="buletin-email"
+          class="buletin-input"
+          type="email"
+          name="email"
+          required
+          autocomplete="email"
+          maxlength="254"
+          placeholder={t(locale, 'buletin.placeholder')}
+          data-buletin-input
+        />
+        <button type="submit" class="chip buletin-tombol" data-buletin-tombol>
+          {t(locale, 'buletin.tombol')}
+        </button>
+      </div>
+    </form>
+
+    <noscript>
+      <p class="buletin-catatan">{t(locale, 'buletin.noscript')}</p>
+    </noscript>
+
+    {/* `role="status"` + `aria-live="polite"`: jawabannya tiba tanpa halaman
+        berpindah, jadi tanpa ini pembaca yang memakai pembaca layar tidak
+        diberi tahu apa pun telah terjadi. */}
+    <p class="buletin-status" role="status" aria-live="polite" data-buletin-status></p>
+
+    {/* Kalimat cadangan untuk tiap keadaan, ditulis di sini oleh `t()` supaya
+        skripnya tidak pernah merangkai teks yang tak pernah diterjemahkan. */}
+    <span hidden data-pesan="diterima">{t(locale, 'buletin.diterima')}</span>
+    <span hidden data-pesan="tak-valid">{t(locale, 'buletin.takValid')}</span>
+    <span hidden data-pesan="terlalu-sering">{t(locale, 'buletin.terlaluSering')}</span>
+    <span hidden data-pesan="gagal">{t(locale, 'buletin.gagal')}</span>
+    <span hidden data-pesan="mengirim">{t(locale, 'buletin.mengirim')}</span>
+  </section>
+)}
+
+<script>
+  import { langgananKirim } from '../lib/newsletter';
+
+  const simpul = document.querySelector<HTMLElement>('[data-buletin]');
+
+  if (simpul) {
+    const form = simpul.querySelector<HTMLFormElement>('[data-buletin-form]');
+    const input = simpul.querySelector<HTMLInputElement>('[data-buletin-input]');
+    const tombol = simpul.querySelector<HTMLButtonElement>('[data-buletin-tombol]');
+    const status = simpul.querySelector<HTMLElement>('[data-buletin-status]');
+    const asal = simpul.dataset.asal;
+
+    /** Kalimat yang sudah diterjemahkan untuk sebuah keadaan. */
+    const pesan = (kunci: string): string =>
+      simpul.querySelector<HTMLElement>(`[data-pesan="${kunci}"]`)?.textContent?.trim() ?? '';
+
+    if (form && input && tombol && status) {
+      // Yang membuka formulirnya. Sebelum baris ini tidak ada yang bisa
+      // ditekan, dan itu keadaan yang benar untuk halaman statis.
+      form.hidden = false;
+
+      form.addEventListener('submit', async (peristiwa) => {
+        peristiwa.preventDefault();
+
+        const email = input.value.trim();
+        if (email.length === 0) return;
+
+        // Dikunci selama permintaan berjalan: tanpa ini satu klik ganda
+        // menghabiskan dua dari lima slot limiter per-IP, dan yang kedua
+        // ditolak dengan kalimat yang tidak bisa dibedakan pembaca dari
+        // kegagalan.
+        tombol.disabled = true;
+        status.textContent = pesan('mengirim');
+
+        const hasil = await langgananKirim(asal, email);
+
+        tombol.disabled = false;
+
+        if (hasil.keadaan === 'diterima') {
+          // Kalimat SERVER bila ada — ia yang netral menurut rancangannya.
+          // Cadangannya sengaja sama tidak informatifnya.
+          status.textContent = hasil.pesan.length > 0 ? hasil.pesan : pesan('diterima');
+          form.reset();
+          return;
+        }
+
+        status.textContent = pesan(hasil.keadaan);
+      });
+    }
+  }
+</script>
+
+<style>
+  .buletin-teks {
+    margin-bottom: 0.75rem;
+  }
+
+  .buletin-label {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .buletin-baris {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .buletin-input {
+    flex: 1 1 12rem;
+    min-width: 0;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    font: inherit;
+  }
+
+  .buletin-tombol {
+    cursor: pointer;
+  }
+
+  .buletin-tombol[disabled] {
+    opacity: 0.6;
+    cursor: progress;
+  }
+
+  .buletin-status:empty {
+    display: none;
+  }
+
+  .buletin-status,
+  .buletin-catatan {
+    margin-top: 0.6rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+</style>

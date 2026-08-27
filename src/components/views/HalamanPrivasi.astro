@@ -20,7 +20,7 @@
  */
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumb from '../Breadcrumb.astro';
-import { SEGMEN_PRIVASI, beaconKunjungan, getLocaleFromPath, getSiteUrl, localePath } from '../../config/site';
+import { SEGMEN_PRIVASI, beaconKunjungan, getLocaleFromPath, getSiteUrl, localePath, newsletterAktif } from '../../config/site';
 import { t } from '../../lib/po';
 
 const locale = getLocaleFromPath(Astro.url.pathname);
@@ -56,6 +56,24 @@ const judul = t(locale, 'privasi.judul');
 
     <h2>{t(locale, 'privasi.pencarian.judul')}</h2>
     <p>{t(locale, 'privasi.pencarian.isi')}</p>
+
+    {/* Buletin — hanya bila situs ini menerbitkannya (ADR-0049). Alamat surel
+        adalah data per-orang PERTAMA yang diminta situs ini dari pembacanya,
+        dan sebuah halaman privasi yang tidak menyebutnya sedang salah pada
+        satu-satunya bagian yang paling penting benar. Bentuknya mengikuti
+        bagian beacon di atas: hanya muncul saat fiturnya menyala, karena situs
+        yang tidak memintanya tidak boleh terbaca seakan meminta. */}
+    {newsletterAktif && (
+      <>
+        <h2>{t(locale, 'privasi.buletin.judul')}</h2>
+        <p>{t(locale, 'privasi.buletin.isi')}</p>
+        <ul>
+          <li>{t(locale, 'privasi.buletin.butir1')}</li>
+          <li>{t(locale, 'privasi.buletin.butir2')}</li>
+          <li>{t(locale, 'privasi.buletin.butir3')}</li>
+        </ul>
+      </>
+    )}
 
     <h2>{t(locale, 'privasi.pihakketiga.judul')}</h2>
     <p>{t(locale, 'privasi.pihakketiga.isi')}</p>

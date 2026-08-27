@@ -1,0 +1,12 @@
+---
+/**
+ * `/newsletter/unsubscribe` — tempat tautan berhenti berlangganan mendarat
+ * (ADR-0049). PRD §30 `awcms`: keluar tidak boleh menuntut pembuktian identitas,
+ * jadi halaman ini tidak meminta apa pun selain satu klik.
+ *
+ * Jalurnya ditentukan `awcms` (`NEWSLETTER_UNSUBSCRIBE_PATH`), bukan repo ini.
+ */
+import HalamanTokenBuletin from '../../components/views/HalamanTokenBuletin.astro';
+---
+
+<HalamanTokenBuletin jenis="berhenti" />

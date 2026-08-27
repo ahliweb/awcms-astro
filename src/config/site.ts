@@ -290,31 +290,41 @@ export const asalPencarianSitus = asalPencarian(readEnv("AWCMS_API_URL"));
 export const pencarianAktif = asalPencarianSitus !== undefined;
 
 /**
- * Whether this build renders a newsletter subscription form.
+ * Whether this build publishes a newsletter subscription form — ADR-0049.
  *
- * **Hard-coded `false`, and it is not an env var yet on purpose.**
+ * **A site turns it on by declaring `SITE_NEWSLETTER=true`, and it takes effect
+ * only where there is an origin to post to.** The second half is not a
+ * courtesy: the form, the confirmation page and the unsubscribe page are all
+ * calls to `awcms` from a reader's browser, and a declaration with no origin
+ * would publish three surfaces that can do nothing. The beacon pairs the same
+ * two conditions for the same reason.
  *
- * `awcms` shipped a `newsletter` module on 21 August 2026 (its ADR-0103) with an
- * anonymous, double-opt-in `POST /api/v1/newsletter/subscribe`. Two things must
- * land over there before a reader here can reach it, and both were read off that
- * repo's source rather than inferred:
+ * ## It stayed hard-coded `false` until 28 August 2026, and that was right
  *
- *   1. **The path is not frozen.** No newsletter path is in its
- *      `CONSUMER_PATHS`. Every surface since `/site-profile/composed` has
- *      followed the same order: `awcms` freezes the shape as COMMITTED first,
- *      and only then does this repo call it.
- *   2. **There is no `OPTIONS` handler.** `analytics/collect.ts` exports one
- *      precisely so the preflight its `application/json` body forces has an
- *      answer; `newsletter/subscribe.ts` exports none, while its contract
- *      requires the same content type. A preflight with no handler never
- *      reaches the endpoint.
+ * `awcms` shipped the module on 21 August (its ADR-0103) with an anonymous,
+ * double-opt-in `POST /api/v1/newsletter/subscribe`. Reading its source rather
+ * than assuming found FOUR things that made the endpoint unreachable from a
+ * static site — no `OPTIONS` for the preflight its own JSON contract forces, no
+ * `Access-Control-Allow-Origin`, a tenant resolved from a HOST that is the CMS
+ * rather than from the site's `Origin`, and a confirmation link built on the
+ * CMS's own origin where no such page exists. All four are fixed by `awcms`
+ * ADR-0118, and the three paths are frozen in its `COMMITTED_PATHS` — the order
+ * that repo's own contract file requires, and the reason this flag could not
+ * simply have been an env var from the start. A switch a site could flip while
+ * any of the four stood would have published a promise to a reader that nothing
+ * could keep.
  *
- * An env var would be a switch a site could flip today, and flipping it would
- * publish a form that cannot work — a promise to a reader that nothing can keep.
- * When both land, this becomes a variable and the reason above is deleted with
- * it.
+ * ## What this build still cannot check, and says instead of pretending
+ *
+ * Whether the `awcms` tenant has the `newsletter` module ENABLED. A disabled
+ * module answers the same neutral body as a successful subscription — that is
+ * ADR-0103's anti-enumeration decision working as designed — so a site can
+ * publish a form that quietly collects nothing. Nothing here can see the
+ * difference, and nothing here should try: the check belongs in the CMS's own
+ * admin screen, where the person who can act on it is looking.
  */
-export const newsletterAktif = false as boolean;
+export const newsletterAktif =
+  readEnv("SITE_NEWSLETTER") === "true" && asalPencarianSitus !== undefined;
 
 /**
  * The visitor beacon this site sends, or `undefined` — ADR-0044.

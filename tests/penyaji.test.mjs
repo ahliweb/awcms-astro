@@ -564,6 +564,39 @@ describe.skipIf(!adaArtefak)("artefak produksi menyajikan hasil build", () => {
     );
   });
 
+  test("URL bertoken yang dikirim awcms dilayani APA ADANYA", async () => {
+    // `awcms` merangkai tautan emailnya sebagai `{origin}/newsletter/confirm`
+    // — TANPA garis miring penutup, dan dengan `?token=` di belakangnya
+    // (ADR-0049). Situs ini membangun `newsletter/confirm/index.html`, jadi
+    // yang menghubungkan keduanya adalah perilaku penyaji terhadap bentuk URL
+    // itu, bukan sesuatu yang bisa dilihat dari kode halamannya.
+    //
+    // Diverifikasi terhadap artefak produksi pada 28 Agustus 2026: 200
+    // langsung, tanpa pengalihan, dengan query utuh. Bila sebuah perubahan
+    // `trailingSlash` kelak mengubahnya menjadi 301, uji ini tetap hijau
+    // selama query-nya ikut berpindah — yang ditolak adalah kehilangan token,
+    // bukan lompatannya.
+    jalan ??= await nyalakan();
+    const { port } = jalan;
+
+    for (const halaman of ["/newsletter/confirm", "/newsletter/unsubscribe"]) {
+      const alamat = `http://127.0.0.1:${port}${halaman}?token=abc123`;
+      const jawaban = await fetch(alamat, { redirect: "manual" });
+
+      if (jawaban.status === 301 || jawaban.status === 302) {
+        const tujuan = new URL(jawaban.headers.get("location") ?? "", alamat);
+        assert.equal(
+          tujuan.searchParams.get("token"),
+          "abc123",
+          `${halaman} dialihkan tanpa membawa tokennya — tautan di kotak masuk mati`
+        );
+        continue;
+      }
+
+      assert.equal(jawaban.status, 200, `${halaman} tidak dilayani`);
+    }
+  });
+
   test("proses berhenti pada SIGTERM", async () => {
     // Container dihentikan dengan SIGTERM. Proses yang mengabaikannya membuat
     // setiap deploy membayar tenggang paksa Docker.

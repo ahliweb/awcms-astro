@@ -4,6 +4,7 @@ import DisclaimerNote from '../components/DisclaimerNote.astro';
 import LangSwitcher from '../components/LangSwitcher.astro';
 import ShareButtons from '../components/ShareButtons.astro';
 import BeaconKunjungan from '../components/BeaconKunjungan.astro';
+import FormBuletin from '../components/FormBuletin.astro';
 import {
   siteConfig,
   getSiteUrl,
@@ -412,6 +413,14 @@ const jsonLd = {
               <li><a href={localePath(locale, `/${SEGMEN_PRIVASI}/`)}>{t(locale, 'privasi.judul')}</a></li>
             </ul>
           </div>
+
+          {/* Kolom buletin, dan hanya bila situs ini menyatakannya (ADR-0049).
+              Di footer, bukan di badan artikel: ia ada di setiap halaman tanpa
+              pernah menyela apa yang sedang dibaca seseorang, dan tanpa
+              menuntut satu keputusan tata letak per jenis halaman. Komponennya
+              sendiri yang tidak merender apa pun saat `newsletterAktif` mati,
+              jadi situs yang tidak memakainya tidak membayar satu byte pun. */}
+          <FormBuletin />
 
           {/* Navigasi sekunder dari CMS (`awcms` #597 butir 6). Kolom ini hanya
               muncul bila tenant menyusun menu ber-key `footer`, dan labelnya

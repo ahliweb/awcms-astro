@@ -447,3 +447,84 @@ msgstr "Pihak ketiga"
 
 msgid "privasi.pihakketiga.isi"
 msgstr "Situs ini tidak memuat skrip, widget, piksel, maupun tombol berbagi milik pihak ketiga. Tautan berbagi adalah tautan biasa: tidak ada yang mengetahui Anda mengkliknya sampai Anda benar-benar tiba di sana."
+
+msgid "buletin.judul"
+msgstr "Buletin"
+
+msgid "buletin.ajakan"
+msgstr "Ringkasan berita, dikirim ke surel Anda. Berhenti kapan saja lewat tautan di setiap kiriman."
+
+msgid "buletin.label"
+msgstr "Alamat surel"
+
+msgid "buletin.placeholder"
+msgstr "nama@contoh.com"
+
+msgid "buletin.tombol"
+msgstr "Berlangganan"
+
+msgid "buletin.mengirim"
+msgstr "Mengirim…"
+
+msgid "buletin.diterima"
+msgstr "Bila alamat itu bisa didaftarkan, surel konfirmasi sedang dikirim."
+
+msgid "buletin.takValid"
+msgstr "Alamat itu tidak terbaca sebagai alamat surel. Periksa ejaannya lalu coba lagi."
+
+msgid "buletin.terlaluSering"
+msgstr "Terlalu banyak percobaan dari jaringan ini. Coba lagi beberapa menit lagi."
+
+msgid "buletin.gagal"
+msgstr "Kiriman tidak sampai. Periksa koneksi Anda lalu coba lagi."
+
+msgid "buletin.noscript"
+msgstr "Berlangganan membutuhkan JavaScript, karena halaman ini statis dan pendaftarannya dikirim langsung dari peramban Anda."
+
+msgid "buletin.takAktif"
+msgstr "Situs ini tidak menerbitkan buletin."
+
+msgid "buletin.token.takValid"
+msgstr "Tautan itu tidak terbaca utuh. Salin kembali seluruh alamat dari surel Anda."
+
+msgid "buletin.token.tanpaToken"
+msgstr "Tautan ini tiba tanpa kodenya. Buka kembali tautan lengkap dari surel Anda."
+
+msgid "buletin.konfirmasi.judul"
+msgstr "Konfirmasi langganan"
+
+msgid "buletin.konfirmasi.deskripsi"
+msgstr "Satu langkah terakhir: tekan tombol di bawah untuk memastikan alamat ini memang milik Anda."
+
+msgid "buletin.konfirmasi.tombol"
+msgstr "Konfirmasi langganan"
+
+msgid "buletin.konfirmasi.diterima"
+msgstr "Bila tautan itu masih berlaku, langganan Anda sudah dikonfirmasi."
+
+msgid "buletin.berhenti.judul"
+msgstr "Berhenti berlangganan"
+
+msgid "buletin.berhenti.deskripsi"
+msgstr "Tekan tombol di bawah untuk berhenti menerima buletin. Kami tidak menanyakan apa pun yang lain."
+
+msgid "buletin.berhenti.tombol"
+msgstr "Berhenti berlangganan"
+
+msgid "buletin.berhenti.diterima"
+msgstr "Bila tautan itu berlaku, Anda tidak akan menerima buletin lagi."
+
+msgid "privasi.buletin.judul"
+msgstr "Buletin"
+
+msgid "privasi.buletin.isi"
+msgstr "Bila Anda mendaftar buletin, alamat surel Anda disimpan di CMS yang menerbitkan situs ini. Itu satu-satunya data pribadi yang pernah diminta situs ini dari Anda, dan Anda yang mengetikkannya sendiri."
+
+msgid "privasi.buletin.butir1"
+msgstr "Pendaftaran baru berlaku setelah Anda menekan tautan konfirmasi di surel — sebelum itu, tidak ada yang tercatat sebagai persetujuan."
+
+msgid "privasi.buletin.butir2"
+msgstr "Setiap kiriman memuat tautan berhenti berlangganan yang bekerja dengan satu klik, tanpa masuk akun dan tanpa pertanyaan apa pun."
+
+msgid "privasi.buletin.butir3"
+msgstr "Alamat Anda tidak dipakai untuk hal lain, dan tidak dibagikan ke pihak ketiga mana pun."

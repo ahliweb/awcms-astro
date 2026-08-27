@@ -1,0 +1,192 @@
+---
+/**
+ * Halaman yang menerima tautan bertoken dari email buletin — ADR-0049.
+ *
+ * Satu komponen untuk KEDUA halaman (`/newsletter/confirm` dan
+ * `/newsletter/unsubscribe`), sama seperti `ArsipTaksonomi.astro` melayani
+ * kategori dan tag: keduanya berbeda hanya pada endpoint yang dipanggil dan
+ * kalimat yang dibaca, dan dua salinan berarti dua tempat memperbaiki hal yang
+ * sama.
+ *
+ * ## Jalurnya bukan milik repo ini
+ *
+ * `awcms` merangkai tautan yang ia kirimkan dari `NEWSLETTER_CONFIRM_PATH` dan
+ * `NEWSLETTER_UNSUBSCRIBE_PATH` di `newsletter-mail.ts`, disambung ke origin
+ * situs ini. Jadi halaman ini WAJIB ada persis di `/newsletter/confirm` dan
+ * `/newsletter/unsubscribe` — dalam bahasa Inggris, tanpa prefiks locale,
+ * apa pun nama rute lain di situs ini. Menggantinya berarti mematikan tautan
+ * yang sudah berada di kotak masuk seseorang dan tidak bisa ditarik kembali.
+ *
+ * Konsekuensi dari "tanpa prefiks locale": halaman ini terbit dalam locale
+ * BAWAAN situs. `awcms` menyimpan locale pelanggan dan mengirim emailnya dalam
+ * bahasa itu, tetapi ia tidak menaruhnya di URL — jadi sebuah situs dwibahasa
+ * mengirim pembaca berbahasa Inggrisnya ke halaman berbahasa Indonesia. Itu
+ * dicatat, bukan disembunyikan; memperbaikinya menuntut `awcms` mengubah bentuk
+ * tautannya, dan itu keputusan repo sana.
+ *
+ * ## Tidak ada yang terjadi sebelum pembaca menekan tombol
+ *
+ * Token dikirim saat DITEKAN, bukan saat halaman dibuka. Alasannya bukan gaya:
+ * pemindai tautan di klien email dan proxy antivirus mengambil setiap URL di
+ * dalam pesan sebelum penerimanya melihatnya. Sebuah halaman yang mengirim
+ * token-nya saat dimuat akan mencatat "berhenti berlangganan" yang tidak pernah
+ * diminta siapa pun — dan pada halaman konfirmasi, mencatat PERSETUJUAN yang
+ * tidak pernah diberikan seorang manusia. Persetujuan yang dicatat tanpa
+ * tindakan manusia bukan persetujuan.
+ *
+ * ## Jawabannya netral, dan tetap netral di sini
+ *
+ * `awcms` menjawab kalimat yang sama untuk token yang sah, yang sudah terpakai,
+ * dan yang tidak pernah ada. Halaman ini merendernya apa adanya. Membedakannya
+ * akan memberi tahu siapa pun yang memegang token tebakan bahwa tebakannya
+ * pernah nyata.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import DisclaimerNote from '../DisclaimerNote.astro';
+import { asalPencarianSitus, getLocaleFromPath, newsletterAktif } from '../../config/site';
+import { JALUR_BERHENTI, JALUR_KONFIRMASI, PARAM_TOKEN } from '../../lib/newsletter';
+import { t } from '../../lib/po';
+
+interface Props {
+  /** Halaman mana ini. Menentukan endpoint DAN setiap kalimat di layar. */
+  jenis: 'konfirmasi' | 'berhenti';
+}
+
+const { jenis } = Astro.props;
+
+const locale = getLocaleFromPath(Astro.url.pathname);
+const jalur = jenis === 'konfirmasi' ? JALUR_KONFIRMASI : JALUR_BERHENTI;
+
+const judul = t(locale, `buletin.${jenis}.judul`);
+const deskripsi = t(locale, `buletin.${jenis}.deskripsi`);
+---
+
+<BaseLayout title={judul} description={deskripsi} noindex={true}>
+  <section class="token-buletin container">
+    <h1>{judul}</h1>
+    <p class="token-teks">{deskripsi}</p>
+
+    {newsletterAktif ? (
+      <div
+        data-token-buletin
+        data-asal={asalPencarianSitus}
+        data-jalur={jalur}
+        data-param={PARAM_TOKEN}
+      >
+        <button type="button" class="chip token-tombol" data-token-tombol hidden>
+          {t(locale, `buletin.${jenis}.tombol`)}
+        </button>
+
+        <noscript>
+          <p class="token-catatan">{t(locale, 'buletin.noscript')}</p>
+        </noscript>
+
+        <p class="token-status" role="status" aria-live="polite" data-token-status></p>
+
+        <span hidden data-pesan="diterima">{t(locale, `buletin.${jenis}.diterima`)}</span>
+        <span hidden data-pesan="tak-valid">{t(locale, 'buletin.token.takValid')}</span>
+        <span hidden data-pesan="terlalu-sering">{t(locale, 'buletin.terlaluSering')}</span>
+        <span hidden data-pesan="gagal">{t(locale, 'buletin.gagal')}</span>
+        <span hidden data-pesan="mengirim">{t(locale, 'buletin.mengirim')}</span>
+        <span hidden data-pesan="tanpa-token">{t(locale, 'buletin.token.tanpaToken')}</span>
+      </div>
+    ) : (
+      /* Situs ini tidak menyatakan buletin. Yang terbit kalimat yang
+         menjelaskannya — bukan tombol yang memanggil ke mana-mana, dan bukan
+         halaman yang hilang, karena tautan ke sini sudah ada di email yang
+         terkirim sebelum sebuah situs mematikannya. */
+      <p class="token-catatan">{t(locale, 'buletin.takAktif')}</p>
+    )}
+
+    <DisclaimerNote variant="general" />
+  </section>
+</BaseLayout>
+
+<script>
+  import { JALUR_BERHENTI, JALUR_KONFIRMASI, tokenKirim } from '../../lib/newsletter';
+
+  const simpul = document.querySelector<HTMLElement>('[data-token-buletin]');
+
+  if (simpul) {
+    const tombol = simpul.querySelector<HTMLButtonElement>('[data-token-tombol]');
+    const status = simpul.querySelector<HTMLElement>('[data-token-status]');
+    const asal = simpul.dataset.asal;
+    const jalurTertulis = simpul.dataset.jalur;
+    const param = simpul.dataset.param ?? 'token';
+
+    const pesan = (kunci: string): string =>
+      simpul.querySelector<HTMLElement>(`[data-pesan="${kunci}"]`)?.textContent?.trim() ?? '';
+
+    // Dicocokkan dengan dua nilai yang dikenal alih-alih dipakai apa adanya.
+    // Nilainya memang datang dari HTML yang dibangun repo ini sendiri, tetapi
+    // ia dirangkai menjadi URL yang dikirimi token — dan sebuah jalur yang
+    // tidak diperiksa adalah satu suntingan template dari mengirim token itu
+    // ke tempat lain.
+    const jalur =
+      jalurTertulis === JALUR_KONFIRMASI || jalurTertulis === JALUR_BERHENTI
+        ? jalurTertulis
+        : undefined;
+
+    if (tombol && status && jalur) {
+      const token = new URL(window.location.href).searchParams.get(param) ?? '';
+
+      if (token.trim().length === 0) {
+        // Tautan tiba tanpa query-nya — dipotong klien email, atau disalin
+        // separuh. Tidak ada tombol, karena tidak ada yang bisa dikirim.
+        status.textContent = pesan('tanpa-token');
+      } else {
+        tombol.hidden = false;
+
+        tombol.addEventListener('click', async () => {
+          tombol.disabled = true;
+          status.textContent = pesan('mengirim');
+
+          const hasil = await tokenKirim(asal, jalur, token);
+
+          if (hasil.keadaan === 'diterima') {
+            // Selesai, ke dua arah: berhasil dan "token itu tidak pernah ada"
+            // menghasilkan kalimat yang sama, jadi tombolnya tidak boleh
+            // mengundang percobaan kedua yang akan mengatakan hal yang sama.
+            tombol.hidden = true;
+            status.textContent = hasil.pesan.length > 0 ? hasil.pesan : pesan('diterima');
+            return;
+          }
+
+          tombol.disabled = false;
+          status.textContent = pesan(hasil.keadaan);
+        });
+      }
+    }
+  }
+</script>
+
+<style>
+  .token-buletin {
+    padding-block: 2.5rem 3rem;
+    max-width: 44rem;
+  }
+
+  .token-teks {
+    color: var(--text-secondary);
+  }
+
+  .token-tombol {
+    margin-top: 1rem;
+    cursor: pointer;
+  }
+
+  .token-tombol[disabled] {
+    opacity: 0.6;
+    cursor: progress;
+  }
+
+  .token-status:empty {
+    display: none;
+  }
+
+  .token-status,
+  .token-catatan {
+    margin-top: 1rem;
+    color: var(--text-muted);
+  }
+</style>
