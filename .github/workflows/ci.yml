@@ -134,6 +134,19 @@ jobs:
       - name: Audit serapan (ADR awcms yang belum dibaca siapa pun)
         run: bun run audit:serapan
 
+      # Di sini, BUKAN di belakang `vars.AWCMS_API_URL`, dan itu keputusan.
+      #
+      # Anggaran aset adalah properti sumber repo ini sendiri, dan menaruhnya di
+      # belakang build bersyarat berarti repo template — satu-satunya tempat kode
+      # klien ini benar-benar ditinjau — tidak pernah menjalankannya. Alasan yang
+      # sama dipakai `bun test` beberapa langkah di atas.
+      #
+      # Lapis keluarannya melewati dirinya sendiri saat `dist/client` tidak ada,
+      # dan MENGATAKANNYA; ia dijalankan lagi di job `build` untuk sebuah situs,
+      # tempat angka yang sebenarnya ada.
+      - name: Audit aset (anggaran byte pembaca)
+        run: bun run audit:aset
+
       # `bun audit` (dependency) dan `bun run audit:konten` adalah dua hal yang
       # berbeda dan namanya sengaja tidak dibuat mirip.
       - name: Audit dependency
@@ -244,6 +257,13 @@ jobs:
       - name: Audit konten atas hasil build
         if: vars.AWCMS_API_URL != ''
         run: bun run audit:konten
+
+      # Dijalankan LAGI di sini karena lapis keluarannya baru punya sesuatu
+      # untuk dibaca: `dist/client` ada, jadi yang diukur adalah byte yang
+      # benar-benar ditarik satu halaman, bukan batas atas dari sumbernya.
+      - name: Audit aset atas hasil build
+        if: vars.AWCMS_API_URL != ''
+        run: bun run audit:aset
 
       # Celah 8 ADR-0028 ditutup di sini (ADR-0032): Core Web Vitals diukur
       # LAB atas hasil build — pengukuran lapangan (RUM) tetap DITOLAK karena
