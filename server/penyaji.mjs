@@ -62,6 +62,7 @@ import compression from "compression";
 // gerbang pun merah. `src/lib/feed.ts` tidak mengimpor apa pun, jadi ia tidak
 // menarik konfigurasi atau `awcms` ke dalam proses penyaji.
 import { NAMA_BERKAS_FEED } from "../src/lib/feed.ts";
+import { PENGALIHAN, targetPengalihan } from "../src/config/pengalihan.mjs";
 
 /** Prefiks aset ber-hash Astro (`build.assets`, baku `_astro`). */
 const PREFIKS_ASET = "/_astro/";
@@ -464,6 +465,51 @@ export function pasangHeader(req, res) {
 }
 
 /**
+ * Menjawab 301 bila jalurnya punya target, atau membiarkannya lewat.
+ *
+ * `301` dan bukan `308`: yang dipertaruhkan adalah ekuitas pencarian, dan `301`
+ * adalah kode yang dipahami setiap crawler tanpa kecuali. Perbedaan `308` —
+ * mempertahankan metode — tidak berarti apa-apa untuk situs statis yang hanya
+ * menjawab `GET` dan `HEAD`.
+ *
+ * Query DIBAWA SERTA. Sebuah pembaca yang tiba dari kampanye dengan `?utm_...`
+ * tidak boleh kehilangan atributnya karena halamannya pindah, dan sebuah tautan
+ * berparameter yang kehilangan parameternya mendarat di halaman yang benar
+ * dengan keadaan yang salah.
+ *
+ * `peta` bisa disuntik, dan itu bukan kenyamanan uji. Peta repo TEMPLATE
+ * sengaja kosong, jadi tanpa suntikan satu-satunya perilaku yang bisa
+ * dibuktikan di sini adalah "tidak mengalihkan apa pun" — yang justru bukan
+ * klaim yang selama ini salah. Yang salah adalah bahwa tidak ada yang MEMANGGIL
+ * kode ini, dan membuktikan itu menuntut sebuah aturan yang benar-benar cocok.
+ *
+ * @param {import("node:http").IncomingMessage} req
+ * @param {import("node:http").ServerResponse} res
+ * @param {Readonly<Record<string, string>>} [peta]
+ * @returns {boolean} `true` bila respons sudah ditulis.
+ */
+export function jawabPengalihan(req, res, peta = PENGALIHAN) {
+  const url = req.url ?? "/";
+  const target = targetPengalihan(url, peta);
+
+  if (target === undefined) return false;
+
+  const tanyaAda = url.indexOf("?");
+  const query = tanyaAda === -1 ? "" : url.slice(tanyaAda);
+
+  res.statusCode = 301;
+  res.setHeader("Location", `${target}${query}`);
+
+  // Tanpa `Content-Type`: `pasangHeader` memasangnya dari EKSTENSI jalur yang
+  // diminta, dan sebuah 301 tanpa badan yang mengaku `text/html` adalah
+  // respons yang menjanjikan sesuatu yang tidak ada.
+  res.removeHeader("Content-Type");
+  res.end();
+
+  return true;
+}
+
+/**
  * Server HTTP yang membungkus sebuah handler.
  *
  * `handler` diinjeksikan agar perilaku header dan kompresi di berkas ini bisa
@@ -471,8 +517,9 @@ export function pasangHeader(req, res) {
  * `bun test` di CI-nya berjalan tanpa hasil build. Lihat `tests/penyaji.test.mjs`.
  *
  * @param {(req: import("node:http").IncomingMessage, res: import("node:http").ServerResponse) => unknown} handlerAplikasi
+ * @param {{ peta?: Readonly<Record<string, string>> }} [opsi]
  */
-export function buatServer(handlerAplikasi) {
+export function buatServer(handlerAplikasi, opsi = {}) {
   // Kompresi dulu dikerjakan `gzip on` di nginx. Ia dipakai dari pustaka yang
   // sudah matang, bukan ditulis ulang: negosiasi `Accept-Encoding`, pembuangan
   // `Content-Length`, dan `Vary` adalah tiga tempat yang salahnya menghasilkan
@@ -481,6 +528,16 @@ export function buatServer(handlerAplikasi) {
 
   return http.createServer((req, res) => {
     pasangHeader(req, res);
+
+    // SEBELUM kompresi dan sebelum handler aplikasi.
+    //
+    // Sebuah 301 tidak punya badan yang layak dikompresi, dan menjalankannya
+    // lewat handler aplikasi lebih dulu berarti Astro menjawab 404 untuk jalur
+    // yang justru punya jawabannya — persis keadaan yang diukur `awcms`
+    // ADR-0114 terhadap server ini: 67 aturan diputar ulang, 404 pada setiap
+    // satunya, nol header `Location`.
+    if (jawabPengalihan(req, res, opsi.peta ?? PENGALIHAN)) return;
+
     kompresi(req, res, () => handlerAplikasi(req, res));
   });
 }
