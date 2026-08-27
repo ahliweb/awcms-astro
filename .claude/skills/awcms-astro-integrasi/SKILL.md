@@ -132,6 +132,23 @@ warning reaches the editor who can fix it.
 | `/api/v1/analytics/collect` | `src/lib/beacon.ts` — one page view, posted from the READER's browser WITHOUT credentials so the `awcms_visitor_key` cookie never lands (ADR-0044). The only request in this repo that carries a header, and it MUST: `checkOrigin` over there refuses a form-like content type, so only `application/json` gets through — which is what the `OPTIONS` handler exists for |
 <!-- permukaan:dipanggil:selesai -->
 
+### Promised, not yet called — ONE surface
+
+`awcms`'s own contract keeps CONSUMED and COMMITTED apart, and its reason
+transfers exactly: *"a promise and a dependency both deserve stability, but they
+fail differently."* This block is that second list, on this side.
+
+A path here appears in `src/` and is **not called** — the feature that would call
+it is switched off. The gate over the table above refuses a path that is in the
+source and in neither block, so a surface still cannot land silently; what it can
+now do is land as a promise rather than as a lie about what the build calls.
+
+<!-- permukaan:dijanjikan:mulai -->
+| Surface promised | Blocked on |
+| --- | --- |
+| `/api/v1/newsletter/subscribe` | TWO things in `awcms`, both read off its source rather than inferred. **(1)** The path is not in its `CONSUMER_PATHS`, so its shape is not frozen — and every surface since `/site-profile/composed` has followed the order "COMMITTED there first, called here second". **(2)** `src/pages/api/v1/newsletter/subscribe.ts` exports **no `OPTIONS`**, while `analytics/collect.ts` does; its contract requires `application/json`, which makes every cross-origin submission preflighted, and a preflight with no handler never reaches the endpoint. `src/lib/newsletter.ts` is written, tested against those refusals, and `newsletterAktif` is hard-coded `false` |
+<!-- permukaan:dijanjikan:selesai -->
+
 ```
 NOT CALLED (3)
 GET /api/v1/blog/posts/{id}    hydrating one post — REMOVED by ADR-0018.

@@ -290,6 +290,33 @@ export const asalPencarianSitus = asalPencarian(readEnv("AWCMS_API_URL"));
 export const pencarianAktif = asalPencarianSitus !== undefined;
 
 /**
+ * Whether this build renders a newsletter subscription form.
+ *
+ * **Hard-coded `false`, and it is not an env var yet on purpose.**
+ *
+ * `awcms` shipped a `newsletter` module on 21 August 2026 (its ADR-0103) with an
+ * anonymous, double-opt-in `POST /api/v1/newsletter/subscribe`. Two things must
+ * land over there before a reader here can reach it, and both were read off that
+ * repo's source rather than inferred:
+ *
+ *   1. **The path is not frozen.** No newsletter path is in its
+ *      `CONSUMER_PATHS`. Every surface since `/site-profile/composed` has
+ *      followed the same order: `awcms` freezes the shape as COMMITTED first,
+ *      and only then does this repo call it.
+ *   2. **There is no `OPTIONS` handler.** `analytics/collect.ts` exports one
+ *      precisely so the preflight its `application/json` body forces has an
+ *      answer; `newsletter/subscribe.ts` exports none, while its contract
+ *      requires the same content type. A preflight with no handler never
+ *      reaches the endpoint.
+ *
+ * An env var would be a switch a site could flip today, and flipping it would
+ * publish a form that cannot work — a promise to a reader that nothing can keep.
+ * When both land, this becomes a variable and the reason above is deleted with
+ * it.
+ */
+export const newsletterAktif = false as boolean;
+
+/**
  * The visitor beacon this site sends, or `undefined` — ADR-0044.
  *
  * **Off by default, and a site turns it on by NAMING ITS TENANT CODE.** There

@@ -377,6 +377,33 @@ describe("permukaan awcms yang dipanggil build", () => {
     );
   }
 
+  /**
+   * Jalur di blok "dijanjikan" — permukaan yang ADA di `src/` dan TIDAK dipanggil.
+   *
+   * Kontrak `awcms` sendiri memisahkan CONSUMED dari COMMITTED, dan alasannya
+   * berpindah persis: sebuah janji dan sebuah ketergantungan sama-sama layak
+   * stabil tetapi gagal dengan cara berbeda. Tanpa daftar kedua ini, sebuah
+   * jalur yang ditulis di belakang fitur yang dimatikan hanya punya dua nasib,
+   * dan keduanya buruk: masuk ke tabel "dipanggil" — yang menjadikan tabel itu
+   * berbohong tentang apa yang dilakukan build — atau disembunyikan dari
+   * gerbang dengan menyusun jalurnya dari potongan string, yang persis bypass
+   * yang disebut ADR-0038 §4 sebagai batas yang diketahui.
+   *
+   * @param {string} berkas
+   */
+  function permukaanDijanjikan(berkas) {
+    const isi = readFileSync(berkas, "utf8");
+    const blok = isi.split("<!-- permukaan:dijanjikan:mulai -->")[1]?.split(
+      "<!-- permukaan:dijanjikan:selesai -->"
+    )[0];
+
+    assert.ok(blok, `penanda permukaan dijanjikan tidak ditemukan di ${berkas}`);
+
+    return new Set(
+      [...blok.matchAll(/^\|\s*`(\/api\/v1\/[^`]+)`\s*\|/gm)].map((m) => m[1])
+    );
+  }
+
   test("kode sumber memanggil tepat sepuluh permukaan", () => {
     // Daftarnya ditulis eksplisit supaya permukaan BERIKUTNYA memerahkan gerbang
     // ini meskipun penulisnya ingat memperbarui skill — dua pemeriksaan yang bisa
@@ -420,9 +447,16 @@ describe("permukaan awcms yang dipanggil build", () => {
     // Menyamakan aturannya dengan dua permukaan pencarian, ke arah mana pun,
     // mematikan salah satunya di peramban.
     const sumber = permukaanDiSumber();
+    const dijanjikan = permukaanDijanjikan(SKILL_BERKAS[0].berkas);
+
+    // Yang DIPANGGIL adalah sumber dikurangi yang dijanjikan. Pengurangannya
+    // ditulis di sini, bukan disembunyikan di dalam `permukaanDiSumber`, supaya
+    // sebuah jalur yang dipindahkan dari "dijanjikan" ke "dipanggil" tetap
+    // harus melewati daftar eksplisit di bawah.
+    const dipanggil = [...sumber].filter((jalur) => !dijanjikan.has(jalur));
 
     assert.deepEqual(
-      [...sumber].sort(),
+      dipanggil.sort(),
       [
         "/api/v1/analytics/collect",
         "/api/v1/blog/menus",
@@ -448,13 +482,50 @@ describe("permukaan awcms yang dipanggil build", () => {
       // tidak dicatat — dan yang pertama justru yang sudah pernah terjadi di sini
       // (`/posts/{id}` bertahan di dokumen berbulan-bulan setelah ADR-0018
       // menghapus panggilannya).
+      const dijanjikan = permukaanDijanjikan(berkas);
+
       assert.deepEqual(
         [...permukaanDiSkill(berkas)].sort(),
-        [...permukaanDiSumber()].sort(),
+        [...permukaanDiSumber()].filter((jalur) => !dijanjikan.has(jalur)).sort(),
         `tabel bertanda di ${berkas} (${bahasa}) menyimpang dari permukaan yang dipanggil src/`
       );
     });
+
+    test(`blok dijanjikan di ${berkas} tidak tumpang tindih dengan yang dipanggil`, () => {
+      // Sebuah jalur di KEDUA blok adalah jalur yang salah satunya tidak pernah
+      // dibaca lagi — dan yang tidak dibaca selalu yang mengatakan kebenaran
+      // yang tidak nyaman.
+      const dipanggil = permukaanDiSkill(berkas);
+      const bertumpuk = [...permukaanDijanjikan(berkas)].filter((j) => dipanggil.has(j));
+
+      assert.deepEqual(bertumpuk, [], `${berkas} (${bahasa})`);
+    });
+
+    test(`setiap permukaan dijanjikan di ${berkas} ADA di sumber`, () => {
+      // Arah kedua, dan ia yang membuat daftar ini tidak membusuk: sebuah janji
+      // yang kodenya sudah dihapus adalah baris yang terus menjanjikan sesuatu
+      // yang tidak ada lagi.
+      const sumber = permukaanDiSumber();
+      const hantu = [...permukaanDijanjikan(berkas)].filter((j) => !sumber.has(j));
+
+      assert.deepEqual(hantu, [], `${berkas} (${bahasa}) menjanjikan jalur yang tidak ada di src/`);
+    });
   }
+
+  test("permukaan yang DIJANJIKAN benar-benar tidak bisa dipanggil hari ini", async () => {
+    // Yang dibeli blok kedua itu. Sebuah jalur boleh duduk di sana hanya
+    // selama fiturnya mati; begitu flag-nya menyala, ia permukaan yang
+    // dipanggil dan harus pindah ke tabel pertama beserta seluruh kewajibannya.
+    const { newsletterAktif } = await import("../src/config/site.ts");
+
+    assert.equal(
+      newsletterAktif,
+      false,
+      "newsletterAktif menyala sementara /api/v1/newsletter/subscribe masih di " +
+        "blok `dijanjikan`. Pindahkan barisnya ke tabel permukaan yang dipanggil " +
+        "— dan pastikan awcms sudah membekukan jalurnya DAN mengekspor OPTIONS."
+    );
+  });
 });
 
 describe("traversal build feed", () => {

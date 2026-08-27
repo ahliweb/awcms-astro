@@ -521,6 +521,14 @@ const JALUR_DIKECUALIKAN = new Map([
   ["docs/PROJECT_STATE.md", "milik `awcms` (indikator pencabutan ADR-0021 dibaca di sana) DAN bentuk standar keluarga yang repo ini sengaja tidak bawa — `standar-teknis.md` §Dokumentasi menyebut siapa yang memikul perannya di sini"],
   ["tests/admin-navigation-registry.test.ts", "milik `awcms` — gerbang yang menegakkan kriteria 1"],
   [
+    "src/pages/api/v1/newsletter/subscribe.ts",
+    "milik `awcms` — endpoint langganan buletin ADR-0103-nya, dan justru KETIADAAN ekspor `OPTIONS` di berkas itu yang menahan permukaan ini di blok `dijanjikan`: kontraknya menuntut `application/json`, jadi setiap kiriman lintas-origin ter-preflight, dan preflight tanpa handler tidak pernah sampai"
+  ],
+  [
+    "src/pages/api/v1/analytics/collect.ts",
+    "milik `awcms` — pembanding untuk baris di atas: berkas ITU mengekspor `OPTIONS`, dan selisih antara keduanya adalah seluruh alasan permukaan buletin belum bisa dipanggil"
+  ],
+  [
     "src/middleware.ts",
     "milik `awcms` — SATU-SATUNYA tempat `awcms_seo_redirects` diterapkan, dan itulah inti ADR-0047: aturan yang ditulis ke tabel itu tidak pernah dikonsultasi untuk permintaan yang tiba di repo INI, yang tidak punya berkas middleware sama sekali"
   ],

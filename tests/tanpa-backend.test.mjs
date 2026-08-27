@@ -213,6 +213,25 @@ describe("tidak ada kemampuan backend yang masuk lewat dependency", () => {
  */
 const BERKAS_BEACON = "src/components/BeaconKunjungan.astro";
 
+/**
+ * Pengecualian KEDUA, dan ia dibayar dengan tiga jaminan, bukan dua.
+ *
+ * `src/lib/newsletter.ts` mem-POST satu alamat ke
+ * `POST /api/v1/newsletter/subscribe` (`awcms` ADR-0103). Argumen yang sama
+ * dengan beacon berlaku dan tidak diulang di sini: panggilannya berjalan di
+ * peramban pembaca, anonim, tanpa kredensial jenis apa pun, ke endpoint publik
+ * yang jawabannya NETRAL untuk setiap hasil, dan ia tidak menyentuh token build
+ * sama sekali.
+ *
+ * Yang berbeda — dan yang membuat pengecualian ini lebih murah, bukan lebih
+ * mahal — adalah bahwa ia belum bisa berjalan sama sekali. `newsletterAktif`
+ * di-hard-code `false`, jadi jaminan ketiga di bawah ini menegaskan bahwa
+ * pengecualian ini tidak memperluas permukaan tulis repo ini hari ini. Saat
+ * flag itu menyala, jaminan ketiga memerah dan seseorang harus membaca kembali
+ * dua yang pertama sebelum mematikannya.
+ */
+const BERKAS_NEWSLETTER = "src/lib/newsletter.ts";
+
 describe("repo ini membaca awcms, ia tidak menulis", () => {
   test("tidak ada permintaan ber-`method` selain GET di src/ dan scripts/", () => {
     // Literal, bukan variabel: sebuah verb yang disimpan di variabel lolos, dan
@@ -222,7 +241,7 @@ describe("repo ini membaca awcms, ia tidak menulis", () => {
     const pelanggaran = [];
 
     for (const nama of berkasKode()) {
-      if (nama === BERKAS_BEACON) continue;
+      if (nama === BERKAS_BEACON || nama === BERKAS_NEWSLETTER) continue;
 
       const isi = tanpaKomentar(readFileSync(nama, "utf8"));
 
@@ -251,6 +270,40 @@ describe("repo ini membaca awcms, ia tidak menulis", () => {
     // kenyataannya bagi orang berikutnya yang membacanya.
     assert.ok(existsSync(BERKAS_BEACON), `${BERKAS_BEACON} tidak ada lagi — hapus pengecualiannya`);
     assert.match(readFileSync(BERKAS_BEACON, "utf8"), /method:\s*'POST'/);
+  });
+
+  test("pengecualian newsletter menunjuk berkas yang ADA, dan yang benar-benar mem-POST", () => {
+    assert.ok(
+      existsSync(BERKAS_NEWSLETTER),
+      `${BERKAS_NEWSLETTER} tidak ada lagi — hapus pengecualiannya`
+    );
+    assert.match(readFileSync(BERKAS_NEWSLETTER, "utf8"), /method:\s*"POST"/);
+  });
+
+  test("newsletter TIDAK membawa kredensial, dan tidak pernah membawa header otorisasi", () => {
+    // Jaminan yang sama dengan yang dibeli pengecualian beacon. Seorang pembaca
+    // yang berlangganan buletin tidak menyetujui untuk dikenali pada
+    // kunjungannya berikutnya ke halaman yang tidak ada hubungannya.
+    const isi = readFileSync(BERKAS_NEWSLETTER, "utf8");
+
+    assert.doesNotMatch(isi, /credentials\s*:/, "newsletter tidak boleh menyetel credentials");
+    assert.doesNotMatch(isi, /[Aa]uthorization\s*:/, "newsletter tidak boleh membawa Authorization");
+  });
+
+  test("permukaan tulis repo ini TIDAK bertambah hari ini — newsletter masih mati", async () => {
+    // Jaminan KETIGA, yang hanya dimiliki pengecualian ini. Sebuah lubang yang
+    // dibuka untuk kode yang tidak bisa berjalan bukan lubang; begitu flag-nya
+    // menyala ia menjadi lubang sungguhan, dan tes ini memerah supaya seseorang
+    // membaca kembali dua jaminan di atasnya sebelum mematikannya.
+    const { newsletterAktif } = await import("../src/config/site.ts");
+
+    assert.equal(
+      newsletterAktif,
+      false,
+      "newsletterAktif menyala. Pengecualian tulis kedua kini berlaku pada kode " +
+        "yang BENAR-BENAR berjalan — baca ulang kedua jaminan di atas, dan " +
+        "pastikan awcms sudah mengekspor OPTIONS untuk endpoint itu"
+    );
   });
 
   test("beacon TIDAK membawa kredensial, dan tidak pernah membawa header otorisasi", () => {
