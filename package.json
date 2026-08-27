@@ -24,6 +24,7 @@
     "audit:dokumen": "bun scripts/audit-dokumen.mjs",
     "audit:graf": "bun scripts/audit-graf.mjs",
     "audit:serapan": "bun scripts/audit-serapan.mjs",
+    "ukur:skala": "bun scripts/ukur-skala-build.mjs",
     "audit:translation": "bun scripts/check-docs-translation.mjs",
     "docs:i18n:stamp": "bun scripts/docs-i18n-stamp.mjs",
     "test": "bun test",
