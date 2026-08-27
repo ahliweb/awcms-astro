@@ -1593,3 +1593,137 @@ describe("seksi artikel datang dari taksonomi, bukan hanya dari sidecar", () => 
     );
   });
 });
+
+/**
+ * Badan artikel: dari kolom KANONIK, dengan proyeksi sebagai jatuhan.
+ *
+ * `awcms` ADR-0100 menjadikan Portable Text badan kanonik pada 19 Agustus 2026
+ * dan mengapalkannya di v10.0.0. Union enam-tipe yang lama bertahan di sana
+ * sebagai `content_json.blocks` — proyeksi TURUNAN yang sengaja dipertahankan
+ * supaya repo ini tidak menjadi kosong pada hari cutover, dan **lossy secara
+ * konstruksi**: kosakata lama tidak punya mark, jadi setiap tebal, miring,
+ * kode, dan tautan dalam kalimat merata menjadi teks polos saat menyeberang.
+ *
+ * Proyeksi itulah yang dirender situs ini sampai sekarang. Setiap artikel yang
+ * pernah diterbitkannya adalah prosa tanpa format, dan tidak ada editor yang
+ * bisa mengubahnya.
+ */
+describe("badan artikel datang dari kolom kanonik", () => {
+  let getArticles;
+  let resetContentCacheForTests;
+
+  const BADAN = [
+    {
+      _type: "block",
+      _key: "b1",
+      style: "normal",
+      children: [
+        { _type: "span", _key: "s1", text: "Angka ", marks: [] },
+        { _type: "span", _key: "s2", text: "penting", marks: ["strong"] },
+        { _type: "span", _key: "s3", text: " ada di ", marks: [] },
+        { _type: "span", _key: "s4", text: "aturannya", marks: ["k1"] }
+      ],
+      markDefs: [{ _type: "link", _key: "k1", href: "https://contoh.test/aturan" }]
+    }
+  ];
+
+  beforeEach(async () => {
+    process.env.AWCMS_API_URL = "http://awcms.uji";
+    process.env.AWCMS_API_TOKEN = TOKEN;
+    delete process.env.AWCMS_TENANT_CODE;
+    delete process.env.AWCMS_DEFAULT_TENANT_CODE;
+
+    ({ getArticles, resetContentCacheForTests } = await import("../src/lib/content.ts"));
+    resetContentCacheForTests();
+  });
+
+  afterEach(() => {
+    globalThis.fetch = fetchAsli;
+  });
+
+  test("mark inline akhirnya sampai ke pembaca", async () => {
+    const post = buatPost(0);
+    post.bodyPortableText = BADAN;
+    post.contentJson.blocks = [
+      { type: "paragraph", text: "Angka penting ada di aturannya" }
+    ];
+
+    pasangFetchTiruan([post]);
+    const [artikel] = await getArticles("panduan", "id");
+
+    // Persis yang HILANG di proyeksi: proyeksinya membawa kata-kata yang sama
+    // dan tidak satu pun mark-nya.
+    assert.match(artikel.entry.bodyHtml, /<strong>penting<\/strong>/);
+    assert.match(
+      artikel.entry.bodyHtml,
+      /<a href="https:\/\/contoh\.test\/aturan" rel="noopener noreferrer">aturannya<\/a>/
+    );
+  });
+
+  test("baris yang belum di-backfill tetap terbaca lewat proyeksinya", async () => {
+    // `bodyPortableText` tiba KOSONG dari baris yang belum disentuh
+    // `blog:portable-text:backfill`. Menghapus jatuhan ini akan menerbitkan
+    // artikel kosong untuk persis baris yang belum dimigrasikan.
+    const post = buatPost(0);
+    post.bodyPortableText = [];
+    post.contentJson.blocks = [{ type: "paragraph", text: "Prosa lama" }];
+
+    pasangFetchTiruan([post]);
+    const [artikel] = await getArticles("panduan", "id");
+
+    assert.match(artikel.entry.bodyHtml, /Prosa lama/);
+  });
+
+  test("awcms yang MENDAHULUI ADR-0100 tidak mengirim field ini sama sekali", async () => {
+    // Absen dan kosong adalah dua hal berbeda, dan keduanya terjadi. Yang satu
+    // berarti "awcms ini tidak punya kolomnya", yang lain "baris ini belum
+    // di-backfill" — keduanya mengambil cabang yang sama karena kata-katanya
+    // sama-sama ada di proyeksi.
+    const post = buatPost(0);
+    post.contentJson.blocks = [{ type: "paragraph", text: "Prosa lama" }];
+    assert.equal(post.bodyPortableText, undefined);
+
+    pasangFetchTiruan([post]);
+    const [artikel] = await getArticles("panduan", "id");
+
+    assert.match(artikel.entry.bodyHtml, /Prosa lama/);
+  });
+
+  test("kolom kanonik MENANG saat keduanya ada, bukan digabung", async () => {
+    const post = buatPost(0);
+    post.bodyPortableText = BADAN;
+    post.contentJson.blocks = [{ type: "paragraph", text: "PROYEKSI BASI" }];
+
+    pasangFetchTiruan([post]);
+    const [artikel] = await getArticles("panduan", "id");
+
+    assert.doesNotMatch(artikel.entry.bodyHtml, /PROYEKSI BASI/);
+  });
+
+  test("galeri di badan kanonik ikut terselesaikan di batch media yang SAMA", async () => {
+    // Mengumpulkan id hanya dari proyeksi akan menyelesaikan setiap galeri milik
+    // baris yang belum di-backfill dan tidak satu pun milik baris yang sudah —
+    // situs yang galerinya bekerja sampai hari kontennya dimigrasikan.
+    const post = buatPost(0);
+    post.bodyPortableText = [
+      { _type: "gallery", _key: "g1", items: [{ mediaObjectId: "media-kanonik" }] }
+    ];
+
+    const media = new Map([
+      [
+        "media-kanonik",
+        {
+          publicUrl: "https://media.uji/kanonik.webp",
+          altText: "Foto kanonik",
+          width: 800,
+          height: 450
+        }
+      ]
+    ]);
+
+    pasangFetchTiruan([post], { media });
+    const [artikel] = await getArticles("panduan", "id");
+
+    assert.match(artikel.entry.bodyHtml, /media\.uji\/kanonik\.webp/);
+  });
+});

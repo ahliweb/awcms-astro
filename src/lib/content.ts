@@ -58,6 +58,11 @@ import { resolveObjekMedia, type ObjekMedia } from "./awcms/media";
 import { resetTaksonomiCacheForTests, termMenurutId } from "./awcms/taksonomi";
 import { renderContentBlocks } from "./content-blocks";
 import {
+  idGaleriPortableText,
+  renderPortableText,
+  type PortableTextDocument
+} from "./portable-text";
+import {
   defaultLocale,
   locales,
   siteConfig,
@@ -138,6 +143,17 @@ type AwcmsBlogPost = AwcmsBlogPostSummary & {
    * that, rather than the build failing.
    */
   termIds?: string[];
+  /**
+   * The CANONICAL article body since `awcms` v10.0.0 (its ADR-0100).
+   *
+   * OPTIONAL for the same reason `termIds` is — it rides on the full row, a
+   * summary response has none, and an awcms predating ADR-0100 omits it
+   * entirely. An EMPTY array is a different thing from an absent field and both
+   * occur: absent means "this awcms has no such column", empty means "this row
+   * has not been backfilled yet". `renderBodyHtml` treats them the same on
+   * purpose, because in both cases the words are in `contentJson.blocks`.
+   */
+  bodyPortableText?: PortableTextDocument;
   /**
    * The author's OPT-IN public byline, or `null` — awcms ADR-0109.
    *
@@ -440,7 +456,12 @@ async function fetchMedia(
         .flatMap((post) => [
           post.featuredMediaId,
           post.seoImageMediaId,
-          ...idGaleri(post.contentJson)
+          ...idGaleri(post.contentJson),
+          // The canonical body carries its OWN gallery nodes. Collecting only
+          // from the projection would resolve every gallery an un-backfilled
+          // row has and none that a backfilled one has — a site whose galleries
+          // work until the day its content is migrated.
+          ...idGaleriPortableText(post.bodyPortableText)
         ])
         .filter((id): id is string => typeof id === "string" && id !== "")
     )
@@ -861,6 +882,53 @@ function laporkanTakTertempatkan(
 }
 
 /**
+ * The article body, from the CANONICAL column when there is one.
+ *
+ * ## Two sources, and why the fallback is not permanent
+ *
+ * `awcms` ADR-0100 made Portable Text the canonical body and kept
+ * `content_json.blocks` alive as a DERIVED PROJECTION — explicitly so this repo
+ * would not go blank on the day of the cutover. That projection is **lossy by
+ * construction**: the old vocabulary has no marks, so every bold, italic, code
+ * span and inline link an editor writes flattens to plain text on the way
+ * across. Rendering it is what made every article this site has ever published
+ * unstyled prose.
+ *
+ * So the canonical column wins whenever it carries anything.
+ *
+ * ## When the fallback still fires, and what deletes it
+ *
+ * `bodyPortableText` arrives ABSENT from an awcms that predates ADR-0100, and
+ * arrives EMPTY from a row `bun run blog:portable-text:backfill` has not
+ * reached yet. Both mean the words are in the projection, so both take the same
+ * branch.
+ *
+ * **The condition for deleting this function and calling `renderPortableText`
+ * directly is stated rather than left to judgement:** every row of the tenant
+ * is backfilled AND the deployment is on awcms v10.0.0 or later. Until then a
+ * site that removed the fallback would publish blank articles for exactly the
+ * rows nobody has migrated — the failure ADR-0100 §4 exists to prevent, arriving
+ * from the other direction.
+ *
+ * ADR-0100 §5 is the mirror of this: `awcms` deletes its compatibility WRITER
+ * when this repo reads the canonical column, which it now does. The two
+ * deletions are not the same event and must not be done together.
+ */
+function renderBodyHtml(
+  post: PostTerbit,
+  media: Map<string, ObjekMedia>
+): string {
+  const kanonik = post.bodyPortableText;
+
+  if (Array.isArray(kanonik) && kanonik.length > 0) {
+    return renderPortableText(kanonik, media);
+  }
+
+  // Never from a raw-HTML field, because there is not one — in either format.
+  return renderContentBlocks(post.contentJson, media);
+}
+
+/**
  * `post` supplies the words; `source` supplies the article's IDENTITY.
  *
  * They are the same object for the default locale and differ for a translated
@@ -928,9 +996,7 @@ function toArticle(
         estimasiWaktu: block.estimasiWaktu,
         reviewDueDate: block.reviewDueDate
       },
-      // Rendered here, once, from the SAME structured blocks awcms stores —
-      // never from a raw-HTML field, because there is not one.
-      bodyHtml: renderContentBlocks(post.contentJson, media)
+      bodyHtml: renderBodyHtml(post, media)
     },
     isFallback,
     termIds: source.termIds ?? [],
