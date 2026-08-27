@@ -5,7 +5,7 @@ description: Kontrak integrasi awcms-astro ↔ awcms — tenant dari token mesin
 
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](SKILL.md)
 
-<!-- i18n-source-hash: sha256:555d6ed2388c3b9ff45cae27cb6531112c00c160767a37046790335e90763be4 -->
+<!-- i18n-source-hash: sha256:14910d2b8cfcaa31ecc40c0cb31475de67006cd902260abfa6226a09b1087a29 -->
 
 # awcms-astro — kontrak integrasi dengan `awcms`
 

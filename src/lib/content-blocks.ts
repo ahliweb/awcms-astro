@@ -74,7 +74,7 @@
  * with a different posture; this one links.
  */
 
-type Block = {
+export type Block = {
   type?: string;
   text?: string;
   level?: number;
@@ -154,7 +154,7 @@ function safeAbsoluteUrl(value: unknown): string | null {
   }
 }
 
-function renderPlaceholder(label: string): string {
+export function renderPlaceholder(label: string): string {
   return `<p class="blok-tak-tersedia"><em>${escapeHtml(label)}</em></p>`;
 }
 
@@ -217,7 +217,7 @@ function renderGalleryItem(
   return `<figure class="galeri-item"><img src="${escapeHtml(url)}" alt="${escapeHtml(alt)}"${ukuran} loading="lazy">${captionHtml}</figure>`;
 }
 
-function renderGallery(block: Block, media: MediaTerresolusi): string {
+export function renderGallery(block: Block, media: MediaTerresolusi): string {
   const items = Array.isArray(block.items) ? block.items : [];
 
   const rendered = items
@@ -235,7 +235,7 @@ function renderGallery(block: Block, media: MediaTerresolusi): string {
   return `<div class="galeri">${rendered}</div>`;
 }
 
-function renderVideoNews(block: Block): string {
+export function renderVideoNews(block: Block): string {
   const provider = typeof block.provider === "string" ? block.provider : "";
   const videoId = typeof block.videoId === "string" ? block.videoId : "";
   const title = typeof block.title === "string" ? block.title : "";
