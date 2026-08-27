@@ -271,11 +271,46 @@ function gambarDiJsonLd(simpul, keluaran = []) {
  * Blok JSON-LD sengaja dibuang lebih dulu: isinya penuh nilai bertitik yang
  * bukan teks layar sama sekali, dan membiarkannya masuk akan membuat gerbang
  * nama key menemukan "pelanggaran" di setiap halaman.
+ *
+ * ## Bentuk tag penutup yang diterima, dan kenapa namanya diberi `\b`
+ *
+ * HTML tidak hanya menerima `</script>`. Sebuah tag penutup boleh membawa
+ * apa pun setelah nama tag-nya — `</script >`, `</script foo=bar>`, bahkan
+ * `</script\t\n bar>` — dan browser menutup blok skrip di ketiganya. Karena itu
+ * penutupnya ditulis `<\/script(?:\s[^>]*)?>`: nama tag, lalu SATU spasi-putih
+ * yang menjadi syarat, lalu sisa apa pun sampai `>`.
+ *
+ * Spasi-putih itu syarat dan bukan hiasan. `<\/script[^>]*>` — bentuk yang
+ * lebih longgar dan menggoda — akan menerima `</scripture>` sebagai penutup
+ * skrip, padahal HTML tidak. Yang ditulis di atas menolaknya, dan itu diuji.
+ *
+ * Regex yang menuntut `</script>` persis TIDAK berhenti di sana, dan
+ * akibatnya BERBEDA tergantung apa yang ada di bawahnya. Keduanya diukur, bukan
+ * dikira-kira (`tests/audit-konten.test.mjs`):
+ *
+ *   - **Ada skrip kedua.** Pencarian lanjut sampai `</script>` MILIK SKRIP ITU,
+ *     dan seluruh isi di antaranya ikut terbuang sebagai "skrip". Sebuah
+ *     halaman dengan judul dan paragraf di antara dua skrip menyusut menjadi
+ *     satu baris.
+ *   - **Tidak ada skrip kedua.** Regex tidak cocok sama sekali, lalu
+ *     `<[^>]*>` di bawah hanya membuang tag-nya — sehingga SOURCE JAVASCRIPT-nya
+ *     masuk sebagai teks layar.
+ *
+ * Arah kegagalan keduanya sama dan itulah yang mahal: tidak ada error. Yang ada
+ * hanyalah `teksLayar` yang salah, sehingga enam pemeriksaan yang membacanya
+ * memeriksa sesuatu yang bukan halamannya.
+ *
+ * `\b` menutup sisi yang sama diamnya. Tanpa itu `<scripture>` terbaca sebagai
+ * pembuka `<script`, dan penutup yang dicarinya adalah `</script>` nyata jauh di
+ * bawah — pada fixture uji, seluruh teks halaman lenyap menjadi larik kosong.
+ *
+ * Ditemukan oleh CodeQL (`js/bad-tag-filter`), yang berjalan pada setiap PR —
+ * jadi kelas ini sudah punya pemeriksanya dan tidak perlu gerbang kedua.
  */
 function teksLayar(isi) {
   return isi
-    .replace(/<script[\s\S]*?<\/script>/gi, " ")
-    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<script\b[\s\S]*?<\/script(?:\s[^>]*)?>/gi, " ")
+    .replace(/<style\b[\s\S]*?<\/style(?:\s[^>]*)?>/gi, " ")
     .replace(/<[^>]*>/g, "\n")
     .split("\n")
     .map((baris) => baris.trim())
@@ -1146,6 +1181,45 @@ function dimensi(buf, format) {
 }
 
 /**
+ * Membuang komentar XML, DIULANG sampai berhenti berubah.
+ *
+ * Sekali jalan tidak cukup karena pembuangan itu sendiri bisa MENYATUKAN sisa
+ * kiri dan kanannya menjadi komentar baru yang utuh. Bentuk yang diukur ada di
+ * `tests/audit-konten.test.mjs`:
+ *
+ *     <!<!-- x -->-- draf & catatan -->
+ *
+ * Lintasan pertama membuang `<!-- x -->` yang berada di TENGAH. Sisanya, `<!`
+ * dan `-- draf & catatan -->`, menyatu menjadi `<!-- draf & catatan -->` —
+ * komentar utuh yang baru lahir dan tidak pernah diperiksa lagi. `&` di
+ * dalamnya lalu dilaporkan sebagai pelanggaran pada berkas yang sah. Diukur: 1
+ * pelanggaran palsu sebelum, 0 sesudah.
+ *
+ * Yang dipertaruhkan searah dengan seluruh gerbang ini: `&` telanjang DI DALAM
+ * komentar bukan pelanggaran, karena browser tidak pernah mem-parse isinya.
+ * Pemeriksa yang berbohong ke arah mana pun berhenti dibaca orang.
+ *
+ * **Satu hal yang TIDAK diperbaiki, dan sengaja disebut.** Komentar tak
+ * berpenutup — `<!-- draf & catatan` tanpa `-->` — tetap lolos, dan
+ * pengulangan tidak menolong sama sekali karena tidak ada yang berubah pada
+ * lintasan kedua. Itu bukan kelalaian: berkas seperti itu bukan XML yang sah,
+ * jadi `&`-nya memang layak dilaporkan.
+ *
+ * Ditemukan oleh CodeQL (`js/incomplete-multi-character-sanitization`).
+ */
+function tanpaKomentarXml(isi) {
+  let hasil = isi;
+  let sebelum;
+
+  do {
+    sebelum = hasil;
+    hasil = hasil.replace(/<!--[\s\S]*?-->/g, "");
+  } while (hasil !== sebelum);
+
+  return hasil;
+}
+
+/**
  * Memeriksa satu SVG: XML yang sah, `viewBox`, dan ukuran teks terkecil.
  *
  * Satu `&` telanjang membuat browser diam-diam gagal merender gambarnya, tanpa
@@ -1153,7 +1227,7 @@ function dimensi(buf, format) {
  * gambar yang hilang.
  */
 function auditSvg(jalur, isi, rasio, { periksaRasio }) {
-  const tanpaKomentar = isi.replace(/<!--[\s\S]*?-->/g, "");
+  const tanpaKomentar = tanpaKomentarXml(isi);
   const ampersandTelanjang = [
     ...tanpaKomentar.matchAll(/&(?!(?:[a-zA-Z][a-zA-Z0-9]*|#\d+|#x[0-9a-fA-F]+);)/g)
   ];

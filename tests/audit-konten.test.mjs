@@ -859,6 +859,118 @@ describe("nama key yang bocor ke layar", () => {
     expect(kode).toBe(1);
   });
 
+  test("key di antara dua skrip, yang pertama ditutup `</script >`, tetap tertangkap", () => {
+    // Bukan kasus karangan: `</script >` sah di HTML dan browser menutup blok
+    // di situ. Regex yang menuntut `</script>` persis TIDAK berhenti di sana —
+    // ia terus mencari sampai `</script>` MILIK SKRIP BERIKUTNYA, dan seluruh
+    // isi di antaranya ikut terbuang sebagai "skrip".
+    //
+    // Yang membuat ini mahal adalah arah kegagalannya. Halaman yang hilang itu
+    // tidak menghasilkan error; ia menghasilkan `teksLayar` yang jauh lebih
+    // pendek, sehingga gerbang nama key — dan lima gerbang keluaran lain yang
+    // membaca hasil yang sama — LULUS pada halaman yang tak pernah mereka baca.
+    // Diukur sebelum perbaikan: 0 pelanggaran ditemukan pada halaman ini.
+    const akar = situs({
+      "src/locales/id/messages.po": PO,
+      "dist/client/index.html": halaman({
+        badan:
+          "<script>var a = 1;</script >\n" +
+          "<p>translation.notice.label</p>\n" +
+          "<script>var b = 2;</script>"
+      })
+    });
+
+    const { kode, keluaran } = jalankan(akar);
+    expect(keluaran).toContain("nama key tampil sebagai teks: translation.notice.label");
+    expect(kode).toBe(1);
+  });
+
+  test("penutup skrip yang membawa atribut ikut dikenali", () => {
+    // Sebuah tag penutup boleh membawa apa pun setelah nama tag-nya, dan
+    // browser tetap menutup blok skrip di situ. Bentuk-bentuk ini yang
+    // disebut CodeQL satu per satu; masing-masing pernah membuat regex
+    // sebelumnya berjalan terus sampai penutup skrip BERIKUTNYA.
+    const akar = situs({
+      "src/locales/id/messages.po": PO,
+      "dist/client/index.html": halaman({
+        badan:
+          "<script>var a = 1;</script foo=bar>\n" +
+          "<p>translation.notice.label</p>\n" +
+          "<script>var b = 2;</script\t\n bar>\n" +
+          "<p>Ekor.</p>"
+      })
+    });
+
+    const { kode, keluaran } = jalankan(akar);
+    expect(keluaran).toContain("nama key tampil sebagai teks: translation.notice.label");
+    expect(kode).toBe(1);
+  });
+
+  test("`</scripture>` BUKAN penutup skrip, dan gerbang ini setuju dengan browser", () => {
+    // Sisi presisi dari perbaikan di atas, dan asersinya sengaja HIJAU.
+    //
+    // Penutup yang ditulis terlalu longgar — `</script[^>]*>`, bentuk yang
+    // paling menggoda saat mengejar `</script foo=bar>` — akan menerima
+    // `</scripture>` sebagai penutup. HTML tidak: blok skrip hanya berakhir
+    // pada `</script` yang diikuti spasi-putih, `/`, atau `>`. Jadi bagi
+    // browser, `</scripture>` dan seluruh `<p>` di bawahnya MASIH isi skrip,
+    // dan tidak pernah terbaca satu pun pembaca.
+    //
+    // Karena itu jawaban yang benar di sini adalah tidak melaporkan apa-apa.
+    // Gerbang yang melaporkannya akan menuduh halaman yang sah, dan yang
+    // membuatnya sepakat dengan browser adalah spasi-putih yang diwajibkan
+    // setelah nama tag.
+    const akar = situs({
+      "src/locales/id/messages.po": PO,
+      "dist/client/index.html": halaman({
+        badan:
+          "<script>var a = 1;</scripture>\n" +
+          "<p>translation.notice.label</p>\n" +
+          "<script>var b = 2;</script>"
+      })
+    });
+
+    const { kode, keluaran } = jalankan(akar);
+    expect(keluaran).not.toContain("nama key tampil sebagai teks");
+    expect(kode).toBe(0);
+  });
+
+  test("tag yang hanya BERAWALAN `script` tidak menelan halaman", () => {
+    // `<scripture>` bukan `<script>`, tetapi tanpa `\\b` sebuah regex membaca
+    // awalannya sebagai pembuka dan mencari penutup sampai `</script>` yang
+    // nyata di bawahnya — menelan seluruh teks di antaranya. Diukur sebelum
+    // perbaikan: `teksLayar` mengembalikan larik KOSONG untuk halaman ini.
+    const akar = situs({
+      "src/locales/id/messages.po": PO,
+      "dist/client/index.html": halaman({
+        badan:
+          "<scripture>Ayat</scripture>\n" +
+          "<p>translation.notice.label</p>\n" +
+          "<script>var b = 2;</script>"
+      })
+    });
+
+    const { kode, keluaran } = jalankan(akar);
+    expect(keluaran).toContain("nama key tampil sebagai teks: translation.notice.label");
+    expect(kode).toBe(1);
+  });
+
+  test("key yang hanya ada DI DALAM skrip tidak dilaporkan", () => {
+    // Arah hijau yang menahan biaya perbaikan di atas: isi `<script>` bukan
+    // teks layar, dan gerbang yang mulai melaporkannya akan dimatikan orang
+    // dalam sepekan.
+    const akar = situs({
+      "src/locales/id/messages.po": PO,
+      "dist/client/index.html": halaman({
+        badan: '<script>var kunci = "translation.notice.label";</script>'
+      })
+    });
+
+    const { kode, keluaran } = jalankan(akar);
+    expect(keluaran).not.toContain("nama key tampil sebagai teks");
+    expect(kode).toBe(0);
+  });
+
   test("key yang bocor lewat alt, title, dan aria-label ikut tertangkap", () => {
     const akar = situs({
       "src/locales/id/messages.po": PO,
@@ -1527,6 +1639,29 @@ describe("sumber gambar", () => {
     const { kode, keluaran } = jalankan(akar);
     expect(keluaran).toContain('"&" telanjang');
     expect(kode).toBe(1);
+  });
+
+  test('"&" di dalam komentar hijau, termasuk saat pembuangan komentar melahirkan komentar baru', () => {
+    // Arah HIJAU, dan ia menjaga sisi gerbang ini yang paling mudah rusak:
+    // sebuah `&` di dalam komentar BUKAN pelanggaran, karena browser tidak
+    // pernah mem-parse isinya.
+    //
+    // Bentuk kedua adalah yang membuat pembuangan satu-lintasan tidak cukup.
+    // Pada `<!<!-- x -->-- draf & catatan -->` lintasan pertama membuang
+    // `<!-- x -->` yang ada di TENGAH, dan sisa kiri-kanannya menyatu menjadi
+    // `<!-- draf & catatan -->` — sebuah komentar utuh yang baru lahir dan
+    // tidak pernah diperiksa lagi. `&`-nya lalu dilaporkan sebagai pelanggaran
+    // pada berkas yang sebenarnya sah. Diukur sebelum perbaikan: 1 pelanggaran
+    // palsu; sesudahnya: 0.
+    const akar = pohon({
+      ...SUMBER,
+      "src/assets/lugas.svg": svg({ isi: "<!-- Rambu & Marka -->" }),
+      "src/assets/bersarang.svg": svg({ isi: "<!<!-- x -->-- draf & catatan -->" })
+    });
+
+    const { kode, keluaran } = jalankan(akar);
+    expect(keluaran).not.toContain('"&" telanjang');
+    expect(kode).toBe(0);
   });
 
   test("SVG tanpa viewBox merah — rasionya tidak bisa dinyatakan maupun diperiksa", () => {
