@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:e4debcbd93a965d8cc5263dc9f467bebcafa6b539dac1eb164628a2253fc9bbf -->
+<!-- i18n-source-hash: sha256:7bada74eeba5378e7e082c83c2b7ae9cb61955f6e2af7ea84685828bb5d3ce06 -->
 
 # awcms-astro
 
@@ -147,6 +147,9 @@ satu-satunya lockfile.
 | `bun run audit:dokumen`  | Gerbang dokumen: tautan markdown mati, indeks ADR, daftar permukaan kilau |
 | `bun run audit:graf`     | Gerbang graf: artefak `graphify-out/` yang terlacak, dan nama komunitasnya |
 | `bun run audit:translation` | Gerbang terjemahan: cermin Indonesia yang basi, dan dokumen yang belum punya cermin ([ADR-0039](docs/adr/0039-english-is-the-source-language.md)) |
+| `bun run audit:serapan`  | Gerbang serapan: keputusan `awcms` yang belum dibaca siapa pun di sini — satu-satunya gerbang yang melihat ke luar |
+| `bun run audit:aset`     | Gerbang aset: anggaran byte pembaca, atas sumber dan atas hasil build bila ada |
+| `bun run audit:rilis`    | Gerbang rilis: backlog changeset yang menunggu, dibatasi 12 berkas dan 14 hari ([ADR-0048](docs/adr/0048-a-release-is-cut-when-the-backlog-crosses-a-bound.id.md)) |
 | `bun run docs:i18n:stamp` | Menulis spanduk bahasa dan penanda hash sumbernya                |
 | `bun run build`          | `check` → `astro build` → bundel penyaji                        |
 | `bun run build:penyaji`  | Hanya membundel penyaji ke `dist/server/penyaji.mjs`            |

@@ -1,7 +1,7 @@
 {
   "name": "awcms-astro",
   "type": "module",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": false,
   "description": "AWCMS family template for public static sites on Astro, integrated with ahliweb/awcms as its content backend.",
   "homepage": "https://github.com/ahliweb/awcms-astro",
@@ -25,6 +25,7 @@
     "audit:graf": "bun scripts/audit-graf.mjs",
     "audit:aset": "bun scripts/audit-aset.mjs",
     "audit:serapan": "bun scripts/audit-serapan.mjs",
+    "audit:rilis": "bun scripts/audit-rilis.mjs",
     "ukur:skala": "bun scripts/ukur-skala-build.mjs",
     "audit:translation": "bun scripts/check-docs-translation.mjs",
     "docs:i18n:stamp": "bun scripts/docs-i18n-stamp.mjs",

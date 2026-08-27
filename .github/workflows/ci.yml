@@ -147,6 +147,23 @@ jobs:
       - name: Audit aset (anggaran byte pembaca)
         run: bun run audit:aset
 
+      # Membaca nama berkas di `.changesets/` dan tidak lebih: tanpa build,
+      # tanpa jaringan, tanpa awcms.
+      #
+      # Ia lahir dari tiga puluh changeset yang menunggu dua puluh hari di
+      # belakang `v0.2.0` — sembilan di antaranya kemampuan yang dilihat
+      # pembaca, dua di antaranya perbaikan keamanan yang tidak punya versi
+      # bertag untuk ditarik operator situs — dengan setiap gerbang di repo ini
+      # hijau sepanjang waktu, karena tidak satu pun membaca `.changesets/`
+      # untuk apa pun selain tautan mati (ADR-0048).
+      #
+      # Batas usianya bisa memerahkan run yang tidak disebabkan siapa pun, dan
+      # itu diterima di sini justru karena merahnya tidak menuntut apa-apa dari
+      # yang melihatnya: `main` tidak punya check wajib, jadi ia memberi tahu
+      # tanpa menghalangi merge, dan yang membersihkannya satu perintah.
+      - name: Audit rilis (backlog changeset yang menunggu)
+        run: bun run audit:rilis
+
       # `bun audit` (dependency) dan `bun run audit:konten` adalah dua hal yang
       # berbeda dan namanya sengaja tidak dibuat mirip.
       - name: Audit dependency

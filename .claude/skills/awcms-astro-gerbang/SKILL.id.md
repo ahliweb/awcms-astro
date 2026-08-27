@@ -1,16 +1,16 @@
 ---
 name: awcms-astro-gerbang
-description: Enam gerbang awcms-astro (check, test, audit:konten, audit:dokumen, audit:graf, audit:translation) — apa yang ditangkap masing-masing, apa yang TIDAK, dan aturan bahwa setiap aturan baru wajib membawa pemeriksanya. Gunakan sebelum PR, saat menambah aturan ke dokumen, atau saat sebuah gerbang merah dan sebabnya tidak jelas.
+description: Sembilan gerbang awcms-astro (check, test, audit:konten, audit:dokumen, audit:graf, audit:translation, audit:serapan, audit:aset, audit:rilis) — apa yang ditangkap masing-masing, apa yang TIDAK, dan aturan bahwa setiap aturan baru wajib membawa pemeriksanya. Gunakan sebelum PR, saat menambah aturan ke dokumen, atau saat sebuah gerbang merah dan sebabnya tidak jelas.
 ---
 
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](SKILL.md)
 
-<!-- i18n-source-hash: sha256:7ae1372d7b40317995f4d46411cbcb86cea7c54570925928eef41159e706f666 -->
+<!-- i18n-source-hash: sha256:64294bb00a83c460dcd881eb78e5cf2857c372d39d285b8fe3a43beaa265f532 -->
 
 # awcms-astro — gerbang
 
-Enam perintah, dan tiap satunya menangkap kelas cacat yang **tidak
-menggagalkan apa pun** saat terjadi. Itu alasan keenamnya ada.
+Sembilan perintah, dan tiap satunya menangkap kelas cacat yang **tidak
+menggagalkan apa pun** saat terjadi. Itu alasan kesembilannya ada.
 
 ```bash
 bun run check             # lockfile + astro check      — tanpa build, tanpa jaringan
@@ -19,6 +19,9 @@ bun run audit:konten      # sumber gambar + KELUARAN build
 bun run audit:dokumen     # markdown repo ini           — tanpa build, tanpa jaringan
 bun run audit:translation # cermin basi + cakupan cermin — tanpa build, tanpa jaringan
 bun run audit:graf        # artefak graphify-out/       — melewati diri bila direktorinya tak ada
+bun run audit:serapan     # ADR awcms yang belum dibaca — satu-satunya gerbang yang MELIHAT KE LUAR; pemeriksaan 2 dilewati tanpa jaringan
+bun run audit:aset        # anggaran byte pembaca       — lapis keluaran melewati diri tanpa dist/client
+bun run audit:rilis       # backlog changeset menunggu  — tanpa build, tanpa jaringan
 ```
 
 ## Yang ditangkap masing-masing
@@ -31,6 +34,9 @@ bun run audit:graf        # artefak graphify-out/       — melewati diri bila d
 | `audit:dokumen` | Tautan markdown mati, indeks ADR lengkap dua arah, status ADR setuju dengan berkasnya, daftar permukaan kilau, jalur berkas yang disebut dokumen, **kutipan `ADR-NNNN` yang resolve ke berkasnya** |
 | `audit:translation` | Cermin basi (sebuah `.id.md` yang hash tercatatnya tidak lagi cocok dengan sumber Inggrisnya), cermin yatim yang sumbernya hilang, dokumen tanpa cermin yang tidak ada di buku besar yang hanya boleh menyusut, dan entri buku besar yang cerminnya kini ada (ADR-0039) |
 | `audit:graf` | Artefak `graphify-out/` terlacak di luar keempat keluaran bersama, laporan yang tidak sepakat dengan `graph.json`, **nama komunitas yang tidak dipilih** (nama berkas, placeholder, kembar, atau berbeda antar-artefak), korpus yang mengabaikan `.graphifyignore` |
+| `audit:serapan` | Sebuah ADR `awcms` tanpa vonis di buku besar serapan, nomor yang bolong antara lantai yang dinyatakan dan nomor tertinggi yang didaftarkan, jumlah `belum` di atas plafonnya, dan — satu-satunya pemeriksaan yang MELIHAT KE LUAR di repo ini — keputusan yang terbit di `ahliweb/awcms` yang belum dibaca siapa pun di sini |
+| `audit:aset` | Sebuah `<script>` sumber atau berkas `public/**` di atas plafon sumber, dan — bila `dist/client` ada — byte yang benar-benar ditarik satu halaman, disebut per berkas (ADR-0044; `awcms` ADR-0101 separuh keluarga lainnya) |
+| `audit:rilis` | Backlog changeset menunggu di atas 12 berkas atau lebih tua dari 14 hari, dan changeset yang namanya tidak membawa tanggal `YYYY-MM-DD-` yang bisa dipakai — termasuk tanggal yang tidak ada di kalender dan tanggal lebih dari sehari di depan ([ADR-0048](../../../docs/adr/0048-a-release-is-cut-when-the-backlog-crosses-a-bound.id.md)) |
 
 ## Yang TIDAK ditangkap — dan disebut supaya tidak dikira terjaga
 
@@ -85,6 +91,12 @@ bun run audit:graf        # artefak graphify-out/       — melewati diri bila d
   ADR lokal akan diterima lewat jalur resolusi lokal, dan kutipan lokal yang
   salah ketik DI DEKAT kata `awcms` akan lolos sebagai milik tetangga. Bila itu
   terjadi, bentuk penulisannya yang diperbaiki — bukan gerbangnya dilonggarkan.
+- **Apakah sebuah rilis sedang berjalan.** `audit:rilis` membaca `.changesets/`
+  dan tidak lebih, jadi ia tetap merah sepanjang umur sebuah pull request rilis
+  dan baru menghijau saat PR itu mendarat dan changeset-nya terlipat. Ia juga
+  tidak bisa menilai apakah entrinya layak dirilis — besar sebuah rilis datang
+  dari `bump` (ADR-0040), dan apakah prosa di bawahnya bagus bukan gerbang siapa
+  pun.
 
 ## Aturan yang mengikat: aturan baru wajib membawa pemeriksanya
 

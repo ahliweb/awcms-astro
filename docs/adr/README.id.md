@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:8eb0d83d47c046b525de515f1aba8ebd91e9669a82b36f1ddd91886dd27223b6 -->
+<!-- i18n-source-hash: sha256:025192f4da31a8891b8db79ec28de7bfebe8b0d856579bf332f1061590c66a04 -->
 
 # Architecture Decision Records
 
@@ -54,6 +54,7 @@ menyesuaikan gaya, menambah tes.
 | [0045](0045-a-section-comes-from-the-cms-vocabulary-not-from-a-sidecar-only-we-write.md) | Seksi sebuah artikel diselesaikan dari taksonomi tenant, dengan `contentJson.awcmsAstro` dipertahankan sebagai penimpa eksplisit — karena sidecar itu ditulis SATU CLI migrasi dan bukan oleh jalur authoring mana pun, sehingga setiap artikel yang ditulis editor di awcms terbuang dari build tanpa satu pun kegagalan | Diterima |
 | [0046](0046-a-video-embed-is-refused-here-and-that-is-a-divergence-not-an-omission.md) | Embed video ditolak di sini pada setiap deployment tanpa saklar — `awcms` ADR-0110 memberi operatornya sebuah origin `frame-src`, sementara operator template ini adalah organisasi pemilik domain, dan perbedaan yang tak dicatat terbaca sebagai satu sisi yang belum sempat mengerjakannya | Diterima |
 | [0047](0047-this-origin-answers-its-own-content-redirects-and-the-edge-keeps-the-rest.md) | Origin ini menjawab pengalihan KONTEN-nya sendiri — slug yang diganti, seksi yang digabung — dari peta jalur persis yang digerbangi, sementara edge memegang normalisasi protokol/host dan migrasi domain legacy; sampai kini `server/penyaji.mjs` tidak memuat satu pun `301`, dan awcms ADR-0114 mengukur 67 aturan terhadapnya yang semuanya 404 | Diterima |
+| [0048](0048-a-release-is-cut-when-the-backlog-crosses-a-bound.md) | Sebuah rilis sudah waktunya saat backlog yang menunggu melewati batas — paling banyak 12 changeset, yang tertua paling banyak 14 hari — diperiksa `audit:rilis` dan bukan oleh ingatan; ADR-0040 memindahkan "seberapa besar" ke penulisnya dan menyerahkan "kapan" ke siapa pun yang teringat, lalu tiga puluh changeset menunggu dua puluh hari di belakang `v0.2.0` dengan setiap gerbang hijau | Diterima |
 
 > **Kenapa penomoran mulai dari 0014.** ADR di repo ini melanjutkan urutan repo
 > rujukan yang identitasnya dilepas di [#11](https://github.com/ahliweb/awcms-astro/pull/11);

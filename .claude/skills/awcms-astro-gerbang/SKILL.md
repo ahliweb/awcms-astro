@@ -1,14 +1,14 @@
 ---
 name: awcms-astro-gerbang
-description: The six awcms-astro gates (check, test, audit:konten, audit:dokumen, audit:graf, audit:translation) — what each one catches, what it does NOT, and the rule that every new rule must bring its own checker. Use before a PR, when adding a rule to a document, or when a gate is red and the reason is not obvious.
+description: The nine awcms-astro gates (check, test, audit:konten, audit:dokumen, audit:graf, audit:translation, audit:serapan, audit:aset, audit:rilis) — what each one catches, what it does NOT, and the rule that every new rule must bring its own checker. Use before a PR, when adding a rule to a document, or when a gate is red and the reason is not obvious.
 ---
 
 🇬🇧 English (source) · 🇮🇩 [Bahasa Indonesia](SKILL.id.md)
 
 # awcms-astro — the gates
 
-Six commands, and each one catches a class of defect that **fails nothing** when
-it happens. That is why all six exist.
+Nine commands, and each one catches a class of defect that **fails nothing** when
+it happens. That is why all nine exist.
 
 ```bash
 bun run check             # lockfile + astro check      — no build, no network
@@ -17,6 +17,9 @@ bun run audit:konten      # image sources + build OUTPUT
 bun run audit:dokumen     # this repo's markdown        — no build, no network
 bun run audit:translation # mirror staleness + coverage — no build, no network
 bun run audit:graf        # the graphify-out/ artefact  — skips itself if the directory is absent
+bun run audit:serapan     # awcms ADRs nobody here read — the one gate that looks OUTWARD; skips check 2 without network
+bun run audit:aset        # the reader's byte budget    — the output layer skips itself without dist/client
+bun run audit:rilis       # the waiting release backlog — no build, no network
 ```
 
 ## What each one catches
@@ -29,6 +32,9 @@ bun run audit:graf        # the graphify-out/ artefact  — skips itself if the 
 | `audit:dokumen` | Dead markdown links, the ADR index complete in both directions, an ADR's status agreeing with its file, the polish-surface list, file paths named by a document, **`ADR-NNNN` citations that resolve to their file** |
 | `audit:translation` | A stale mirror (an `.id.md` whose recorded hash no longer matches its English source), an orphan mirror whose source is gone, a document with no mirror that is not on the shrink-only ledger, and a ledger entry whose mirror now exists (ADR-0039) |
 | `audit:graf` | `graphify-out/` artefacts tracked outside the four shared outputs, a report that disagrees with `graph.json`, **community names that were never chosen** (a file name, a placeholder, a twin, or differing between artefacts), a corpus that ignored `.graphifyignore` |
+| `audit:serapan` | An `awcms` ADR with no verdict in the absorption ledger, a gap between the declared floor and the highest number listed, a `belum` count above its declared ceiling, and — the only OUTWARD-looking check in this repo — a decision published in `ahliweb/awcms` that nobody here has read yet |
+| `audit:aset` | A source `<script>` or `public/**` file over the source ceiling, and — when `dist/client` exists — the bytes a single page really pulls, named per file (ADR-0044; `awcms` ADR-0101 is the family's other half) |
+| `audit:rilis` | A waiting-changeset backlog over 12 files or older than 14 days, and a changeset whose name carries no usable `YYYY-MM-DD-` date — including a calendar date that does not exist and one dated more than a day ahead ([ADR-0048](../../../docs/adr/0048-a-release-is-cut-when-the-backlog-crosses-a-bound.md)) |
 
 ## What is NOT caught — named here so it is not taken for guarded
 
@@ -84,6 +90,12 @@ bun run audit:graf        # the graphify-out/ artefact  — skips itself if the 
   and a local citation with a typo NEAR the word `awcms` will pass as the
   neighbour's. If that happens, it is the way it was written that gets fixed —
   not the gate that gets loosened.
+- **Whether a release is already in flight.** `audit:rilis` reads `.changesets/`
+  and nothing else, so it stays red for the whole life of a release pull request
+  and goes green only when that PR lands and the changesets are folded. It also
+  cannot tell whether the entries themselves are worth releasing — the size of a
+  release comes from `bump` (ADR-0040), and whether the prose under it is any
+  good is nobody's gate.
 
 ## The binding rule: a new rule must bring its own checker
 

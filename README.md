@@ -144,6 +144,9 @@ is the only lockfile.
 | `bun run audit:dokumen`     | Document gate: dead markdown links, the ADR index, the shine-surface list |
 | `bun run audit:graf`        | Graph gate: the tracked `graphify-out/` artefacts, and their community names |
 | `bun run audit:translation` | Translation gate: stale Indonesian mirrors, and documents with no mirror ([ADR-0039](docs/adr/0039-english-is-the-source-language.md)) |
+| `bun run audit:serapan`     | Absorption gate: `awcms` decisions nobody here has read yet — the one gate that looks outward |
+| `bun run audit:aset`        | Asset gate: the reader's byte budget, over the source and over the build output when it exists |
+| `bun run audit:rilis`       | Release gate: the waiting changeset backlog, bounded at 12 files and 14 days ([ADR-0048](docs/adr/0048-a-release-is-cut-when-the-backlog-crosses-a-bound.md)) |
 | `bun run docs:i18n:stamp`   | Writes the language banners and the source-hash markers          |
 | `bun run build`             | `check` → `astro build` → bundle the server                      |
 | `bun run build:penyaji`     | Bundle the server alone into `dist/server/penyaji.mjs`           |

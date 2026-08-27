@@ -8,6 +8,1858 @@ Berkas ini diisi `bun run release` dengan melipat seluruh changeset di [`.change
 
 Sejak [ADR-0040](docs/adr/0040-changeset-menyatakan-bump-semver.md) setiap changeset menyatakan `bump: major | minor | patch`, dan versi berikutnya adalah bump TERBESAR di antara yang menunggu — jadi besar sebuah rilis adalah akibat dari isinya, bukan keputusan terpisah yang diambil saat merilis.
 
+## [0.3.0] — 2026-08-28
+
+> **Build integrasi tidak berjalan pada rilis ini.** `AWCMS_API_URL` kosong,
+> yang normal untuk repo template ini sendiri — jadi `bun run build`,
+> `bun run audit:konten`, dan lapis penyaji/CSP di `bun test` DILEWATI, bukan
+> lulus. Sebuah situs yang dibangun dari template ini mengisi variabel itu dan
+> menjalankan ketiganya.
+
+### Dokumen dan skill disamakan dengan keadaan `awcms` per 13 Agustus 2026, dan satu premis keamanan yang gugur diberi nama
+
+Sinkronisasi terakhir menyerap keadaan `awcms` sampai ADR-0071 (8 Agustus 2026).
+Sejak itu sisi sana melanjutkan sampai ADR-0092 — dua puluh satu keputusan dalam
+lima hari — dan sebagian di antaranya membuat kalimat di repo ini berhenti
+benar. Yang paling mahal bukan yang usang melainkan **empat kalimat yang
+menyuruh pembacanya melakukan hal yang salah**, dan keempatnya diperbaiki lebih
+dulu.
+
+#### Empat kalimat yang menyesatkan, dan akibatnya
+
+- **Scope token build ditulis satu kunci, padahal butuh dua.** `README.md`
+  menuntut `blog_content.posts.read` saja; `.env.example` sudah menuntut
+  `media_library.media.read` juga. Yang mengikuti README akan membangun situs
+  pertamanya sampai **setiap halaman selesai dirender**, lalu gagal 403 di
+  `scripts/asal-media.mjs` — langkah terakhir `bun run build` — dengan pesan
+  yang terbaca seperti deployment rusak, bukan izin kurang.
+- **`awcms-micro` direkomendasikan sebagai jalan keluar** untuk kebutuhan
+  publikasi seketika, padahal ia **arsip** sejak 2 Agustus 2026 — dinyatakan
+  dua kali di berkas yang sama. Penggantinya: permukaan publik `awcms` sendiri
+  di `/blog/{tenantCode}/**`.
+- **Checklist repo baru menyarankan menyajikan `/news/**` dari `awcms`.** Rute
+  itu **dihapus** di sana pada 8 Agustus 2026 dan kini 301 ke
+  `/blog/{tenantCode}/**`; menyarankannya sekaligus melanggar
+  [ADR-0036](docs/adr/0036-news-adalah-kosakata-repo-ini-dan-sebuah-tab-yang-memikulnya.md)
+  repo ini sendiri.
+- **Tabel design token menyebut webfont Inter dan Outfit** yang tidak ada di
+  `src/styles/global.css` — satu-satunya temuan yang bisa membuat orang
+  **menambah** dua origin ke jalur render kritis situsnya atas dasar dokumen.
+
+#### Premis keamanan yang gugur, dan diberi nama alih-alih ditambal
+
+`awcms` ADR-0092 (13 Agustus 2026) membuka kelas kredensial mesin yang boleh
+**menulis**. Sampai hari itu "kredensial mesin tidak bisa menulis" adalah sifat
+KELAS, dan tiga berkas di sini mengutipnya sebagai dasar kenapa scope token build
+boleh dipercaya.
+
+Token build repo ini tetap tidak bisa mengubah apa pun — tetapi karena ia
+diterbitkan tanpa satu pun aksi tulis, yaitu properti **barisnya**, bukan
+kelasnya. Menjaganya begitu kini keputusan penerbitan yang harus dipertahankan.
+Dinyatakan di `.env.example`, di `README.md`, dan sebagai banner pada
+[ADR-0018](docs/adr/0018-kontrak-build-token-mesin-dan-traversal-konten.md) —
+banner, karena badan sebuah ADR adalah rekaman dan menyuntingnya akan
+memalsukannya.
+
+Satu penolakan `awcms` yang baru juga mendapat nama, karena ia menggagalkan build
+**total** sambil terbaca persis seperti token dicabut, dan tidak bisa diperbaiki
+dari repo situs: `403 TENANT_SUSPENDED` (ADR-0073 di sana; kini mengenai
+kredensial mesin, dan `inactive` diperlakukan sama dengan `suspended`).
+`403 ENTITLEMENT_REQUIRED` (ADR-0084) dicatat sebagai kosakata, **bukan** sebagai
+mode kegagalan: entitlement diputuskan per modul, dan tidak satu pun modul di
+balik ketiga permukaan yang dipanggil build mendeklarasikannya hari ini —
+menuliskannya sebagai sebab yang mungkin akan mengirim orang mencari masalah yang
+tidak ada.
+
+#### Peran kedua repo ini akhirnya punya dokumennya
+
+Repo ini memikul dua peran sejak
+[ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md),
+dan keenam dokumen di `docs/awcms-astro/` seluruhnya ditulis untuk peran
+pertama. Bahan peran kedua terserak di ADR — format rekaman keputusan, bukan
+panduan.
+
+`docs/awcms-astro/permukaan-admin-user.md` mengumpulkannya: batas "apa yang
+dikelola" alih-alih audiens, cara menyatakannya beserta lima penolakan
+`tests/peran-situs.test.mjs`, apa yang berubah begitu satu rute keluar dari
+`output: 'static'`, kontrak ke `awcms` yang **belum** ada, dan sebelas fakta
+model identitas `awcms` yang harus ditiru alih-alih ditebak — di antaranya
+lockout yang kini GLOBAL (salinan UI yang menulis "hanya untuk situs ini" akan
+berbohong), MFA yang pindah ke principal, dan `409` seleksi tenant yang
+**sengaja** tidak membawa daftar keanggotaan sehingga layar "Anda anggota tenant
+mana saja" tidak boleh dirancang.
+
+Ia sengaja **dokumen, bukan skill**: hari ini `permukaanAdmin` kosong di
+template dan tidak ada satu baris kode permukaan terautentikasi, jadi sebuah
+skill akan memerikan prosedur atas kode yang belum ada — persis yang
+`.claude/skills/README.md` larang.
+
+#### Satu keputusan baru, dengan pemeriksanya
+
+[ADR-0037](docs/adr/0037-pin-typescript-6-adalah-syarat-hidupnya-gerbang-astro-check.md)
+— pin TypeScript 6.x adalah syarat hidupnya gerbang `astro check`.
+`@astrojs/check` menuntut API programatik TypeScript 6.x; `awcms` sudah di 7.0.2
+dan karena itu **kehilangan** type-check seluruh berkas `.astro`-nya, tercatat di
+manifest keluarganya sebagai divergence yang menyandarkan diri secara eksplisit
+pada repo ini masih berada di `^6.0.3` — "which is the only reason its gate
+runs".
+
+Tanpa ADR ini, menaikkan TypeScript ke 7.x terbaca sebagai pemeliharaan rutin,
+dan yang terjadi adalah gerbang `Type check` **berhenti ada** dengan setiap
+perintah tetap hijau. Pemeriksanya mendarat bersamanya di
+`tests/versi-toolchain.test.mjs`, dua asersi (pin, dan keberadaan
+`@astrojs/check` — tanpa yang kedua, yang pertama menjaga sesuatu yang sudah
+tidak ada), keduanya dibuktikan merah lewat mutasi.
+
+#### Selebihnya
+
+- Paragraf pembuka `AGENTS.md` berhenti membantah §Peran repo ini di berkas yang
+  sama; kolom "Audiens" pada tabel peran diganti "apa yang dikelola" — sumbu yang
+  justru dicabut `awcms` ADR-0070.
+- Kosakata URL yang dibelah, kontrak konsumen yang beku, dan dua gerbang peran
+  (`tests/peran-situs.test.mjs`, `tests/kosakata-news.test.mjs`) masuk kontrak
+  kerja dan Definition of Done — ketiganya sebelumnya tidak disebut satu baris
+  pun di sana.
+- Tabel "Keputusan `awcms`" di skill integrasi disegarkan: baris ADR-0059
+  dicabut (ia memerikan rute yang sudah tidak ada), enam baris baru masuk, dan
+  tujuh belas ADR yang **tidak** relevan disebut namanya, dikelompokkan menjadi
+  tujuh gugus — supaya diamnya tabel bisa
+  dibedakan dari "belum diperiksa".
+- Hitungan celah `sembilan` → `sepuluh` di enam berkas; celah 10 sudah ditutup
+  6 Agustus 2026 dan hanya dokumen standarnya yang mencatatnya.
+- Cacat `awcms` 10 Agustus 2026 yang layak dibaca sebagai peringatan di sini:
+  handler statis `@astrojs/node` berjalan sebelum middleware, sehingga setiap
+  berkas `dist/client` di sana keluar tanpa satu pun header keamanan.
+  Perbaikannya persis bentuk `server/penyaji.mjs` — header sebagai LANTAI
+  sebelum mendelegasi — jadi jangan pernah "menyederhanakan" penyaji di sini
+  dengan memanggil handler adapter langsung.
+
+### Advisory `nanoid` ditutup lewat override, dan gerbang `bun audit` hijau lagi
+
+`bun audit --audit-level=low` di job `check` mulai merah untuk **setiap** PR,
+tanpa satu pun berkas repo ini berubah: advisory
+[GHSA-2v37-7h3g-55p8](https://github.com/advisories/GHSA-2v37-7h3g-55p8)
+(`high`) terbit untuk `nanoid < 3.3.18`, dan rantainya
+`astro › vite › postcss › nanoid` menahan `^3.3.16` — yang resolve ke `3.3.17`.
+
+Itu bentuk kegagalan yang paling mudah salah dibaca: gerbangnya merah pada PR
+dokumen yang tidak menyentuh satu dependency pun, sehingga penulisnya mencari
+sebabnya di tempat yang salah.
+
+`postcss` belum melonggarkan rentangnya, jadi menaikkan `astro` tidak
+memperbaikinya — PR Dependabot yang menaikkan `astro` ke 7.2.0 membawa
+`nanoid@3.3.17` yang sama. Yang menutupnya adalah **override**, pola yang sudah
+dipakai repo ini untuk `fast-uri`: satu baris di `package.json`, dan lockfile
+yang menuliskannya.
+
+`3.3.18` adalah rilis patch murni dari cacat yang sama (`nanoid(0)` bisa
+berputar tanpa henti pada generator kustom), jadi tidak ada permukaan API yang
+berubah.
+
+### HSTS tidak pernah terkirim di produksi, dan gerbangnya kini membaca ARTEFAK alih-alih sumber
+
+Ditemukan saat memverifikasi deploy produksi pertama, 14 Agustus 2026:
+`awcms-astro.ahlikoding.com` menjawab `200` dengan lima header keamanannya —
+dan **tanpa `Strict-Transport-Security`**, meski `NODE_ENV=production`
+terpasang di container.
+
+#### Sebabnya bukan konfigurasi
+
+`bun build --target=bun` **melipat** `process.env.NODE_ENV` bertitik menjadi
+literal saat bundling. `dist/server/penyaji.mjs` yang tayang karena itu memuat:
+
+```js
+headerKeamanan(produksi = false)
+```
+
+Nilainya dibekukan pada saat build, bukan dibaca saat proses berjalan — jadi
+tidak ada nilai `NODE_ENV` di container yang bisa menyalakannya kembali.
+
+#### Kenapa tak satu gerbang pun melihatnya
+
+Ketiga asersi HSTS yang ada mengimpor `server/penyaji.mjs` — **sumbernya** —
+tempat gerbang produksi memang masih benar. Yang dikirim ke pembaca adalah
+bundelnya. Ini persis kelas cacat yang repo ini berulang kali tulis aturannya,
+kali ini mengenai repo ini sendiri: hijau di setiap gerbang yang tidak mengukur
+respons sungguhan.
+
+#### Perbaikan, dan pemeriksanya
+
+Satu bentuk akses: `process.env["NODE_ENV"]`. Bentuk bracket, `Bun.env`, dan
+`globalThis.process.env` ketiganya **selamat** dari pelipatan; yang bertitik
+tidak.
+
+Pemeriksanya menjalankan **artefaknya**: `tests/penyaji.test.mjs` menyalakan
+`dist/server/penyaji.mjs` dua kali dan menuntut HSTS **ada** pada
+`NODE_ENV=production` sekaligus **absen** di luar itu — dua arah, karena satu
+pratinjau lokal yang mengirimkannya mengunci setiap proyek di `localhost`
+selama setahun ([ADR-0029](docs/adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md)).
+
+Ia dibuktikan merah terhadap artefak **yang sedang tayang** sebelum
+perbaikannya mendarat, bukan terhadap mutasi buatan. Karena `Dockerfile`
+menjalankan `bun test tests/penyaji.test.mjs` sesudah `bun run build`, sebuah
+image yang kehilangan header keenam kini berhenti bisa dibangun.
+
+### Kebutuhan backend mendapat ALAMAT beserta pemeriksanya, dan keadaan `awcms` 13 Agustus 2026 malam diserap
+
+Peran repo ini sudah tertulis di enam berkas, dan seluruhnya dalam bentuk
+**negatif**: "tak pernah sumber kebenaran", "tanpa basis data", "seluruh API di
+`awcms`". Negatif tidak pernah memberi alamat. Tidak satu pun mengatakan apa
+**satuan** sebuah kebutuhan backend, ke mana ia pergi, atau bagaimana seseorang
+tahu ia sedang membangun satu.
+
+#### Satu keputusan baru, dengan pemeriksanya
+
+[ADR-0038](docs/adr/0038-kebutuhan-backend-menjadi-modul-di-awcms.md) —
+**satuan sebuah kebutuhan backend adalah MODUL di `awcms`**, lewat admission
+modul di sana, bukan folder di sini.
+
+Yang membuat alamat itu menentukan bukan kerapian: **kewajiban keluarga menempel
+pada MODUL, bukan pada kode.** Modul membawa deskriptornya, izinnya di katalog,
+tabelnya di bawah RLS, jejak auditnya, deskriptor retensinya, dan sejak `awcms`
+ADR-0094 deskriptor subjek datanya. Data yang lahir di repo ini lahir di luar
+semuanya — dan sebuah tabel yang tidak pernah lewat admission modul adalah tabel
+yang tidak bisa menjawab "apa yang kalian simpan tentang saya", tanpa seorang pun
+tahu ia tidak bisa.
+
+Bentuk pelanggarannya bukan pembangkangan melainkan langkah paling masuk akal
+yang tersedia: sebuah situs butuh formulir kontak yang tersimpan, dan yang
+terdekat adalah satu rute di sini plus satu tabel "sementara" — dengan **setiap
+gerbang tetap hijau**, karena tidak satu pun membaca `package.json` menurut kelas
+paketnya.
+
+Pemeriksanya mendarat bersamanya (ADR-0030):
+[`tests/tanpa-backend.test.mjs`](tests/tanpa-backend.test.mjs), empat asersi,
+keempatnya dibuktikan merah lewat mutasi — dependency kelas backend, `fetch`
+ber-`method` selain `GET` di `src/`/`scripts/`, artefak persistensi, dan
+hilangnya aturan ini dari `AGENTS.md`. Asersi kedua sekaligus menutup celah yang
+sinkronisasi 13 Agustus tinggalkan terbuka: sejak `awcms` ADR-0092 membuka kelas
+kredensial mesin yang boleh MENULIS, "build ini tidak bisa mengubah apa pun"
+berhenti menjadi sifat kelas dan menjadi properti yang harus dijaga — dan sampai
+sekarang ia hanya dijaga sebuah kalimat. Konsekuensi yang disengaja: **hari BFF
+ADR-0014 mendarat, gerbang itu merah**, karena jalur tulis dari repo ini adalah
+keputusan yang harus dinyatakan.
+
+Yang gerbang itu **tidak** lihat, dan ditulis alih-alih dibiarkan tersirat: ia
+memeriksa bentuk, bukan niat. Situs yang menyimpan datanya di layanan pihak
+ketiga lewat `GET` lolos keempat asersi.
+
+#### Keadaan `awcms` sesudah sinkronisasi sebelumnya, pada hari yang sama
+
+Sinkronisasi 13 Agustus 2026 berhenti di `awcms` ADR-0092. Sisi sana melanjutkan
+sampai ADR-0094 pada malam yang sama.
+
+- **`403 PARTNER_SUSPENDED` (`awcms` ADR-0093) — mode kegagalan build BERSYARAT,
+  dan yang pertama yang bergantung pada siapa MENERBITKAN token.** Ia menolak
+  aktor **terdelegasi** di chokepoint, per permintaan. Kredensial mesin mewarisi
+  `principal_kind` akun layanannya, dan tidak ada apa pun di jalur penerbitan
+  sana yang melarang akun layanan itu berupa tenant user terdelegasi — bentuk
+  yang persis muncul saat sebuah agensi membangun situs pelanggannya. Aturannya
+  karena itu operasional: **terbitkan token build atas akun layanan milik tenant
+  situs.** Diagnosisnya sengaja dipersulit oleh keputusan yang benar di sana:
+  suspensi membuat grant **tidak berlaku, bukan tidak ada**, jadi memeriksa
+  daftar grant tidak menunjukkan sesuatu yang hilang. Diserap di `AGENTS.md`
+  §Sumber data, tabel diagnosis [`deploy-coolify.md`](docs/deploy-coolify.md),
+  `.env.example`, dan docblock [`src/lib/awcms/tenant.ts`](src/lib/awcms/tenant.ts).
+- **`awcms` ADR-0094 — subjek data dijawab PER TENANT.** Nol pekerjaan adapter,
+  satu kewajiban yang harus dinyatakan: situs statis memegang **salinan**, jadi
+  anonimisasi di sana tidak menjangkau berkas yang sudah terbit sampai build
+  berikutnya — dan salinan yang tersebar bisa hidup lebih lama lagi (cache CDN,
+  riwayat git `dist/`). Yang membuat itu tidak menjadi masalah hari ini adalah
+  **keputusan, bukan kebetulan**: template ini menerbitkan nol data per-orang —
+  `author` JSON-LD `Organization` (digerbangi `tests/schema.test.mjs`) dan
+  `<author>` feed nama situs (keputusan di `src/lib/feed.ts` yang **tidak**
+  digerbangi, dan dicatat begitu). Situs yang menambah byline, avatar, atau komentar
+  mengambil kewajibannya, dan jalur penghapusannya berakhir di sebuah rebuild.
+- **Layar `/admin/*` `awcms` menjadi 40 tingkat atas dari 42** (`business-scope`
+  dan `subject-requests` mendarat sesudah sinkronisasi sebelumnya). Dua di
+  antaranya menyentuh operasi situs secara langsung dan karena itu disebut
+  namanya: `/admin/machine-credentials` — menerbitkan **dan mencabut** token
+  build kini sebuah layar, bukan `POST` yang harus diingat seseorang saat token
+  bocor — dan `/admin/subject-requests`.
+- `moduleDescriptorContractVersion` keluarga **4.0.0** (dari 3.1.0). Nol
+  pekerjaan di sini: repo ini tidak mendeklarasikan satu deskriptor modul pun.
+
+#### Satu pesan galat yang menyuruh pembacanya melakukan hal yang salah
+
+Sinkronisasi sebelumnya memperbaiki scope token "satu kunci" di `README.md`,
+`.env.example`, dan `deploy-coolify.md`, tetapi tidak menyentuh **kode**.
+`src/lib/awcms/tenant.ts` masih menyuruh menerbitkan token "scoped to
+`blog_content.posts.read` **and nothing else**" — persis resep yang gagal 403 di
+langkah TERAKHIR `bun run build`, setelah setiap halaman selesai dirender.
+Diperbaiki, sekaligus menunjuk layar penerbitnya dan kelas baca yang wajib
+dipertahankan.
+
+#### Gerbang
+
+Kelima hijau: `check` (0 error atas 79 berkas), `bun test` (362 lulus, 20
+berkas), `audit:konten`, `audit:dokumen` (973 kutipan ADR, 317 ditandai milik
+repo lain), `audit:graf`.
+
+### Buku besar terjemahan mencapai NOL, dan gerbang permukaan kilau berhenti membaca separuh
+
+Fase kelima dan terakhir [ADR-0039](docs/adr/0039-english-is-the-source-language.md):
+dua belas dokumen terakhir — enam di [`docs/awcms-astro/`](docs/awcms-astro/README.md),
+lima di [`jualanku/`](docs/awcms-astro/jualanku/README.md), dan
+[`deploy-coolify.md`](docs/deploy-coolify.md) — kini berbahasa Inggris di
+jalur telanjangnya. **`DOCS_AWAITING_MIRROR` kosong**: 53 cermin, nol utang.
+Migrasi 52 dokumen yang ADR-0039 jadwalkan selesai dalam lima commit.
+
+- **Gerbang permukaan kilau membaca SATU berkas, dan tabelnya baru saja punya
+  cermin.** `scripts/audit-dokumen.mjs` membandingkan tabel bertanda di
+  [`ui-ux-design-system.md`](docs/awcms-astro/ui-ux-design-system.md) dengan
+  `src/styles/global.css` dua arah — tetapi hanya di sumbernya. Ia kini membaca
+  keduanya, dan dibuktikan dengan mutasi: satu baris dihapus dari cermin → tepat
+  satu pelanggaran. Ini kejadian KEDUA dari kelas cacat yang sama dalam lima
+  fase (yang pertama tabel permukaan `awcms` di skill integrasi), dan keduanya
+  punya bentuk identik: sebuah tabel yang digerbangi terhadap kode, dengan
+  cerminnya tidak ikut digerbangi.
+- **Kepala tabelnya adalah literal yang dilewati gerbang**, jadi menerjemahkannya
+  saja sudah cukup untuk memerahkan berkas yang benar: `permukaanDokumen()`
+  melewati kolom bernama `Permukaan`, dan `Surface` akan terbaca sebagai
+  selector. Kini keduanya dilewati — pola yang sama dengan kolom status ADR yang
+  menerima dua bahasa sejak fase pertama.
+- **Tiga klaim yang menua diperbaiki**, seluruhnya di
+  [`checklist-repo-baru.md`](docs/awcms-astro/checklist-repo-baru.md): versi
+  Bun disebut konsisten di "tiga tempat" — menghitung BERKAS, kesalahan yang
+  [ADR-0030](docs/adr/0030-aturan-tertulis-mendapat-pemeriksanya.md) ditulis
+  untuk mengakhirinya dan yang sudah diperbaiki di `AGENTS.md` tetapi tidak di
+  sini; `bun test` disebut 20 berkas padahal 21; dan anggaran gambar disebut
+  "belum punya pemeriksa" padahal ia diukur `audit:konten` sejak 4 Agustus 2026.
+- **`audit:translation` masuk ke tiga daftar gerbang** yang sebelumnya menyebut
+  lima: checklist repo baru, tabel gerbang mutu
+  [`standar-teknis.md`](docs/awcms-astro/standar-teknis.md), dan blok rilis
+  pertama.
+- **Sembilan tautan ber-anchor diperbarui** karena heading yang diterjemahkan
+  memindahkan anchor-nya, dan `audit:dokumen` sengaja tidak memeriksa anchor —
+  `#aksesibilitas` → `#accessibility`, `#performa` → `#performance`,
+  `#stack` → `#the-stack`, `#kapan-memilih-awcms-astro` →
+  `#when-to-choose-awcms-astro`. Sama seperti fase ketiga: hanya membacanya yang
+  menemukan ini.
+
+**Yang tetap perlu mata manusia:** ADR-0039 §6 menuntut tinjauan atas ADR dan
+atas bagian `docs/awcms-astro/` yang menyatakan kebijakan mengikat. Gerbang
+membuktikan cermin tidak basi; ia tidak bisa membuktikan terjemahannya setia,
+dan selisih "wajib" versus "boleh" memindahkan sebuah keputusan.
+
+### Dua puluh lima ADR menjadi Inggris, dan indeksnya berhenti berbeda bahasa dari isinya
+
+Fase keempat [ADR-0039](docs/adr/0039-english-is-the-source-language.md), dan
+yang terbesar: ADR-0014 sampai ADR-0038 kini berbahasa Inggris di jalur
+telanjangnya. Buku besar tunggu menyusut 37 → 12, dan yang tersisa seluruhnya di
+[`docs/awcms-astro/`](docs/awcms-astro/README.md) plus
+[`deploy-coolify.md`](docs/deploy-coolify.md).
+
+- **Indeksnya sudah Inggris sejak fase pertama; isinya belum.**
+  [`docs/adr/README.md`](docs/adr/README.md) mendaftarkan 26 keputusan dengan
+  judul Inggris, sementara tiap berkasnya membuka dengan judul Indonesia. Gerbang
+  indeks tidak membandingkan judul — ia membandingkan nomor, keberadaan berkas,
+  dan kolom status — jadi selisih itu tidak pernah merah dan hanya terlihat oleh
+  yang membuka keduanya. Sekarang keduanya sepakat.
+- **Label header ADR mengikuti [ADR-0039](docs/adr/0039-english-is-the-source-language.md),
+  yang ditulis Inggris sejak lahir**: `Status`/`Date`/`Related`, ditambah
+  `Owner's rule`, `Supersedes`, `Narrows`, `Amends`, dan `Counterpart in awcms`
+  sesuai yang dipakai masing-masing. **`- **Status:**` sengaja tidak disentuh** —
+  ia satu-satunya baris yang diurai `scripts/audit-dokumen.mjs`, dan kata
+  "Status" kebetulan sama di kedua bahasa.
+- **Nama berkas ADR TIDAK diterjemahkan**, dan itu keputusan. Ada 843 kutipan
+  lokal `ADR-NNNN` beserta ratusan tautan yang menyebut slug Indonesianya; slug
+  adalah ALAMAT, bukan prosa, dan menerjemahkannya akan memutus setiap tautan
+  lintas-repo yang sudah menunjuk ke sini. Alasan yang sama berlaku untuk
+  `permukaanAdmin`, `urutanSeksi: "terbaru"`, dan kosakata konfigurasi lain yang
+  dibiarkan apa adanya di dalam prosa Inggris.
+- **Badan ADR diterjemahkan, bukan disegarkan.** Beberapa memuat kalimat yang
+  sudah berhenti benar dan sengaja dibiarkan — banner ADR-0018 dan ADR-0029,
+  butir bercoret di ADR-0015 dan ADR-0021, dan kalimat ADR-0020 yang menyebut
+  dirinya "tidak ditulis ulang; ia benar pada 2 Agustus 2026". ADR adalah rekaman
+  keputusan pada satu titik waktu; menyunting isinya sambil menerjemahkan akan
+  memalsukan rekaman itu, dan setiap ADR yang menyatakannya sendiri kini
+  menyatakannya dalam dua bahasa.
+- **Peringatan yang tersisa untuk peninjau:** gerbang terjemahan membuktikan
+  cermin tidak basi, bukan bahwa terjemahannya setia. ADR-0039 §6 menuntut
+  tinjauan manusia atas ADR justru karena selisih "wajib" dan "boleh" memindahkan
+  sebuah keputusan. Dua puluh lima berkas ini pantas dibaca sebelum merge.
+
+### Empat dokumen pintu depan menjadi Inggris, dan dua gerbang berhenti hijau karena kebetulan
+
+Terjemahan pertama di bawah
+[ADR-0039](docs/adr/0039-english-is-the-source-language.md): `README.md`,
+`AGENTS.md`, [`docs/adr/README.md`](docs/adr/README.md), dan
+[`docs/awcms-astro/README.md`](docs/awcms-astro/README.md) kini berbahasa
+Inggris di jalur telanjangnya, dengan cermin Indonesianya di `<nama>.id.md`.
+Buku besar tunggu menyusut 52 → 48, dan ia hanya boleh bergerak ke arah itu.
+
+- **Dua gerbang memeriksa AGENTS.md dan keduanya rusak oleh terjemahan** —
+  satu dengan berbunyi, satu dengan diam. `tests/tanpa-backend.test.mjs`
+  mencari frasa "kebutuhan backend … modul" dan langsung MERAH. Yang kedua
+  lebih buruk: `tests/peran-situs.test.mjs` mencari `/publik/i` dan tetap
+  hijau — bukan karena prosanya menyatakan bawaan publik, melainkan karena
+  nama berkas `0034-publik-secara-bawaan-...md` muncul di sebuah tautan.
+  Keduanya kini memeriksa KEDUA berkas, masing-masing dalam bahasanya sendiri,
+  dan yang kedua membuang tautan lebih dulu supaya yang dinilai adalah
+  kalimatnya. Ini kelas cacat yang akan berulang di tiap fase: gerbang
+  terjemahan menjaga cermin tetap SEUSIA sumbernya, bukan tetap MEMUAT apa
+  yang sumbernya muat.
+- **Klaim "lima gerbang" diperbaiki di empat tempat** yang masih hidup
+  (deskripsi skill gerbang, checklist go-live skill performa-keamanan, dan dua
+  baris kepatuhan di
+  [`standar-performa-dan-keamanan.md`](docs/awcms-astro/standar-performa-dan-keamanan.md)).
+  Gerbangnya enam sejak `audit:translation` mendarat. Sebutan "kelima gerbang"
+  di ADR dan CHANGELOG sengaja DIBIARKAN: keduanya catatan bertanggal, dan
+  benar saat ditulis.
+- **Satu tautan ber-anchor diperbaiki di kedua README** — menerjemahkan sebuah
+  heading memindahkan anchor-nya, dan `audit:dokumen` sengaja tidak memeriksa
+  anchor.
+
+### Enam dokumen akar menjadi Inggris, dan sebuah anchor yang tidak dijaga siapa pun
+
+Fase ketiga [ADR-0039](docs/adr/0039-english-is-the-source-language.md):
+[`CONTRIBUTING.md`](CONTRIBUTING.md), [`SECURITY.md`](SECURITY.md),
+[`GOVERNANCE.md`](GOVERNANCE.md), [`SUPPORT.md`](SUPPORT.md),
+[`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md), dan
+[`.changesets/README.md`](.changesets/README.md). Buku besar tunggu menyusut 43 → 37.
+
+- **Tautan ber-anchor menyeberangi terjemahan tanpa satu pun gerbang di
+  belakangnya.** `SUPPORT.md` menunjuk `CONTRIBUTING.md#terjemahan` dan
+  `CONTRIBUTING.md` menunjuk `GOVERNANCE.md#kapan-sebuah-perubahan-butuh-adr`;
+  menerjemahkan sebuah heading memindahkan anchor-nya, dan `audit:dokumen`
+  sengaja tidak memeriksa anchor (menebak slugifikasi heading GitHub). Keduanya
+  diperbaiki ke anchor Inggrisnya. Ini kelas cacat yang hanya bisa ditemukan
+  dengan membacanya — sama seperti fase sebelumnya, gerbangnya tidak akan
+  memberi tahu.
+- **Definition of Done di `CONTRIBUTING.md` tertinggal satu gerbang.** Ia
+  menyebut tiga audit sementara [`AGENTS.md`](AGENTS.md) — daftar yang
+  mengikat, dan yang dirujuk berkas ini sendiri — sudah menyebut empat sejak
+  `audit:translation` mendarat. Klaim "menjalankan kelimanya" juga diganti
+  dengan menyebut keenam perintah perilis satu per satu, berikut yang ketujuh
+  yang hanya dijalankan CI. Angka yang tidak menyebut isinya adalah angka yang
+  menua tanpa ketahuan.
+- **§Terjemahan sekarang menyebut kedua arah.** Berkas itu mengatur terjemahan
+  katalog PO — antarmuka, locale bawaan `id` — sementara ADR-0039 mengatur
+  terjemahan DOKUMEN dengan arah yang berlawanan. Satu berkas yang memuat kata
+  "terjemahan" dua kali dengan dua arah yang berbeda adalah tempat paling wajar
+  seseorang salah membaca yang mana.
+- **Status ADR yang ditolak ditulis `Rejected`, bukan `Ditolak`.** Kosakata
+  status di `docs/adr/` seluruhnya Inggris (`Accepted`, `Superseded by`), dan
+  nilai yang belum pernah dipakai satu ADR pun lebih baik ikut ke sana
+  sekarang daripada dipertahankan sendirian.
+
+### Inggris menjadi bahasa sumber dokumen, dan tiga gerbang bergerak lebih dulu
+
+Repo ini mengadopsi format dwibahasa keluarga AWCMS
+([ADR-0039](docs/adr/0039-english-is-the-source-language.md), mengikuti
+`awcms` ADR-0097): **Inggris di jalur telanjang `<nama>.md` adalah sumber yang
+berwenang, Indonesia di `<nama>.id.md` adalah cerminnya**, dan cerminnya memikul
+`<!-- i18n-source-hash: sha256:... -->` yang mencatat hash sumbernya. Gerbangnya
+MENDETEKSI penyimpangan; ia tidak pernah menerjemahkan, dan tidak ada panggilan
+API terjemahan dari CI.
+
+Yang mendarat sekarang mekanismenya, bukan terjemahannya. Nol prosa berubah:
+seluruh 52 dokumen dalam cakupan masuk ke buku besar `DOCS_AWAITING_MIRROR` yang
+**hanya boleh menyusut**, dan ADR-0039 sendiri adalah pasangan pertama —
+ditulis Inggris, dicerminkan pada perubahan yang sama, sengaja tidak ada di buku
+besar itu.
+
+- Gerbang baru `bun run audit:translation`
+  ([`scripts/check-docs-translation.mjs`](scripts/check-docs-translation.mjs),
+  logika murni di
+  [`scripts/lib/docs-i18n-checks.mjs`](scripts/lib/docs-i18n-checks.mjs)),
+  berjalan di job `check` CI di sebelah `audit:dokumen`. Ia menjawab **dua**
+  pertanyaan yang sengaja dipisah: apakah sebuah cermin masih seusia sumbernya,
+  dan dokumen mana yang belum punya cermin sama sekali — digabung, ia akan hijau
+  sementara sebagian besar korpus belum diterjemahkan.
+- `bun run docs:i18n:stamp` menulis spanduk pemilih bahasa di kedua sisi dan
+  menaruh penandanya di cermin. Idempoten, dan ia menghormati frontmatter YAML
+  milik berkas skill — spanduk yang mendarat di atas `---` akan diam-diam
+  membatalkan frontmatter itu, dan skill-nya kehilangan `name`/`description`
+  yang menentukan kapan ia dipilih.
+- Tiga cacat di [`scripts/audit-dokumen.mjs`](scripts/audit-dokumen.mjs)
+  ditutup lebih dulu, karena berkas `.id.md` pertama akan memerahkannya dengan
+  alasan yang bukan cacat: cermin dihitung sebagai ADR tersendiri dan dituntut
+  masuk indeks; penanda "milik repo lain" hanya mengenal frasa Indonesia,
+  sehingga 325 kutipan yang kini dimaafkan akan melanggar sekaligus begitu
+  sebuah dokumen menulis "reference repo"; dan cermin yatim memasok nomor ADR
+  yang berkasnya tidak ada. Masing-masing dibuktikan MERAH tanpa perbaikannya di
+  [`tests/audit-dokumen.test.mjs`](tests/audit-dokumen.test.mjs).
+- Gerbang indeks ADR kini ikut membaca cermin indeksnya bila ada, dan kolom
+  status menerima kedua bahasa. Hash terjemahan menjaga cermin tetap SEUSIA
+  sumbernya, bukan tetap BENAR terhadap isi `docs/adr/`.
+- `*.id.md` dikecualikan dari graf pengetahuan. Sebuah cermin menceritakan ulang
+  sumbernya kata demi kata; mengindeks keduanya memasukkan setiap konsep dua
+  kali dan menghasilkan dua komunitas bertetangga yang akan diberi nama sama —
+  yang sudah ditolak `bun run audit:graf`. Karena ia pola glob, gerbang itu
+  melaporkannya sebagai **tidak ditegakkan** alih-alih berpura-pura menjaganya.
+
+### Lima dokumen skill menjadi Inggris, dan sebuah tabel yang digerbangi ternyata hanya digerbangi separuh
+
+Fase kedua [ADR-0039](docs/adr/0039-english-is-the-source-language.md), dan ia
+mengambil alasan yang paling kuat di ADR itu lebih dulu: `.claude/skills/**`
+adalah instruksi operasional yang **DIIKUTI** agen, bukan sekadar dibaca. Kelima
+dokumennya — [`README.md`](.claude/skills/README.md) beserta keempat
+`SKILL.md` — kini berbahasa Inggris di jalur telanjangnya, dengan cermin
+Indonesianya di `<nama>.id.md`. Buku besar tunggu menyusut 48 → 43.
+
+Blok frontmatter tetap byte pertama tiap `SKILL.md` dan bannernya duduk di
+bawahnya, seperti yang sudah diantisipasi `docs-i18n-stamp.mjs`; `SKILL.id.md`
+tidak dimuat sebagai skill kedua.
+
+- **Tabel permukaan yang "tidak bisa salah" ternyata bisa salah di separuh
+  pembacanya.** `tests/kontrak-awcms.test.mjs` menggerbangi tabel bertanda di
+  skill integrasi dua arah terhadap `src/` — tetapi hanya di SATU berkas. Begitu
+  cerminnya ada, sebuah baris yang hilang dari cermin lolos seluruh gerbang:
+  `audit:translation` menjaga cermin tetap **SEUSIA** sumbernya, bukan tetap
+  **MEMUAT** yang sumbernya muat, jadi hash yang cocok tidak membuktikan
+  tabelnya utuh. Tesnya kini memeriksa kedua berkas, dan dibuktikan bukan hiasan
+  dengan cara yang diminta skill gerbang sendiri: satu baris dihapus dari cermin
+  → tepat satu tes merah, yang Inggrisnya tetap hijau. Ini kelanjutan langsung
+  dari kelas cacat yang ditemukan fase sebelumnya, dan ia akan berulang di tiap
+  fase berikutnya yang cerminnya dibaca sebuah gerbang.
+- **Skill gerbang menyatakan LIMA gerbang di badannya** sementara deskripsinya
+  sudah berbunyi enam sejak fase sebelumnya — `audit:translation` tidak ada di
+  blok perintahnya maupun di tabel "yang ditangkap masing-masing". Keduanya kini
+  lengkap, berikut satu butir baru di "yang TIDAK ditangkap": apa yang **dimuat**
+  sebuah cermin, dan aturan bahwa gerbang yang membaca prosa wajib menyebut
+  berkas yang mana, dalam bahasa berkas itu.
+- **Dua angka yang menua diperbaiki di skill yang sama**: `bun test` disebut 20
+  berkas padahal 21, dan sebuah tabel berjudul "empat aturan tanpa pemeriksa,
+  ditemukan 4 Agustus" sudah punya baris kelima sejak ADR-0038 mendarat
+  14 Agustus. Judulnya kini menyebut lima beserta kedua tanggalnya.
+- **Perilis TIDAK menjalankan `audit:translation`, dan itu kini tertulis.** CI
+  menjalankannya pada tiap push; `scripts/rilis.mjs` tidak. Skill
+  performa-keamanan karena itu berbunyi "enam dari ketujuhnya", bukan
+  "keenamnya", dan menyebut di mana yang ketujuh berjalan — cermin basi
+  tertangkap sebelum merge, bukan saat rilis. Selisihnya dinyatakan alih-alih
+  ditutup diam-diam: menambahkannya ke perilis adalah perubahan perilaku, dan
+  tempatnya bukan sebuah commit terjemahan.
+
+### Changeset menyatakan bump-nya sendiri, dan tag `v0.2.NaN` berhenti mungkin
+
+Versi berhenti menjadi kata yang diketik saat rilis dan menjadi akibat dari isi
+rilisnya ([ADR-0040](docs/adr/0040-changeset-menyatakan-bump-semver.md)).
+Setiap changeset kini membawa `bump: major | minor | patch`, dan
+[`scripts/rilis.mjs`](scripts/rilis.mjs) mengambil yang **terbesar** di antara
+yang menunggu.
+
+- **Dua bidang yang tidak pernah dibaca siapa pun kini divalidasi.** `tipe` dan
+  `dampak` sudah didokumentasikan sejak lama dan diisi sepuluh changeset dengan
+  setia — sementara `rilis.mjs` membuang seluruh blok frontmatter dengan satu
+  regex dan tidak ada gerbang yang pernah membukanya. Bidang yang tidak dibaca
+  salah sesering ia benar, dan tidak ada yang tahu.
+- **`v0.2.NaN` adalah tag yang benar-benar bisa dibuat sebelum ini.**
+  `pkg.version.split('.').map(Number)` menjawab sesuatu untuk setiap string:
+  `0.2.0-rc.1` → `v0.2.NaN`, `1.0` → `v1.0.NaN`, `v0.2.0` → `vNaN.2.1`.
+  Ketiganya dijalankan, bukan dibayangkan. Tag semacam itu tidak terurut di mana
+  pun di bawah `--sort=v:refname`, jadi rilis BERIKUTNYA membaca tag lain sebagai
+  yang terbaru — kerusakannya hidup lebih lama daripada run yang membuatnya.
+  [`scripts/lib/semver.mjs`](scripts/lib/semver.mjs) kini menolak awalan `v`,
+  prerelease, metadata build, dan angka ber-nol-depan dengan menyebut namanya.
+- **`README.id.md` terhitung sebagai changeset menunggu.** Penyaringnya
+  membandingkan dengan satu nama persis (`f !== 'README.md'`), sehingga rilis
+  berikutnya akan melipat README Indonesia milik direktori itu sendiri ke
+  `CHANGELOG.md` lalu MENGHAPUS berkasnya. Kini setiap `README*` ditolak.
+- **Tingkat yang disebut manusia hanya boleh naik.** Perilis yang tahu rilisnya
+  lebih besar daripada yang diakui changeset-nya boleh mengatakannya; yang lebih
+  kecil ditolak beserta daftar changeset yang menuntut lebih.
+- **Pemeriksanya** [`tests/versi-changeset.test.mjs`](tests/versi-changeset.test.mjs)
+  — dua belas asersi, termasuk bahwa kosakata yang diterima gerbang masih sama
+  dengan kosakata yang diajarkan [`README`](.changesets/README.md)-nya. Saat keduanya
+  berpisah, kontributor yang mengikuti README-lah yang dirugikan, dan tidak ada
+  hal lain yang akan menyadarinya.
+
+Rilis pertama yang memakainya menurunkan `patch` dari sebelas changeset yang
+menunggu: `0.2.0 → 0.2.1`.
+
+### Keadaan `awcms` per 15 Agustus 2026 diserap, dan dua aturan yang selama ini hanya tertulis akhirnya punya pemeriksa
+
+Sinkronisasi terakhir menyerap `awcms` sampai ADR-0092 (13 Agustus 2026). Sejak
+itu sisi sana melanjutkan sampai ADR-0099. Lima keputusan, dan hanya **satu**
+yang menyentuh repo ini — tetapi yang satu itu mengubah bentuk sebuah URL publik
+yang dinamai enam berkas di sini sebagai fakta.
+
+Yang **tidak** berubah dinyatakan lebih dulu, karena itu yang paling sering
+salah diduga: **adapter tidak disentuh sama sekali.** Ketiga permukaan yang
+dipanggil build tetap tiga, dan fixture kontrak konsumen di sana terakhir
+diregenerasi 13 Agustus 2026 (ADR-0092) — tidak ada regenerasi yang menyentuh
+permukaan DIPANGGIL sejak itu, jadi `tests/kontrak-awcms.test.mjs` hijau tanpa
+satu baris pun berpindah.
+
+#### Satu URL publik berpindah bentuk, dan enam berkas menyebutnya
+
+`awcms` ADR-0098 memindahkan locale permukaan konten publiknya ke dalam PATH.
+Alamat kanoniknya kini `/{locale}/blog/{tenantCode}/**`; path telanjang tidak
+merender apa pun dan menjawab `307`, `private, no-store`. Akibat yang paling
+mudah terlewat bukan URL-nya melainkan **rantainya**: tautan `/news/**` yang
+dipensiunkan pada 8 Agustus 2026 kini dua lompatan — `301` ke path telanjang,
+lalu `307` ke yang berprefiks — karena penulisan ulang `Location` di sana hanya
+membawa locale yang sudah dimiliki pembacanya.
+
+Yang diperbaiki karena itu adalah kalimat yang **menyuruh pembacanya melakukan
+hal yang salah**: `README.md` dan `docs/awcms-astro/checklist-repo-baru.md`
+sama-sama menyarankan menyajikan pembaca dari permukaan publik `awcms` sendiri,
+dan keduanya mencetak alamat yang kini me-redirect. Sisanya —
+`AGENTS.md`, skill integrasi, `standar-performa-dan-keamanan.md` — menyebutnya
+sebagai fakta, dan fakta yang menua adalah cara pekerjaan berikutnya mendarat di
+tempat yang keliru.
+
+#### Repo ini TIDAK ikut memberi prefiks, dan itu keputusan, bukan kelalaian
+
+[ADR-0041](docs/adr/0041-locale-stays-at-the-root-and-two-vary-names-are-refused.md).
+Locale default tetap memegang akar (`/panduan/`, bukan `/id/panduan/`).
+
+Alasannya bukan selera melainkan premis: kegagalan yang menjadi alasan
+keberadaan `awcms` ADR-0098 — satu URL publik yang badannya dipilih cookie, di bawah
+kunci cache `(host, url)` — **secara struktural tidak tersedia** pada build
+statis. `server/penyaji.mjs` membaca `req.url` dan tidak ada yang lain. Mengikuti
+prefiks itu berarti menjawab setiap URL locale default dengan redirect demi
+properti yang sudah dimiliki, dan menurut kosakata ADR-0040 sendiri itu `major`.
+
+Tanpa ADR ini, perbedaan itu terbaca sebagai ketertinggalan dan akan
+"diperbaiki" seseorang. Ia divergence keluarga dan butuh entrinya sendiri di
+`awcms-family-compatibility.yaml` sana — repo ini tidak bisa menuliskannya, dan
+karena itu menyatakannya.
+
+#### Yang DISERAP dari `awcms` ADR-0098, beserta pemeriksanya
+
+Keputusan 2-nya: `Vary: Cookie` dan `Vary: Accept-Language` **DITOLAK** pada
+setiap respons publik — ditolak, bukan dibuang, karena membuangnya meng-cache
+badan yang penulisnya baru saja menyatakan bervariasi.
+
+Aturannya tinggal di `server/penyaji.mjs` sebagai `VARY_DILARANG`, sebentuk
+dengan `PERAN_DILARANG`. Pemeriksanya `tests/penyaji.test.mjs`, tiga asersi,
+masing-masing dibuktikan merah oleh mutasinya sendiri: respons sungguhan pada
+permintaan yang membawa cookie DAN `Accept-Language`, sumber penyaji yang tidak
+menulis `Vary` apa pun, dan daftar terlarang yang tepat dua nama. Asersi tengah
+sengaja lebih ketat daripada aturannya, dan tesnya menyatakan itu alih-alih
+menyamarkannya.
+
+Godaannya nyata dan berbentuk gamblang: cara membuat situs ini memilih bahasa
+pembacanya tanpa rebuild adalah menegosiasikan `Accept-Language` di penyaji.
+Setiap respons di sini `public`, jadi yang menerima akibatnya bukan yang
+menyunting melainkan orang asing, beberapa menit kemudian, pada halaman yang
+tidak bisa dirender ulang siapa pun.
+
+#### Separuh ADR-0036 yang tidak dibaca apa pun
+
+`AGENTS.md` menulis "Jangan bangun `/blog/**` di sini" sejak 8 Agustus 2026 dan
+tidak ada satu perintah pun yang merah bila dilanggar — bentuk yang persis sama
+dengan lima aturan yang skill gerbang sudah daftarkan.
+
+`awcms` ADR-0098-lah yang mengubahnya dari celah laten menjadi celah hidup: URL kanonik
+sebelah kini `/{locale}/blog/{tenantCode}/…`, huruf per huruf sama dengan bentuk
+yang dihasilkan `src/pages/[lang]/[tab]/…` di sini. `tests/kosakata-news.test.mjs`
+kini menolak tiga bentuk — tab yang mengklaim slug `blog`, entri
+`permukaanAdmin.prefiks` di bawah `/blog`, dan berkas rute yang menuliskan
+segmennya secara harfiah — masing-masing dibuktikan merah dengan memutasi repo
+ini, bukan hanya sebuah fixture. Asersi keempat memastikan pemindaian rutenya
+benar-benar membaca sesuatu, sehingga ia tidak bisa lolos karena tidak menemukan
+apa pun.
+
+#### Selebihnya
+
+- Tiga ADR sisanya membentuk permukaan TERAUTENTIKASI dan tempatnya
+  `docs/awcms-astro/permukaan-admin-user.md` §5, bukan skill adapter: preferensi
+  bahasa milik **principal** dan global (ADR-0095 — jadi "bahasa situs ini"
+  salah memerikan apa yang dilakukannya), rute swalayan **tidak butuh izin** dan
+  mengarang satu justru mendarat sebagai 403 universal lewat jebakan ADR-0058 §E
+  (ADR-0096), dan alamat sign-in adalah **pemulihan akun** yang statusnya masih
+  Accepted tanpa implementasi (ADR-0099 — hari ini layar profil menampilkannya
+  baca-saja dan menyebut alasannya).
+- `awcms` ADR-0097 adalah keputusan yang sama dengan ADR-0039 di sini, dicapai
+  mandiri. Satu hal yang perlu diketahui sebelum membaca dokumen di sana: buku
+  besarnya dibuka pada 253 dokumen tertunggak, jadi `<nama>.md` telanjang di
+  `awcms` masih lebih sering berbahasa Indonesia daripada tidak.
+- §3 `permukaan-admin-user.md` bertambah satu baris: permukaan admin adalah hal
+  pertama yang punya cookie layak divariasikan, dan halaman publik di sebelahnya
+  masih `public`. Jawabannya sama dengan jawaban `awcms` — `private, no-store`,
+  bukan `Vary`.
+
+### Sebuah artikel akhirnya bisa ditemukan lewat kategori dan tag-nya
+
+Redaksi memfilekan artikel ke sebuah kategori di CMS, `awcms` menyimpannya, dan
+pembaca tidak pernah bisa melihatnya. Situs ini tidak punya arsip kategori
+maupun arsip tag: sebuah artikel termasuk salah satu tab yang dikonfigurasi di
+`src/config/site.ts`, dan tidak ada halaman mana pun yang mengagregasi "semua
+yang berada di Politik". Itu butir pertama yang didaftar `awcms` #597.
+
+Dua hal yang menghalanginya diperbaiki di `awcms` lebih dulu — feed build kini
+membawa `termIds`, dan daftar term kini bisa ditelusuri sampai habis. Ini paruh
+konsumennya.
+
+#### Yang mendarat
+
+- `/kategori/{slug}/` dan `/tag/{slug}/`, dengan paginasi `halaman/{nomor}/`,
+  di locale bawaan maupun locale berprefiks.
+- Halaman artikel MENAUT ke arsipnya. Tanpa itu setiap halaman arsip hanya bisa
+  ditemukan lewat sitemap — halaman yang ada, terindeks, dan tidak ditaut satu
+  pun halaman yang isinya.
+- Permukaan `awcms` kelima, `/api/v1/blog/terms`, lewat gerbang kontrak di
+  `tests/kontrak-awcms.test.mjs` dan kedua tabel bertanda di skill integrasi.
+
+#### Tiga keputusan yang salahnya senyap
+
+**Arsip dibangun dari term yang DIPAKAI, bukan dari kosakatanya.** `awcms` bisa
+menyimpan ribuan tag, dan pada arsip mana pun yang tumbuh bertahun-tahun
+sebagian besarnya tidak melekat pada satu pun artikel yang terbit hari ini. Satu
+halaman per term dalam kosakata berarti menerbitkan ribuan grid kosong — halaman
+tipis bagi perayap, dan tidak ada apa-apa bagi pembaca.
+
+**Kosakata dibaca lewat traversal, tidak pernah lewat list bawaannya.** List itu
+`name ASC` dengan `LIMIT` berbatas dan mengembalikan array telanjang: tidak ada
+field apa pun di dalamnya yang bisa berkata "masih ada lagi". Kosakata tag di
+atas arsip 23.906 artikel akan terpotong di sekitar huruf B, dan situs akan
+membangun seratus halaman arsip dari ribuan — hijau, dengan setiap artikel yang
+berada di tag berabjad belakang menaut ke halaman yang tak pernah dibangkitkan.
+
+**Arsip diurutkan tanggal, selalu.** Sebuah seksi punya `urutanSeksi` sendiri
+karena itu keputusan redaksi; sebuah arsip MELINTASI seksi, dan `urutan` dari
+dua seksi berbeda tidak dibandingkan terhadap apa pun. "Artikel 3" di satu seksi
+tidak berada sebelum atau sesudah "Artikel 3" di seksi lain.
+
+#### Yang sengaja TIDAK dibangun
+
+`channel` dan `topic` (PRD §8.5/§12.4) tidak mendapat arsip di sini. Keduanya
+navigasi primer dan label lintas-kanal, dan permukaan pembacanya adalah mega
+menu di `awcms` #597 butir 6 — membangkitkan arsip telanjang untuk keduanya
+sekarang akan mendahului desain itu. Keduanya dibaca lalu diabaikan secara
+eksplisit, bukan tersaring diam-diam oleh sebuah filter yang tampak seperti
+detail.
+
+#### Segmen yang dipesan
+
+`kategori`, `tag`, dan `halaman` kini ditolak sebagai slug seksi, saat impor
+konfigurasi. Sebuah tab bernama `kategori` mendeklarasikan dua halaman berbeda
+pada satu URL: Astro membangun keduanya dan satu menang, diam-diam, dengan
+setiap gerbang hijau dan satu bagian utuh situs tak terjangkau.
+
+#### Penolakan bukan build gagal; kegagalan iya
+
+403 atau 404 memperingatkan dengan menyebut nama permission-nya
+(`blog_content.taxonomies.read`) dan membangun tanpa arsip; selain itu melempar.
+Bedanya dengan identitas situs layak disebut: **kosakata kosong adalah keadaan
+yang sah**, jadi fallback dan jawaban kosong yang jujur menghasilkan halaman
+yang sama. Justru itu sebabnya cabang kegagalannya harus tetap terpisah — dengan
+`catch` menyeluruh, "CMS Anda mati" dan "redaksi ini tidak memakai kategori"
+menjadi peristiwa yang sama.
+
+### Sebuah seksi berhenti merender seluruh sejarahnya ke dalam satu dokumen
+
+PRD FR-DSC-006 meminta arsip BERBATAS sebelum volume produksi, dan volume yang
+membuatnya mendesak nyata: target migrasi SeputarBorneo adalah **23.906
+artikel**. Sampai perubahan ini setiap halaman seksi merender seluruhnya —
+sebuah respons HTML tunggal berisi setiap judul yang pernah diterbitkan sebuah
+redaksi, yang tidak digulir pembaca mana pun dan tidak diperlakukan perayap
+sebagai indeks yang berguna.
+
+Halaman 1 tetap di `/panduan/`; halaman 2..N di `/panduan/halaman/N/`.
+`SITE_POSTS_PER_PAGE` mengaturnya, bawaannya 12, dan nilai yang cacat
+MENGGAGALKAN build alih-alih diabaikan — aturan yang sama dengan
+`AWCMS_API_TIMEOUT_MS`.
+
+#### Tiga keputusan yang salah dalam diam
+
+**Halaman 1 tidak punya kembaran `/halaman/1/`, dan rutenya tidak pernah
+dibangkitkan.** Menerbitkan keduanya memberi satu halaman dua URL dan
+memindahkan alamat yang sudah terindeks — karena ada orang menerbitkan artikel
+ke-13.
+
+**Setiap halaman kanonik ke DIRINYA.** Mengarahkan halaman 2..N ke halaman 1
+adalah kebiasaan umum, dan ia akan menyembunyikan seluruh arsip dari indeks:
+untuk 23.906 artikel, setiap URL setelah dua belas yang pertama menjadi tak
+terjangkau kecuali dengan mengklik — persis akibat yang FR-DSC-006 ada untuk
+mencegahnya.
+
+**Judul halaman 2..N membawa nomornya.** Judul identik di seluruh arsip adalah
+duplikat bagi perayap, dan satu-satunya pembeda yang terbawa ke hasil pencarian.
+
+#### Feed ikut dibatasi, karena itu cacat yang sama dilihat mesin
+
+`isiFeed` memancarkan SETIAP artikel sebuah seksi. Pada target migrasi itu
+berarti dokumen Atom berisi 23.906 entry, dibangun ulang setiap build dan
+diunduh ulang seluruhnya oleh setiap pembaca feed pada setiap polling.
+Dibatasi `artikelPerFeed` (50), sengaja BUKAN angka yang sama dengan batas
+halaman: sebuah halaman adalah satuan penjelajahan dan sebuah feed adalah
+jendela polling, dan menyatukannya berarti situs yang menampilkan 6 kartu per
+halaman juga melupakan segalanya yang lebih tua dari 6 posting terakhirnya di
+antara dua polling.
+
+#### Yang TIDAK berubah
+
+Navigasinya tautan biasa dengan `rel="prev"`/`rel="next"` — situs ini harus
+terbaca dengan JavaScript dimatikan, dan arsip yang hanya bisa ditelusuri skrip
+juga tidak bisa ditelusuri perayap. Syarat feed dibaca dari SEKSI dan bukan dari
+halaman yang sedang dirender, supaya pengumuman feed tidak lenyap di halaman 2.
+
+Halaman `/sitemap/` masih mendaftar setiap artikel per seksi. Itu permukaan
+dengan pertimbangannya sendiri — mendaftar segalanya bisa dibilang memang
+tugasnya — dan membatasinya adalah keputusan desain tersendiri, bukan bagian
+dari butir ini.
+
+### Artikel yang selesai dibaca akhirnya menawarkan sesuatu berikutnya
+
+Sampai perubahan ini sebuah artikel berakhir di disclaimer, dan pembacanya
+keluar. Sekarang ia menutup dengan daftar pendek artikel lain di seksinya.
+
+#### Judulnya "lainnya di seksi ini", bukan "artikel terkait"
+
+Karena ia memang bukan itu. Keterkaitan yang sebenarnya butuh taksonomi —
+`termIds` dikembalikan `awcms`, tetapi tidak ada yang meresolusinya di repo ini
+hari ini, dan itu butir tersendiri yang menuntut permukaan `awcms` baru. Judul
+"artikel terkait" di atas daftar teman-seksi adalah janji yang dibaca pembaca
+dan tidak dipenuhi.
+
+Ketika taksonomi mendarat, blok ini menjadi tempat keterkaitan sungguhan
+tinggal, dan judulnya berubah bersama datanya.
+
+#### Dua aturan dari SATU deklarasi yang sudah ada
+
+Seksi ber-`urutanSeksi: "terbaru"` menawarkan yang TERBARU: nilainya meluruh,
+dan pembaca berita mencari kabar berikutnya. Seksi `"manual"` menawarkan
+TETANGGA menurut urutan redaksinya — langkah 4 setelah langkah 3, karena itulah
+yang sedang dikerjakan pembacanya. Deklarasi yang sama sudah memutuskan apa yang
+ditampilkan kartu dan tipe schema.org apa yang diklaim artikel.
+
+#### Nol permintaan tambahan ke `awcms`
+
+Diturunkan dari feed yang sudah ditarik build (`getArticles` dimemoisasi per
+build), bukan dari permukaan baru — yang akan menuntut tarian kontrak
+lintas-repo demi sebuah daftar tiga tautan.
+
+#### Dua kesalahan yang menghasilkan blok yang TAMPAK benar
+
+Menawarkan artikel yang sedang dibuka terlihat seperti daftar yang wajar sampai
+seseorang mengkliknya dan tidak ke mana-mana; ia karena itu dibuang menurut
+SLUG, bukan menurut posisi.
+
+Menghitung tetangga SETELAH artikelnya dibuang menggeser setiap indeks
+sesudahnya satu langkah, sehingga "langkah berikutnya" melompati satu artikel —
+pada panduan berurutan itu instruksi yang keliru, bukan sekadar tautan keliru.
+Posisi karena itu dihitung terhadap seksi utuh.
+
+### Setiap galeri merender sebaris placeholder abu-abu di situs yang gambar artikelnya bekerja
+
+`content-blocks.ts` menyatakan, di komentar berkasnya sendiri, bahwa item galeri
+ber-`mediaObjectId` tidak bisa dirender karena "resolusi id butuh endpoint media
+yang tidak dipanggil situs ini".
+
+Kalimat itu **berhenti benar** saat `src/lib/awcms/media.ts` mendarat: build
+sudah meresolusi gambar unggulan dan kartu share lewat
+`GET /api/v1/media/objects` sejak saat itu. Tidak ada yang membaca ulang
+kalimatnya, jadi setiap galeri yang ditempatkan editor terbit sebagai sebaris
+placeholder — di situs yang gambar artikelnya justru bekerja.
+
+#### Kenapa tidak ada gerbang yang bisa melihatnya
+
+Placeholder ITU perilaku terdokumentasi untuk item yang tidak bisa diresolusi.
+Ia tampak seperti salah satunya. Tidak ada tipe yang salah, tidak ada
+permintaan yang gagal, tidak ada tag yang hilang — hanya sebuah kapabilitas
+yang sudah ada dan tidak pernah disambungkan.
+
+Ini kelas cacat yang sudah berulang di keluarga repo ini: sebuah kalimat yang
+menyatakan ketiadaan menua ke arah yang berlawanan dari koreksi biasa. Klaim
+POSITIF pecah begitu kodenya berubah; klaim NEGATIF makin salah dan tidak pernah
+gagal sendiri.
+
+#### Yang berubah
+
+Id galeri ikut dalam batch media yang SAMA — satu permintaan per build, bukan
+satu per galeri — dan renderer menerima petanya sebagai parameter opsional,
+sehingga modul itu tetap murni dan tetap bisa diuji tanpa jaringan.
+
+`altText` dari registri menang atas caption sebagai `alt`, dengan alasan yang
+sama seperti gambar unggulan: ia ditulis UNTUK gambarnya. Caption tetap menjadi
+`<figcaption>` — ia keterangan, bukan alt. Ukurannya ikut supaya peramban
+memesan ruang sebelum gambarnya tiba.
+
+Id registri menang atas `url` mentah yang menemaninya, sama seperti renderer
+`awcms` sendiri: id adalah rujukan terkelola, dan URL di sebelahnya adalah apa
+pun yang ada sebelum objeknya didaftarkan.
+
+Id yang benar-benar tidak resolve tetap placeholder. `awcms` MELAPORKAN id yang
+tidak resolve alih-alih membuangnya, justru supaya pemanggil bisa membedakan
+"tidak ada gambar" dari "gambar ini hilang", dan perbedaan itu diteruskan sampai
+ke halaman.
+
+### Sebuah situs akhirnya bisa menyatakan dirinya sendiri, tanpa menyunting repo ini
+
+Sampai perubahan ini, siapa sebuah situs hanya bisa diubah oleh orang yang bisa
+menyunting deployment-nya. Nama, lambang, dan kartu share datang dari `.env`;
+tagline dan baris hak cipta dari katalog PO; favicon dari sebuah berkas di
+`public/`. Alamat redaksi, email, telepon, WhatsApp, dan tautan profil sosial
+tidak punya tempat sama sekali — bukan kosong, **tidak ada** — sehingga
+satu-satunya cara menerbitkannya adalah menuliskannya ke dalam template yang
+dipakai situs lain.
+
+Itu cacat yang dinamai `awcms` #596: identitas hidup di source frontend, dan
+tenant kedua mustahil tanpa fork.
+
+#### Satu permintaan, karena `awcms` sudah menggabungkannya
+
+`GET /api/v1/site-profile/composed` (`awcms` ADR-0102) menjawab keduanya
+sekaligus: yang dibaca MANUSIA milik modul `site_profile`, yang dibaca PERAYAP
+milik `seo_distribution`. Pemisahan itu benar untuk kepemilikan dan salah untuk
+konsumen, jadi `awcms` menyusunnya di sisi baca — dan template ini karena itu
+tidak pernah belajar bahwa pemisahannya ada.
+
+Yang berubah di halaman: masthead memakai logo dan nama tenant, `<link
+rel="icon">` memakai favicon tenant, tagline dan baris hak cipta datang dari
+redaksi, footer menumbuhkan kolom kontak dan kolom profil sosial bila — dan
+hanya bila — tenant mengisinya, dan simpul `Organization` di setiap halaman
+membawa `logo`, `address`, `email`, `telephone`, serta `sameAs` yang sebenarnya.
+
+#### Urutan mendaratnya adalah inti kontrak lintas-repo
+
+`awcms` membekukan bentuk responsnya LEBIH DULU, sebagai path **COMMITTED** —
+sebuah janji, karena belum ada yang memanggil. Baru setelah itu repo ini mulai
+memanggil, dan entri di sana berpindah ke CONSUMED. Definition of Done menuntut
+urutan itu, dan urutan sebaliknya berarti build di sini bersandar pada bentuk
+yang belum disanggupi repo sebelah. Ini permukaan **keempat**;
+`tests/kontrak-awcms.test.mjs` mengeraskan daftarnya dari kode sumber, dua arah
+terhadap tabel bertanda di skill integrasi, justru supaya penambahan seperti ini
+tidak bisa mendarat diam-diam.
+
+#### Dua keputusan yang gagal dalam diam bila salah
+
+**403 dan 404 jatuh ke cadangan; sisanya menggagalkan build.** Keduanya terlihat
+sama di log dan menuntut jawaban berlawanan. `403` berarti kredensial build
+belum dipegangi `site_profile.profile.read` — nyata dan diharapkan, karena
+`awcms` menyemai izin per tenant saat tenant itu dibuat, sehingga tenant lama
+diam-diam kehilangan grant-nya. `404` berarti `awcms`-nya lebih tua dari
+endpoint-nya. Keduanya adalah "`awcms` bilang tidak", situsnya tetap benar
+dengan nilai cadangan, dan peringatannya menyebut izin yang kurang supaya
+perbaikannya satu kalimat. Sebuah `500` bukan penolakan: itu CMS yang rusak, dan
+membangun terus akan menerbitkan situs yang diam-diam berganti nama menjadi nama
+template — yang terlihat persis seperti deploy yang berhasil.
+
+**URL sosial ditolak, bukan disanitasi — dua kali.** `awcms` menolaknya saat
+ditulis, dan `lib/awcms/profil.ts` menolaknya lagi saat dibaca. Baris yang
+ditulis sebelum validator itu ada tetap sebuah baris, dan nilainya dirender
+sebagai `<a href>` di setiap halaman situs.
+
+#### Yang sengaja TIDAK dilakukan
+
+Baris hak cipta tenant **mengganti** baris rakitan, tidak menggabunginya:
+redaksi yang menulis "© 2019–2026 PT Lentera Kalteng" memaksudkan kata itu, dan
+sebuah gabungan akan mencetak tahunnya dua kali dan namanya dua kali. Logo
+tenant **mengganti** `SITE_MARK`, tidak menemaninya: keduanya menempati tempat
+yang sama, dan situs yang memasang keduanya menyatakan dua identitas di satu
+baris.
+
+### Menu dan widget yang dikonfigurasi redaksi akhirnya muncul di situs
+
+`awcms` sudah memegang menu navigasi dan widget sejak issue #542, lengkap dengan
+layar admin untuk keduanya, dan **tidak ada yang pernah merendernya**. Seorang
+editor menambahkan tautan footer, CMS menyimpannya, dan tidak ada pembaca yang
+pernah melihatnya. Itu `awcms` #597 butir 6.
+
+#### Yang TIDAK dilakukan perubahan ini
+
+Ia tidak mengganti bilah tab, dan itu bukan kelalaian melainkan keputusan
+(ADR-0105 di `awcms`). Bilah tab merender labelnya lewat katalog PO; sebuah item
+menu `awcms` membawa **satu** label, tanpa varian per-locale. Menjadikan
+navigasi utama digerakkan CMS berarti mengembalikan antarmuka primer situs ini
+ke satu bahasa — persis cacat yang dicatat komentar `src/config/site.ts`, yang
+menyebut navigasi sebagai "satu-satunya bagian antarmuka yang tidak pernah
+diterjemahkan, di sebuah template yang seluruh maksudnya multibahasa".
+
+Tab juga menentukan struktur rute, urutan seksi, dan seksi tempat sebuah artikel
+berada. Sebuah menu adalah daftar tautan; ia bukan satu pun dari itu.
+
+Jadi menu CMS adalah wilayah **sekunder** di footer, widget dirender di posisi
+yang dinyatakannya, dan tenant yang tidak mengonfigurasi keduanya mendapat situs
+yang ia punya hari ini.
+
+#### Yang dibuang, dan kenapa pembuangannya berbicara
+
+- **Item `page` dibuang.** Template ini tidak punya rute page sama sekali, jadi
+  merendernya berarti tautan mati di setiap halaman situs.
+- **Target `post` yang tidak terbit dibuang**, dan itu keadaan NORMAL: `awcms`
+  sengaja tidak memeriksa `targetId` saat tulis, karena sebuah menu boleh
+  menunjuk artikel yang belum terbit.
+- **URL non-http ditolak** meski `awcms` seharusnya sudah menolaknya saat tulis
+  — baris yang ditulis sebelum validator itu tetaplah baris, dan yang dirender
+  di sini adalah `<a href>` di footer setiap halaman.
+- **Anak yang induknya terbuang ikut terbuang**, tidak dinaikkan menjadi item
+  tingkat atas: itu akan mengubah menu yang disusun editor menjadi menu lain
+  yang tampak disengaja.
+
+Setiap pembuangan menyebut **label** itemnya di log build — tempat orang yang
+bisa bertindak sedang melihat, tidak seperti tautan mati yang hanya dilihat
+pembaca. Sekali per build, bukan sekali per halaman: build verifikasi mencetak
+108 salinan pesan yang identik sebelum de-duplikasinya ada, dan itu
+menenggelamkan satu-satunya log tempat pesan ini sampai.
+
+#### `bodyText` di-escape
+
+Badan widget adalah teks biasa. `awcms` **menolak** markup saat tulis alih-alih
+menyanitasinya, jadi merendernya sebagai HTML di sini akan memberikan
+kepercayaan yang justru ditolak jalur tulis. Diverifikasi di keluaran build:
+`Teks <biasa>` terbit sebagai `Teks &lt;biasa&gt;`.
+
+#### Widget nonaktif
+
+`awcms` mengembalikan yang nonaktif dengan sengaja, supaya "dimatikan" dan
+"dihapus" bukan jawaban yang sama. Penyaringannya milik situs ini, dan
+`isActive` yang bukan boolean diperlakukan **nonaktif**: widget yang muncul
+karena field-nya hilang adalah teks yang terbit tanpa ada yang menyalakannya.
+
+#### Verifikasi
+
+Diverifikasi end-to-end terhadap stub `awcms` dengan menu bersarang, item
+`page`, target `post` yang hilang, dan widget nonaktif. Hasil: 108 halaman,
+`audit:konten` penuh hijau (SEO, hreflang, tautan mati, sitemap), item yang
+terbuang tidak terbit, tautan `post` membawa prefiks locale-nya, dan peringatan
+tercetak satu kali.
+
+### Masthead memakai nama tenant, judul feed masih memakai nama `.env` — dan tidak ada gerbang yang bisa melihatnya
+
+Ditemukan tepat setelah identitas situs mendarat (`awcms` #596): `BaseLayout`
+sudah memasang nama tenant di masthead, `<title>`, dan `og:site_name`,
+sementara **judul feed** — `isiFeed`, tautan penemuan-otomatis di halaman seksi,
+dan tautan yang sama di halaman artikel — masih merakit namanya dari
+`siteConfig.name`, yaitu `SITE_NAME` di `.env`.
+
+#### Kenapa ia tidak terlihat
+
+Kedua nama itu ADA, dan keduanya masuk akal dibaca sendiri. Tidak ada tipe yang
+salah, tidak ada tag yang hilang, tidak ada permintaan yang gagal. Yang salah
+hanya bahwa dua permukaan menamai situs yang sama dengan dua nama berbeda — dan
+yang kedua muncul di daftar langganan pembaca feed, tempat yang justru paling
+jarang dibuka ulang setelah dilanggan sekali.
+
+Ini bentuk cacat yang sama persis dengan yang sudah ditulis aturannya di repo
+ini untuk `shareCard` dan `feed`: dua nilai yang seharusnya datang dari satu
+sumber, dikirim terpisah, lalu diam-diam datang dari sumber yang berbeda.
+
+#### Gerbangnya membaca SUMBER, bukan keluaran
+
+`tests/identitas-situs.test.mjs` menolak `siteConfig.name` di setiap berkas yang
+menamai situs, dan menuntutnya tetap ada di `src/lib/identitas.ts` — satu-satunya
+tempat urutan jatuhnya boleh tinggal. Ia tidak bisa membaca `dist/`: build penuh
+butuh awcms yang hidup dan dilewati di repo template ini, sehingga asersi atas
+keluaran tidak akan pernah berjalan di sini.
+
+### Sebuah situs boleh menghitung kunjungannya, dan itu tidak menaruh apa pun di perangkat pembacanya
+
+`awcms` #597 butir 9 terhalang bukan oleh pekerjaan melainkan oleh sebuah
+keputusan: apakah template ini boleh memanggil beacon pengunjung sama sekali.
+[ADR-0044](docs/adr/0044-what-a-page-view-may-cost-a-reader.md) menjawabnya —
+**boleh, hanya bila situs menyatakannya, dan selalu tanpa kredensial** — dan ini
+implementasinya.
+
+#### Keputusannya ternyata lebih kecil daripada "analitik: ya atau tidak"
+
+Karena `fetch` lintas-origin **tanpa** `credentials` tidak mengirim maupun
+menyimpan cookie, repo ini sudah memegang sakelarnya tanpa satu pun perubahan di
+`awcms`. Cookie 30 hari `awcms_visitor_key` yang dipasang endpoint itu **dibuang
+peramban**, jadi tidak ada apa pun yang persisten mendarat di perangkat pembaca —
+dan kalimat `AGENTS.md` §Keamanan, *"tanpa analitik yang mengikat identitas"*,
+selamat kata demi kata alih-alih ditafsirkan ulang.
+
+Karena itu pula **tidak ada banner persetujuan**, dan itu bukan kelalaian
+melainkan konsekuensi: tidak ada yang perlu disetujui.
+
+Yang dilepas disebutkan alih-alih dilewati: **hitungan pengunjung unik**. Setiap
+kunjungan tampak sebagai kunjungan pertama, dan "12.000 kunjungan" berhenti bisa
+diubah menjadi "berapa orang".
+
+#### Dinyatakan dengan menamai kode tenant, dan tidak ada sakelar kedua
+
+`SITE_BEACON_TENANT_CODE` kosong secara bawaan; mengisinya adalah deklarasinya.
+Sebuah sakelar terpisah plus sebuah nilai adalah pasangan yang separuh terisi,
+dan keadaan separuh terisi di sini adalah situs yang melaporkan kunjungan ke
+tenant mana pun yang kebetulan dinamai kode basi.
+
+Ia **bukan** `AWCMS_TENANT_CODE` yang sudah dipensiunkan dan MELEMPAR: yang itu
+dulu memilih tenant mana yang dibangun build dan bisa diam-diam berselisih dengan
+token. Yang ini tidak memilih apa pun.
+
+Satu hal yang repo ini **tidak bisa** periksa dinyatakan alih-alih dipura-purakan
+terjaga: apakah tenant `awcms` itu menyalakan `rawIpEnabled`, yang membuatnya
+menyimpan alamat IP pembaca dan bukan hanya hash ber-salt. Peringatannya tinggal
+di `.env.example`, tempat orang yang bisa melihatnya membacanya.
+
+#### Aturannya KEBALIKAN dari kotak pencarian, dan keduanya harus tetap berbeda
+
+Pencarian tidak boleh membawa header apa pun, karena `awcms` sengaja tidak
+menyajikan `OPTIONS` di belakangnya. Beacon ini **harus** membawa satu:
+`security.checkOrigin` di sana menolak POST lintas-origin yang tipe isinya mirip
+form, jadi hanya `application/json` yang lolos — dan handler `OPTIONS` yang
+dipasang `awcms` #637 ada justru untuk preflight yang menyusul.
+`navigator.sendBeacon` karena itu tidak bisa dipakai: ia mengirim `text/plain`.
+
+Menyeragamkan keduanya, ke arah mana pun, mematikan salah satunya di peramban dan
+tidak di log mana pun.
+
+#### Gerbang "repo ini tidak menulis" diamandemen, dan amandemennya MEMBELI dua jaminan
+
+`tests/tanpa-backend.test.mjs` menolak `fetch` ber-`method` selain `GET`, dan
+pesannya sendiri sudah mengantisipasi kasus ini. Pengecualiannya **satu berkas**,
+bukan sebuah pola — dan aturan yang dilonggarkannya bukan aturan yang
+dijaganya: gerbang itu melindungi kredensial mesin baca-saja milik build, dan
+panggilan ini tidak menyentuhnya sama sekali.
+
+Di sebelahnya berdiri dua asersi baru: berkas beacon tidak boleh membawa
+`credentials` maupun header otorisasi, dan pengecualiannya harus menamai berkas
+yang ADA dan benar-benar mem-POST.
+
+#### Halaman privasi ikut, karena ADR-nya menjanjikannya
+
+`/privasi/` dan `/en/privasi/` dikirimkan template, bukan diserahkan ke tiap
+situs untuk ditulis tangan: teksnya harus menyatakan apa yang benar-benar
+dilakukan build ini, dan hanya build ini yang tahu apakah situsnya menyatakan
+beacon. Isinya bercabang pada satu nilai, dan pada tidak ada nilai lain.
+
+#### Verifikasi
+
+Terhadap Chrome sungguhan, di atas keluaran build dan penyaji yang sebenarnya,
+dengan stub yang mengirim `Set-Cookie` yang sah persis seperti `awcms`:
+
+- satu POST per kunjungan, `content-type: application/json`, muatan hanya
+  `tenantCode` + `path`;
+- permintaannya **tidak membawa header cookie**;
+- **nol cookie tersimpan** meski server mengirimnya — inilah keseluruhan ADR-0044,
+  dan satu-satunya cara membuktikannya adalah menjalankannya;
+- kunjungan kedua juga tanpa cookie, jadi setiap kunjungan memang tampak pertama;
+- nol pelanggaran CSP, nol galat konsol.
+
+Build tanpa deklarasi diverifikasi terpisah: tidak ada simpul `[data-beacon]`,
+tidak ada permintaan, dan halaman privasinya berbunyi "tidak menghitung
+kunjungan". Bundel skripnya tetap ikut terbit (588 byte) karena Astro membundel
+berdasarkan impor, bukan render — ia inert, dan sebuah tes menjaganya tetap
+begitu.
+
+### Seorang penulis yang memilih punya byline akhirnya terbaca namanya
+
+`awcms` ADR-0109 menambahkan `authorByline` pada baris post — sebuah nama yang
+penulisnya sendiri isi lewat `PATCH /api/v1/auth/profile`, bukan nama akunnya.
+Field itu menumpang `GET /api/v1/blog/posts?view=full`, yang **sudah** disusuri
+build ini setiap kali, dan sampai perubahan ini tidak ada yang membacanya. Itu
+`awcms` #597 butir 4.
+
+Karena tidak ada permukaan baru yang dipanggil, gerbang permukaan di
+`tests/kontrak-awcms.test.mjs` tidak berubah warna sedikit pun. Itu yang membuat
+perubahan ini murah — dan itu juga yang membuatnya butuh
+[ADR-0042](docs/adr/0042-a-byline-is-the-first-per-person-data-this-template-publishes.md):
+perubahan yang tidak bisa dilihat gerbang mana pun adalah perubahan yang tidak
+dipaksa dibaca siapa pun.
+
+#### Ketiga permukaan, bukan satu
+
+Halaman artikel (`✍️ Ditulis oleh …`), `author` JSON-LD, dan entry artikel itu di
+feed Atom. Feed yang mengkredit organisasi sementara halamannya mengkredit
+seseorang adalah dua jawaban atas satu pertanyaan, dan pelanggan feed hanya
+melihat salah satunya.
+
+#### Yang tidak ada tetap tidak ada
+
+`NULL` — keadaan setiap baris yang terbit sebelum ADR itu — merender **tanpa
+baris byline sama sekali**, bukan baris yang membawa nama penerbit di
+belakangnya. Penulis yang tidak memilih byline sudah membuat sebuah pilihan, dan
+mengisi kekosongan itu dengan nama organisasi akan mencetak atribusi yang
+terbaca sebagai nama seseorang. `awcms` yang mendahului ADR-0109 tidak mengirim
+field-nya sama sekali, dan situsnya tetap terbangun.
+
+Di feed, ketiadaan itu bahkan tidak perlu ditulis: Atom (RFC 4287 §4.2.1)
+menetapkan `<author>` tingkat feed berlaku bagi setiap entry yang tidak punya
+sendiri.
+
+#### Nama, dan tidak lebih
+
+Tanpa `@id`, `url`, atau `sameAs` di JSON-LD; tanpa `<uri>` atau `<email>` di
+feed. Kedua format punya tempat untuk semuanya, dan menambahkannya kelak adalah
+beberapa karakter yang akan lolos setiap gerbang lain — jadi penolakannya
+ditegaskan di `tests/schema.test.mjs` dan `tests/feed.test.mjs`.
+
+Byline adalah kredit atas satu tulisan. Pengenal atau tautan profil mengubahnya
+menjadi identitas yang bisa diikuti lintas artikel dan lintas situs, sesuatu yang
+tidak diminta siapa pun dengan mengisi satu kolom nama.
+
+#### Baris terjemahan, bukan baris sumber
+
+Berbeda dari `termIds`/`urutan`/`kategori`, yang sengaja dibaca dari post sumber
+supaya penerjemah yang membiarkan klasifikasinya kosong tidak menjatuhkan artikel
+keluar dari arsip satu bahasa saja. Kepenulisan bukan klasifikasi: terjemahan
+sering ditulis orang lain, dan mengambil nama penulis sumber untuknya mengkredit
+seseorang atas teks yang tidak ia tulis.
+
+Membalik baris itu lolos typecheck dan lolos setiap gerbang lain, jadi ia
+dibuktikan lewat mutasi: mengubah `post` menjadi `source` memerahkan tepat satu
+tes, dan tes itu ditulis lebih dulu untuk memastikannya bisa merah.
+
+#### Satu klaim yang berhenti benar, di tiga dokumen
+
+`docs/awcms-astro/standar-performa-dan-keamanan.md` dan kedua berkas skill
+integrasi menyatakan, sebagai sebuah properti, bahwa template ini menerbitkan
+**nol data per-orang**. Dua di antaranya melanjutkan dengan apa yang akan berlaku
+bila itu berubah: *"situs yang menambah byline … mengambil kewajibannya, dan
+jalur penghapusannya berakhir di sebuah rebuild"*.
+
+Kewajiban itu kini hidup, dan ketiga dokumen dikoreksi alih-alih dibiarkan
+berdiri. Sebuah dokumen yang memerikan properti yang tidak lagi dimiliki kode
+mengirim pembaca berikutnya mencari cacat, bukan membaca keputusan — kelas
+kegagalan yang sudah berulang di keluarga repo ini.
+
+Yang **tidak** berubah: `AGENTS.md` §Keamanan tentang tidak mengumpulkan data
+pribadi **pembaca**. Itu aturan yang berbeda, dan byline adalah data tentang
+orang yang menulis artikelnya, diterbitkan atas permintaannya sendiri.
+
+### Seorang pembaca akhirnya bisa mencari, dan menyaring apa yang ditemukannya
+
+Mesin pencarian `awcms` sudah lengkap dan matang sejak lama — `tsvector`
+berbobot di belakang index GIN, `ts_rank`, snippet yang di-escape di sumbernya,
+hitungan facet yang masing-masing dihitung tanpa filternya sendiri, typeahead
+trigram, rate limit per-IP, semuanya di dalam batas RLS yang sama dengan
+datanya. Yang tidak ada adalah kotaknya, di kedua repo. Itu `awcms` #607 dan
+`awcms` #597 butir 3.
+
+Yang mendarat: `/cari/` dan `/en/cari/` — kotak, hasil berperingkat dengan
+sorotan, chip facet (jenis konten, kanal, topik, instansi, wilayah), tombol
+"muat lebih banyak" ber-cursor, dan autocomplete.
+
+#### Panggilan PERTAMA dari repo ini yang terjadi di peramban seorang asing
+
+Setiap panggilan `awcms` yang sudah ada berjalan saat `astro build`, dari mesin
+yang memegang kredensial baca-saja. Dua yang ini berjalan di peramban pembaca,
+anonim, lintas-origin, terhadap endpoint yang `awcms` ADR-0107 rancang untuknya.
+[ADR-0043](docs/adr/0043-the-readers-browser-calls-awcms-and-nothing-else-changes.md)
+menuliskan mengapa itu bukan pelonggaran aturan "peramban tidak pernah memanggil
+`awcms` langsung": aturan itu butir 1 dari empat aturan yang mengikat permukaan
+TERAUTENTIKASI, dan di sini tidak ada sesi, tidak ada kredensial, dan tidak ada
+yang bisa dipegang.
+
+Tiga properti panggilannya masing-masing hanya gagal di tempat yang tidak punya
+log dan tidak punya penonton, jadi ketiganya digerbangi dan dibuktikan lewat
+mutasi:
+
+- **satu header saja** mengubahnya menjadi permintaan ber-preflight, dan `awcms`
+  sengaja tidak menyajikan `OPTIONS`;
+- **`credentials: "include"`** membuat responsnya tidak bisa dibaca sama sekali;
+- **origin situs harus terdaftar** sebagai domain tenant yang aktif dan
+  terverifikasi di sana — kalau tidak, jawabannya payload kosong netral yang
+  identik byte demi byte dengan "tidak ada hasil". `.env.example` menyatakan
+  konsekuensi ketiga di tempat operator menemuinya, karena ia kesalahan
+  konfigurasi dan bukan kesalahan kode.
+
+#### Tidak ada satu pun HTML yang dirakit di JavaScript
+
+Snippet dari `awcms` aman — ia meng-escape seluruh keluaran `ts_headline` lebih
+dulu, baru menukar sentinel ASCII menjadi `<mark>`. Menyerahkannya ke
+`innerHTML` akan bekerja dengan benar hari ini, dan tetap ditolak: aturan
+"tidak ada jalur HTML-mentah dari CMS" bukan pernyataan tentang seberapa
+hati-hati sisi sana, melainkan yang menjaga field berikutnya dari endpoint
+berikutnya tidak tiba lewat jalur yang sudah ada.
+
+Konsekuensinya meluas ke seluruh komponen: setiap bentuk yang bisa muncul di
+layar ditulis sebagai `<template>` di berkas `.astro` dan dikloning skripnya.
+Alasan keduanya sama pentingnya — sebuah string yang dirangkai di skrip akan
+menjadi satu-satunya teks di situs ini yang tidak pernah melewati katalog PO.
+
+#### Yang ditemukan dengan MENJALANKANNYA
+
+Jalannya yang pertama di Chrome sungguhan merender chip jenis konten berbunyi
+`blog_post` dan `blog_page` — pengenal mesin milik registry modul `awcms`, di
+layar, dalam kedua bahasa. Persis bentuk yang aturan repo ini larang, dan tidak
+ada gerbang yang bisa melihatnya: nilainya ada, tipenya benar, dan halamannya
+terbit. Keduanya kini dirender lewat katalog PO, dan nilai tanpa entri tidak
+merender chip sama sekali.
+
+#### Kotaknya tidak tampil sebelum bisa dipakai
+
+`/cari/` satu berkas statis; tanpa JavaScript tidak ada yang bisa mengambil
+hasil. Form-nya `hidden` di sumber dan skripnya membukanya **sesudah** setiap
+simpul yang dibutuhkannya ditemukan, sehingga template yang hilang menghasilkan
+tidak ada kotak alih-alih kotak yang menerima ketikan lalu diam. `<noscript>`
+mengatakannya.
+
+Itu menuntut `[hidden] { display: none !important }` yang belum dimiliki repo
+ini: atribut `hidden` bekerja lewat aturan bawaan peramban yang KALAH dari
+aturan `display` penulis mana pun — termasuk `.chip { display: inline-flex }`,
+yang dipakai tombol "muat lebih banyak" di halaman yang sama.
+
+#### Verifikasi
+
+Terhadap Chrome sungguhan, di atas keluaran build dan penyaji yang sebenarnya:
+kotaknya terbuka, sebuah URL `javascript:` pada hasil dibuang alih-alih
+ditautkan, snippet tersorot tanpa `innerHTML`, `<bantuan>` yang ter-escape tetap
+teks dan bukan elemen, chip menulis bilah alamat dan bisa dibagikan, daftar
+saran terisi, dan konsol melaporkan **nol** pelanggaran CSP. Header yang
+benar-benar terkirim diperiksa dengan `curl`:
+`connect-src 'self' <origin awcms>`.
+
+`tests/kotak-cari.test.mjs` yang menjaga semuanya tidak diam-diam berubah
+sesudahnya — termasuk kelas paling remeh dan paling senyap dari semuanya, sebuah
+selektor yang salah ketik: `querySelector` mengembalikan `null`, `!`
+membungkamnya di typecheck, dan halamannya terbit dengan kotak yang tidak pernah
+menjawab.
+
+### Permukaan pembaca keluarga ini adalah satu-satunya repo yang tidak punya anggaran pembaca
+
+`awcms` ADR-0101 menggerbangi apa yang diunduh pengunjung artikel publik di
+**24.000 byte** dan menggagalkan build-nya bila terlampaui. Menurut ADR-0070-nya,
+repo **ini** yang memikul permukaan publik keluarga.
+
+Jadi repo dengan anggaran pembaca yang ketat adalah repo yang permukaan
+pembacanya sebuah aplikasi admin, dan repo yang benar-benar melayani pembaca
+tidak punya anggaran sama sekali.
+
+`lighthouserc.json` nyata, dan ia mengerjakan hal lain: ia mengambil SAMPEL
+halaman, hanya berjalan bila `vars.AWCMS_API_URL` terisi — jadi **tidak pernah
+untuk repo template ini sendiri** — dan tidak bisa menyebut berkas mana yang
+membesar. Regresi 8 KB duduk nyaman di bawah LCP 2500 ms pada runner cepat, dan
+tetap terasa di ponsel pada jaringan 3G.
+
+#### Dua lapis, karena `dist/` tidak selalu ada
+
+Bentuknya mengikuti `audit-konten.mjs`: sumber **selalu** jalan, keluaran jalan
+bila `dist/client` ada, dan lapis yang dilewati **mengatakannya**. Gerbang yang
+hanya membaca `dist/client` tidak pernah berjalan di satu-satunya tempat kode
+klien ini ditinjau.
+
+#### Angkanya diukur, bukan disalin
+
+| | total | skrip | gaya |
+| --- | ---: | ---: | ---: |
+| halaman artikel | 29.510 B | 5.809 B | 23.701 B |
+| halaman cari | 32.358 B | 9.963 B | 22.395 B |
+
+Skrip dipisahkan dari gaya alih-alih dijumlah, karena biayanya berbeda — CSS
+menahan render, JS menahan **dan** dieksekusi — dan satu angka gabungan akan
+membuat 4 KB skrip baru tampak sama murahnya dengan 4 KB CSS.
+
+Plafon sumber sengaja lebih longgar dari plafon terbit: kotak cari 10.054 B di
+`src/` dan 4.808 B setelah build. Menerapkan satu plafon pada keduanya menuduh
+berkas yang sebenarnya patuh.
+
+Angka 24.000 milik `awcms` tidak disalin. Itu irisan pembaca dari bundle ADMIN,
+dan ia tidak mengatakan apa pun tentang template ini.
+
+#### Dua kesalahan yang ditangkap gerbangnya sendiri
+
+Anggaran skrip pertama ditulis **9.000**, dari hitungan tangan yang melewatkan
+sebagian skrip inline. Gerbangnya sendiri yang mengoreksinya pada jalan pertama —
+alasan sebuah anggaran harus diukur oleh alat yang menegakkannya, bukan oleh
+orang yang menulisnya.
+
+Versi pertamanya juga menyebut `BaseLayout.css` sebagai penyumbang terbesar
+sebuah pelanggaran **skrip**, yang mengirim pembacanya memperkecil berkas yang
+tidak ada hubungannya dengan angka yang merah. Keduanya kini punya tesnya.
+
+#### Registri `public/` ditegakkan dua arah
+
+Berkas yang tidak didaftarkan merah, **dan** entri yang berkasnya tidak ada juga
+merah. Arah kedua itu yang membuat daftarnya tidak membusuk — bentuk yang sama
+dipakai `awcms` ADR-0101, dengan alasan yang sama.
+
+Empat belas tes atas pohon fixture sungguhan, dua arah. Berjalan di job `check`,
+bukan di belakang build bersyarat: anggaran aset adalah properti sumber repo ini
+sendiri. Dicatat sebagai celah 11 di `standar-performa-dan-keamanan.md`.
+
+### Tebal, miring, dan tautan dalam kalimat akhirnya sampai ke pembaca
+
+`awcms` menjadikan Portable Text badan kanonik pada 19 Agustus 2026 (ADR-0100)
+dan mengapalkannya di v10.0.0. Union enam-tipe yang lama bertahan di sana
+sebagai `content_json.blocks` — proyeksi TURUNAN yang sengaja dipertahankan
+supaya repo ini tidak menjadi kosong pada hari cutover.
+
+Proyeksi itu **lossy secara konstruksi**: kosakata lama tidak punya mark, jadi
+setiap tebal, miring, potongan kode, dan tautan di dalam kalimat merata menjadi
+teks polos saat menyeberang. Dan proyeksi itulah yang dirender situs ini sampai
+sekarang.
+
+Artinya sederhana dan tidak enak dibaca: **setiap artikel yang pernah
+diterbitkan situs ini adalah prosa tanpa format, dan tidak ada editor yang bisa
+mengubahnya.** Sebuah berita yang tidak bisa menautkan peraturan yang
+dibahasnya, atau menegaskan satu angka yang penting, terbit lebih buruk daripada
+bahan yang menjadi sumbernya.
+
+#### Yang berubah
+
+`src/lib/portable-text.ts` membaca `bodyPortableText` dan merendernya. Aturan
+yang tidak melonggar sedikit pun: **tidak ada tipe node HTML mentah**, dan setiap
+string sampai ke keluaran lewat `escapeHtml` dan tag tetap.
+
+Dua hal dibawa apa adanya alih-alih diturunkan ulang:
+
+- **`href` diperiksa dengan mem-PARSE, bukan mencocokkan pola.** Regex atas
+  string mentah adalah cara `java\nscript:` dan `JaVaScRiPt:` lolos; `URL`
+  menormalkan keduanya. Lima bentuk berbahaya diuji, dan kata-katanya tetap
+  terbit — yang hilang tautannya, bukan kalimatnya.
+- **`underline` BUKAN dekorator.** Span bergaris bawah yang bukan tautan adalah
+  cacat kegunaan, dan menyediakannya menjamin ia dipakai untuk penegasan.
+
+#### Daftar: wadah yang tidak dibawa formatnya
+
+Portable Text memodelkan daftar sebagai rentetan blok DATAR yang masing-masing
+membawa `listItem` dan `level` — tidak ada node wadah. Merakit ulang `<ul>`
+adalah tugas konsumen, dan salah merakitnya menghasilkan satu `<ul>` per butir:
+HTML yang sah, tampak nyaris benar, dan dibacakan pembaca layar sebagai "daftar
+berisi satu butir" sekali per baris.
+
+Bersarangnya diuji atas byte-nya, bukan atas kemiripannya. Versi pertama
+implementasi ini menempelkan rentetan bersarang sebagai SAUDARA alih-alih ke
+DALAM butir di atasnya — render-nya nyaris identik dan tak terlihat oleh
+teknologi bantu. Tesnya menangkapnya.
+
+#### Galeri dan video
+
+Keduanya didelegasikan ke `content-blocks.ts` sehingga dua format badan tidak
+bisa menyimpang menjadi dua jawaban berbeda. `videoNews` tetap **tautan, bukan
+sematan** ([ADR-0046](docs/adr/0046-a-video-embed-is-refused-here-and-that-is-a-divergence-not-an-omission.md)).
+
+Id galeri kini juga dikumpulkan dari badan kanonik. Mengumpulkannya hanya dari
+proyeksi akan menyelesaikan setiap galeri milik baris yang belum di-backfill dan
+tidak satu pun milik baris yang sudah — situs yang galerinya bekerja sampai hari
+kontennya dimigrasikan.
+
+#### Jatuhan yang punya syarat penghapusan
+
+`bodyPortableText` tiba ABSEN dari awcms yang mendahului ADR-0100, dan KOSONG
+dari baris yang belum disentuh `blog:portable-text:backfill`. Keduanya mengambil
+cabang proyeksi.
+
+Syarat menghapus jatuhan itu ditulis, bukan diserahkan pada penilaian: setiap
+baris tenant sudah di-backfill DAN deployment-nya awcms v10.0.0 atau lebih baru.
+
+**Syarat ADR-0100 §5 kini TERPENUHI** — `awcms` boleh menghapus compatibility
+WRITER-nya. Kedua penghapusan itu bukan peristiwa yang sama dan tidak boleh
+dilakukan bersamaan.
+
+### Buletin ada di `awcms` dan tidak bisa dijangkau pembaca — dua sebabnya, keduanya diukur
+
+`awcms` mengapalkan modul `newsletter` pada 21 Agustus 2026 (ADR-0103-nya):
+`POST /api/v1/newsletter/subscribe` yang anonim, dibatasi per-IP, double opt-in,
+dengan **jawaban NETRAL untuk setiap hasil**. Tidak ada pembaca di situs yang
+dibangun dari template ini yang bisa mencapainya.
+
+Caller-nya kini ditulis dan diuji. Ia **tidak memanggil apa pun**, dan itu bukan
+kelalaian — dua hal harus mendarat di `awcms` lebih dulu, dan keduanya dibaca
+dari sumbernya alih-alih disimpulkan dari tetangganya:
+
+1. **Jalurnya belum dibekukan.** `CONSUMER_PATHS` di sana memuat sepuluh jalur
+   yang dikonsumsi dan dua yang dijanjikan; tidak ada jalur buletin di antaranya.
+   Setiap permukaan sejak `/site-profile/composed` mengikuti urutan yang sama —
+   `awcms` membekukan bentuknya sebagai COMMITTED dulu, baru repo ini
+   memanggilnya.
+
+2. **Tidak ada handler `OPTIONS`, jadi preflight-nya tidak bisa dijawab.** Ini
+   detail yang akan salah kalau disalin dari tetangga. Dua jalur pencarian TIDAK
+   membawa header sama sekali; beacon HARUS membawa `application/json`, dan
+   `analytics/collect.ts` mengekspor `OPTIONS` justru untuk preflight yang
+   ditimbulkannya. `newsletter/subscribe.ts` **tidak mengekspor `OPTIONS`**,
+   sementara kontraknya menuntut content type yang sama.
+
+   Jadi endpoint itu, hari ini, tidak bisa dijangkau situs statis di domainnya
+   sendiri. Itu temuan tentang `awcms`, bukan keterbatasan berkas di sini.
+
+#### Dua gerbang diperluas, bukan dihindari
+
+Menulis caller ini menabrak dua gerbang, dan keduanya benar. Menyembunyikan
+kodenya dari mereka — menyusun jalurnya dari potongan string, menyimpan verb-nya
+di variabel — adalah bypass yang sudah disebut ADR-0038 §4 sebagai batas yang
+diketahui. Jadi keduanya diperluas secara terbuka:
+
+- **Kontrak permukaan** kini punya blok kedua, `dijanjikan`, meniru pemisahan
+  CONSUMED/COMMITTED milik `awcms` sendiri beserta alasannya: sebuah janji dan
+  sebuah ketergantungan sama-sama layak stabil tetapi gagal dengan cara berbeda.
+  Sebuah jalur yang ada di sumber dan tidak ada di kedua blok tetap MERAH, jadi
+  permukaan masih tidak bisa mendarat diam-diam — yang kini bisa dilakukannya
+  adalah mendarat sebagai janji alih-alih sebagai kebohongan tentang apa yang
+  dipanggil build. Dijaga dua arah, plus penolakan tumpang tindih.
+- **Aturan "repo ini membaca, ia tidak menulis"** mendapat pengecualian KEDUA,
+  dan ia dibayar tiga jaminan alih-alih dua: tanpa kredensial, tanpa header
+  otorisasi, **dan** flag-nya mati. Jaminan ketiga memerah begitu seseorang
+  menyalakannya, sehingga dua yang pertama dibaca ulang sebelum dimatikan.
+
+#### Yang paling penting tidak dilakukan konsumen ini
+
+`awcms` menjawab **badan yang sama** untuk alamat baru, alamat yang sudah aktif,
+yang di-suppress, dan host yang tidak memetakan ke tenant mana pun. Caller ini
+merender jawaban itu apa adanya dan tidak menambah apa pun. "Alamat itu sudah
+terdaftar" di sisi klien akan membangun ulang oracle enumerasi yang ditolak
+endpoint itu — dari satu tempat yang tidak akan terpikir dicari siapa pun.
+
+Diuji: alamat BARU dan alamat yang SUDAH ADA harus menghasilkan hasil yang
+identik.
+
+#### Yang sengaja BELUM dibangun
+
+Rute konfirmasi dan berhenti-langganan. Tautannya datang dari surel yang dikirim
+`awcms`, dan URL yang ditulisnya belum diputuskan — membangun rute untuk alamat
+yang belum disepakati siapa pun adalah menebak.
+
+### Origin ini tidak bisa menjawab satu pun pengalihan, dan itu diukur
+
+Bukan "belum dikonfigurasi" — tidak ada kodenya. `astro.config.mjs` memakai
+`output: "static"` tanpa kunci `redirects`, tidak ada berkas middleware, dan
+`server/penyaji.mjs` tidak memuat satu pun kemunculan `301` atau `Location`.
+
+`awcms` tidak menduganya; ia mengukurnya. ADR-0114-nya memutar-ulang **67 aturan
+redirect terhadap server hasil build repo ini dan mendapat 404 pada setiap
+satunya, dengan nol header `Location`.** Aturan-aturan itu ditulis ke
+`awcms_seo_redirects`, yang diterapkan di satu tempat saja — di aplikasi ITU —
+sementara targetnya rute yang dilayani di sini.
+
+Kewajiban cutover-nya sudah ditarik `awcms` ADR-0116. Celahnya tidak: sebuah
+situs turunan tetap tidak punya jawaban apa pun untuk URL yang dulu bekerja —
+tab yang diganti nama, artikel yang di-slug ulang, seksi yang digabung.
+
+#### Tanggung jawabnya dibelah, dan tiap separuh diletakkan di tempat ia bisa dibuktikan
+
+| Pengalihan | Pemilik |
+| --- | --- |
+| Slug diganti, seksi digabung, halaman pindah | **origin ini** |
+| `http`→`https`, `www`→apex | **edge** |
+| Memindahkan seluruh domain terindeks | **edge** |
+
+Separuh milik origin tinggal di repositori ini karena ia ditinjau, diversikan,
+dan **digerbangi** — dan itulah separuh yang memikul beban keputusannya. Prinsip
+ADR-0032 berlaku langsung: gerbang yang tidak bisa dibuktikan di tempat ia
+ditulis akan membusuk, dan konfigurasi edge tidak bisa diuji `bun test`.
+
+Separuh milik edge tidak dibantah. Hanya edge yang bisa meruntuhkan protokol +
+host + path menjadi satu lompatan yang dituntut PRD §9.2, dan itu persis alasan
+`awcms` ADR-0114 memilihnya untuk cutover-nya.
+
+#### Tiga aturan yang gagal tanpa berbunyi, masing-masing dengan pemeriksanya
+
+- **Rantai** — target yang juga menjadi kunci berarti dua lompatan.
+- **Putaran** — tab browser yang menggantung.
+- **Bentuk non-kanonik** — target tanpa garis miring penutup menukar satu 404
+  dengan halaman yang menyangkal dirinya sendiri; KUNCI non-kanonik sama sekali
+  tidak pernah cocok, sebuah aturan yang penulisnya kira bekerja.
+
+#### Yang dibuktikan, bukan hanya ditulis
+
+Tes terpentingnya menjalankan **server sungguhan** dan menegaskan `301`
+mendahului handler aplikasi — karena yang selama ini salah bukan logikanya
+melainkan bahwa tidak ada yang memanggilnya. Versi pertama tesnya tidak bisa
+membuktikan itu (peta template kosong), jadi petanya dibuat bisa disuntik.
+
+Header keamanan ikut diasersi pada 301: sebuah pengalihan tetap respons, dan
+celah header di jalur yang jarang diuji adalah celah yang tidak dilihat siapa
+pun. Query dibawa serta, supaya pembaca yang tiba dari kampanye tidak kehilangan
+atribusinya karena halamannya pindah.
+
+#### Peta template ini KOSONG, dan itu keputusan
+
+Sebuah template tidak punya sejarah URL. Contoh yang ditinggalkan di sini akan
+tersalin ke setiap situs turunan sebagai pengalihan **hidup** menuju halaman yang
+tidak pernah ada.
+
+Tidak ada berkas baru yang wajib disalin `Dockerfile`: petanya modul yang
+di-inline `bun build`, sengaja berbeda dari `asal-media.json` — yang itu membawa
+nilai dari awcms saat build dan Dockerfile yang melupakannya adalah jebakan yang
+sudah didokumentasikan repo ini.
+
+Dicatat sebagai [ADR-0047](docs/adr/0047-this-origin-answers-its-own-content-redirects-and-the-edge-keeps-the-rest.md),
+dan `docs/deploy-coolify.md` akhirnya menyebut lapis redirect-nya.
+
+### Plafon build ada di bawah korpus yang sudah diukur keluarga ini sendiri
+
+`MAX_PAGES = 400` × `PAGE_SIZE = 50` membatasi traversal di **20.000 post**, dan
+komentarnya berbunyi bahwa angka itu "duduk jauh di atas situs mana pun yang
+masuk akal". Itu tebakan.
+
+Pada 26 Agustus 2026 tebakan itu berhenti benar: `awcms` mengukur arsip rujukan
+keluarga ini dan mendapat **25.029 artikel** — ADR-0114-nya, yang juga mencatat
+bahwa angka 23.906 dikutip berminggu-minggu sebelum ada yang menghitungnya.
+
+Plafonnya, dengan kata lain, ada **di bawah** korpus yang sudah diukur keluarga
+ini. Kegagalannya jujur — ia MELEMPAR alih-alih memotong diam-diam, dan itu
+setengah yang benar — tetapi ia menyala pada situs yang sekadar besar alih-alih
+pada sebuah bug.
+
+#### Diukur, bukan dinaikkan
+
+Menaikkan konstantanya saja akan mengulang kesalahan yang sama satu tingkat
+lebih tinggi. `bun run ukur:skala` adalah cara mendapatkan angkanya:
+
+| artikel | halaman | traversal | +render | heap korpus | RSS puncak |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 1.000 | 20 | 8 ms | 27 ms | 0,0 MiB | 52 MiB |
+| 5.000 | 100 | 25 ms | 68 ms | 24,2 MiB | 127 MiB |
+| 25.000 | 500 | 102 ms | 355 ms | 170,0 MiB | 605 MiB |
+
+Yang dikatakan pengukurannya, dan tidak dikatakan sebelumnya:
+
+- **Waktu bukan batasnya.** Seluruh adapter memakan di bawah setengah detik
+  untuk 25.000 artikel. Build sebesar itu didominasi 500 permintaan HTTP
+  berurutan dan penulisan satu berkas per halaman per locale oleh Astro —
+  keduanya bukan putaran ini.
+- **Memori batasnya, dan ia linear.** Setiap baris menahan badan kanoniknya DAN
+  proyeksi turunannya sekaligus, karena itulah yang dikirim awcms.
+
+Plafonnya kini **1.200 halaman, 60.000 post** — sekitar 1,5 GiB RSS puncak pada
+kemiringan yang terukur, dan 2,4× korpus terbesar yang pernah dihitung keluarga
+ini.
+
+#### Pesan gagalnya menyebut apa yang harus dilakukan
+
+Pesan lama menyebut kedua sebabnya ada dan berhenti di situ. Yang baru
+memisahkan keduanya, karena jawabannya berbeda: cursor yang macet terlihat dari
+jumlah post yang kelipatan `PAGE_SIZE` dengan slug kembar; situs yang benar-benar
+sebesar itu perlu `ukur:skala` dijalankan di mesin yang akan membangunnya.
+
+Dan ia menolak jalan keluar yang menggoda secara eksplisit: mengembalikan apa
+yang sudah terkumpul menerbitkan daftar pendek yang tampak lengkap — situs yang
+kehilangan artikel TERBARUNYA, dengan setiap gerbang hijau.
+
+#### Yang TIDAK dilakukan, dan disebut
+
+Refactor streaming supaya memori berhenti tumbuh linear **tidak dikerjakan**.
+Pengukurannya menjelaskan kenapa: pada 25.000 artikel biayanya 605 MiB, yang
+selamat di runner CI mana pun, jadi pekerjaannya belum dibayar oleh apa pun yang
+bisa diukur hari ini. Kalau ada situs yang mendekati plafon barunya, angkanya
+ada dan keputusannya bisa diambil dengan data alih-alih dengan firasat.
+
+Harness-nya juga tidak dijalankan di CI, dan itu keputusan: gerbang yang
+membangun 25.000 artikel pada setiap PR akan dimatikan orang dalam sepekan.
+
+### Tiga regex penyaring tag membuat gerbang lulus atas halaman yang tak pernah ia baca
+
+CodeQL menandai lima temuan `high` di repo ini, dan keduanya kelas yang sama:
+sebuah regex yang ditulis untuk mengenali tag HTML, tetapi mengenali lebih
+sedikit — atau lebih banyak — daripada yang dikenali browser. Tidak satu pun
+dari kelimanya adalah lubang keamanan pada situs yang terbit; semuanya adalah
+**gerbang yang berhenti memeriksa tanpa berbunyi**, yang justru kelas yang
+seluruh gerbang di repo ini ditulis untuk menangkap.
+
+#### `teksLayar` di `audit-konten.mjs`
+
+Sebuah tag penutup boleh membawa apa pun setelah nama tag-nya. `</script >`,
+`</script foo=bar>` dan `</script\t\n bar>` semuanya menutup blok skrip bagi
+browser. Regex lama menuntut `</script>` persis, jadi ia tidak berhenti di
+satu pun dari ketiganya. Akibatnya bercabang, dan keduanya diukur atas fixture
+sungguhan alih-alih dikira-kira:
+
+- **Ada skrip kedua di bawahnya** — pencarian lanjut sampai penutup milik skrip
+  itu, dan judul serta paragraf di antaranya ikut terbuang sebagai "skrip".
+  Halaman uji menyusut dari tiga baris menjadi satu.
+- **Tidak ada skrip kedua** — regex tidak cocok sama sekali, dan source
+  JavaScript-nya masuk sebagai teks layar.
+
+Sisi sebaliknya sama diamnya: tanpa `\b`, `<scripture>` terbaca sebagai pembuka
+`<script`, dan penutup yang dicarinya adalah `</script>` nyata jauh di bawahnya.
+Pada fixture uji, seluruh teks halaman lenyap menjadi larik kosong — dan enam
+gerbang keluaran yang membacanya melaporkan nol pelanggaran atas halaman yang
+tidak pernah mereka lihat.
+
+Perbaikannya sengaja **tidak** ditulis `</script[^>]*>`, bentuk longgar yang
+paling menggoda saat mengejar `</script foo=bar>`. Bentuk itu akan menerima
+`</scripture>` sebagai penutup, padahal HTML tidak — blok skrip hanya berakhir
+pada `</script` yang diikuti spasi-putih, `/`, atau `>`. Spasi-putih diwajibkan
+setelah nama tag justru supaya gerbang ini sepakat dengan browser, dan kedua
+arahnya diuji.
+
+#### Pembuangan komentar di `auditSvg`
+
+Membuang komentar sekali jalan bisa **menyatukan** sisa kiri dan kanannya
+menjadi komentar baru yang utuh: pada `<!<!-- x -->-- draf & catatan -->`,
+lintasan pertama membuang bagian tengahnya dan yang tersisa membentuk komentar
+yang tidak pernah diperiksa lagi. `&` di dalamnya lalu dilaporkan sebagai
+pelanggaran pada berkas yang sah — satu tuduhan palsu sebelum, nol sesudah.
+Pembuangan kini diulang sampai berhenti berubah.
+
+Satu batas disebut di tempatnya alih-alih didiamkan: komentar **tak
+berpenutup** tetap lolos, dan pengulangan tidak menolongnya sama sekali. Berkas
+seperti itu bukan XML yang sah, jadi `&`-nya memang layak dilaporkan.
+
+#### Tiga asersi di `tests/content-blocks.test.mjs`
+
+`assert.doesNotMatch(html, /<script>/)` lebih sempit daripada klaim yang
+dibuatnya. `<SCRIPT>`, `< script`, dan `<script src=…>` semuanya tag skrip bagi
+browser dan tak satu pun cocok. Tesnya lulus selama ini karena renderer-nya
+memang meng-escape segalanya — jadi celahnya tak terlihat, dan akan tetap tak
+terlihat persis pada hari renderer berhenti meng-escape sesuatu.
+
+#### Empat tes baru, tiga di antaranya merah tanpa perbaikan ini
+
+Dibuktikan dua arah seperti tetangganya: tiga kasus merah sebelum perbaikan dan
+hijau sesudahnya, ditambah satu penjaga arah-hijau yang harus lulus di kedua
+sisi — isi `<script>` bukan teks layar, dan gerbang yang mulai melaporkannya
+akan dimatikan orang dalam sepekan.
+
+Tidak ada gerbang baru yang ditambahkan untuk kelas ini. CodeQL sudah berjalan
+pada setiap PR (`.github/workflows/codeql.yml`), jadi ia sendiri pemeriksa
+anti-kambuhnya; gerbang kedua hanya akan menjadi salinan yang bisa menyimpang.
+
+### Artikel yang ditulis editor di awcms akhirnya terbit
+
+Seksi sebuah artikel ditentukan oleh satu ekspresi:
+
+```ts
+readBlock(post).kategori === tab
+```
+
+`readBlock` membaca `contentJson.awcmsAstro` — **sidecar milik repo ini
+sendiri**, yang jalur authoring `awcms` tidak pernah menulisnya. Satu-satunya
+penulisnya di seluruh CMS adalah `blog:legacy:import --section-map`, sebuah CLI
+migrasi sekali jalan.
+
+Jadi untuk artikel yang ditulis dengan cara biasa — seorang editor, di CMS,
+menekan Terbitkan — perbandingannya menjadi `undefined === tab` untuk setiap tab,
+dan post itu tersaring keluar. Tidak ada halaman artikel, tidak ada entri indeks
+seksi, tidak ada entri arsip, **tidak ada error**. Build hijau, situs kosong.
+
+Untuk template yang seluruh premisnya "awcms adalah backend konten", jalur
+authoring bawaannya tidak menghasilkan apa pun.
+
+#### Seksi kini datang dari taksonomi
+
+Tiap tab menyatakan `termSlugs` — slug kategori `awcms` yang menempatkan artikel
+di dalamnya. Itu klasifikasi yang benar-benar bisa disetel editor, dan repo ini
+sudah membacanya untuk arsip kategori/tag sejak `awcms` ADR-0104. Situs ini
+membaca klasifikasi nyata dari editor, memakainya membangun arsip, lalu
+menentukan seksi artikelnya dari kunci yang tidak bisa dijangkau editor.
+
+Sidecar tetap **menang** bila ada, dan bukan demi kompatibilitas: `awcms`
+ADR-0115 §4 MENOLAK mengimpor baris yang tak bisa ditempatkan `--section-map`-nya,
+sehingga sidecar adalah instruksi yang disengaja dari satu-satunya alat yang
+menulisnya.
+
+#### Yang tak tertempatkan tidak lagi senyap
+
+- **Sebagian post** tak tertempatkan → masing-masing disebut namanya, build
+  lanjut. Menggagalkan di sini membuat satu kategori salah ketik menghentikan
+  seluruh redaksi menerbitkan.
+- **SETIAP post** tak tertempatkan dari N > 0 → build **GAGAL**. Itu bukan
+  kesalahan tingkat artikel melainkan `termSlugs` yang menyebut kosakata yang
+  salah, kredensial tanpa `blog_content.taxonomies.read`, atau tab yang diganti
+  nama — ketiganya menerbitkan situs kosong dari build hijau.
+
+Kosakata KOSONG tetap keadaan yang sah: situs yang menempatkan artikelnya lewat
+sidecar terbangun persis seperti sebelumnya.
+
+#### Kenapa tidak ada gerbang yang bisa melihatnya
+
+`buatPost` menulis sidecar pada **setiap** baris fixture, jadi satu-satunya
+bentuk yang gagal di produksi adalah satu-satunya bentuk yang tidak pernah
+dihasilkan double-nya. Ia kini punya varian tanpa sidecar, dan dua tes yang
+membuktikan perbaikan ini terbukti MERAH tanpa perbaikannya.
+
+Satu perbaikan sampingan: respons `/blog/terms` yang cacat — `200` tanpa larik
+`terms` — dulu meledak sebagai `Spread syntax requires ...iterable` dari dalam
+adapter, pesan yang tidak menyebut endpoint maupun apa yang harus diperbaiki.
+
+Dicatat sebagai [ADR-0045](docs/adr/0045-a-section-comes-from-the-cms-vocabulary-not-from-a-sidecar-only-we-write.md).
+
+### Dua belas keputusan `awcms` hanyut tanpa terserap, dan sekarang ada yang memeriksanya
+
+`audit:dokumen` bertanya apakah kutipan `ADR-NNNN` **resolve** — apakah
+keputusan yang disebut memang ada. Pertanyaan yang mahal adalah kebalikannya:
+**adakah keputusan di `awcms` yang tidak dikutip apa pun di sini?**
+
+Tidak ada gerbang yang bisa menanyakannya, dan jawabannya hanyut selama dua
+belas keputusan. `awcms` menerima ADR-0100 sampai ADR-0116 dalam sembilan hari;
+repo ini mengutip lima.
+
+Dua yang terlewat menyebut repo ini secara langsung:
+
+- **ADR-0100 §5** menyebut sebuah pull request DI REPO INI sebagai syarat
+  `awcms` menghapus compatibility writer yang masih ia pikul.
+- **ADR-0114** memutar-ulang 67 aturan redirect terhadap server hasil build repo
+  ini: 404 pada setiap satunya, nol header `Location`.
+
+Kelas cacatnya persis yang hendak diakhiri ADR-0030 — aturan yang hanya tertulis
+adalah aturan yang hanyut. Tabel serapan dirawat dengan tangan, sementara tabel
+permukaan beberapa baris di atasnya sudah digerbangi sejak hari ia lahir.
+
+#### Buku besar dengan tiga vonis
+
+Setiap ADR `awcms` dari lantainya ke atas kini punya barisnya sendiri — lantai
+itu `awcms` ADR-0049, dan ada 68 vonis sampai `awcms` ADR-0116, nol bervonis
+`belum`. Vonis tengahnya yang paling penting
+— `diperiksa` berarti dibaca, tidak menyentuh jalur build statis, dan alasannya
+ditulis. **Kesenyapan harus bisa dibedakan dari kelalaian.**
+
+Lantainya di situ karena di situlah hubungannya bermula. Di bawahnya, ADR
+`awcms` 0000–0048 adalah fondasi platform yang mendahului konsumen ini dan repo ini belum
+memeriksanya secara sistematis — itu dinyatakan, bukan disiratkan oleh
+ketiadaannya.
+
+#### `bun run audit:serapan`
+
+Tiga pemeriksaan, dan yang ketiga adalah satu-satunya gerbang di repo ini yang
+melihat ke luar:
+
+1. **Cakupan** — tidak boleh ada nomor bolong antara lantai dan puncak.
+2. **Buku besar hanya boleh MENYUSUT** — plafon `belum` boleh turun, tidak boleh
+   naik, dan plafon yang tertinggal di angka lama juga memerah karena ia berhenti
+   menjaga apa pun.
+3. **Kesegaran** — daftar `docs/adr/` milik `ahliweb/awcms` diambil lewat API
+   GitHub, dan nomor yang ada di sana tanpa vonis di sini memerahkan gerbang.
+   Inilah satu-satunya pemeriksaan yang bisa menangkap "`awcms` menerbitkan
+   ADR-0117 dan tidak ada yang melihatnya".
+
+Pemeriksaan ketiga **DILEWATI dan mengatakannya** bila jaringan tidak ada.
+Gerbang yang memerah karena GitHub mati akan dimatikan orang dalam sepekan;
+gerbang yang menghijau diam-diam karena jaringan mati lebih buruk, karena ia
+berbohong ke arah yang nyaman.
+
+Empat belas tes, dibuktikan dua arah, termasuk terhadap server HTTP lokal
+sungguhan — bukan terhadap fungsi yang di-mock, karena yang bisa rusak adalah
+bentuk respons dan penyaringan cermin `.id.md`, dan tidak satu pun dari keduanya
+terlihat oleh mock.
+
+#### Dua divergensi yang akhirnya punya namanya
+
+- **[ADR-0046](docs/adr/0046-a-video-embed-is-refused-here-and-that-is-a-divergence-not-an-omission.md)** —
+  `awcms` ADR-0110 memberi operatornya sebuah origin `frame-src`; repo ini
+  menolak embed video pada setiap deployment tanpa saklar, karena operator situs
+  turunan adalah organisasi pemilik domainnya dan flag itu akan tiba sudah
+  terpasang di repo yang mereka salin. Perbedaannya sebelumnya tidak tercatat di
+  mana pun, dan perbedaan yang tidak dicatat terbaca sebagai satu sisi yang belum
+  sempat mengerjakannya.
+- **ADR-0037** kini menyebut `awcms` ADR-0112, yang menyandarkan divergensi
+  `astro-files-not-type-checked` pada pin TypeScript 6 repo ini — kutipannya
+  selama ini hanya berjalan satu arah, dan sebuah pin yang tidak tahu ia
+  disandari adalah pin yang dinaikkan orang yang sedang merapikan daftar
+  dependency.
+
+### The release backlog gets a bound, and a checker for it
+
+[ADR-0040](docs/adr/0040-changeset-menyatakan-bump-semver.md) moved **how
+big** a release is to the person who could answer it — the author, while writing
+the change. It left **when** to whoever remembered.
+
+Memory lost, and it was measured: `v0.2.0` was tagged on 8 August 2026, and
+twenty days later thirty changesets were waiting behind it. Nine of them are
+capabilities a reader would notice — archives, pagination, search, byline,
+menus, galleries, the visit beacon. Two of the `patch` entries are security
+fixes: HSTS was never actually sent in production, and the nanoid advisory was
+closed through an override. A site operator running `v0.2.0` had no released
+version containing either, and every gate in this repo was green for the whole
+twenty days.
+
+That is worse for a template than it would be for an application. Sites are
+derived from this repo and then diverge; they do not track `main`. The version
+number is the only thing they have.
+
+[ADR-0048](docs/adr/0048-a-release-is-cut-when-the-backlog-crosses-a-bound.md)
+bounds the backlog instead of scheduling the releaser, and
+`bun run audit:rilis` enforces it in CI beside the other gates — no build, no
+network, one directory of file names:
+
+- At most **12** changesets may wait — roughly eight days at this repo's own
+  measured rate.
+- The oldest may be at most **14 days** old — the longest a derived site should
+  wait before it can pull a security fix.
+- A changeset must carry a real `YYYY-MM-DD-` date in its name.
+  `.changesets/README.md` always required it and nothing ever checked it; a file
+  the gate cannot date never ages, so it would sit in the backlog invisible to
+  the one check built to see it. A calendar date that does not exist
+  (`2026-02-31`, which `new Date` answers for by rolling into March) is refused,
+  and so is one more than a day ahead of the machine checking it — one day of
+  slack, because the author names the file in their own zone while CI keeps UTC,
+  and the gate's first CI run reddened a correctly named file over exactly that.
+
+Two things the gate deliberately does not do: the releaser does not run it —
+folding the changesets is what clears it — and there is no switch to silence it,
+because a bypass with no expiry becomes the configuration.
+
+Crossing a bound is information, not a fault. `main` has no required checks, so
+the red informs without blocking a merge, and one command clears it.
+
 ## [0.2.0] — 2026-08-08
 
 > **Build integrasi tidak berjalan pada rilis ini.** `AWCMS_API_URL` kosong,
