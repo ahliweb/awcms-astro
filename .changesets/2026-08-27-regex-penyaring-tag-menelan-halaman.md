@@ -15,10 +15,11 @@ seluruh gerbang di repo ini ditulis untuk menangkap.
 
 ## `teksLayar` di `audit-konten.mjs`
 
-`</script >` — dengan spasi sebelum `>` — sah di HTML, dan browser menutup blok
-skrip di situ. Regex lama menuntut `</script>` persis, jadi ia tidak berhenti di
-sana. Akibatnya bercabang, dan keduanya diukur atas fixture sungguhan alih-alih
-dikira-kira:
+Sebuah tag penutup boleh membawa apa pun setelah nama tag-nya. `</script >`,
+`</script foo=bar>` dan `</script\t\n bar>` semuanya menutup blok skrip bagi
+browser. Regex lama menuntut `</script>` persis, jadi ia tidak berhenti di
+satu pun dari ketiganya. Akibatnya bercabang, dan keduanya diukur atas fixture
+sungguhan alih-alih dikira-kira:
 
 - **Ada skrip kedua di bawahnya** — pencarian lanjut sampai penutup milik skrip
   itu, dan judul serta paragraf di antaranya ikut terbuang sebagai "skrip".
@@ -31,6 +32,13 @@ Sisi sebaliknya sama diamnya: tanpa `\b`, `<scripture>` terbaca sebagai pembuka
 Pada fixture uji, seluruh teks halaman lenyap menjadi larik kosong — dan enam
 gerbang keluaran yang membacanya melaporkan nol pelanggaran atas halaman yang
 tidak pernah mereka lihat.
+
+Perbaikannya sengaja **tidak** ditulis `</script[^>]*>`, bentuk longgar yang
+paling menggoda saat mengejar `</script foo=bar>`. Bentuk itu akan menerima
+`</scripture>` sebagai penutup, padahal HTML tidak — blok skrip hanya berakhir
+pada `</script` yang diikuti spasi-putih, `/`, atau `>`. Spasi-putih diwajibkan
+setelah nama tag justru supaya gerbang ini sepakat dengan browser, dan kedua
+arahnya diuji.
 
 ## Pembuangan komentar di `auditSvg`
 

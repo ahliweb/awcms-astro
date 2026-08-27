@@ -885,6 +885,56 @@ describe("nama key yang bocor ke layar", () => {
     expect(kode).toBe(1);
   });
 
+  test("penutup skrip yang membawa atribut ikut dikenali", () => {
+    // Sebuah tag penutup boleh membawa apa pun setelah nama tag-nya, dan
+    // browser tetap menutup blok skrip di situ. Bentuk-bentuk ini yang
+    // disebut CodeQL satu per satu; masing-masing pernah membuat regex
+    // sebelumnya berjalan terus sampai penutup skrip BERIKUTNYA.
+    const akar = situs({
+      "src/locales/id/messages.po": PO,
+      "dist/client/index.html": halaman({
+        badan:
+          "<script>var a = 1;</script foo=bar>\n" +
+          "<p>translation.notice.label</p>\n" +
+          "<script>var b = 2;</script\t\n bar>\n" +
+          "<p>Ekor.</p>"
+      })
+    });
+
+    const { kode, keluaran } = jalankan(akar);
+    expect(keluaran).toContain("nama key tampil sebagai teks: translation.notice.label");
+    expect(kode).toBe(1);
+  });
+
+  test("`</scripture>` BUKAN penutup skrip, dan gerbang ini setuju dengan browser", () => {
+    // Sisi presisi dari perbaikan di atas, dan asersinya sengaja HIJAU.
+    //
+    // Penutup yang ditulis terlalu longgar — `</script[^>]*>`, bentuk yang
+    // paling menggoda saat mengejar `</script foo=bar>` — akan menerima
+    // `</scripture>` sebagai penutup. HTML tidak: blok skrip hanya berakhir
+    // pada `</script` yang diikuti spasi-putih, `/`, atau `>`. Jadi bagi
+    // browser, `</scripture>` dan seluruh `<p>` di bawahnya MASIH isi skrip,
+    // dan tidak pernah terbaca satu pun pembaca.
+    //
+    // Karena itu jawaban yang benar di sini adalah tidak melaporkan apa-apa.
+    // Gerbang yang melaporkannya akan menuduh halaman yang sah, dan yang
+    // membuatnya sepakat dengan browser adalah spasi-putih yang diwajibkan
+    // setelah nama tag.
+    const akar = situs({
+      "src/locales/id/messages.po": PO,
+      "dist/client/index.html": halaman({
+        badan:
+          "<script>var a = 1;</scripture>\n" +
+          "<p>translation.notice.label</p>\n" +
+          "<script>var b = 2;</script>"
+      })
+    });
+
+    const { kode, keluaran } = jalankan(akar);
+    expect(keluaran).not.toContain("nama key tampil sebagai teks");
+    expect(kode).toBe(0);
+  });
+
   test("tag yang hanya BERAWALAN `script` tidak menelan halaman", () => {
     // `<scripture>` bukan `<script>`, tetapi tanpa `\\b` sebuah regex membaca
     // awalannya sebagai pembuka dan mencari penutup sampai `</script>` yang

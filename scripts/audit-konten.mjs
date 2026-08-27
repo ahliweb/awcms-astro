@@ -272,10 +272,19 @@ function gambarDiJsonLd(simpul, keluaran = []) {
  * bukan teks layar sama sekali, dan membiarkannya masuk akan membuat gerbang
  * nama key menemukan "pelanggaran" di setiap halaman.
  *
- * ## Kenapa tag penutupnya mengizinkan spasi, dan kenapa namanya diberi `\b`
+ * ## Bentuk tag penutup yang diterima, dan kenapa namanya diberi `\b`
  *
- * HTML menerima `</script >` — spasi sebelum `>` sah dan browser menutup blok
- * di situ. Regex yang menuntut `</script>` persis TIDAK berhenti di sana, dan
+ * HTML tidak hanya menerima `</script>`. Sebuah tag penutup boleh membawa
+ * apa pun setelah nama tag-nya — `</script >`, `</script foo=bar>`, bahkan
+ * `</script\t\n bar>` — dan browser menutup blok skrip di ketiganya. Karena itu
+ * penutupnya ditulis `<\/script(?:\s[^>]*)?>`: nama tag, lalu SATU spasi-putih
+ * yang menjadi syarat, lalu sisa apa pun sampai `>`.
+ *
+ * Spasi-putih itu syarat dan bukan hiasan. `<\/script[^>]*>` — bentuk yang
+ * lebih longgar dan menggoda — akan menerima `</scripture>` sebagai penutup
+ * skrip, padahal HTML tidak. Yang ditulis di atas menolaknya, dan itu diuji.
+ *
+ * Regex yang menuntut `</script>` persis TIDAK berhenti di sana, dan
  * akibatnya BERBEDA tergantung apa yang ada di bawahnya. Keduanya diukur, bukan
  * dikira-kira (`tests/audit-konten.test.mjs`):
  *
@@ -300,8 +309,8 @@ function gambarDiJsonLd(simpul, keluaran = []) {
  */
 function teksLayar(isi) {
   return isi
-    .replace(/<script\b[\s\S]*?<\/script\s*>/gi, " ")
-    .replace(/<style\b[\s\S]*?<\/style\s*>/gi, " ")
+    .replace(/<script\b[\s\S]*?<\/script(?:\s[^>]*)?>/gi, " ")
+    .replace(/<style\b[\s\S]*?<\/style(?:\s[^>]*)?>/gi, " ")
     .replace(/<[^>]*>/g, "\n")
     .split("\n")
     .map((baris) => baris.trim())
