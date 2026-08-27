@@ -49,7 +49,10 @@ import {
 
 const CHANGESET_DIR = ".changesets";
 
-const changesets = readdirSync(CHANGESET_DIR)
+/** Everything in the directory, before the changeset filter runs over it. */
+const entries = readdirSync(CHANGESET_DIR);
+
+const changesets = entries
   .filter(isChangesetFile)
   .map((name) => ({
     name,
@@ -117,14 +120,31 @@ describe("the version model refuses what it cannot represent", () => {
 });
 
 describe("every pending changeset declares what it costs", () => {
-  test("there is at least one changeset to check", () => {
-    // Guards the gate itself: an empty directory would make every assertion
-    // below vacuously true, and the suite would read green while checking
-    // nothing. This is the `graphify-out/` failure shape (ADR-0030).
-    assert.ok(
-      changesets.length > 0,
-      ".changesets/ holds no entries — if that is genuinely right, this " +
-        "assertion is the one to change, deliberately."
+  test("nothing in the directory is dropped before it can be checked", () => {
+    // Guards the gate itself: with nothing to read, every assertion below is
+    // vacuously true and the suite reads green while checking nothing. This is
+    // the `graphify-out/` failure shape (ADR-0030).
+    //
+    // What it may NOT do is demand entries. An EMPTY backlog is the state a
+    // release leaves behind — `bun run release` folds every changeset into
+    // `CHANGELOG.md` and deletes it — so a demand for at least one turns `main`
+    // red for the whole window between a release and the next change to land,
+    // which is precisely when nobody has done anything wrong. That was the
+    // assertion here until 28 August 2026, and v0.3.0 was the first release
+    // large enough for anyone to reach the state it forbade.
+    //
+    // The defect it was really built for survives, and is now asked about
+    // directly: a `.md` file that is present and NOT read. The question is put
+    // in terms of the directory rather than of `isChangesetFile`, so narrowing
+    // that filter — a future rule requiring a date prefix, say — shows up here
+    // as files silently excluded from the version rather than as nothing at all.
+    const mdFiles = entries.filter((name) => name.endsWith(".md") && !name.startsWith("README"));
+    const readByGate = changesets.map((c) => c.name);
+
+    assert.deepEqual(
+      mdFiles.filter((name) => !readByGate.includes(name)),
+      [],
+      "these .md files sit in .changesets/ and no assertion below reads them"
     );
   });
 
@@ -161,7 +181,17 @@ describe("every pending changeset declares what it costs", () => {
     const derived = highestBump(levels);
     const pkg = JSON.parse(readFileSync("package.json", "utf8"));
 
-    assert.ok(derived, "no bump could be derived from the pending changesets");
+    // With an empty backlog there is nothing to derive FROM, and that is the
+    // state a release leaves behind rather than a defect — `bun run release`
+    // refuses that case at the command line itself, which is where a person can
+    // answer it. The derivation's own arithmetic is proven above, over inputs
+    // this file supplies; what runs below is the end-to-end path, and it needs a
+    // real pending set to run over.
+    if (!derived) {
+      assert.equal(changesets.length, 0, "a pending set exists but derives no bump");
+      return;
+    }
+
     // Not an assertion about WHICH level — that is the authors' judgement. It
     // asserts the derivation runs end to end and yields a taggable version.
     const next = bumpVersion(pkg.version, derived);

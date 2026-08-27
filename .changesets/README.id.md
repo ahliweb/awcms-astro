@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:79e39e38b691bf705e4a5cf28502a0b7ab6742c07d3683186689174de0684af3 -->
+<!-- i18n-source-hash: sha256:9888b9f75fcd00935290040958b2111e3f9909164989a3543e9d775e2cbee372 -->
 
 # Changesets
 
@@ -48,6 +48,21 @@ Dua aturan lahir dari `bump` yang memikul beban, dan keduanya digerbangi `tests/
 - **`bun run release` boleh disebutkan tingkatnya, dan hanya boleh yang LEBIH BESAR.** Perilis yang tahu perubahannya lebih besar daripada yang diakui changeset-nya boleh mengatakannya; yang lebih kecil ditolak, karena itu menerbitkan sesuatu yang putus di balik nomor yang menjanjikan sebaliknya.
 
 Versi memakai `MAJOR.MINOR.PATCH`, ditandai `vX.Y.Z`. Repo ini masih `0.x`, di mana semver sendiri tidak menjanjikan kompatibilitas apa pun — `bump` mencatat niat sekarang supaya catatannya sudah benar saat `1.0.0` membuatnya mengikat.
+
+## Backlog-nya punya dua batas ([ADR-0048](../docs/adr/0048-a-release-is-cut-when-the-backlog-crosses-a-bound.id.md))
+
+`bump` menentukan seberapa besar sebuah rilis; ia tidak pernah menentukan **kapan**. Itu diserahkan ke siapa pun yang teringat, dan pada 28 Agustus 2026 ada tiga puluh entri menunggu di sini — dua puluh hari di belakang `v0.2.0`, dua di antaranya perbaikan keamanan yang tidak punya versi terbit untuk ditarik operator situs.
+
+Maka `bun run audit:rilis` membatasi direktori ini, dan ia berjalan di CI bersama gerbang lainnya:
+
+| Batas | Nilai | Kenapa angkanya |
+| --- | --- | --- |
+| Berkas yang menunggu | **12** | Kira-kira delapan hari kerja pada laju terukur repo ini sendiri — tiga puluh entri dalam dua puluh hari |
+| Usia yang tertua | **14 hari** | Waktu terlama sebuah situs turunan pantas menunggu sebelum bisa menarik perbaikan keamanan |
+
+Nama berkaslah yang memikul usianya, jadi `YYYY-MM-DD-` sekarang **diwajibkan, bukan sekadar didokumentasikan**: nama yang tidak bisa ditanggali gerbangnya tidak pernah menua, dan ia akan duduk di sini tak terlihat oleh satu-satunya pemeriksa yang dibangun untuk melihatnya. Tanggal yang tidak ada di kalender (`2026-02-31`) dan tanggal masa depan sama-sama ditolak.
+
+Melewati batas bukan kesalahan yang perlu diminta maaf — ia sinyal bahwa `bun run release --apply` sudah waktunya. Skrip rilis tidak menjalankan gerbang ini, karena melipat changeset justru tindakan yang membersihkannya.
 
 ## Catatan
 

@@ -47,6 +47,21 @@ Two rules follow from `bump` being load-bearing, and both are gated by `tests/ve
 
 Versions are `MAJOR.MINOR.PATCH`, tagged `vX.Y.Z`. The repo is still `0.x`, where semver itself makes no compatibility promise — `bump` records intent now so that the record is already true when `1.0.0` makes it binding.
 
+## The backlog has two bounds ([ADR-0048](../docs/adr/0048-a-release-is-cut-when-the-backlog-crosses-a-bound.md))
+
+`bump` decides how big a release is; it never decided **when**. That was left to whoever remembered, and on 28 August 2026 thirty entries were waiting here — twenty days behind `v0.2.0`, two of them security fixes a site operator had no released version to pull.
+
+So `bun run audit:rilis` bounds this directory, and it runs in CI beside the other gates:
+
+| Bound | Value | Why that number |
+| --- | --- | --- |
+| Files waiting | **12** | Roughly eight days of work at this repo's own measured rate — thirty entries in twenty days |
+| Age of the oldest | **14 days** | The longest a derived site should wait before it can pull a security fix |
+
+The file name is what carries the age, so `YYYY-MM-DD-` is now **required rather than merely documented**: a name the gate cannot date never ages, and it would sit here invisible to the one check built to see it. A date the calendar does not have (`2026-02-31`) and a date in the future are both refused.
+
+Crossing a bound is not a fault to apologise for — it is the signal that `bun run release --apply` is due. The release script does not run this gate, because folding the changesets is exactly what clears it.
+
 ## Notes
 
 Files here are folded into [`CHANGELOG.md`](../CHANGELOG.md) by `bun run release`, then deleted. Their titles are demoted two levels so they nest neatly under the version heading.
