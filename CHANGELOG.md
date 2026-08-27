@@ -8,6 +8,88 @@ Berkas ini diisi `bun run release` dengan melipat seluruh changeset di [`.change
 
 Sejak [ADR-0040](docs/adr/0040-changeset-menyatakan-bump-semver.md) setiap changeset menyatakan `bump: major | minor | patch`, dan versi berikutnya adalah bump TERBESAR di antara yang menunggu — jadi besar sebuah rilis adalah akibat dari isinya, bukan keputusan terpisah yang diambil saat merilis.
 
+## [0.4.0] — 2026-08-28
+
+> **Build integrasi tidak berjalan pada rilis ini.** `AWCMS_API_URL` kosong,
+> yang normal untuk repo template ini sendiri — jadi `bun run build`,
+> `bun run audit:konten`, dan lapis penyaji/CSP di `bun test` DILEWATI, bukan
+> lulus. Sebuah situs yang dibangun dari template ini mengisi variabel itu dan
+> menjalankan ketiganya.
+
+### An empty backlog stops reddening `bun test`
+
+`tests/versi-changeset.test.mjs` asserted that `.changesets/` holds at least one
+entry. The reasoning was sound — an empty directory makes every assertion under
+it vacuously true, and a suite that checks nothing reads exactly like a suite
+that found nothing (ADR-0030).
+
+But an empty backlog is the state **a release leaves behind**: `bun run release`
+folds every changeset into `CHANGELOG.md` and deletes it. The assertion turned
+`main` red for the entire window between a release and the next change to land,
+which is precisely the window in which nobody has done anything wrong. It was
+written on 17 August 2026 and nothing reached the state it forbade until v0.3.0
+was cut — the first release since it existed.
+
+The guard it was really built for survives, asked from the other side: a `.md`
+file present in the directory and read by no assertion below. Posing the
+question in terms of the directory rather than of `isChangesetFile` means a
+future narrowing of that filter shows up here as **files silently excluded from
+the version**, rather than as nothing at all.
+
+The end-to-end derivation test now returns early on an empty set, and says why:
+the arithmetic itself is proven above over inputs the file supplies, and
+`bun run release` already refuses "no changesets, no level" at the command
+line — where a person can answer it.
+
+### A reader can finally subscribe, confirm, and leave
+
+`awcms` shipped a `newsletter` module on 21 August 2026 with three anonymous
+public endpoints. A reader of a site built from this template could reach none
+of them. The caller landed here on 27 August behind a hard-coded
+`newsletterAktif = false`, because reading that repo's source rather than
+assuming turned up **four** things that made the endpoint unreachable from a
+static site.
+
+All four are now closed by `awcms`
+[ADR-0118](https://github.com/ahliweb/awcms/pull/748), and the three paths are
+frozen in its `COMMITTED_PATHS` — the order both repos' Definition of Done
+requires. The fourth blocker is worth naming on its own: the confirmation link
+was built on the CMS's own origin, where no such page exists, so **double opt-in
+had never worked for anyone at all**.
+
+#### What a site gets
+
+`SITE_NEWSLETTER=true` turns on three surfaces together
+([ADR-0049](docs/adr/0049-a-reader-may-subscribe-and-the-first-write-from-a-strangers-browser.md)),
+and only where `AWCMS_API_URL` is set:
+
+- a subscribe form in the site footer — present on every page, interrupting
+  nothing;
+- `/newsletter/confirm`, where the link in the confirmation email lands;
+- `/newsletter/unsubscribe`, which asks for one click and nothing else.
+
+Those two page paths are **not this repo's to rename**: `awcms` builds the link
+it emails from them, so a renamed page breaks a link already sitting in
+somebody's inbox.
+
+#### Three decisions worth reading before touching it
+
+- **The token is posted on a CLICK, never on page load.** Link scanners in mail
+  clients fetch every URL in a message before its recipient sees it. A page that
+  posted on load would record an unsubscribe nobody asked for — and, on the
+  confirmation page, record consent no human ever gave.
+- **The neutral answer is rendered as-is.** `awcms` says the same sentence for a
+  new address, an already-active one, a spent token and one that never existed.
+  A client-side "that address is already subscribed" would rebuild the
+  enumeration oracle from the one place nobody would think to look.
+- **The privacy page grows a section when, and only when, the form does.** An
+  email address is the first per-person data this site asks a reader FOR.
+
+This is the fourth call in this repo made from a reader's browser, and the first
+that WRITES: a submission makes `awcms` send mail to an address somebody typed.
+`tests/kontrak-awcms.test.mjs` now asserts thirteen called surfaces, and the
+promised-but-not-called block is empty for the first time since it existed.
+
 ## [0.3.0] — 2026-08-28
 
 > **Build integrasi tidak berjalan pada rilis ini.** `AWCMS_API_URL` kosong,
