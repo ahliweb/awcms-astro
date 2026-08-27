@@ -226,6 +226,32 @@ that page burns a credential that then has to be revoked. What a site operator
 needs to know: a leaked token is revoked over there in one action, and the next
 build fails immediately rather than staying silent.
 
+## Redirects — which layer owns which
+
+This is the question `awcms` ADR-0114 answered about this repo without this repo
+saying anything back. [ADR-0047](adr/0047-this-origin-answers-its-own-content-redirects-and-the-edge-keeps-the-rest.md)
+splits it, and an operator has to know both halves:
+
+| Redirect | Owner | Where it is written |
+| --- | --- | --- |
+| A renamed slug, a merged section, a moved page | **this origin** | `src/config/pengalihan.mjs`, answered by `server/penyaji.mjs` as a `301` |
+| `http` → `https`, `www` → apex | **the edge** (Coolify/Traefik) | your proxy config; not in this repo |
+| Moving an entire indexed domain onto a new one | **the edge** | same |
+
+The split is not arbitrary. The origin's half lives in this repository because it
+is reviewed, versioned and **gated** (`tests/pengalihan.test.mjs` refuses chains,
+loops and non-canonical targets). The edge's half is the only place that can
+collapse protocol + host + path into the single hop the family's PRD §9.2
+demands — an origin cannot see the protocol it was reached over.
+
+A rule in `pengalihan.mjs` is an **exact path**, with its trailing slash, and its
+locale prefix written out. There are no patterns, on purpose: a pattern can
+redirect a page that is still alive and its author will not find out until a
+reader fails to arrive.
+
+The template's map is empty and must stay that way in the template — a site fills
+in its own.
+
 ## Rollback
 
 1. Find the previous image tag in this application's build history in Coolify, and

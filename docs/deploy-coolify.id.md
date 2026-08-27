@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](deploy-coolify.md)
 
-<!-- i18n-source-hash: sha256:b01b55a664f3c85638f371081e69696d5c45f5449d2b3cb9d24d50db8e0afebc -->
+<!-- i18n-source-hash: sha256:1122a0757929a0e6284d9b6f75e874855e7a418816225bd84a9324602dc608cf -->
 
 # Deploy dan rebuild lewat webhook (Coolify)
 
@@ -233,6 +233,33 @@ awcms (sejak 13 Agustus 2026). Plaintext token hanya muncul **sekali**, pada
 respons penerbitannya — memuat ulang halamannya menghanguskan kredensial yang
 lalu harus dicabut. Yang perlu diketahui operator situs: token bocor dicabut di
 sana dalam satu tindakan, dan build berikutnya gagal seketika alih-alih diam.
+
+## Pengalihan — lapis mana memegang yang mana
+
+Ini pertanyaan yang dijawab `awcms` ADR-0114 tentang repo ini tanpa repo ini
+menjawab balik. [ADR-0047](adr/0047-this-origin-answers-its-own-content-redirects-and-the-edge-keeps-the-rest.id.md)
+membelahnya, dan operator harus tahu kedua separuhnya:
+
+| Pengalihan | Pemilik | Ditulis di mana |
+| --- | --- | --- |
+| Slug yang diganti, seksi yang digabung, halaman yang pindah | **origin ini** | `src/config/pengalihan.mjs`, dijawab `server/penyaji.mjs` sebagai `301` |
+| `http` → `https`, `www` → apex | **edge** (Coolify/Traefik) | konfigurasi proxy Anda; tidak di repo ini |
+| Memindahkan seluruh domain terindeks ke domain baru | **edge** | sama |
+
+Pembelahannya tidak sembarangan. Separuh milik origin tinggal di repositori ini
+karena ia ditinjau, diversikan, dan **digerbangi** (`tests/pengalihan.test.mjs`
+menolak rantai, putaran, dan target non-kanonik). Separuh milik edge adalah
+satu-satunya tempat yang bisa meruntuhkan protokol + host + path menjadi satu
+lompatan yang dituntut PRD §9.2 keluarga ini — sebuah origin tidak bisa melihat
+protokol yang dipakai untuk mencapainya.
+
+Sebuah aturan di `pengalihan.mjs` adalah **jalur persis**, lengkap dengan garis
+miring penutupnya, dan prefiks locale-nya ditulis. Tidak ada pola, dan itu
+disengaja: sebuah pola bisa mengalihkan halaman yang masih hidup dan penulisnya
+tidak akan tahu sampai ada pembaca yang gagal sampai.
+
+Peta template ini kosong dan harus tetap begitu di template — sebuah situs
+mengisi miliknya sendiri.
 
 ## Rollback
 
