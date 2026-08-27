@@ -27,6 +27,24 @@ function render(...blocks) {
   return renderContentBlocks({ blocks });
 }
 
+/**
+ * What an injected script tag may look like in the OUTPUT — not what the test
+ * payload was written as.
+ *
+ * The three assertions below used to be `/<script>/`, and that is narrower than
+ * the claim they are making. A negative assertion is only as strong as the
+ * widest thing it refuses: `<SCRIPT>`, `< script`, `<script src=…>` and
+ * `<script\n>` are all a script tag to a browser and none of them matched.
+ * The tests passed because the renderer really does escape everything — so the
+ * gap was invisible, and would have stayed invisible on exactly the day the
+ * renderer stopped escaping something.
+ *
+ * `<` then optional whitespace then `script` covers every spelling a parser
+ * accepts, and refuses to depend on the closing bracket at all. Flagged by
+ * CodeQL as `js/bad-tag-filter`.
+ */
+const TAG_SKRIP = /<\s*\/?\s*script/i;
+
 describe("vocabulary", () => {
   test("matches awcms's ContentBlock union exactly", () => {
     // Pinned to awcms's `blog-content/domain/content-block-rendering.ts`. If
@@ -134,7 +152,7 @@ describe("gallery", () => {
     });
 
     assert.doesNotMatch(html, /data:/);
-    assert.doesNotMatch(html, /<script>/);
+    assert.doesNotMatch(html, TAG_SKRIP);
   });
 
   test("an empty gallery says so rather than collapsing", () => {
@@ -204,7 +222,7 @@ describe("escaping", () => {
       { type: "list", items: [payload] }
     ]) {
       const html = render(block);
-      assert.doesNotMatch(html, /<script>/, `unescaped in ${block.type}`);
+      assert.doesNotMatch(html, TAG_SKRIP, `unescaped in ${block.type}`);
       assert.match(html, /&lt;script&gt;/);
     }
   });
@@ -227,7 +245,7 @@ describe("escaping", () => {
       title: '</a><script>alert(1)</script>'
     });
 
-    assert.doesNotMatch(html, /<script>/);
+    assert.doesNotMatch(html, TAG_SKRIP);
   });
 
   test("escapeHtml covers every character the renderer relies on it for", () => {
