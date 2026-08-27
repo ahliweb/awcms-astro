@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:a65240e5b17d092f09c45c9015ae7e01d65b988517a19541e663e34853808729 -->
+<!-- i18n-source-hash: sha256:668d6a5097bb0a0bb2c7f2bc97662346912537cfd6f02d1f1bcef24ecd046e74 -->
 
 # Architecture Decision Records
 
@@ -51,6 +51,7 @@ menyesuaikan gaya, menambah tes.
 | [0042](0042-a-byline-is-the-first-per-person-data-this-template-publishes.md) | Byline dirender pada ketiga permukaan yang menyebut penulis, yang tidak ada tetap tidak ada alih-alih jatuh ke nama penerbit, simpul `Person` membawa nama dan tidak lebih, dan properti "nol data per-orang" yang dinyatakan tiga dokumen dipensiunkan demi kewajiban di baliknya | Diterima |
 | [0043](0043-the-readers-browser-calls-awcms-and-nothing-else-changes.md) | Peramban pembaca memanggil pencarian `awcms` langsung — tanpa header, tanpa kredensial, tenant dari `Origin`; snippet tidak pernah menjadi HTML dan tidak ada markup yang dirakit di JavaScript; nilai facet tanpa label yang bisa dibaca tidak merender chip; `connect-src` menempuh jalan yang sama dengan `img-src` | Diterima |
 | [0044](0044-what-a-page-view-may-cost-a-reader.md) | Sebuah situs boleh memanggil beacon pengunjung hanya bila ia menyatakannya, dan selalu TANPA kredensial — sehingga cookie `awcms_visitor_key` tidak pernah tersimpan, "tanpa analitik yang mengikat identitas" selamat kata demi kata, dan tidak ada yang perlu diberi banner persetujuan | Diterima |
+| [0045](0045-a-section-comes-from-the-cms-vocabulary-not-from-a-sidecar-only-we-write.md) | Seksi sebuah artikel diselesaikan dari taksonomi tenant, dengan `contentJson.awcmsAstro` dipertahankan sebagai penimpa eksplisit — karena sidecar itu ditulis SATU CLI migrasi dan bukan oleh jalur authoring mana pun, sehingga setiap artikel yang ditulis editor di awcms terbuang dari build tanpa satu pun kegagalan | Diterima |
 
 > **Kenapa penomoran mulai dari 0014.** ADR di repo ini melanjutkan urutan repo
 > rujukan yang identitasnya dilepas di [#11](https://github.com/ahliweb/awcms-astro/pull/11);

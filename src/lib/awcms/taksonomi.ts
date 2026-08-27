@@ -164,6 +164,23 @@ async function ambilTerm(): Promise<Term[]> {
       throw error;
     }
 
+    // Bentuknya diperiksa, bukan diasumsikan. Sebuah respons `200` tanpa
+    // `terms` — awcms yang lebih tua, proxy yang menulis ulang badan, atau
+    // sebuah double uji yang belum tahu endpoint ini ada — sebelumnya meledak
+    // sebagai `Spread syntax requires ...iterable not be null or undefined`
+    // dari dalam berkas ini, sebuah pesan yang tidak menyebut endpoint, tenant,
+    // maupun apa yang harus diperbaiki. Kosakata KOSONG tetap keadaan yang sah
+    // dan tidak ditolak di sini; yang ditolak adalah field yang tidak ada.
+    if (!Array.isArray(respons.terms)) {
+      throw new Error(
+        `GET /api/v1/blog/terms answered without a "terms" array on page ` +
+          `${halaman} (got ${respons.terms === undefined ? "no such field" : typeof respons.terms}). ` +
+          `An empty vocabulary is a legitimate state and arrives as [] — this ` +
+          `is a response whose SHAPE is wrong, so the site's category and tag ` +
+          `archives cannot be built from it.`
+      );
+    }
+
     terkumpul.push(...respons.terms);
 
     if (!respons.nextCursor) break;

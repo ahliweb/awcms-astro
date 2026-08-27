@@ -65,13 +65,36 @@ The right-hand side refers to the `awcms_blog_posts` table and the `blog-content
 | the markdown body | `content_json` + `content_text` | `content_text` is used by `search_vector` |
 | `publishedDate` | `published_at` | Mandatory — the adapter refuses to build a `published` post without this column |
 | `updatedDate` | `updated_at` | Moves on EVERY write, including a status transition. Read from the same row as `publishedDate` |
-| `kategori` (the tab) | `awcms_blog_terms` with a category taxonomy | |
+| `kategori` (the tab) | `awcms_blog_terms` with a category taxonomy | **This is now how a section is actually resolved** — see below. The `awcmsAstro.kategori` sidecar is kept as an explicit override ([ADR-0045](../adr/0045-a-section-comes-from-the-cms-vocabulary-not-from-a-sidecar-only-we-write.md)) |
 | `tags[]` | `awcms_blog_terms` + `awcms_blog_post_terms` | |
 | the locale folder | `locale` | |
 | the pairing between locales | `translation_group_id` | One group per slug; the `id` version stays the source of truth |
 | the article image | `featured_media_id` | Through the `media-library` module |
 | the share card | `seo_image_media_id` | A separate column, already existing — used as-is |
 | the canonical | `canonical_url` | |
+
+### How a section is resolved (ADR-0045)
+
+An article's section comes from the tenant's **taxonomy**, not from a key only
+this repo writes.
+
+1. Each tab in `src/config/site.ts` declares `termSlugs` — the category slugs
+   that place an article in it. The default is the tab's own slug, and it is
+   still written out, because the interesting case is a site whose section is
+   `berita` while its editors file under `berita-daerah` and `berita-kota`.
+2. `contentJson.awcmsAstro.kategori`, when present, **wins**. It is the
+   deliberate instruction of the one tool that writes it —
+   `blog:legacy:import --section-map` (`awcms` ADR-0115 §2), which REFUSES to
+   import a row its map cannot place.
+3. A post that lands in no tab is **named in the build output** and not
+   published. If EVERY post lands in no tab out of N > 0, the build **fails**:
+   that is not an editing mistake but `termSlugs` naming the wrong vocabulary, a
+   credential without `blog_content.taxonomies.read`, or renamed tabs — and all
+   three publish an empty site from a green build.
+
+Before ADR-0045 only step 2 existed, and since awcms's authoring screen never
+writes that key, **every article an editor wrote was dropped from the build with
+nothing failing anywhere.**
 
 ### Domain-specific fields — with no column
 

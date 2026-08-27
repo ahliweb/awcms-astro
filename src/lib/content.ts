@@ -55,11 +55,13 @@
  */
 import { awcmsGet } from "./awcms/client";
 import { resolveObjekMedia, type ObjekMedia } from "./awcms/media";
+import { resetTaksonomiCacheForTests, termMenurutId } from "./awcms/taksonomi";
 import { renderContentBlocks } from "./content-blocks";
 import {
   defaultLocale,
   locales,
   siteConfig,
+  tabs,
   urutanSeksiTab,
   type Locale,
   type TabSlug,
@@ -696,6 +698,169 @@ function readBlock(post: AwcmsBlogPost): AwcmsAstroBlock {
 }
 
 /**
+ * Which section every published post belongs to, decided ONCE per build.
+ *
+ * ## The defect this replaces
+ *
+ * This used to be one expression inside `getArticles`:
+ *
+ *     readBlock(post).kategori === tab
+ *
+ * `contentJson.awcmsAstro` is **this repo's own sidecar**, and awcms's
+ * authoring path never writes it. Grepping `ahliweb/awcms` for the key returns
+ * the legacy importer and some envelope-preservation comments and nothing else
+ * — there is no field for it on the admin screen. The only writer in the entire
+ * CMS is `bun run blog:legacy:import --section-map` (awcms ADR-0115 §2), a
+ * one-off CLI.
+ *
+ * So **every article an editor wrote in awcms was dropped**: `undefined === tab`
+ * for every configured tab, no page built, no archive entry, no error. The one
+ * classification an editor can actually set — the taxonomy terms this repo
+ * ALREADY reads for its category and tag archives — decided nothing.
+ *
+ * Nothing here could see it either. `buatPost` in `tests/kontrak-awcms.test.mjs`
+ * wrote the sidecar on every fixture row, so the suite had never once produced
+ * a post without one.
+ *
+ * ## The order, and why the sidecar still wins
+ *
+ * 1. **The sidecar, when present.** It is an explicit instruction from the one
+ *    tool that writes it, and awcms ADR-0115 §4 REFUSES to import a row its
+ *    `--section-map` cannot place. Letting taxonomy override that would make a
+ *    migration land somewhere its operator did not choose.
+ * 2. **Otherwise the taxonomy.** The first tab in `tabs` DECLARATION ORDER
+ *    whose `termSlugs` name one of the post's terms.
+ *
+ * Declaration order is the tiebreak on purpose, and it has to be *some* stated
+ * rule: an article filed under two categories that both map to tabs would
+ * otherwise land in whichever one a hash map happened to yield first, and a
+ * section's contents would reshuffle between builds that changed nothing.
+ *
+ * ## What happens when nothing places a post
+ *
+ * Both outcomes are reported, and they are deliberately not the same event:
+ *
+ * - **Some posts unplaced** — a misconfiguration of one article, or a category
+ *   nobody mapped. Named in the build output, build continues. Failing here
+ *   would let one mistyped category stop a newsroom from publishing.
+ * - **EVERY post unplaced, out of N > 0** — not an article-level mistake. It is
+ *   `termSlugs` naming a vocabulary this tenant does not use, a build credential
+ *   without `blog_content.taxonomies.read`, or tabs that were renamed and
+ *   nothing else was. All three publish an EMPTY SITE from a green build, which
+ *   is the exact defect this function was rewritten to end. It throws.
+ *
+ * Same shape as the media rule above — one id missing is an operator action,
+ * zero out of N is not — and for the same reason.
+ */
+let penempatanCache: Promise<Map<string, TabSlug>> | undefined;
+
+function slugTab(): ReadonlySet<string> {
+  return new Set<string>(tabs.map((tab) => tab.slug));
+}
+
+async function petaPenempatan(): Promise<Map<string, TabSlug>> {
+  const posts = await fetchPublishedPosts();
+  const sumber = posts.filter((post) => post.locale === defaultLocale);
+
+  // An empty vocabulary is a LEGITIMATE state, not a failure: `taksonomi.ts`
+  // warns and returns an empty list for a 403/404, because "your CMS is down"
+  // and "this newsroom uses no categories" must not be the same event. A site
+  // in that state keeps working exactly as it did before this function existed
+  // — placement falls through to the sidecar alone.
+  const term = await termMenurutId();
+  const namaTab = slugTab();
+
+  const penempatan = new Map<string, TabSlug>();
+  const takTertempatkan: { post: PostTerbit; sebab: string }[] = [];
+
+  for (const post of sumber) {
+    const sidecar = readBlock(post).kategori?.trim();
+
+    if (sidecar) {
+      if (namaTab.has(sidecar)) {
+        penempatan.set(post.id, sidecar as TabSlug);
+      } else {
+        takTertempatkan.push({
+          post,
+          sebab: `contentJson.awcmsAstro.kategori is "${sidecar}", which names no configured tab`
+        });
+      }
+
+      continue;
+    }
+
+    const slugTerm = new Set(
+      (post.termIds ?? [])
+        .map((id) => term.get(id)?.slug)
+        .filter((slug): slug is string => typeof slug === "string")
+    );
+
+    const cocok = tabs.find((tab) => tab.termSlugs.some((slug) => slugTerm.has(slug)));
+
+    if (cocok) {
+      penempatan.set(post.id, cocok.slug);
+    } else {
+      takTertempatkan.push({
+        post,
+        sebab:
+          slugTerm.size === 0
+            ? "carries no awcms taxonomy term and no sidecar"
+            : `terms [${[...slugTerm].join(", ")}] are named by no tab's termSlugs`
+      });
+    }
+  }
+
+  laporkanTakTertempatkan(sumber.length, penempatan.size, takTertempatkan);
+
+  return penempatan;
+}
+
+/** See `petaPenempatan`'s header for why these two outcomes differ. */
+function laporkanTakTertempatkan(
+  total: number,
+  ditempatkan: number,
+  takTertempatkan: { post: PostTerbit; sebab: string }[]
+): void {
+  if (takTertempatkan.length === 0) return;
+
+  if (total > 0 && ditempatkan === 0) {
+    const contoh = takTertempatkan
+      .slice(0, 3)
+      .map(({ post, sebab }) => `  ${post.slug} — ${sebab}`)
+      .join("\n");
+
+    throw new Error(
+      `All ${total} published post(s) belong to no section, so this build ` +
+        `would publish a site with zero articles — every section index empty, ` +
+        `every archive empty, and every gate green.\n\n` +
+        `A section is resolved from the post's awcms taxonomy terms, matched ` +
+        `against the "termSlugs" declared on each tab in src/config/site.ts. ` +
+        `Zero out of ${total} matching is not an editing mistake; the usual ` +
+        `causes are termSlugs naming a vocabulary this tenant does not use, a ` +
+        `build credential without blog_content.taxonomies.read (the term list ` +
+        `then arrives empty and warns above this line), or tabs that were ` +
+        `renamed while site.ts was not.\n\n` +
+        `First ${Math.min(3, takTertempatkan.length)}:\n${contoh}`
+    );
+  }
+
+  const contoh = takTertempatkan
+    .slice(0, 10)
+    .map(({ post, sebab }) => `  ${post.slug} — ${sebab}`)
+    .join("\n");
+  const sisa =
+    takTertempatkan.length > 10 ? `\n  … and ${takTertempatkan.length - 10} more` : "";
+
+  console.warn(
+    `[awcms] ${takTertempatkan.length} of ${total} published post(s) belong to ` +
+      `no section and will NOT be published. They are not rendered wrongly — no ` +
+      `page is built for them at all.\n${contoh}${sisa}\n` +
+      `        Give the tab a matching "termSlugs" entry in src/config/site.ts, ` +
+      `or file the article under a category that is already mapped.`
+  );
+}
+
+/**
  * `post` supplies the words; `source` supplies the article's IDENTITY.
  *
  * They are the same object for the default locale and differ for a translated
@@ -731,7 +896,8 @@ function toArticle(
   post: PostTerbit,
   source: PostTerbit,
   isFallback: boolean,
-  media: Map<string, ObjekMedia>
+  media: Map<string, ObjekMedia>,
+  kategori: TabSlug
 ): LocalizedArticle {
   const block = readBlock(post);
   const sourceBlock = readBlock(source);
@@ -746,7 +912,13 @@ function toArticle(
         publishedDate: new Date(post.publishedAt),
         updatedDate: new Date(post.updatedAt),
         urutan: sourceBlock.urutan ?? 99,
-        kategori: sourceBlock.kategori ?? "",
+        // The tab this article was PLACED in, passed down from
+        // `petaPenempatan` — not `sourceBlock.kategori`, which is empty for
+        // every article awcms's own editor wrote. Reading the sidecar here
+        // would give a taxonomy-placed article an empty section: its breadcrumb
+        // would name nothing, `urutanSeksiTab("")` would answer `"manual"`, and
+        // a news section would silently render as a reference one.
+        kategori,
         canonicalUrl: post.canonicalUrl ?? undefined,
         syaratDokumen: block.syaratDokumen ?? [],
         langkah: block.langkah ?? [],
@@ -843,9 +1015,16 @@ export async function getArticles(
   const media = await mediaCache;
 
   // Rule 1: the default locale defines the page set.
+  //
+  // The section comes from `petaPenempatan`, computed once for the whole build,
+  // never from `readBlock(post).kategori` at this call site. That expression is
+  // what dropped every article awcms's own editor produced — see that
+  // function's header.
+  penempatanCache ??= petaPenempatan();
+  const penempatan = await penempatanCache;
+
   const sources = posts.filter(
-    (post) =>
-      post.locale === defaultLocale && readBlock(post).kategori === tab
+    (post) => post.locale === defaultLocale && penempatan.get(post.id) === tab
   );
 
   const byGroup = new Map<string, PostTerbit>();
@@ -886,7 +1065,8 @@ export async function getArticles(
       translated ?? source,
       source,
       !translated && locale !== defaultLocale,
-      media
+      media,
+      tab
     );
 
     return {
@@ -1016,4 +1196,11 @@ export function resetContentCacheForTests(): void {
   mediaCache = undefined;
   postsCache = undefined;
   indeksPostCache = undefined;
+  // Reset with its neighbours or a test's placement leaks into the next one —
+  // the map is keyed by post id, and two fixtures reuse ids by construction.
+  penempatanCache = undefined;
+  // The vocabulary is memoised in ITS module, and placement now reads it. A
+  // test that seeds terms would otherwise hand them to the next test, which is
+  // the failure mode where a suite passes in order and fails in isolation.
+  resetTaksonomiCacheForTests();
 }
