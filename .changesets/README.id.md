@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:9888b9f75fcd00935290040958b2111e3f9909164989a3543e9d775e2cbee372 -->
+<!-- i18n-source-hash: sha256:3f93285340acb1aa74344789d0bcc56836a340712dc280005b7fca180b9a1f11 -->
 
 # Changesets
 
@@ -60,7 +60,7 @@ Maka `bun run audit:rilis` membatasi direktori ini, dan ia berjalan di CI bersam
 | Berkas yang menunggu | **12** | Kira-kira delapan hari kerja pada laju terukur repo ini sendiri — tiga puluh entri dalam dua puluh hari |
 | Usia yang tertua | **14 hari** | Waktu terlama sebuah situs turunan pantas menunggu sebelum bisa menarik perbaikan keamanan |
 
-Nama berkaslah yang memikul usianya, jadi `YYYY-MM-DD-` sekarang **diwajibkan, bukan sekadar didokumentasikan**: nama yang tidak bisa ditanggali gerbangnya tidak pernah menua, dan ia akan duduk di sini tak terlihat oleh satu-satunya pemeriksa yang dibangun untuk melihatnya. Tanggal yang tidak ada di kalender (`2026-02-31`) dan tanggal masa depan sama-sama ditolak.
+Nama berkaslah yang memikul usianya, jadi `YYYY-MM-DD-` sekarang **diwajibkan, bukan sekadar didokumentasikan**: nama yang tidak bisa ditanggali gerbangnya tidak pernah menua, dan ia akan duduk di sini tak terlihat oleh satu-satunya pemeriksa yang dibangun untuk melihatnya. Tanggal yang tidak ada di kalender (`2026-02-31`) ditolak, begitu juga tanggal yang lebih dari sehari di depan mesin yang memeriksanya — satu hari kelonggaran, karena penulis menamai berkasnya dalam zonanya sendiri sementara CI memegang UTC.
 
 Melewati batas bukan kesalahan yang perlu diminta maaf — ia sinyal bahwa `bun run release --apply` sudah waktunya. Skrip rilis tidak menjalankan gerbang ini, karena melipat changeset justru tindakan yang membersihkannya.
 

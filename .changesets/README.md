@@ -58,7 +58,7 @@ So `bun run audit:rilis` bounds this directory, and it runs in CI beside the oth
 | Files waiting | **12** | Roughly eight days of work at this repo's own measured rate — thirty entries in twenty days |
 | Age of the oldest | **14 days** | The longest a derived site should wait before it can pull a security fix |
 
-The file name is what carries the age, so `YYYY-MM-DD-` is now **required rather than merely documented**: a name the gate cannot date never ages, and it would sit here invisible to the one check built to see it. A date the calendar does not have (`2026-02-31`) and a date in the future are both refused.
+The file name is what carries the age, so `YYYY-MM-DD-` is now **required rather than merely documented**: a name the gate cannot date never ages, and it would sit here invisible to the one check built to see it. A date the calendar does not have (`2026-02-31`) is refused, and so is one more than a day ahead of the machine checking it — one day of slack, because the author names the file in their own zone and CI keeps UTC.
 
 Crossing a bound is not a fault to apologise for — it is the signal that `bun run release --apply` is due. The release script does not run this gate, because folding the changesets is exactly what clears it.
 

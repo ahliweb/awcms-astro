@@ -1848,8 +1848,10 @@ network, one directory of file names:
   `.changesets/README.md` always required it and nothing ever checked it; a file
   the gate cannot date never ages, so it would sit in the backlog invisible to
   the one check built to see it. A calendar date that does not exist
-  (`2026-02-31`, which `new Date` answers for by rolling into March) and a date
-  in the future are both refused.
+  (`2026-02-31`, which `new Date` answers for by rolling into March) is refused,
+  and so is one more than a day ahead of the machine checking it — one day of
+  slack, because the author names the file in their own zone while CI keeps UTC,
+  and the gate's first CI run reddened a correctly named file over exactly that.
 
 Two things the gate deliberately does not do: the releaser does not run it —
 folding the changesets is what clears it — and there is no switch to silence it,

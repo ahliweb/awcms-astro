@@ -87,8 +87,18 @@ has ever checked it. The gate now does, because a file it cannot date never
 ages: it would sit in the backlog invisible to the one check built to see it.
 Two shapes are refused by name — a name with no date prefix, and a date the
 calendar does not have (`2026-02-31`, which `new Date` answers for by rolling
-into March). A **future** date is refused too: its age is negative, so it can
-never cross a deadline, and it would look like a typo while never doing so.
+into March). A date **more than one day ahead** is refused as well: its age is
+negative, so it can never cross a deadline, and it would look like a typo while
+never doing so.
+
+The day of slack is not decoration, and it was bought on this gate's first CI
+run. The author names the file in their own zone — WIB — and the runner keeps
+UTC, so for the seven hours after midnight in Jakarta every changeset written
+that day is dated "tomorrow" as far as the runner is concerned. The gate
+reddened a correctly named file and named the author's own calendar as the
+fault. No zone is more than one calendar day ahead of UTC, and a checker running
+in the author's own zone needs no slack at all; a changeset dated a month out —
+the shape the rule exists for — is still refused.
 
 ### 4. The releaser does NOT run this gate
 

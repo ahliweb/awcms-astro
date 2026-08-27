@@ -89,6 +89,24 @@ const MAX_WAITING = 12;
  */
 const MAX_AGE_DAYS = 14;
 
+/**
+ * How far ahead of this machine's own date a changeset may be dated.
+ *
+ * Not zero, and the reason is a defect this gate produced on its first CI run.
+ * The author writes the name in their own zone — WIB here — and the runner
+ * keeps UTC, so for the seven hours after midnight in Jakarta every changeset
+ * written that day is dated "tomorrow" as far as the runner is concerned. The
+ * gate reddened a correctly named file and named the author's own calendar as
+ * the fault.
+ *
+ * One day covers it. No zone on earth is more than one calendar day ahead of
+ * UTC, which is what CI runs in, and a checker running in the author's own zone
+ * needs no slack at all. What the check exists to catch survives: a changeset
+ * dated a month out, whose negative age would keep it below every deadline
+ * forever.
+ */
+const MAX_FUTURE_DAYS = 1;
+
 /** `YYYY-MM-DD-` at the head of a changeset's name. */
 const DATE_PREFIX = /^(\d{4})-(\d{2})-(\d{2})-/;
 
@@ -184,15 +202,16 @@ const todayIso = today();
 // Checked before the age bound, and not merged into it: a file dated ahead of
 // today has a NEGATIVE age, so it can never cross a deadline — it would be the
 // one way to park a changeset in the backlog permanently, and it would look
-// like a typo while doing it.
+// like a typo while doing it. `MAX_FUTURE_DAYS` of slack keeps a zone
+// difference from being read as that.
 for (const { file, date } of dated) {
-  if (daysBetween(date, todayIso) < 0) {
+  if (daysBetween(date, todayIso) < -MAX_FUTURE_DAYS) {
     reporter.violation(
       "tanggal",
       `${DIRECTORY}/${file}`,
-      `bertanggal ${date}, yang belum tiba (hari ini ${todayIso}) — sebuah ` +
-        "changeset bertanggal masa depan berumur negatif, jadi ia tidak akan " +
-        "pernah melewati batas usia mana pun"
+      `bertanggal ${date}, lebih dari ${MAX_FUTURE_DAYS} hari di depan hari ini ` +
+        `(${todayIso}) — sebuah changeset bertanggal masa depan berumur negatif, ` +
+        "jadi ia tidak akan pernah melewati batas usia mana pun"
     );
   }
 }

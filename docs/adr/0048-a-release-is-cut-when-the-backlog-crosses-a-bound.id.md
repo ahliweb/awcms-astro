@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](0048-a-release-is-cut-when-the-backlog-crosses-a-bound.md)
 
-<!-- i18n-source-hash: sha256:ab4102a8fab51d08f241d575e8f8dcd716f7625804372a0c2ed4e5b4ad025568 -->
+<!-- i18n-source-hash: sha256:76561f92cdaf3ec0a2e68d9651f24cee6889c8328e0c03339d475aa50620c0f7 -->
 
 # ADR-0048 — Rilis dipotong saat backlog melewati batas, bukan saat ada yang teringat
 
@@ -95,8 +95,19 @@ tidak bisa ia tanggali tidak pernah menua: ia akan duduk di backlog tak terlihat
 oleh satu-satunya pemeriksa yang dibangun untuk melihatnya. Dua bentuk ditolak
 dengan disebut namanya — nama tanpa awalan tanggal, dan tanggal yang tidak ada
 di kalender (`2026-02-31`, yang dijawab `new Date` dengan menggulung ke Maret).
-Tanggal **masa depan** ditolak juga: umurnya negatif, jadi ia tidak akan pernah
-melewati batas mana pun, dan sepanjang itu ia terbaca seperti salah ketik.
+Tanggal **lebih dari satu hari di depan** ditolak juga: umurnya negatif, jadi ia
+tidak akan pernah melewati batas mana pun, dan sepanjang itu ia terbaca seperti
+salah ketik.
+
+Kelonggaran satu hari itu bukan hiasan, dan ia dibayar pada run CI pertama
+gerbang ini. Penulis menamai berkasnya dalam zonanya sendiri — WIB — sementara
+runner memegang UTC, jadi selama tujuh jam sesudah tengah malam di Jakarta
+setiap changeset hari itu terbaca "besok" oleh runner. Gerbangnya memerahkan
+berkas yang namanya benar dan menyebut kalender penulisnya sebagai
+kesalahannya. Tidak ada zona yang lebih dari satu hari kalender di depan UTC,
+dan pemeriksa yang berjalan di zona penulisnya sendiri tidak butuh kelonggaran
+sama sekali; changeset bertanggal sebulan ke depan — bentuk yang menjadi alasan
+aturan ini ada — tetap ditolak.
 
 ### 4. Perilis TIDAK menjalankan gerbang ini
 

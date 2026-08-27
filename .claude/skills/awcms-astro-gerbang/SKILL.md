@@ -34,7 +34,7 @@ bun run audit:rilis       # the waiting release backlog — no build, no network
 | `audit:graf` | `graphify-out/` artefacts tracked outside the four shared outputs, a report that disagrees with `graph.json`, **community names that were never chosen** (a file name, a placeholder, a twin, or differing between artefacts), a corpus that ignored `.graphifyignore` |
 | `audit:serapan` | An `awcms` ADR with no verdict in the absorption ledger, a gap between the declared floor and the highest number listed, a `belum` count above its declared ceiling, and — the only OUTWARD-looking check in this repo — a decision published in `ahliweb/awcms` that nobody here has read yet |
 | `audit:aset` | A source `<script>` or `public/**` file over the source ceiling, and — when `dist/client` exists — the bytes a single page really pulls, named per file (ADR-0044; `awcms` ADR-0101 is the family's other half) |
-| `audit:rilis` | A waiting-changeset backlog over 12 files or older than 14 days, and a changeset whose name carries no usable `YYYY-MM-DD-` date — including a calendar date that does not exist and one dated in the future ([ADR-0048](../../../docs/adr/0048-a-release-is-cut-when-the-backlog-crosses-a-bound.md)) |
+| `audit:rilis` | A waiting-changeset backlog over 12 files or older than 14 days, and a changeset whose name carries no usable `YYYY-MM-DD-` date — including a calendar date that does not exist and one dated more than a day ahead ([ADR-0048](../../../docs/adr/0048-a-release-is-cut-when-the-backlog-crosses-a-bound.md)) |
 
 ## What is NOT caught — named here so it is not taken for guarded
 

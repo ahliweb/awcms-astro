@@ -5,7 +5,7 @@ description: Sembilan gerbang awcms-astro (check, test, audit:konten, audit:doku
 
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](SKILL.md)
 
-<!-- i18n-source-hash: sha256:48733222c9aec993bf40472cfdb20114e078543438eccfd2a3e48ee215098017 -->
+<!-- i18n-source-hash: sha256:64294bb00a83c460dcd881eb78e5cf2857c372d39d285b8fe3a43beaa265f532 -->
 
 # awcms-astro — gerbang
 
@@ -36,7 +36,7 @@ bun run audit:rilis       # backlog changeset menunggu  — tanpa build, tanpa j
 | `audit:graf` | Artefak `graphify-out/` terlacak di luar keempat keluaran bersama, laporan yang tidak sepakat dengan `graph.json`, **nama komunitas yang tidak dipilih** (nama berkas, placeholder, kembar, atau berbeda antar-artefak), korpus yang mengabaikan `.graphifyignore` |
 | `audit:serapan` | Sebuah ADR `awcms` tanpa vonis di buku besar serapan, nomor yang bolong antara lantai yang dinyatakan dan nomor tertinggi yang didaftarkan, jumlah `belum` di atas plafonnya, dan — satu-satunya pemeriksaan yang MELIHAT KE LUAR di repo ini — keputusan yang terbit di `ahliweb/awcms` yang belum dibaca siapa pun di sini |
 | `audit:aset` | Sebuah `<script>` sumber atau berkas `public/**` di atas plafon sumber, dan — bila `dist/client` ada — byte yang benar-benar ditarik satu halaman, disebut per berkas (ADR-0044; `awcms` ADR-0101 separuh keluarga lainnya) |
-| `audit:rilis` | Backlog changeset menunggu di atas 12 berkas atau lebih tua dari 14 hari, dan changeset yang namanya tidak membawa tanggal `YYYY-MM-DD-` yang bisa dipakai — termasuk tanggal yang tidak ada di kalender dan tanggal masa depan ([ADR-0048](../../../docs/adr/0048-a-release-is-cut-when-the-backlog-crosses-a-bound.id.md)) |
+| `audit:rilis` | Backlog changeset menunggu di atas 12 berkas atau lebih tua dari 14 hari, dan changeset yang namanya tidak membawa tanggal `YYYY-MM-DD-` yang bisa dipakai — termasuk tanggal yang tidak ada di kalender dan tanggal lebih dari sehari di depan ([ADR-0048](../../../docs/adr/0048-a-release-is-cut-when-the-backlog-crosses-a-bound.id.md)) |
 
 ## Yang TIDAK ditangkap — dan disebut supaya tidak dikira terjaga
 

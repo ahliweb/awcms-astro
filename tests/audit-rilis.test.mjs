@@ -129,14 +129,26 @@ describe("usia yang tertua", () => {
     expect(kode).toBe(1);
   });
 
-  test("changeset bertanggal masa depan merah alih-alih berumur negatif", async () => {
+  test("changeset bertanggal jauh di depan merah alih-alih berumur negatif", async () => {
     // Tanpa pemeriksaan ini, `2026-09-30-` adalah satu-satunya cara memarkir
     // sebuah changeset di backlog selamanya: umurnya negatif, jadi ia tidak
     // pernah melewati batas mana pun, dan namanya terbaca seperti salah ketik.
     const { kode, keluaran } = await jalankan(pohon(["2026-09-30-belum-tiba.md"]));
 
-    expect(keluaran).toContain("bertanggal 2026-09-30, yang belum tiba");
+    expect(keluaran).toContain("bertanggal 2026-09-30, lebih dari 1 hari di depan");
     expect(kode).toBe(1);
+  });
+
+  test("satu hari di depan HIJAU, karena zona waktu bukan cacat", async () => {
+    // Cacat yang benar-benar terjadi pada run CI pertama gerbang ini: penulis
+    // menamai berkasnya dalam WIB, runner memegang UTC, dan selama tujuh jam
+    // sesudah tengah malam di Jakarta setiap changeset hari itu terbaca
+    // "besok" oleh runner. Gerbangnya memerahkan berkas yang namanya benar dan
+    // menyebut kalender penulisnya sebagai kesalahannya.
+    const { kode, keluaran } = await jalankan(pohon(["2026-08-29-ditulis-di-wib.md"]));
+
+    expect(keluaran).toContain("Tidak ada pelanggaran");
+    expect(kode).toBe(0);
   });
 });
 
