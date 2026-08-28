@@ -72,7 +72,7 @@ If illustrations are generated, **do not let their configuration inject raw mark
 They must stay green:
 
 - [ ] `bun run check` — the lockfile gate, then `astro check`.
-- [ ] `bun test` — 21 gate files. The ones that most often turn a new site red:
+- [ ] `bun test` — 38 gate files. The ones that most often turn a new site red:
       the PO catalogues (`tests/katalog-po.test.mjs` — a key used by the code but
       absent from a catalogue, a locale catalogue left behind, an empty `msgstr`,
       a tab key not yet written for any locale), the **site role**
