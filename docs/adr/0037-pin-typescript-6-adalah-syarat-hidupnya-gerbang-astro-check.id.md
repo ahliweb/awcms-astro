@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](0037-pin-typescript-6-adalah-syarat-hidupnya-gerbang-astro-check.md)
 
-<!-- i18n-source-hash: sha256:a8234a935baa45bae4e3998db7d39c2b18d7fd6cb25ceca8b1d5a9b11f7a17d6 -->
+<!-- i18n-source-hash: sha256:931e0748bd3cab4562c9c956b142001d17722560b582fb3ca38114b834ae68c2 -->
 
 # ADR-0037 — Pin TypeScript 6.x adalah syarat hidupnya gerbang `astro check`
 
@@ -67,12 +67,17 @@ dan ia menuntut dua hal lebih dulu:
    keluarga `awcms`. Repo ini tidak bisa menulisnya sendiri; yang bisa dilakukan
    di sini adalah tidak membatalkan premisnya diam-diam.
 
-Yang **tidak** diputuskan ADR ini: versi `astro` dan `@astrojs/node`. Keduanya
-tertinggal satu minor dari pin `awcms` (`^7.1.4`/`^11.0.3` versus
-`^7.2.0`/`^11.1.0`), dan itu murni belum dikerjakan — bukan keputusan, dan tidak
-mengikat siapa pun. Selisihnya dicatat di
-[`standar-teknis.md`](../awcms-astro/standar-teknis.md) §Stack supaya tidak
-ditemukan ulang sebagai temuan.
+Yang **tidak** diputuskan ADR ini: versi `astro` dan `@astrojs/node`. Pada hari
+ini ditulis keduanya tertinggal satu minor dari pin `awcms`, dan itu murni belum
+dikerjakan — bukan keputusan, dan tidak mengikat siapa pun. Dependabot menutup
+ketertinggalan itu pada 23 Agustus 2026.
+
+Angkanya sendiri sengaja **tidak** diulang di sini. Paragraf ini dulu
+membawanya, dan ia adalah salinan yang basi sementara pin-nya bergerak di
+bawahnya: sebuah ADR bertanggal, sebuah versi tidak, dan catatan keputusan
+adalah tempat terburuk untuk menyimpan nilai yang berubah. Angkanya tinggal di
+[`standar-teknis.md`](../awcms-astro/standar-teknis.md) §Stack — satu-satunya
+tabel yang dibaca pemeriksa.
 
 ## Pemeriksanya mendarat bersama aturannya
 

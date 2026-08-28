@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](standar-teknis.md)
 
-<!-- i18n-source-hash: sha256:21cf982147462666f898f6759c48896b57805d0b3d6f4b3e51306d36e37203e0 -->
+<!-- i18n-source-hash: sha256:91d88238d01a371a49cc4fb93d21253ffded917d1302eed9e1632fa75199976f -->
 
 # awcms-astro — Standar Teknis
 
@@ -25,11 +25,13 @@ Kata **wajib** di dokumen ini berarti pelanggarannya menggagalkan gerbang mutu, 
 
 **Selisih versi dengan `awcms`, dinyatakan supaya tidak ditemukan ulang sebagai temuan.** Manifest kompatibilitas keluarga `awcms` mencatat versi yang dipakai **repo itu sendiri**; nilainya bukan kewajiban bagi repo ini, tetapi selisihnya tetap layak diketahui sebelum seseorang menyamakannya "karena rapi":
 
+**Kolom `repo ini` dibaca `tests/versi-toolchain.test.mjs` dan dibandingkan dengan `package.json`.** Kolom `awcms` tidak, dan memang tidak bisa: ia menyebut repo lain, dan gerbang yang butuh jaringan adalah gerbang yang gagal karena sebabnya sendiri. Kolom itu catatan yang ditulis tangan, dan ia bisa basi — yang di sebelahnya tidak bisa.
+
 | Nilai | `awcms` | repo ini | Keadaannya |
 | --- | --- | --- | --- |
 | Bun | `1.3.14` | `1.3.14` | Cocok persis, dan dijaga `tests/versi-toolchain.test.mjs` atas lima nilai di sini |
-| `astro` | `^7.2.0` | `^7.1.4` | Tertinggal satu minor. Bukan keputusan — belum ada yang menaikkannya, dan menaikkannya adalah perubahan KODE yang butuh build hijau untuk dibuktikan, bukan pekerjaan dokumen |
-| `@astrojs/node` | `^11.1.0` | `^11.0.3` | Sama seperti di atas |
+| `astro` | `^7.2.4` | `^7.2.4` | Cocok persis sejak Dependabot [#60](https://github.com/ahliweb/awcms-astro/pull/60) menaikkan kedua pin pada 23 Agustus 2026. Sebelum itu repo ini tertinggal satu minor — dan tabel ini terus mengatakannya lima hari setelah itu berhenti benar, dan itulah sebabnya kolom ketiga kini punya pemeriksa |
+| `@astrojs/node` | `^11.1.4` | `^11.1.4` | Sama seperti di atas, dinaikkan di pull request yang sama |
 | `typescript` | `^7.0.2` | `^6.0.3` | **Sengaja berbeda, dan mengikat.** Pin 6.x di sini adalah syarat hidupnya gerbang `astro check` — lihat [ADR-0037](../adr/0037-pin-typescript-6-adalah-syarat-hidupnya-gerbang-astro-check.md) |
 
 ## Struktur wajib
