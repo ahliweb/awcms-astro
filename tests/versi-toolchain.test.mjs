@@ -189,3 +189,146 @@ describe("pin TypeScript menjaga gerbang astro check tetap ada (ADR-0037)", () =
     );
   });
 });
+
+/**
+ * The version-difference table, and the five days it was wrong.
+ *
+ * `standar-teknis.md` §Stack carries a table of the versions this repo pins
+ * beside the ones `awcms` pins, introduced with a sentence explaining its whole
+ * purpose: the difference is written down "so they are not rediscovered as
+ * findings". Three documents repeated the same two numbers.
+ *
+ * On 23 August 2026 Dependabot #60 raised `astro` and `@astrojs/node`. The pins
+ * moved; none of the three documents did. For the next five days the table
+ * announced a one-minor lag that no longer existed, `astro check` and 741 tests
+ * stayed green throughout, and the paragraph promising the difference would not
+ * be rediscovered as a finding was itself the finding.
+ *
+ * That is the shape ADR-0030 names: a written rule that nothing reads. The fix
+ * is not a corrected number — the number was correct once too. It is that the
+ * `this repo` column now has to prove itself against `package.json` on every
+ * run, in BOTH language mirrors, and cannot go stale without something failing.
+ *
+ * ## What is deliberately NOT checked
+ *
+ * **The `awcms` column.** It names another repository, and reading it would put
+ * the network inside a gate that must run offline and before `bun install`. It
+ * is a hand-written note and the document now says so in as many words. The
+ * asymmetry is the point: one column is a claim about this repo, which can be
+ * proved here; the other is a claim about a repo that is not here.
+ *
+ * **Which version is right.** Nothing here argues that matching `awcms` is
+ * good — ADR-0037 pins `typescript` at `^6.x` precisely BECAUSE it must differ.
+ * The gate checks that the table reports the pins truthfully, not what they are.
+ */
+describe("tabel selisih versi melaporkan package.json apa adanya (ADR-0030)", () => {
+  /** The table's row label → the value in `package.json` it must equal. */
+  const DIHARAPKAN = {
+    Bun: () => pkg.packageManager?.replace(/^bun@/, ""),
+    astro: () => pkg.dependencies?.astro,
+    "@astrojs/node": () => pkg.dependencies?.["@astrojs/node"],
+    typescript: () => pkg.dependencies?.typescript
+  };
+
+  const MIRROR = [
+    "docs/awcms-astro/standar-teknis.md",
+    "docs/awcms-astro/standar-teknis.id.md"
+  ];
+
+  /** `| a | b | c |` → `["a", "b", "c"]`. */
+  const sel = (baris) =>
+    baris
+      .trim()
+      .replace(/^\|/, "")
+      .replace(/\|$/, "")
+      .split("|")
+      .map((s) => s.trim());
+
+  const polos = (s) => s.replace(/`/g, "");
+
+  /**
+   * Reads the table out of one mirror as `label → {awcms, sini}`.
+   *
+   * Anchored on the header cell `` `awcms` `` rather than on the first column's
+   * heading, which is the one cell of the header that is spelled identically in
+   * English and Indonesian — so a single parser serves both mirrors and neither
+   * can drift into being parsed by a rule the other does not share.
+   */
+  function bacaTabel(jalur) {
+    const baris = readFileSync(jalur, "utf8").split("\n");
+    const kepala = baris.findIndex(
+      (b) => b.startsWith("|") && sel(b)[1] === "`awcms`"
+    );
+    if (kepala === -1) return null;
+
+    const isi = new Map();
+    // +2 skips the header row and the `| --- |` separator beneath it.
+    for (let i = kepala + 2; i < baris.length && baris[i].startsWith("|"); i++) {
+      const c = sel(baris[i]);
+      isi.set(polos(c[0]), { awcms: polos(c[1]), sini: polos(c[2]) });
+    }
+    return isi;
+  }
+
+  for (const jalur of MIRROR) {
+    test(`${jalur} mendaftarkan persis nilai yang digerbangi`, () => {
+      const tabel = bacaTabel(jalur);
+      assert.ok(
+        tabel,
+        `tabel selisih versi tidak ditemukan di ${jalur} — dicari baris tabel ` +
+          "yang sel keduanya `awcms`. Bila tabelnya dipindahkan atau ditulis " +
+          "ulang, pindahkan juga gerbang ini; menghapusnya diam-diam " +
+          "mengembalikan persis cacat yang ia tutup"
+      );
+
+      // Sengaja kesamaan himpunan, bukan subset. Baris BARU yang tidak
+      // digerbangi adalah cara berikutnya tabel ini menjadi salah tanpa ada
+      // yang gagal — sebuah dependency ditambahkan ke tabel, tidak ke
+      // DIHARAPKAN, dan ia hanyut persis seperti dua baris sebelumnya.
+      assert.deepEqual(
+        [...tabel.keys()].sort(),
+        Object.keys(DIHARAPKAN).sort(),
+        `baris tabel di ${jalur} tidak sama dengan yang digerbangi di sini. ` +
+          "Menambah baris berarti menambah entri di DIHARAPKAN pada berkas ini"
+      );
+    });
+
+    test(`kolom "repo ini" di ${jalur} sama dengan package.json`, () => {
+      const tabel = bacaTabel(jalur);
+      assert.ok(tabel, `tabel selisih versi tidak ditemukan di ${jalur}`);
+
+      for (const [label, nilai] of Object.entries(DIHARAPKAN)) {
+        const baris = tabel.get(label);
+        assert.ok(baris, `baris \`${label}\` hilang dari ${jalur}`);
+        assert.equal(
+          baris.sini,
+          nilai(),
+          `${jalur} menuliskan \`${label}\` di repo ini sebagai "${baris.sini}", ` +
+            `sementara package.json memin "${nilai()}". Yang salah hampir selalu ` +
+            "DOKUMENNYA: sebuah bump menaikkan pin dan tidak ada yang menurunkan " +
+            "tabelnya. Perbaiki tabel — jangan pin-nya — kecuali bump itu sendiri " +
+            "yang tidak diinginkan"
+        );
+      }
+    });
+  }
+
+  test("kedua mirror menuliskan angka yang sama", () => {
+    // Asersi di atas mengikat tiap mirror ke package.json satu per satu, jadi
+    // kolom "repo ini" sudah tidak bisa berbeda. Kolom `awcms` tidak diikat ke
+    // apa pun — ia catatan tangan — sehingga ia satu-satunya tempat sebuah
+    // pembaruan sisi tunggal bisa lolos, dan di sinilah ia tertangkap.
+    const [en, id] = MIRROR.map(bacaTabel);
+    assert.ok(en && id, "salah satu mirror tidak punya tabel selisih versi");
+
+    for (const [label, baris] of en) {
+      assert.equal(
+        id.get(label)?.awcms,
+        baris.awcms,
+        `kolom \`awcms\` untuk \`${label}\` berbeda antar mirror: ` +
+          `"${baris.awcms}" versus "${id.get(label)?.awcms}". Satu sisi ` +
+          "diperbarui dan pasangannya tidak"
+      );
+    }
+  });
+});

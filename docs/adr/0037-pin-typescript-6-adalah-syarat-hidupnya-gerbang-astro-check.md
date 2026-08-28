@@ -63,12 +63,17 @@ requires two things first:
    compatibility manifest. This repo cannot write that itself; what can be done
    here is to not void its premise silently.
 
-What this ADR does **not** decide: the `astro` and `@astrojs/node` versions. Both
-lag one minor behind the `awcms` pin (`^7.1.4`/`^11.0.3` versus
-`^7.2.0`/`^11.1.0`), and that is purely work not yet done — not a decision, and
-binding on nobody. The difference is recorded in
-[`standar-teknis.md`](../awcms-astro/standar-teknis.md) §Stack so it is not
-rediscovered as a finding.
+What this ADR does **not** decide: the `astro` and `@astrojs/node` versions. On
+the day this was written both lagged one minor behind the `awcms` pin, and that
+was purely work not yet done — not a decision, and binding on nobody. Dependabot
+closed the lag on 23 August 2026.
+
+The numbers themselves are deliberately **not** repeated here. This paragraph
+used to carry them, and it is the copy that went stale while the pins moved
+underneath it: an ADR is dated, a version is not, and a decision record is the
+worst possible place to keep a value that changes. They live in
+[`standar-teknis.md`](../awcms-astro/standar-teknis.md) §Stack — the one table a
+checker reads.
 
 ## Its checker lands with its rule
 

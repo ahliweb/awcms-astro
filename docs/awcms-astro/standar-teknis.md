@@ -23,11 +23,13 @@ The word **must** in this document means that breaking it fails a quality gate, 
 
 **Version differences from `awcms`, stated so they are not rediscovered as findings.** The `awcms` family compatibility manifest records the versions **that repo itself** uses; those values are not an obligation for this repo, but the difference is still worth knowing before somebody equalises it "for tidiness":
 
+**The `this repo` column is read by `tests/versi-toolchain.test.mjs` and compared against `package.json`.** The `awcms` column is not, and cannot be: it names another repository, and a gate that needs the network is a gate that fails for reasons of its own. That column is a note taken by hand, and it can be stale — the one next to it cannot.
+
 | Value | `awcms` | this repo | Its state |
 | --- | --- | --- | --- |
 | Bun | `1.3.14` | `1.3.14` | An exact match, and guarded by `tests/versi-toolchain.test.mjs` over five values here |
-| `astro` | `^7.2.0` | `^7.1.4` | One minor behind. Not a decision — nobody has raised it, and raising it is a CODE change needing a green build to prove, not documentation work |
-| `@astrojs/node` | `^11.1.0` | `^11.0.3` | The same as above |
+| `astro` | `^7.2.4` | `^7.2.4` | An exact match since Dependabot [#60](https://github.com/ahliweb/awcms-astro/pull/60) raised both pins on 23 August 2026. Before that this repo was one minor behind — and this table went on saying so for five days after it stopped being true, which is why the third column now has a checker |
+| `@astrojs/node` | `^11.1.4` | `^11.1.4` | The same as above, raised in the same pull request |
 | `typescript` | `^7.0.2` | `^6.0.3` | **Deliberately different, and binding.** The 6.x pin here is the condition for the `astro check` gate being alive — see [ADR-0037](../adr/0037-pin-typescript-6-adalah-syarat-hidupnya-gerbang-astro-check.md) |
 
 ## The mandatory structure
