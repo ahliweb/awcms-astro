@@ -5,19 +5,19 @@
     "semantic_hash": "84bde9a9f87dd75cb3a3f30b00bf60d9"
   },
   "package.json": {
-    "mtime": 1786172256.798961,
-    "ast_hash": "dab5c5d2794ad647b9270b4b68a894e9",
-    "semantic_hash": "dab5c5d2794ad647b9270b4b68a894e9"
+    "mtime": 1787872605.7053063,
+    "ast_hash": "4b4e0d83d3325fb4990859c4be45d7ac",
+    "semantic_hash": "4b4e0d83d3325fb4990859c4be45d7ac"
   },
   "scripts/cek-lockfile.mjs": {
-    "mtime": 1785554092.4001374,
-    "ast_hash": "212ddffd81f13f12cf7ecb27ec0915ee",
-    "semantic_hash": "212ddffd81f13f12cf7ecb27ec0915ee"
+    "mtime": 1786965269.493817,
+    "ast_hash": "2285a4f557831c74b37116512b3e0857",
+    "semantic_hash": "2285a4f557831c74b37116512b3e0857"
   },
   "scripts/rilis.mjs": {
-    "mtime": 1786172256.7999609,
-    "ast_hash": "c470eab92c4fd16172b0b314f83b2f82",
-    "semantic_hash": "c470eab92c4fd16172b0b314f83b2f82"
+    "mtime": 1786965269.494817,
+    "ast_hash": "8c6445cb03991d1598337e4031a64515",
+    "semantic_hash": "8c6445cb03991d1598337e4031a64515"
   },
   "src/components/BiayaTable.astro": {
     "mtime": 1785555474.244049,
@@ -90,14 +90,14 @@
     "semantic_hash": "dd99a6fa407a4e909817eb63a76fc3c3"
   },
   "src/components/views/TabIndex.astro": {
-    "mtime": 1786141800.174252,
-    "ast_hash": "d5cec4cc8de4e78dbdc47b2d37edf392",
-    "semantic_hash": "d5cec4cc8de4e78dbdc47b2d37edf392"
+    "mtime": 1787336056.3022695,
+    "ast_hash": "ef181926081a9a5d268e16fde09f1181",
+    "semantic_hash": "ef181926081a9a5d268e16fde09f1181"
   },
   "src/config/site.ts": {
-    "mtime": 1786139306.6736708,
-    "ast_hash": "3aa7845307eeda1c4cb34a68b434f4bd",
-    "semantic_hash": "3aa7845307eeda1c4cb34a68b434f4bd"
+    "mtime": 1787871849.064299,
+    "ast_hash": "0bd7fcae1b03344874951d12e82e9a89",
+    "semantic_hash": "0bd7fcae1b03344874951d12e82e9a89"
   },
   "src/env.d.ts": {
     "mtime": 1785138176.0775905,
@@ -105,14 +105,14 @@
     "semantic_hash": "a34c63603f2fc704c29af63d4a960109"
   },
   "src/layouts/ArtikelLayout.astro": {
-    "mtime": 1786141800.174252,
-    "ast_hash": "07faa0f7393fc5d1548308acef87df08",
-    "semantic_hash": "07faa0f7393fc5d1548308acef87df08"
+    "mtime": 1787470345.7529461,
+    "ast_hash": "0516d65951c269118280da887ae7be0c",
+    "semantic_hash": "0516d65951c269118280da887ae7be0c"
   },
   "src/layouts/BaseLayout.astro": {
-    "mtime": 1786141800.174252,
-    "ast_hash": "50cf9b7fca824e8d58af2e60ddf97021",
-    "semantic_hash": "50cf9b7fca824e8d58af2e60ddf97021"
+    "mtime": 1787871849.064299,
+    "ast_hash": "269d6f1ecd1d651555bb30eed840cb45",
+    "semantic_hash": "269d6f1ecd1d651555bb30eed840cb45"
   },
   "src/lib/article-images.ts": {
     "mtime": 1785757008.6044004,
@@ -125,19 +125,19 @@
     "semantic_hash": "7291244265b7b0ec226e952c45bed9bb"
   },
   "src/lib/awcms/tenant.ts": {
-    "mtime": 1785636501.2228966,
-    "ast_hash": "3ebe4c642304029c9a69b69030dc1c85",
-    "semantic_hash": "3ebe4c642304029c9a69b69030dc1c85"
+    "mtime": 1786642538.4314907,
+    "ast_hash": "6fa7fe5745fc1dd9bd3a591030262166",
+    "semantic_hash": "6fa7fe5745fc1dd9bd3a591030262166"
   },
   "src/lib/content-blocks.ts": {
-    "mtime": 1785221273.9256577,
-    "ast_hash": "0e76d1ab7a31c903763015d24e82fd2d",
-    "semantic_hash": "0e76d1ab7a31c903763015d24e82fd2d"
+    "mtime": 1787822643.2299883,
+    "ast_hash": "e01a029c07d3673fead082e21ee8d275",
+    "semantic_hash": "e01a029c07d3673fead082e21ee8d275"
   },
   "src/lib/content.ts": {
-    "mtime": 1786139306.6736708,
-    "ast_hash": "d68c84c21dc61e09280c36b4f305f91c",
-    "semantic_hash": "d68c84c21dc61e09280c36b4f305f91c"
+    "mtime": 1787822961.7577488,
+    "ast_hash": "8d19cd79d80d88fdb025976e8c445cab",
+    "semantic_hash": "8d19cd79d80d88fdb025976e8c445cab"
   },
   "src/lib/env.ts": {
     "mtime": 1785203182.0772462,
@@ -150,9 +150,9 @@
     "semantic_hash": "0110f1ebbe20f3a5a2b5881d4ea10d67"
   },
   "src/lib/schema.ts": {
-    "mtime": 1786139306.6736708,
-    "ast_hash": "fd7a5ca21f49a9ce7d09fbf2225060ec",
-    "semantic_hash": "fd7a5ca21f49a9ce7d09fbf2225060ec"
+    "mtime": 1787470345.753946,
+    "ast_hash": "2e7fa66f1d22d3ecd67ee4dd9a3cf460",
+    "semantic_hash": "2e7fa66f1d22d3ecd67ee4dd9a3cf460"
   },
   "src/lib/social-image.ts": {
     "mtime": 1785769256.4257479,
@@ -170,9 +170,9 @@
     "semantic_hash": "1d461c431960750b3cfe3faaa1a129de"
   },
   "src/pages/[lang]/[tab]/[...slug].astro": {
-    "mtime": 1785766408.331455,
-    "ast_hash": "9fbd7516ad428d41c4dfa7f956ce5c58",
-    "semantic_hash": "9fbd7516ad428d41c4dfa7f956ce5c58"
+    "mtime": 1787470345.7549462,
+    "ast_hash": "ef97ddaf654e4fcc2fa93d9423771a7b",
+    "semantic_hash": "ef97ddaf654e4fcc2fa93d9423771a7b"
   },
   "src/pages/[lang]/[tab]/index.astro": {
     "mtime": 1785152344.078728,
@@ -190,9 +190,9 @@
     "semantic_hash": "b73d4b9bf974685fde78fdc5658316c2"
   },
   "src/pages/[tab]/[...slug].astro": {
-    "mtime": 1785766408.331455,
-    "ast_hash": "a79208c96ddc966dcd6cf36f92cb04ad",
-    "semantic_hash": "a79208c96ddc966dcd6cf36f92cb04ad"
+    "mtime": 1787470345.7549462,
+    "ast_hash": "4bad19f48bdb5df3108bcbbfb404ca88",
+    "semantic_hash": "4bad19f48bdb5df3108bcbbfb404ca88"
   },
   "src/pages/[tab]/index.astro": {
     "mtime": 1785203230.72441,
@@ -215,9 +215,9 @@
     "semantic_hash": "10f7c03619fd59e6e6980d14800a510c"
   },
   "tests/content-blocks.test.mjs": {
-    "mtime": 1785554092.4021375,
-    "ast_hash": "e2a86d7f8819e52ff04939c55e152197",
-    "semantic_hash": "e2a86d7f8819e52ff04939c55e152197"
+    "mtime": 1787818541.9748075,
+    "ast_hash": "d5bd287a416d1f9a866d0cdc5ab6cdf0",
+    "semantic_hash": "d5bd287a416d1f9a866d0cdc5ab6cdf0"
   },
   "tsconfig.json": {
     "mtime": 1785148273.0303667,
@@ -235,9 +235,9 @@
     "semantic_hash": "576f801d22d9cc4719912e1c74153a98"
   },
   ".github/PULL_REQUEST_TEMPLATE.md": {
-    "mtime": 1785915232.4986413,
-    "ast_hash": "b3293f831b42ecbbe666220f0f9df55e",
-    "semantic_hash": "b3293f831b42ecbbe666220f0f9df55e"
+    "mtime": 1786642392.490301,
+    "ast_hash": "f6f50e2ce8972e1c9e61909241b710eb",
+    "semantic_hash": "f6f50e2ce8972e1c9e61909241b710eb"
   },
   ".github/dependabot.yml": {
     "mtime": 1785554092.3961375,
@@ -245,9 +245,9 @@
     "semantic_hash": "a7c42f2788bc39feed520614f349a370"
   },
   ".github/workflows/ci.yml": {
-    "mtime": 1785919554.7514565,
-    "ast_hash": "64a761501cad4e431d5b324360ff0c4e",
-    "semantic_hash": "64a761501cad4e431d5b324360ff0c4e"
+    "mtime": 1787867382.4141881,
+    "ast_hash": "e004a55f253df8c0067b9cd0b1bf50d3",
+    "semantic_hash": "e004a55f253df8c0067b9cd0b1bf50d3"
   },
   ".github/workflows/rebuild.yml": {
     "mtime": 1785233483.5405033,
@@ -255,114 +255,114 @@
     "semantic_hash": "86867765878d8864598e6a943644e5a9"
   },
   "AGENTS.md": {
-    "mtime": 1786154583.6481235,
-    "ast_hash": "0e9caca356df6a93d2830d37ce554fda",
-    "semantic_hash": "0e9caca356df6a93d2830d37ce554fda"
+    "mtime": 1787060381.118617,
+    "ast_hash": "1fe86795861c16b72a7cbd1e8a64a942",
+    "semantic_hash": "1fe86795861c16b72a7cbd1e8a64a942"
   },
   "CHANGELOG.md": {
-    "mtime": 1786172256.798961,
-    "ast_hash": "83479e7d0a6b7d5f9d84d67ac28b6c7e",
-    "semantic_hash": "83479e7d0a6b7d5f9d84d67ac28b6c7e"
+    "mtime": 1787872605.7053063,
+    "ast_hash": "8299c59a72adc7bf4eb669d72ef58e7a",
+    "semantic_hash": "8299c59a72adc7bf4eb669d72ef58e7a"
   },
   "CODE_OF_CONDUCT.md": {
-    "mtime": 1785189357.1285458,
-    "ast_hash": "2edfc61135de3d7580eee98ba3189c8c",
-    "semantic_hash": "2edfc61135de3d7580eee98ba3189c8c"
+    "mtime": 1786769497.294249,
+    "ast_hash": "442d8ddb959d1087dd6721a8025e64ba",
+    "semantic_hash": "442d8ddb959d1087dd6721a8025e64ba"
   },
   "CONTRIBUTING.md": {
-    "mtime": 1785915232.4996414,
-    "ast_hash": "03c0908df56d073d849becca58593d29",
-    "semantic_hash": "03c0908df56d073d849becca58593d29"
+    "mtime": 1786769497.294249,
+    "ast_hash": "7646caee2578c80934420938dd601473",
+    "semantic_hash": "7646caee2578c80934420938dd601473"
   },
   "GOVERNANCE.md": {
-    "mtime": 1785554092.3971374,
-    "ast_hash": "679412a21fb509c2a01605cb78e784f9",
-    "semantic_hash": "679412a21fb509c2a01605cb78e784f9"
+    "mtime": 1786769497.294249,
+    "ast_hash": "07020e173fa232716c1ad860dba9477c",
+    "semantic_hash": "07020e173fa232716c1ad860dba9477c"
   },
   "README.md": {
-    "mtime": 1786156335.596962,
-    "ast_hash": "7b52a63b1357819db666ff5bcf2c7489",
-    "semantic_hash": "7b52a63b1357819db666ff5bcf2c7489"
+    "mtime": 1787867382.416188,
+    "ast_hash": "655a341bcac490682218906a57495f9d",
+    "semantic_hash": "655a341bcac490682218906a57495f9d"
   },
   "SECURITY.md": {
-    "mtime": 1785919554.7524564,
-    "ast_hash": "56f251e0921a0507ae52c304a0017169",
-    "semantic_hash": "56f251e0921a0507ae52c304a0017169"
+    "mtime": 1786769497.295249,
+    "ast_hash": "58bc206112228f8618976736fa16bef3",
+    "semantic_hash": "58bc206112228f8618976736fa16bef3"
   },
   "SUPPORT.md": {
-    "mtime": 1785554092.3971374,
-    "ast_hash": "a8e2f93d885276b7466447c2e686c9a9",
-    "semantic_hash": "a8e2f93d885276b7466447c2e686c9a9"
+    "mtime": 1786769497.295249,
+    "ast_hash": "f41eed1d8b66245444d0a7f2b8b894be",
+    "semantic_hash": "f41eed1d8b66245444d0a7f2b8b894be"
   },
   "docs/adr/0014-rendering-campuran-dan-bff-portal.md": {
-    "mtime": 1785554092.3981376,
-    "ast_hash": "70c46e95989d38ed3372c29f057b1c91",
-    "semantic_hash": "70c46e95989d38ed3372c29f057b1c91"
+    "mtime": 1786769497.295249,
+    "ast_hash": "8ddd87b34e6b49f8fb69ef27845aa94e",
+    "semantic_hash": "8ddd87b34e6b49f8fb69ef27845aa94e"
   },
   "docs/adr/0015-runtime-bun-menutup-divergence-keluarga.md": {
-    "mtime": 1785554092.3981376,
-    "ast_hash": "fa64e8d8c20843ccbd1f398108cc62dd",
-    "semantic_hash": "fa64e8d8c20843ccbd1f398108cc62dd"
+    "mtime": 1786769497.295249,
+    "ast_hash": "103eeec03d30a59c1411ebd3228f21c4",
+    "semantic_hash": "103eeec03d30a59c1411ebd3228f21c4"
   },
   "docs/adr/README.md": {
-    "mtime": 1786156335.596962,
-    "ast_hash": "9237f02c305f88668015c1f727176452",
-    "semantic_hash": "9237f02c305f88668015c1f727176452"
+    "mtime": 1787871849.0632992,
+    "ast_hash": "9f48f1fcae29748539cf037104c96e07",
+    "semantic_hash": "9f48f1fcae29748539cf037104c96e07"
   },
   "docs/awcms-astro/README.md": {
-    "mtime": 1786154583.6491237,
-    "ast_hash": "2d94949bbc329d9fd98c7984264fae01",
-    "semantic_hash": "2d94949bbc329d9fd98c7984264fae01"
+    "mtime": 1786958378.2507675,
+    "ast_hash": "7e11a149d1a6882f4fdc8fc7c81c7b80",
+    "semantic_hash": "7e11a149d1a6882f4fdc8fc7c81c7b80"
   },
   "docs/awcms-astro/checklist-repo-baru.md": {
-    "mtime": 1786141800.173252,
-    "ast_hash": "906dc0d708e4710686829060af4c2381",
-    "semantic_hash": "906dc0d708e4710686829060af4c2381"
+    "mtime": 1787821517.5221817,
+    "ast_hash": "d35098c9b03f2ce8bd9958d7bf21b7ab",
+    "semantic_hash": "d35098c9b03f2ce8bd9958d7bf21b7ab"
   },
   "docs/awcms-astro/integrasi-awcms.md": {
-    "mtime": 1786139306.6726706,
-    "ast_hash": "11d21d1bee03016cc90969d3f203c1cd",
-    "semantic_hash": "11d21d1bee03016cc90969d3f203c1cd"
+    "mtime": 1787821517.5221817,
+    "ast_hash": "77789c0ae8bb0725948bafd2adb1abe3",
+    "semantic_hash": "77789c0ae8bb0725948bafd2adb1abe3"
   },
   "docs/awcms-astro/jualanku/01-arsitektur-experience.md": {
-    "mtime": 1785554092.3981376,
-    "ast_hash": "d5facb19e1758477a7c8ee0221b6363a",
-    "semantic_hash": "d5facb19e1758477a7c8ee0221b6363a"
+    "mtime": 1786769497.300249,
+    "ast_hash": "b18de976e731160b07aa6a6744732a0b",
+    "semantic_hash": "b18de976e731160b07aa6a6744732a0b"
   },
   "docs/awcms-astro/jualanku/02-kontrak-bff.md": {
-    "mtime": 1785554092.3981376,
-    "ast_hash": "c5f7b3d7dd431804266c0cacc94a8c84",
-    "semantic_hash": "c5f7b3d7dd431804266c0cacc94a8c84"
+    "mtime": 1786769497.300249,
+    "ast_hash": "1b339d37495ae2d8ebeb4091a95ba0c7",
+    "semantic_hash": "1b339d37495ae2d8ebeb4091a95ba0c7"
   },
   "docs/awcms-astro/jualanku/03-peta-rute-dan-ui.md": {
-    "mtime": 1785554092.3981376,
-    "ast_hash": "c6540e740e721217f6ebe0b3d10ddc68",
-    "semantic_hash": "c6540e740e721217f6ebe0b3d10ddc68"
+    "mtime": 1786769497.300249,
+    "ast_hash": "589914a9bd558305884792ae586e7bdf",
+    "semantic_hash": "589914a9bd558305884792ae586e7bdf"
   },
   "docs/awcms-astro/jualanku/04-kesiapan.md": {
-    "mtime": 1785789686.5026,
-    "ast_hash": "92cb8b86d97bb74bf5bb33c45a8f9877",
-    "semantic_hash": "92cb8b86d97bb74bf5bb33c45a8f9877"
+    "mtime": 1786769497.301249,
+    "ast_hash": "f005d861c288d8ac1d06dc77191de610",
+    "semantic_hash": "f005d861c288d8ac1d06dc77191de610"
   },
   "docs/awcms-astro/jualanku/README.md": {
-    "mtime": 1785554092.3991375,
-    "ast_hash": "145fcb26b93e4e41b74eaf47c25ccc0a",
-    "semantic_hash": "145fcb26b93e4e41b74eaf47c25ccc0a"
+    "mtime": 1786769497.301249,
+    "ast_hash": "649973b15556edfe03dd3d5b7df8006e",
+    "semantic_hash": "649973b15556edfe03dd3d5b7df8006e"
   },
   "docs/awcms-astro/standar-teknis.md": {
-    "mtime": 1786141800.173252,
-    "ast_hash": "b7d39a6cbe4c3f2dcc81482d7e5852f2",
-    "semantic_hash": "b7d39a6cbe4c3f2dcc81482d7e5852f2"
+    "mtime": 1787887490.4861655,
+    "ast_hash": "8a2587b2a1de833e610df5d7cff23759",
+    "semantic_hash": "8a2587b2a1de833e610df5d7cff23759"
   },
   "docs/awcms-astro/ui-ux-design-system.md": {
-    "mtime": 1785792754.3352752,
-    "ast_hash": "49469a4241556600bcf1e77118a5f4d4",
-    "semantic_hash": "49469a4241556600bcf1e77118a5f4d4"
+    "mtime": 1786769497.302249,
+    "ast_hash": "5861e1253e36246909163f526e92f867",
+    "semantic_hash": "5861e1253e36246909163f526e92f867"
   },
   "docs/deploy-coolify.md": {
-    "mtime": 1786007746.8856285,
-    "ast_hash": "32a908886189f1db6e1eef9aa51dedc4",
-    "semantic_hash": "32a908886189f1db6e1eef9aa51dedc4"
+    "mtime": 1787823799.757952,
+    "ast_hash": "ee3acfd97c6ebe06f6cef80cebb69c3f",
+    "semantic_hash": "ee3acfd97c6ebe06f6cef80cebb69c3f"
   },
   "public/favicon.svg": {
     "mtime": 1785138951.6365721,
@@ -380,9 +380,9 @@
     "semantic_hash": "f1d86323465256eded37b0978a680790"
   },
   "docs/adr/0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md": {
-    "mtime": 1785636310.8146904,
-    "ast_hash": "97cb4c4d8db4da2fc03ec7e3084bfddc",
-    "semantic_hash": "97cb4c4d8db4da2fc03ec7e3084bfddc"
+    "mtime": 1786769497.295249,
+    "ast_hash": "ae67883b68377cad240a0d771e292096",
+    "semantic_hash": "ae67883b68377cad240a0d771e292096"
   },
   "public/tema.js": {
     "mtime": 1785628465.6393402,
@@ -390,14 +390,14 @@
     "semantic_hash": "c7f28583fa7efa341ec43792404eb984"
   },
   "scripts/audit-konten.mjs": {
-    "mtime": 1786141800.174252,
-    "ast_hash": "f41c66fbeea897fbbcea36873d23b35e",
-    "semantic_hash": "f41c66fbeea897fbbcea36873d23b35e"
+    "mtime": 1787818541.9748075,
+    "ast_hash": "581a0aadd3c9781d37e60cf06536f07a",
+    "semantic_hash": "581a0aadd3c9781d37e60cf06536f07a"
   },
   "server/penyaji.mjs": {
-    "mtime": 1786141800.174252,
-    "ast_hash": "d063baff81b4f04ae8f878c8203a9fb9",
-    "semantic_hash": "d063baff81b4f04ae8f878c8203a9fb9"
+    "mtime": 1787823799.758952,
+    "ast_hash": "b82917c98dcca043e4def119803b9cb1",
+    "semantic_hash": "b82917c98dcca043e4def119803b9cb1"
   },
   "tests/keluaran-csp.test.mjs": {
     "mtime": 1785747177.0283225,
@@ -405,44 +405,44 @@
     "semantic_hash": "ebd397a687711e090c2a47aa505b65b0"
   },
   "tests/kontrak-awcms.test.mjs": {
-    "mtime": 1786141800.1762521,
-    "ast_hash": "d6cb52f47b7ad2c78edf2d73675db4c1",
-    "semantic_hash": "d6cb52f47b7ad2c78edf2d73675db4c1"
+    "mtime": 1787871849.065299,
+    "ast_hash": "cdad6daaa41cf4cb0b8aeeb523c254b6",
+    "semantic_hash": "cdad6daaa41cf4cb0b8aeeb523c254b6"
   },
   "tests/penyaji.test.mjs": {
-    "mtime": 1786141800.1762521,
-    "ast_hash": "e50c705f6261b73f775b11710f1e933b",
-    "semantic_hash": "e50c705f6261b73f775b11710f1e933b"
+    "mtime": 1787871849.066299,
+    "ast_hash": "cf864b321bde856ebe7eec498a736490",
+    "semantic_hash": "cf864b321bde856ebe7eec498a736490"
   },
   "docs/adr/0017-peran-admin-owner-internal.md": {
-    "mtime": 1785636310.8156903,
-    "ast_hash": "1c4903720c84781ab67786bd53648c81",
-    "semantic_hash": "1c4903720c84781ab67786bd53648c81"
+    "mtime": 1786769497.296249,
+    "ast_hash": "bee60e603199d285a14dfa66a3bda5ce",
+    "semantic_hash": "bee60e603199d285a14dfa66a3bda5ce"
   },
   "docs/adr/0018-kontrak-build-token-mesin-dan-traversal-konten.md": {
-    "mtime": 1785916310.509468,
-    "ast_hash": "3140b8cd4c267557a9902317f5e0cb64",
-    "semantic_hash": "3140b8cd4c267557a9902317f5e0cb64"
+    "mtime": 1786769497.296249,
+    "ast_hash": "f83f9983d9bbe10dd72bacd81c05b655",
+    "semantic_hash": "f83f9983d9bbe10dd72bacd81c05b655"
   },
   "docs/adr/0019-csp-ketat-dikirim-penyaji.md": {
-    "mtime": 1785628465.6383402,
-    "ast_hash": "17430927f80ef4fbb677d014adb7cc83",
-    "semantic_hash": "17430927f80ef4fbb677d014adb7cc83"
+    "mtime": 1786769497.296249,
+    "ast_hash": "a1bd635625624e08930e6b6344ce2a26",
+    "semantic_hash": "a1bd635625624e08930e6b6344ce2a26"
   },
   "docs/adr/0020-layar-admin-kembali-ke-awcms.md": {
-    "mtime": 1785916310.509468,
-    "ast_hash": "31d4ce4117888ecd37454e72e485d028",
-    "semantic_hash": "31d4ce4117888ecd37454e72e485d028"
+    "mtime": 1786769497.296249,
+    "ast_hash": "eb0bfc05fba9ae2214afc02e6caa202e",
+    "semantic_hash": "eb0bfc05fba9ae2214afc02e6caa202e"
   },
   "docs/adr/0021-tahan-pengembangan-menunggu-fondasi-awcms.md": {
-    "mtime": 1785916310.510468,
-    "ast_hash": "fd9a1d9b48ae8bd3d3f3c98aae7bab0f",
-    "semantic_hash": "fd9a1d9b48ae8bd3d3f3c98aae7bab0f"
+    "mtime": 1786769497.296249,
+    "ast_hash": "f5a31b1fa8011274f4332a8fb12e7c6a",
+    "semantic_hash": "f5a31b1fa8011274f4332a8fb12e7c6a"
   },
   "docs/adr/0022-situs-menerbitkan-tenant-default-awcms.md": {
-    "mtime": 1785916310.510468,
-    "ast_hash": "c039d9c385bb41070bf44f2ab3074893",
-    "semantic_hash": "c039d9c385bb41070bf44f2ab3074893"
+    "mtime": 1786769497.296249,
+    "ast_hash": "1f3ea5af2b7a8d2c60d13d8220e6b45d",
+    "semantic_hash": "1f3ea5af2b7a8d2c60d13d8220e6b45d"
   },
   "scripts/asal-media.mjs": {
     "mtime": 1785757008.6034005,
@@ -450,9 +450,9 @@
     "semantic_hash": "932a3cec8134c7f72f6b0f4a30d948cd"
   },
   "scripts/audit-dokumen.mjs": {
-    "mtime": 1785916310.514468,
-    "ast_hash": "3dce667c77d2250f83fd7c2f875d1677",
-    "semantic_hash": "3dce667c77d2250f83fd7c2f875d1677"
+    "mtime": 1787864919.5943868,
+    "ast_hash": "14fd913ca67b15a23863e4c19c3e145d",
+    "semantic_hash": "14fd913ca67b15a23863e4c19c3e145d"
   },
   "src/components/Ilustrasi.astro": {
     "mtime": 1785794026.8829975,
@@ -470,9 +470,9 @@
     "semantic_hash": "3f5a003d48f9056611f4a2700191f10f"
   },
   "tests/audit-dokumen.test.mjs": {
-    "mtime": 1785916310.514468,
-    "ast_hash": "ce0577821085b694f15870e5d678d0a7",
-    "semantic_hash": "ce0577821085b694f15870e5d678d0a7"
+    "mtime": 1786769497.3032491,
+    "ast_hash": "c79200a3543c8e0b47353b8e796e80da",
+    "semantic_hash": "c79200a3543c8e0b47353b8e796e80da"
   },
   "tests/seni-lokal.test.mjs": {
     "mtime": 1785746705.1036856,
@@ -480,84 +480,84 @@
     "semantic_hash": "93a53bd8c4a67eb434d3d2e4fa18dc3f"
   },
   "docs/adr/0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md": {
-    "mtime": 1785746705.1026857,
-    "ast_hash": "6fbbc31f9ed1c8572305082c2d26bcd5",
-    "semantic_hash": "6fbbc31f9ed1c8572305082c2d26bcd5"
+    "mtime": 1786769497.296249,
+    "ast_hash": "4c76e355042f16361d0eb73502100587",
+    "semantic_hash": "4c76e355042f16361d0eb73502100587"
   },
   "docs/adr/0024-seni-lokal-di-src-assets.md": {
-    "mtime": 1785746705.1026857,
-    "ast_hash": "ac828336e06863869802f16904348d50",
-    "semantic_hash": "ac828336e06863869802f16904348d50"
+    "mtime": 1786769497.297249,
+    "ast_hash": "cee0aa68851c9c4307c7e46cb2a4aa99",
+    "semantic_hash": "cee0aa68851c9c4307c7e46cb2a4aa99"
   },
   "docs/adr/0025-gambar-artikel-dari-media-awcms.md": {
-    "mtime": 1785769256.4257479,
-    "ast_hash": "6c52ee260eb18d594d5329451fe5983f",
-    "semantic_hash": "6c52ee260eb18d594d5329451fe5983f"
+    "mtime": 1786769497.297249,
+    "ast_hash": "0cb2ea5ed21f7b386f5795f53b2242c9",
+    "semantic_hash": "0cb2ea5ed21f7b386f5795f53b2242c9"
   },
   "docs/adr/0026-kartu-share-per-artikel-dari-media-awcms.md": {
-    "mtime": 1785766408.329459,
-    "ast_hash": "7c0c22b81fa308dd80fca44f29a4873f",
-    "semantic_hash": "7c0c22b81fa308dd80fca44f29a4873f"
+    "mtime": 1786769497.297249,
+    "ast_hash": "f14e01de4c721c756dfe7f56c9d33bb2",
+    "semantic_hash": "f14e01de4c721c756dfe7f56c9d33bb2"
   },
   ".claude/skills/README.md": {
-    "mtime": 1785916310.508468,
-    "ast_hash": "928640a3ebd7a35a4d626d9cb8096d26",
-    "semantic_hash": "928640a3ebd7a35a4d626d9cb8096d26"
+    "mtime": 1786769497.292249,
+    "ast_hash": "6d90a61334231ddae551f0c18ab4b255",
+    "semantic_hash": "6d90a61334231ddae551f0c18ab4b255"
   },
   ".claude/skills/awcms-astro-gerbang/SKILL.md": {
-    "mtime": 1786141800.1722522,
-    "ast_hash": "cab72db539e7ab9ee5799212124add18",
-    "semantic_hash": "cab72db539e7ab9ee5799212124add18"
+    "mtime": 1787867382.4141881,
+    "ast_hash": "204c224a5df3e417969b9d1f0a94ef44",
+    "semantic_hash": "204c224a5df3e417969b9d1f0a94ef44"
   },
   ".claude/skills/awcms-astro-integrasi/SKILL.md": {
-    "mtime": 1786139306.6706707,
-    "ast_hash": "5cc73e1ab4302d198d0df014cc8e4d30",
-    "semantic_hash": "5cc73e1ab4302d198d0df014cc8e4d30"
+    "mtime": 1787871849.0632992,
+    "ast_hash": "df4966d99159d16e745860199cfc24bd",
+    "semantic_hash": "df4966d99159d16e745860199cfc24bd"
   },
   ".claude/skills/awcms-astro-situs-baru/SKILL.md": {
-    "mtime": 1786141800.1722522,
-    "ast_hash": "dde88c7ee7fef9a4e39673f94e6ca337",
-    "semantic_hash": "dde88c7ee7fef9a4e39673f94e6ca337"
+    "mtime": 1786769497.2932491,
+    "ast_hash": "94ccc5cdaebd85ac159eb5feaed347fa",
+    "semantic_hash": "94ccc5cdaebd85ac159eb5feaed347fa"
   },
   "docs/adr/0027-penahanan-adr-0021-selesai.md": {
-    "mtime": 1785789686.5016,
-    "ast_hash": "0ef33c7807bb47672e43d6a5af90915c",
-    "semantic_hash": "0ef33c7807bb47672e43d6a5af90915c"
+    "mtime": 1786769497.297249,
+    "ast_hash": "2ca2538c66b9bc60ba00f7a4bdf5acd4",
+    "semantic_hash": "2ca2538c66b9bc60ba00f7a4bdf5acd4"
   },
   "tests/versi-toolchain.test.mjs": {
-    "mtime": 1785798027.0510764,
-    "ast_hash": "11624a8816f524c010439370e4b0ac51",
-    "semantic_hash": "11624a8816f524c010439370e4b0ac51"
+    "mtime": 1787887472.5802455,
+    "ast_hash": "22faf8cb2d510561c0c03215c5aceded",
+    "semantic_hash": "22faf8cb2d510561c0c03215c5aceded"
   },
   ".claude/skills/awcms-astro-performa-keamanan/SKILL.md": {
-    "mtime": 1785931836.359528,
-    "ast_hash": "773cdc2c6e84d42a86c1bafc7dfaa106",
-    "semantic_hash": "773cdc2c6e84d42a86c1bafc7dfaa106"
+    "mtime": 1786769497.292249,
+    "ast_hash": "3b0e9baa1a862369a6582c25611544a1",
+    "semantic_hash": "3b0e9baa1a862369a6582c25611544a1"
   },
   "docs/adr/0028-jangkar-standar-performa-dan-keamanan.md": {
-    "mtime": 1785916310.510468,
-    "ast_hash": "11b625dc5b16f85ce6b43108567a1609",
-    "semantic_hash": "11b625dc5b16f85ce6b43108567a1609"
+    "mtime": 1786769497.297249,
+    "ast_hash": "7e0e180a62fc141387d8a11cd1eaa31f",
+    "semantic_hash": "7e0e180a62fc141387d8a11cd1eaa31f"
   },
   "docs/adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md": {
-    "mtime": 1785794026.8769975,
-    "ast_hash": "e2e9e74323eeed15e1d570a6e32a1d52",
-    "semantic_hash": "e2e9e74323eeed15e1d570a6e32a1d52"
+    "mtime": 1786769497.297249,
+    "ast_hash": "e8819191d381a69ac944d555fa00bca0",
+    "semantic_hash": "e8819191d381a69ac944d555fa00bca0"
   },
   "docs/adr/0030-aturan-tertulis-mendapat-pemeriksanya.md": {
-    "mtime": 1785798027.0500765,
-    "ast_hash": "e11194d0d70f0049cbce8ea63317babd",
-    "semantic_hash": "e11194d0d70f0049cbce8ea63317babd"
+    "mtime": 1786769497.297249,
+    "ast_hash": "2a2b2c236255faa01c4905ee9d56faab",
+    "semantic_hash": "2a2b2c236255faa01c4905ee9d56faab"
   },
   "docs/awcms-astro/standar-performa-dan-keamanan.md": {
-    "mtime": 1786154583.6491237,
-    "ast_hash": "274a566939a8bc08552f5a4424ec0c98",
-    "semantic_hash": "274a566939a8bc08552f5a4424ec0c98"
+    "mtime": 1787864919.5933867,
+    "ast_hash": "cfe1f46e4d8f1ab8c15cc82fd8388b7d",
+    "semantic_hash": "cfe1f46e4d8f1ab8c15cc82fd8388b7d"
   },
   "scripts/audit-graf.mjs": {
-    "mtime": 1785915232.5036414,
-    "ast_hash": "2d506f16767d2c3a0cc5137c0f1fc5af",
-    "semantic_hash": "2d506f16767d2c3a0cc5137c0f1fc5af"
+    "mtime": 1786965269.493817,
+    "ast_hash": "9620e1c6d1d6237fb90bf64ee8f2a591",
+    "semantic_hash": "9620e1c6d1d6237fb90bf64ee8f2a591"
   },
   "tests/audit-graf.test.mjs": {
     "mtime": 1785915232.5046415,
@@ -565,19 +565,19 @@
     "semantic_hash": "61248af48cab5840feeccd011a5daeae"
   },
   "scripts/sbom.mjs": {
-    "mtime": 1785915778.005618,
-    "ast_hash": "7c5f4a4d6ea65f3e11ac98c6474fb78d",
-    "semantic_hash": "7c5f4a4d6ea65f3e11ac98c6474fb78d"
+    "mtime": 1786965269.494817,
+    "ast_hash": "97d5ce6919f6d99975f5800d7760d228",
+    "semantic_hash": "97d5ce6919f6d99975f5800d7760d228"
   },
   "tests/sbom.test.mjs": {
-    "mtime": 1786172256.7999609,
-    "ast_hash": "53e85c8d25299c5fc146f371e8f3094a",
-    "semantic_hash": "53e85c8d25299c5fc146f371e8f3094a"
+    "mtime": 1786965269.494817,
+    "ast_hash": "35a80bfeaab44f1a8d7863f97c060a15",
+    "semantic_hash": "35a80bfeaab44f1a8d7863f97c060a15"
   },
   "docs/adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md": {
-    "mtime": 1785915778.002618,
-    "ast_hash": "c8a4c99ba388f9a519e1b44ee7e2af58",
-    "semantic_hash": "c8a4c99ba388f9a519e1b44ee7e2af58"
+    "mtime": 1786769497.298249,
+    "ast_hash": "bbbcc6be64c415794473da1e71e678ef",
+    "semantic_hash": "bbbcc6be64c415794473da1e71e678ef"
   },
   "lighthouserc.json": {
     "mtime": 1785919554.7564564,
@@ -600,29 +600,29 @@
     "semantic_hash": "b2f7121a30352035faafe13b56824746"
   },
   "docs/adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md": {
-    "mtime": 1785919554.7524564,
-    "ast_hash": "8ae8681b924d48d4d40481e5c9e5e546",
-    "semantic_hash": "8ae8681b924d48d4d40481e5c9e5e546"
+    "mtime": 1786769497.298249,
+    "ast_hash": "fa544f22a963d390fc25f30236290dbf",
+    "semantic_hash": "fa544f22a963d390fc25f30236290dbf"
   },
   "tests/audit-konten.test.mjs": {
-    "mtime": 1786141800.175252,
-    "ast_hash": "ed6217256ede51fe7fcd63066408a986",
-    "semantic_hash": "ed6217256ede51fe7fcd63066408a986"
+    "mtime": 1787818541.9748075,
+    "ast_hash": "46533c1e50d779b87935f088efcfdd23",
+    "semantic_hash": "46533c1e50d779b87935f088efcfdd23"
   },
   "sbom.cdx.json": {
-    "mtime": 1786172256.7999609,
-    "ast_hash": "81111715118f2c26fcbd3adfcfd17569",
-    "semantic_hash": "81111715118f2c26fcbd3adfcfd17569"
+    "mtime": 1787872605.7063062,
+    "ast_hash": "806c10893b920aa8d62fe8c85c19db64",
+    "semantic_hash": "806c10893b920aa8d62fe8c85c19db64"
   },
   "src/lib/feed-seksi.ts": {
-    "mtime": 1786141800.175252,
-    "ast_hash": "a684ae3134d4cc75841806f297f8ddca",
-    "semantic_hash": "a684ae3134d4cc75841806f297f8ddca"
+    "mtime": 1787470345.753946,
+    "ast_hash": "add7b0864551693caa147a99d1be9306",
+    "semantic_hash": "add7b0864551693caa147a99d1be9306"
   },
   "src/lib/feed.ts": {
-    "mtime": 1786141800.175252,
-    "ast_hash": "f68e0f0e3b8919c631b89339a9743498",
-    "semantic_hash": "f68e0f0e3b8919c631b89339a9743498"
+    "mtime": 1787470345.753946,
+    "ast_hash": "3106c8def325cdf2d31f056024092818",
+    "semantic_hash": "3106c8def325cdf2d31f056024092818"
   },
   "src/lib/tanggal.ts": {
     "mtime": 1786141800.175252,
@@ -640,19 +640,19 @@
     "semantic_hash": "34ee5040f7d21d3240095a56ba3728d9"
   },
   "tests/feed.test.mjs": {
-    "mtime": 1786141800.175252,
-    "ast_hash": "a0edd9b70a48c6edabe1072eb8c95493",
-    "semantic_hash": "a0edd9b70a48c6edabe1072eb8c95493"
+    "mtime": 1787470345.7549462,
+    "ast_hash": "cd995e8e4d25ef5bf059cce497328149",
+    "semantic_hash": "cd995e8e4d25ef5bf059cce497328149"
   },
   "tests/kosakata-news.test.mjs": {
-    "mtime": 1786156335.596962,
-    "ast_hash": "b1461d07dc8d18226a54341da0c4a1d0",
-    "semantic_hash": "b1461d07dc8d18226a54341da0c4a1d0"
+    "mtime": 1787060381.121617,
+    "ast_hash": "984b44e5069d58cade1ae61007c96cdc",
+    "semantic_hash": "984b44e5069d58cade1ae61007c96cdc"
   },
   "tests/peran-situs.test.mjs": {
-    "mtime": 1786139306.6746707,
-    "ast_hash": "36ce54c112c22ab4ef029e56d1195885",
-    "semantic_hash": "36ce54c112c22ab4ef029e56d1195885"
+    "mtime": 1786769497.304249,
+    "ast_hash": "89c60029506cd2596096099af48bdf73",
+    "semantic_hash": "89c60029506cd2596096099af48bdf73"
   },
   "tests/rilis-build-terkondisi.test.mjs": {
     "mtime": 1786172256.7999609,
@@ -660,9 +660,9 @@
     "semantic_hash": "8ee45686fc6d67f558a7ce32c3a04ebc"
   },
   "tests/schema.test.mjs": {
-    "mtime": 1786139306.6756709,
-    "ast_hash": "ce39314b89108237a0cf4713fbc4e4ac",
-    "semantic_hash": "ce39314b89108237a0cf4713fbc4e4ac"
+    "mtime": 1787470345.7559462,
+    "ast_hash": "aeb35a14f4fa68f16bd536b3bc8f1aa2",
+    "semantic_hash": "aeb35a14f4fa68f16bd536b3bc8f1aa2"
   },
   "tests/tanggal.test.mjs": {
     "mtime": 1786139306.6756709,
@@ -670,23 +670,428 @@
     "semantic_hash": "4745641a098f894f309059ef7177d2a1"
   },
   "docs/adr/0033-seksi-berita-urutan-dari-tanggal-dan-dua-tanggal-yang-terpisah.md": {
-    "mtime": 1786139306.6716707,
-    "ast_hash": "c3e7b3f608d955ebb84ac82dcd32bbcc",
-    "semantic_hash": "c3e7b3f608d955ebb84ac82dcd32bbcc"
+    "mtime": 1786769497.298249,
+    "ast_hash": "4172357a839ce7b95ee5f279097bc0ff",
+    "semantic_hash": "4172357a839ce7b95ee5f279097bc0ff"
   },
   "docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md": {
-    "mtime": 1786154583.6491237,
-    "ast_hash": "17a81d47278fa5bda8c05722c957f094",
-    "semantic_hash": "17a81d47278fa5bda8c05722c957f094"
+    "mtime": 1786769497.298249,
+    "ast_hash": "7de6b1c74b1858048dbd902d3a997104",
+    "semantic_hash": "7de6b1c74b1858048dbd902d3a997104"
   },
   "docs/adr/0035-feed-atom-per-seksi-berita-dan-gerbang-atas-xml.md": {
-    "mtime": 1786141800.173252,
-    "ast_hash": "2f38eed1479f1ceba5d3b5bed7506843",
-    "semantic_hash": "2f38eed1479f1ceba5d3b5bed7506843"
+    "mtime": 1786769497.298249,
+    "ast_hash": "3ef3408ec3246bac39dd607f204aed45",
+    "semantic_hash": "3ef3408ec3246bac39dd607f204aed45"
   },
   "docs/adr/0036-news-adalah-kosakata-repo-ini-dan-sebuah-tab-yang-memikulnya.md": {
-    "mtime": 1786156335.596962,
-    "ast_hash": "99025b9055282d1586bb33d4b733ba64",
-    "semantic_hash": "99025b9055282d1586bb33d4b733ba64"
+    "mtime": 1786769497.299249,
+    "ast_hash": "1055eefdb5bac5d751ac03a0f9368398",
+    "semantic_hash": "1055eefdb5bac5d751ac03a0f9368398"
+  },
+  "scripts/asal-pencarian.mjs": {
+    "mtime": 1787470345.7529461,
+    "ast_hash": "a386a1c0852bedc0253abe676655246c",
+    "semantic_hash": "a386a1c0852bedc0253abe676655246c"
+  },
+  "scripts/audit-aset.mjs": {
+    "mtime": 1787864919.5933867,
+    "ast_hash": "337cb08187f3dfd63f119685dde23af8",
+    "semantic_hash": "337cb08187f3dfd63f119685dde23af8"
+  },
+  "scripts/audit-rilis.mjs": {
+    "mtime": 1787867382.4171882,
+    "ast_hash": "1dec5cd968e70328bde735d56f5f53b9",
+    "semantic_hash": "1dec5cd968e70328bde735d56f5f53b9"
+  },
+  "scripts/audit-serapan.mjs": {
+    "mtime": 1787822231.8673618,
+    "ast_hash": "40eed26b741ee383b8186b2434f3b727",
+    "semantic_hash": "40eed26b741ee383b8186b2434f3b727"
+  },
+  "scripts/check-docs-translation.mjs": {
+    "mtime": 1786965269.493817,
+    "ast_hash": "2f0f0182f296042652c2212490fb3636",
+    "semantic_hash": "2f0f0182f296042652c2212490fb3636"
+  },
+  "scripts/docs-i18n-stamp.mjs": {
+    "mtime": 1786965269.493817,
+    "ast_hash": "4551e821277815f97a811c65b327db0b",
+    "semantic_hash": "4551e821277815f97a811c65b327db0b"
+  },
+  "scripts/lib/changeset.mjs": {
+    "mtime": 1786965269.493817,
+    "ast_hash": "214d60807c5e3a9e77764c7b2bd2fb3a",
+    "semantic_hash": "214d60807c5e3a9e77764c7b2bd2fb3a"
+  },
+  "scripts/lib/docs-i18n-checks.mjs": {
+    "mtime": 1786769497.3032491,
+    "ast_hash": "148ccb45118c7d67c456edb66405625a",
+    "semantic_hash": "148ccb45118c7d67c456edb66405625a"
+  },
+  "scripts/lib/files.mjs": {
+    "mtime": 1786965269.493817,
+    "ast_hash": "57b997812665a754e1d83301de7962ed",
+    "semantic_hash": "57b997812665a754e1d83301de7962ed"
+  },
+  "scripts/lib/git.mjs": {
+    "mtime": 1786965269.493817,
+    "ast_hash": "be29b078a7e6d9ad4c712d737a48ab5b",
+    "semantic_hash": "be29b078a7e6d9ad4c712d737a48ab5b"
+  },
+  "scripts/lib/lockfile.mjs": {
+    "mtime": 1786965269.493817,
+    "ast_hash": "5ab7d293d3aec0ae844d76aac7bfd519",
+    "semantic_hash": "5ab7d293d3aec0ae844d76aac7bfd519"
+  },
+  "scripts/lib/reporter.mjs": {
+    "mtime": 1786965269.494817,
+    "ast_hash": "869ea5efa4129d2b0e74c5c40ba37c0a",
+    "semantic_hash": "869ea5efa4129d2b0e74c5c40ba37c0a"
+  },
+  "scripts/lib/semver.mjs": {
+    "mtime": 1786965269.494817,
+    "ast_hash": "ac20c7827f575e3a422fbc71da37ccde",
+    "semantic_hash": "ac20c7827f575e3a422fbc71da37ccde"
+  },
+  "scripts/ukur-skala-build.mjs": {
+    "mtime": 1787822961.7577488,
+    "ast_hash": "214e4cd63b9e891c0045317ec4ab3512",
+    "semantic_hash": "214e4cd63b9e891c0045317ec4ab3512"
+  },
+  "src/components/BeaconKunjungan.astro": {
+    "mtime": 1787472199.0943525,
+    "ast_hash": "26648b6c27d5ad208979cf484576582f",
+    "semantic_hash": "26648b6c27d5ad208979cf484576582f"
+  },
+  "src/components/FormBuletin.astro": {
+    "mtime": 1787871849.0632992,
+    "ast_hash": "efceccd2758c17217503b3e8934d5046",
+    "semantic_hash": "efceccd2758c17217503b3e8934d5046"
+  },
+  "src/components/views/ArsipTaksonomi.astro": {
+    "mtime": 1787355788.4253078,
+    "ast_hash": "9326066cbeaf885c5bf64972c04b8a89",
+    "semantic_hash": "9326066cbeaf885c5bf64972c04b8a89"
+  },
+  "src/components/views/HalamanCari.astro": {
+    "mtime": 1787470345.7529461,
+    "ast_hash": "9285b35f212331989651ea29d96dff55",
+    "semantic_hash": "9285b35f212331989651ea29d96dff55"
+  },
+  "src/components/views/HalamanPrivasi.astro": {
+    "mtime": 1787871849.064299,
+    "ast_hash": "277ac003308e53a490b50f345c2373e8",
+    "semantic_hash": "277ac003308e53a490b50f345c2373e8"
+  },
+  "src/components/views/HalamanTokenBuletin.astro": {
+    "mtime": 1787871849.064299,
+    "ast_hash": "ab4561245b1ee0afaea348eda3b0429f",
+    "semantic_hash": "ab4561245b1ee0afaea348eda3b0429f"
+  },
+  "src/config/pengalihan.mjs": {
+    "mtime": 1787823799.758952,
+    "ast_hash": "c424c4250404213fc81e04562518ce2c",
+    "semantic_hash": "c424c4250404213fc81e04562518ce2c"
+  },
+  "src/lib/arsip-taksonomi.ts": {
+    "mtime": 1787355788.4253078,
+    "ast_hash": "36d072f0309ba063871b7e652436350e",
+    "semantic_hash": "36d072f0309ba063871b7e652436350e"
+  },
+  "src/lib/awcms/navigasi.ts": {
+    "mtime": 1787358067.8536634,
+    "ast_hash": "56e07e82aa8baea19bdb14a832546383",
+    "semantic_hash": "56e07e82aa8baea19bdb14a832546383"
+  },
+  "src/lib/awcms/profil.ts": {
+    "mtime": 1787334918.9284208,
+    "ast_hash": "232848078ecc71d2b89ed4e6b6009a8a",
+    "semantic_hash": "232848078ecc71d2b89ed4e6b6009a8a"
+  },
+  "src/lib/awcms/taksonomi.ts": {
+    "mtime": 1787821517.5221817,
+    "ast_hash": "0b944cfe3cc828eea3c5c0fb976c6a74",
+    "semantic_hash": "0b944cfe3cc828eea3c5c0fb976c6a74"
+  },
+  "src/lib/beacon.ts": {
+    "mtime": 1787472199.0953526,
+    "ast_hash": "e9bc9d820c8a6b391ba932c0825ca5ba",
+    "semantic_hash": "e9bc9d820c8a6b391ba932c0825ca5ba"
+  },
+  "src/lib/identitas.ts": {
+    "mtime": 1787334918.9284208,
+    "ast_hash": "974501891f5ceec58f49e50f30d96c45",
+    "semantic_hash": "974501891f5ceec58f49e50f30d96c45"
+  },
+  "src/lib/menu.ts": {
+    "mtime": 1787358067.8536634,
+    "ast_hash": "56a3dc5f3067f2ea4976178e59dbaedf",
+    "semantic_hash": "56a3dc5f3067f2ea4976178e59dbaedf"
+  },
+  "src/lib/newsletter.ts": {
+    "mtime": 1787871849.064299,
+    "ast_hash": "fd95f3d6ffee089e51f6086d549868d8",
+    "semantic_hash": "fd95f3d6ffee089e51f6086d549868d8"
+  },
+  "src/lib/paginasi.ts": {
+    "mtime": 1787336056.3022695,
+    "ast_hash": "e3286bac986d608061be301dd7e60da9",
+    "semantic_hash": "e3286bac986d608061be301dd7e60da9"
+  },
+  "src/lib/pencarian.ts": {
+    "mtime": 1787470345.753946,
+    "ast_hash": "32c6178fc6862f887edbb969bb28821c",
+    "semantic_hash": "32c6178fc6862f887edbb969bb28821c"
+  },
+  "src/lib/portable-text.ts": {
+    "mtime": 1787822643.2299883,
+    "ast_hash": "6a0a9ff973175340eb016a023c91bf19",
+    "semantic_hash": "6a0a9ff973175340eb016a023c91bf19"
+  },
+  "src/lib/terkait.ts": {
+    "mtime": 1787336353.3689845,
+    "ast_hash": "78c6650953dd50b21d353795485d905c",
+    "semantic_hash": "78c6650953dd50b21d353795485d905c"
+  },
+  "src/pages/[lang]/[tab]/halaman/[nomor].astro": {
+    "mtime": 1787336056.3022695,
+    "ast_hash": "bb1258f70f8cc4f205f81ba461371f2e",
+    "semantic_hash": "bb1258f70f8cc4f205f81ba461371f2e"
+  },
+  "src/pages/[lang]/cari.astro": {
+    "mtime": 1787470345.7549462,
+    "ast_hash": "75d248650920e89a9a15fa88784ed0ff",
+    "semantic_hash": "75d248650920e89a9a15fa88784ed0ff"
+  },
+  "src/pages/[lang]/kategori/[slug]/halaman/[nomor].astro": {
+    "mtime": 1787355788.426308,
+    "ast_hash": "59af76133576487014af90aa455f9d02",
+    "semantic_hash": "59af76133576487014af90aa455f9d02"
+  },
+  "src/pages/[lang]/kategori/[slug]/index.astro": {
+    "mtime": 1787355788.426308,
+    "ast_hash": "a8e98d54785670a4ab15da1e8898f171",
+    "semantic_hash": "a8e98d54785670a4ab15da1e8898f171"
+  },
+  "src/pages/[lang]/privasi.astro": {
+    "mtime": 1787472199.0953526,
+    "ast_hash": "46f8215b2ee734fb31697c408f1c9877",
+    "semantic_hash": "46f8215b2ee734fb31697c408f1c9877"
+  },
+  "src/pages/[lang]/tag/[slug]/halaman/[nomor].astro": {
+    "mtime": 1787355788.426308,
+    "ast_hash": "8b5289af1dde814534773fb733cee9c9",
+    "semantic_hash": "8b5289af1dde814534773fb733cee9c9"
+  },
+  "src/pages/[lang]/tag/[slug]/index.astro": {
+    "mtime": 1787355788.426308,
+    "ast_hash": "83918634e0d3530c777b3ef2d81b91d1",
+    "semantic_hash": "83918634e0d3530c777b3ef2d81b91d1"
+  },
+  "src/pages/[tab]/halaman/[nomor].astro": {
+    "mtime": 1787336056.3022695,
+    "ast_hash": "7e12b274b0d2d28c62618409f9b235f6",
+    "semantic_hash": "7e12b274b0d2d28c62618409f9b235f6"
+  },
+  "src/pages/cari.astro": {
+    "mtime": 1787470345.7549462,
+    "ast_hash": "c0794fd2c6838bad4c7a09349766cb6a",
+    "semantic_hash": "c0794fd2c6838bad4c7a09349766cb6a"
+  },
+  "src/pages/kategori/[slug]/halaman/[nomor].astro": {
+    "mtime": 1787355788.426308,
+    "ast_hash": "9b5fe9750434fb7372f18176923335d7",
+    "semantic_hash": "9b5fe9750434fb7372f18176923335d7"
+  },
+  "src/pages/kategori/[slug]/index.astro": {
+    "mtime": 1787355788.426308,
+    "ast_hash": "5e124f718e962702ace8171829191460",
+    "semantic_hash": "5e124f718e962702ace8171829191460"
+  },
+  "src/pages/newsletter/confirm.astro": {
+    "mtime": 1787871849.065299,
+    "ast_hash": "91536d94193344fafe07b24bc8136648",
+    "semantic_hash": "91536d94193344fafe07b24bc8136648"
+  },
+  "src/pages/newsletter/unsubscribe.astro": {
+    "mtime": 1787871849.065299,
+    "ast_hash": "64d9b0643c7abe37215db0d58e4cdfd8",
+    "semantic_hash": "64d9b0643c7abe37215db0d58e4cdfd8"
+  },
+  "src/pages/privasi.astro": {
+    "mtime": 1787472199.0953526,
+    "ast_hash": "f319b82ffe379779f303528a80513350",
+    "semantic_hash": "f319b82ffe379779f303528a80513350"
+  },
+  "src/pages/tag/[slug]/halaman/[nomor].astro": {
+    "mtime": 1787355788.426308,
+    "ast_hash": "2ed4985f1544c58f4ce25c4bf75bbeab",
+    "semantic_hash": "2ed4985f1544c58f4ce25c4bf75bbeab"
+  },
+  "src/pages/tag/[slug]/index.astro": {
+    "mtime": 1787355788.426308,
+    "ast_hash": "8ad9515f9debd74368d202933c2e1f5f",
+    "semantic_hash": "8ad9515f9debd74368d202933c2e1f5f"
+  },
+  "tests/arsip-taksonomi.test.mjs": {
+    "mtime": 1787355788.426308,
+    "ast_hash": "e0023d70e5454b8139ed35a408a0a6ac",
+    "semantic_hash": "e0023d70e5454b8139ed35a408a0a6ac"
+  },
+  "tests/audit-aset.test.mjs": {
+    "mtime": 1787864919.5953867,
+    "ast_hash": "a02f72b6fc09336d8d636cb0227c2cb6",
+    "semantic_hash": "a02f72b6fc09336d8d636cb0227c2cb6"
+  },
+  "tests/audit-rilis.test.mjs": {
+    "mtime": 1787867382.4171882,
+    "ast_hash": "941d8045e980f759c25b9c74e742d9d7",
+    "semantic_hash": "941d8045e980f759c25b9c74e742d9d7"
+  },
+  "tests/audit-serapan.test.mjs": {
+    "mtime": 1787822231.8673618,
+    "ast_hash": "4f3e184c72c3d1b24ec5f6cf83b89fc1",
+    "semantic_hash": "4f3e184c72c3d1b24ec5f6cf83b89fc1"
+  },
+  "tests/beacon.test.mjs": {
+    "mtime": 1787472199.0963526,
+    "ast_hash": "d5eb2058f3f8204a6ee1b1a28d2b1969",
+    "semantic_hash": "d5eb2058f3f8204a6ee1b1a28d2b1969"
+  },
+  "tests/docs-i18n-checks.test.mjs": {
+    "mtime": 1786769497.3032491,
+    "ast_hash": "3bc6006eeced56dfe938c8edf677e2e5",
+    "semantic_hash": "3bc6006eeced56dfe938c8edf677e2e5"
+  },
+  "tests/identitas-situs.test.mjs": {
+    "mtime": 1787335597.4426808,
+    "ast_hash": "0b8aedeb8294481f73a11fcf20d7e957",
+    "semantic_hash": "0b8aedeb8294481f73a11fcf20d7e957"
+  },
+  "tests/kotak-cari.test.mjs": {
+    "mtime": 1787470345.7549462,
+    "ast_hash": "32f819eebe8e47e8f982cfe616059a6f",
+    "semantic_hash": "32f819eebe8e47e8f982cfe616059a6f"
+  },
+  "tests/menu-widget.test.mjs": {
+    "mtime": 1787358067.8546634,
+    "ast_hash": "afbc742528f7bc0535cfadf1d1d6a5ad",
+    "semantic_hash": "afbc742528f7bc0535cfadf1d1d6a5ad"
+  },
+  "tests/newsletter.test.mjs": {
+    "mtime": 1787871849.065299,
+    "ast_hash": "652f89ce12e31dfa21fcb697220d9bce",
+    "semantic_hash": "652f89ce12e31dfa21fcb697220d9bce"
+  },
+  "tests/paginasi.test.mjs": {
+    "mtime": 1787336056.3022695,
+    "ast_hash": "0913f4603188836eeeb4d4fbafbddee4",
+    "semantic_hash": "0913f4603188836eeeb4d4fbafbddee4"
+  },
+  "tests/pencarian.test.mjs": {
+    "mtime": 1787470345.7549462,
+    "ast_hash": "d8fe644e6c737e8c24877fb99978f5b8",
+    "semantic_hash": "d8fe644e6c737e8c24877fb99978f5b8"
+  },
+  "tests/pengalihan.test.mjs": {
+    "mtime": 1787823799.758952,
+    "ast_hash": "1d2e6256245b661397eb48787f70c7ce",
+    "semantic_hash": "1d2e6256245b661397eb48787f70c7ce"
+  },
+  "tests/portable-text.test.mjs": {
+    "mtime": 1787822643.2309883,
+    "ast_hash": "1e6a9685b481c9d3178369052fafa0fd",
+    "semantic_hash": "1e6a9685b481c9d3178369052fafa0fd"
+  },
+  "tests/standar-skrip.test.mjs": {
+    "mtime": 1786965269.494817,
+    "ast_hash": "5dca468b0ae080587b1e09a51d7608b4",
+    "semantic_hash": "5dca468b0ae080587b1e09a51d7608b4"
+  },
+  "tests/tanpa-backend.test.mjs": {
+    "mtime": 1787864919.5963867,
+    "ast_hash": "1e2a9b30de91d2f6959f0c158c6c95d2",
+    "semantic_hash": "1e2a9b30de91d2f6959f0c158c6c95d2"
+  },
+  "tests/terkait.test.mjs": {
+    "mtime": 1787336353.3689845,
+    "ast_hash": "e07cee105d0026e70e09682e6c41d215",
+    "semantic_hash": "e07cee105d0026e70e09682e6c41d215"
+  },
+  "tests/versi-changeset.test.mjs": {
+    "mtime": 1787867382.418188,
+    "ast_hash": "d72a0bd6bad8e02e085ed658c6d33e50",
+    "semantic_hash": "d72a0bd6bad8e02e085ed658c6d33e50"
+  },
+  "docs/adr/0037-pin-typescript-6-adalah-syarat-hidupnya-gerbang-astro-check.md": {
+    "mtime": 1787887421.1724753,
+    "ast_hash": "eff8e1bcb32ccbbb842084ce27569c15",
+    "semantic_hash": "eff8e1bcb32ccbbb842084ce27569c15"
+  },
+  "docs/adr/0038-kebutuhan-backend-menjadi-modul-di-awcms.md": {
+    "mtime": 1786769497.299249,
+    "ast_hash": "a8e7d86b58226a2d1b59979b248e648d",
+    "semantic_hash": "a8e7d86b58226a2d1b59979b248e648d"
+  },
+  "docs/adr/0039-english-is-the-source-language.md": {
+    "mtime": 1786769497.299249,
+    "ast_hash": "bf1cd633750207c3ef4bef55742af544",
+    "semantic_hash": "bf1cd633750207c3ef4bef55742af544"
+  },
+  "docs/adr/0040-changeset-menyatakan-bump-semver.md": {
+    "mtime": 1786965269.491817,
+    "ast_hash": "56cfb99123e26169b66910d32e0c89ec",
+    "semantic_hash": "56cfb99123e26169b66910d32e0c89ec"
+  },
+  "docs/adr/0041-locale-stays-at-the-root-and-two-vary-names-are-refused.md": {
+    "mtime": 1787060381.1196172,
+    "ast_hash": "adf6f8c606b5d6fe3124369fff2332e7",
+    "semantic_hash": "adf6f8c606b5d6fe3124369fff2332e7"
+  },
+  "docs/adr/0042-a-byline-is-the-first-per-person-data-this-template-publishes.md": {
+    "mtime": 1787470345.7509463,
+    "ast_hash": "a869a0c242486c898c35b3d5d75fa26a",
+    "semantic_hash": "a869a0c242486c898c35b3d5d75fa26a"
+  },
+  "docs/adr/0043-the-readers-browser-calls-awcms-and-nothing-else-changes.md": {
+    "mtime": 1787470345.7509463,
+    "ast_hash": "e8ff7d4d9577784b51fda87c7082390b",
+    "semantic_hash": "e8ff7d4d9577784b51fda87c7082390b"
+  },
+  "docs/adr/0044-what-a-page-view-may-cost-a-reader.md": {
+    "mtime": 1787472199.0943525,
+    "ast_hash": "9d6ebd54b13a62cc47e67892a967e004",
+    "semantic_hash": "9d6ebd54b13a62cc47e67892a967e004"
+  },
+  "docs/adr/0045-a-section-comes-from-the-cms-vocabulary-not-from-a-sidecar-only-we-write.md": {
+    "mtime": 1787821517.5211818,
+    "ast_hash": "2ae773cfd5ced807ba0af1be51d18c84",
+    "semantic_hash": "2ae773cfd5ced807ba0af1be51d18c84"
+  },
+  "docs/adr/0046-a-video-embed-is-refused-here-and-that-is-a-divergence-not-an-omission.md": {
+    "mtime": 1787822231.8663616,
+    "ast_hash": "88a8275db7e579c4d97dd0fcdb4def22",
+    "semantic_hash": "88a8275db7e579c4d97dd0fcdb4def22"
+  },
+  "docs/adr/0047-this-origin-answers-its-own-content-redirects-and-the-edge-keeps-the-rest.md": {
+    "mtime": 1787823799.757952,
+    "ast_hash": "4a8d7571ea2187cd64bd3b5569c12ed6",
+    "semantic_hash": "4a8d7571ea2187cd64bd3b5569c12ed6"
+  },
+  "docs/adr/0048-a-release-is-cut-when-the-backlog-crosses-a-bound.md": {
+    "mtime": 1787867382.416188,
+    "ast_hash": "3bd26dfd0f968adce1a54165cded40fc",
+    "semantic_hash": "3bd26dfd0f968adce1a54165cded40fc"
+  },
+  "docs/adr/0049-a-reader-may-subscribe-and-the-first-write-from-a-strangers-browser.md": {
+    "mtime": 1787871849.0632992,
+    "ast_hash": "ac3fa443dd5affb0a403c2ad82512d65",
+    "semantic_hash": "ac3fa443dd5affb0a403c2ad82512d65"
+  },
+  "docs/awcms-astro/permukaan-admin-user.md": {
+    "mtime": 1787060381.1206172,
+    "ast_hash": "80b926b61143d61f584bb99f1ed87eec",
+    "semantic_hash": "80b926b61143d61f584bb99f1ed87eec"
   }
 }
