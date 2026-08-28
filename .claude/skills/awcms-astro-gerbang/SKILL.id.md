@@ -5,7 +5,7 @@ description: Sembilan gerbang awcms-astro (check, test, audit:konten, audit:doku
 
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](SKILL.md)
 
-<!-- i18n-source-hash: sha256:64294bb00a83c460dcd881eb78e5cf2857c372d39d285b8fe3a43beaa265f532 -->
+<!-- i18n-source-hash: sha256:e205296446109f485c5d164c8d1114af85aeb8efcbc91b639d22fff4240cb88c -->
 
 # awcms-astro — gerbang
 
@@ -29,7 +29,7 @@ bun run audit:rilis       # backlog changeset menunggu  — tanpa build, tanpa j
 | Gerbang | Kelas cacat |
 | --- | --- |
 | `check` | Tipe, props, impor putus, lockfile milik proyek lain |
-| `bun test` | 21 berkas. Paritas katalog PO; kontrak `awcms` (traversal, media, kartu) dan **permukaan yang dipanggil build**; **PERAN repo** (`tests/peran-situs.test.mjs`, ADR-0034); **TANPA backend** (`tests/tanpa-backend.test.mjs`, ADR-0038 — dependency kelas backend, jalur tulis, artefak persistensi); **kosakata `news`** (`tests/kosakata-news.test.mjs`, ADR-0036); feed Atom (`tests/feed.test.mjs`, ADR-0035); dua tanggal terpisah (`tests/tanggal.test.mjs`, ADR-0033); header + cache penyaji; CSP atas keluaran; **versi toolchain** termasuk pin TypeScript (ADR-0037); SBOM; CWV lab; analisis statik; schema; seni lokal; renderer blok; rilis terkondisi; logika pemeriksa terjemahan (`tests/docs-i18n-checks.test.mjs`, ADR-0039); plus tiga meta-tes yang menjalankan ulang ketiga skrip audit atas repo ini DAN atas pohon fixture |
+| `bun test` | 38 berkas. Paritas katalog PO; kontrak `awcms` (traversal, media, kartu) dan **permukaan yang dipanggil build**; **PERAN repo** (`tests/peran-situs.test.mjs`, ADR-0034); **TANPA backend** (`tests/tanpa-backend.test.mjs`, ADR-0038 — dependency kelas backend, jalur tulis, artefak persistensi); **kosakata `news`** (`tests/kosakata-news.test.mjs`, ADR-0036); feed Atom (`tests/feed.test.mjs`, ADR-0035); dua tanggal terpisah (`tests/tanggal.test.mjs`, ADR-0033); header + cache penyaji; CSP atas keluaran; **versi toolchain** termasuk pin TypeScript (ADR-0037); SBOM; CWV lab; analisis statik; schema; seni lokal; renderer blok; rilis terkondisi; logika pemeriksa terjemahan (`tests/docs-i18n-checks.test.mjs`, ADR-0039); plus 6 meta-tes yang menjalankan ulang enam dari tujuh skrip audit atas repo ini DAN atas pohon fixture (`audit:translation` yang ketujuh; logikanya digerbangi `tests/docs-i18n-checks.test.mjs`). **Kedua hitungan di baris ini diperiksa terhadap repo oleh `tests/documented-counts.test.mjs`.** Keduanya berbunyi 21 dan tiga sampai 28 Agustus 2026, hanyut satu berkas demi satu berkas seiring gerbang bertambah — dan itulah sebabnya keduanya digerbangi, bukan sekadar dikoreksi |
 | `audit:konten` | Rasio gambar terhadap `--ratio-visual`, format dibaca dari ISI berkas, judul/canonical/hreflang, aset yang dijanjikan metadata, tautan mati, sitemap, **setiap `.xml` di keluaran** (feed Atom sah, atau pelanggaran), nama key bocor ke layar |
 | `audit:dokumen` | Tautan markdown mati, indeks ADR lengkap dua arah, status ADR setuju dengan berkasnya, daftar permukaan kilau, jalur berkas yang disebut dokumen, **kutipan `ADR-NNNN` yang resolve ke berkasnya** |
 | `audit:translation` | Cermin basi (sebuah `.id.md` yang hash tercatatnya tidak lagi cocok dengan sumber Inggrisnya), cermin yatim yang sumbernya hilang, dokumen tanpa cermin yang tidak ada di buku besar yang hanya boleh menyusut, dan entri buku besar yang cerminnya kini ada (ADR-0039) |
@@ -74,7 +74,15 @@ bun run audit:rilis       # backlog changeset menunggu  — tanpa build, tanpa j
 - **Kolom "Keadaan" di `docs/awcms-astro/standar-performa-dan-keamanan.md`.**
   Sebuah baris bisa berbunyi "Terpenuhi" setelah kontrolnya dicabut, dan tidak
   ada yang akan merah. Itu biaya yang ADR-0028 nyatakan menerimanya.
-- **Prosa di dalam skill maupun docs.** Sama seperti di atas: gerbang membaca struktur.
+- **Prosa di dalam skill maupun docs.** Sama seperti di atas: gerbang membaca
+  struktur — dengan **satu pengecualian yang disengaja**, ditambahkan 28 Agustus
+  2026. `tests/documented-counts.test.mjs` membaca dua ANGKA dari baris
+  `bun test` di atas dan membandingkannya dengan isi `tests/` yang sebenarnya.
+  Sebuah angka adalah satu-satunya jenis klaim yang bisa dibuat sebuah kalimat
+  dan bisa diselesaikan pemeriksa tanpa memahami kalimatnya, dan kedua angka itu
+  sudah hanyut menjadi 21 dan tiga sementara seluruh gerbang tetap hijau. Ia
+  tidak membaca sisa barisnya, dan tidak mengatakan apa pun tentang benar
+  tidaknya kalimat di sekitar angka itu.
 - **Kesegaran graf, dan mutu nama komunitas di luar bentuknya.** `audit:graf`
   MELAPORKAN selisih `built_at_commit` ke `HEAD` tanpa pernah memerahkannya —
   memerahkannya berarti tiap PR yang menyentuh berkas terindeks wajib membawa

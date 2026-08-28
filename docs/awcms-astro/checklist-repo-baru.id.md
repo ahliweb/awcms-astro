@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](checklist-repo-baru.md)
 
-<!-- i18n-source-hash: sha256:7cd0946fcc1f34e9d5337f142bb2916b969eee7fcaedfbfc2bb0d5db92fea8a6 -->
+<!-- i18n-source-hash: sha256:6139764ce6463dc9890147b0a8f8d1ff777064d53159751fba0b98f204eec78b -->
 
 # Memulai Situs Baru di Atas awcms-astro
 
@@ -74,7 +74,7 @@ Bila ilustrasi dibangkitkan sendiri, **jangan biarkan konfigurasinya menyisipkan
 Wajib tetap hijau:
 
 - [ ] `bun run check` — gerbang lockfile lalu `astro check`.
-- [ ] `bun test` — 21 berkas gerbang. Yang paling sering memerahkan situs baru:
+- [ ] `bun test` — 38 berkas gerbang. Yang paling sering memerahkan situs baru:
       katalog PO (`tests/katalog-po.test.mjs` — key yang dipakai kode tetapi tak
       ada di katalog, katalog locale yang tertinggal, `msgstr` kosong, key tab
       yang belum ditulis untuk locale mana pun), **peran situs**

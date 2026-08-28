@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](0037-pin-typescript-6-adalah-syarat-hidupnya-gerbang-astro-check.md)
 
-<!-- i18n-source-hash: sha256:931e0748bd3cab4562c9c956b142001d17722560b582fb3ca38114b834ae68c2 -->
+<!-- i18n-source-hash: sha256:a5315c84f9b4ebd8f8f8f7422fb768f08881ae1fc4979e9471df266312158b7d -->
 
 # ADR-0037 — Pin TypeScript 6.x adalah syarat hidupnya gerbang `astro check`
 
@@ -113,10 +113,12 @@ diam-diam mati bila salah satunya bergerak sendiri.**
 - **Negatif / trade-off yang diterima:**
   - **Repo ini tertahan di TypeScript 6.x sampai `@astrojs/check` menyusul**,
     termasuk dari fitur bahasa dan perbaikan kompiler 7.x. Itu biaya nyata, dan
-    ia dipilih: 16 berkas komponen `.astro` beserta layout dan halamannya — 28 berkas `.astro`
-    di `src/` seluruhnya — tanpa pemeriksa tipe adalah harga yang lebih mahal, dan repo ini sudah pernah
-    membayarnya sekali — `entry: any` di `ArtikelLayout` menyembunyikan empat
-    field yang tidak pernah ada.
+    ia dipilih: setiap komponen `.astro` di `src/`, beserta layout dan
+    halamannya, tanpa pemeriksa tipe adalah harga yang lebih mahal — dan repo
+    ini sudah pernah membayarnya sekali, `entry: any` di `ArtikelLayout`
+    menyembunyikan empat field yang tidak pernah ada. Paragraf ini dulu
+    mematoknya di "28 berkas `.astro`"; pada 28 Agustus 2026 jumlahnya 50, dan
+    angka itu tidak mengerjakan apa pun yang argumennya belum kerjakan tanpanya.
   - **Keluarga menjadi tidak seragam pada satu nilai toolchain**, setelah
     ADR-0015 justru menutup divergence runtime. Bedanya: yang ini **tercatat di
     kedua sisi** beserta tanggal tinjaunya, bukan ditemukan orang berikutnya.

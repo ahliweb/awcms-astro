@@ -27,7 +27,7 @@ bun run audit:rilis       # the waiting release backlog — no build, no network
 | Gate | Class of defect |
 | --- | --- |
 | `check` | Types, props, broken imports, a lockfile belonging to another project |
-| `bun test` | 21 files. PO catalogue parity; the `awcms` contract (traversal, media, cards) and **the surfaces the build calls**; the repo's ROLE (`tests/peran-situs.test.mjs`, ADR-0034); **NO backend** (`tests/tanpa-backend.test.mjs`, ADR-0038 — backend-class dependencies, write paths, persistence artefacts); the **`news` vocabulary** (`tests/kosakata-news.test.mjs`, ADR-0036); the Atom feed (`tests/feed.test.mjs`, ADR-0035); two separate dates (`tests/tanggal.test.mjs`, ADR-0033); the server's headers + cache; CSP over the output; **toolchain versions** including the TypeScript pin (ADR-0037); SBOM; lab CWV; static analysis; schema; local art; the block renderer; the conditional release; the translation-check logic (`tests/docs-i18n-checks.test.mjs`, ADR-0039); plus three meta-tests that re-run the three audit scripts over this repo AND over a fixture tree |
+| `bun test` | 38 files. PO catalogue parity; the `awcms` contract (traversal, media, cards) and **the surfaces the build calls**; the repo's ROLE (`tests/peran-situs.test.mjs`, ADR-0034); **NO backend** (`tests/tanpa-backend.test.mjs`, ADR-0038 — backend-class dependencies, write paths, persistence artefacts); the **`news` vocabulary** (`tests/kosakata-news.test.mjs`, ADR-0036); the Atom feed (`tests/feed.test.mjs`, ADR-0035); two separate dates (`tests/tanggal.test.mjs`, ADR-0033); the server's headers + cache; CSP over the output; **toolchain versions** including the TypeScript pin (ADR-0037); SBOM; lab CWV; static analysis; schema; local art; the block renderer; the conditional release; the translation-check logic (`tests/docs-i18n-checks.test.mjs`, ADR-0039); plus 6 meta-tests that re-run six of the seven audit scripts over this repo AND over a fixture tree (`audit:translation` is the seventh; its logic is gated by `tests/docs-i18n-checks.test.mjs` instead). **The two counts in this row are checked against the repo by `tests/documented-counts.test.mjs`.** They read 21 and three until 28 August 2026, drifting one file at a time as gates were added — which is why they are gated rather than merely corrected |
 | `audit:konten` | Image ratios against `--ratio-visual`, format read from the file CONTENTS, title/canonical/hreflang, assets promised by metadata, dead links, the sitemap, **every `.xml` in the output** (a valid Atom feed, or a violation), key names leaking to the screen |
 | `audit:dokumen` | Dead markdown links, the ADR index complete in both directions, an ADR's status agreeing with its file, the polish-surface list, file paths named by a document, **`ADR-NNNN` citations that resolve to their file** |
 | `audit:translation` | A stale mirror (an `.id.md` whose recorded hash no longer matches its English source), an orphan mirror whose source is gone, a document with no mirror that is not on the shrink-only ledger, and a ledger entry whose mirror now exists (ADR-0039) |
@@ -72,7 +72,13 @@ bun run audit:rilis       # the waiting release backlog — no build, no network
   A row can read "Met" after its control has been removed, and nothing will go
   red. That is the cost ADR-0028 states it accepts.
 - **Prose inside skills as well as docs.** Same as above: the gates read
-  structure.
+  structure — with **one deliberate exception**, added 28 August 2026.
+  `tests/documented-counts.test.mjs` reads two NUMBERS out of the `bun test` row
+  above and compares them to what `tests/` actually holds. A number is the one
+  kind of claim a sentence can make that a checker can settle without
+  understanding the sentence, and these two had drifted to 21 and three while
+  every gate stayed green. It does not read the rest of the row, and it says
+  nothing about whether the sentence around the number is true.
 - **Graph freshness, and the quality of a community name beyond its shape.**
   `audit:graf` REPORTS the gap between `built_at_commit` and `HEAD` without ever
   turning red on it — turning red would mean every PR touching an indexed file

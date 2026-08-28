@@ -121,10 +121,12 @@ moves alone.**
 - **Negative / accepted trade-offs:**
   - **This repo is held at TypeScript 6.x until `@astrojs/check` catches up**,
     including away from 7.x language features and compiler fixes. That is a real
-    cost, and it is chosen: 16 `.astro` component files plus its layouts and
-    pages — 28 `.astro` files in `src/` in total — with no type checker is the
-    more expensive price, and this repo has already paid it once — `entry: any` in
-    `ArtikelLayout` hid four fields that never existed.
+    cost, and it is chosen: every `.astro` component in `src/`, plus its layouts
+    and pages, with no type checker is the more expensive price — and this repo
+    has already paid it once, `entry: any` in `ArtikelLayout` hiding four fields
+    that never existed. This paragraph used to fix that at "28 `.astro` files";
+    by 28 August 2026 there were 50, and the number was doing no work the
+    argument did not already do without it.
   - **The family becomes non-uniform on one toolchain value**, right after
     ADR-0015 closed the runtime divergence. The difference: this one is
     **recorded on both sides** along with its review date, rather than being found
