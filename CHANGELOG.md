@@ -8,6 +8,290 @@ Berkas ini diisi `bun run release` dengan melipat seluruh changeset di [`.change
 
 Sejak [ADR-0040](docs/adr/0040-changeset-menyatakan-bump-semver.md) setiap changeset menyatakan `bump: major | minor | patch`, dan versi berikutnya adalah bump TERBESAR di antara yang menunggu — jadi besar sebuah rilis adalah akibat dari isinya, bukan keputusan terpisah yang diambil saat merilis.
 
+## [0.5.0] — 2026-09-02
+
+> **Build integrasi tidak berjalan pada rilis ini.** `AWCMS_API_URL` kosong,
+> yang normal untuk repo template ini sendiri — jadi `bun run build`,
+> `bun run audit:konten`, dan lapis penyaji/CSP di `bun test` DILEWATI, bukan
+> lulus. Sebuah situs yang dibangun dari template ini mengisi variabel itu dan
+> menjalankan ketiganya.
+
+### Empat dokumen menghitung gerbang repo ini, dan tak satu pun dihitung ulang
+
+[`awcms-astro-gerbang/SKILL.md`](.claude/skills/awcms-astro-gerbang/SKILL.md)
+dan [`checklist-repo-baru.md`](docs/awcms-astro/checklist-repo-baru.md) —
+beserta kedua cerminnya — memberi tahu pembaca berapa banyak berkas gerbang yang
+dijalankan `bun test`. Keduanya berbunyi **21**. Angka sebenarnya 37. Baris yang
+sama juga menjanjikan "tiga meta-tes yang menjalankan ulang ketiga skrip audit",
+sementara enam meta-tes menjalankan ulang enam dari tujuh.
+
+Tidak ada yang rusak saat sebuah gerbang ditambahkan, dan itulah seluruh
+bentuknya: hitungannya lapuk satu berkas demi satu berkas, tiap penambahan tak
+terlihat sendirian, dan kesembilan gerbang hijau sepanjang itu.
+
+Yang membuatnya lebih buruk dari biasa: kalimat yang hanyut itu tinggal di
+dokumen yang seluruh subjeknya adalah **pemeriksa mana yang ada**. Pembaca yang
+ingin tahu apa yang terjaga diberi sebuah angka, dan angka itu satu-satunya hal
+di halaman tersebut yang tidak dijaga siapa pun.
+
+- **`tests/documented-counts.test.mjs` membaca kedua angka itu dari keempat
+  dokumen** dan membandingkannya dengan isi `tests/`. Asersinya berjangkar pada
+  `` `bun test` `` diikuti angkanya — satu pola untuk kedua bahasa dan kedua
+  dokumen.
+- **Menuliskan angkanya kembali sebagai KATA ikut merah.** Kegagalannya sengaja
+  diarahkan ke sana: hitungan yang tidak bisa dibaca lagi adalah hitungan yang
+  berhenti dijaga, dan itu harus berbunyi keras, bukan lolos diam-diam.
+- **Cermin yang diperbarui sebelah tertangkap terpisah**, dengan pesan yang
+  menyebut pasangan mana yang pincang.
+- **Baris "Yang TIDAK ditangkap" ikut dipersempit.** Skill itu menyatakan gerbang
+  membaca struktur dan bukan prosa; itu kini punya satu pengecualian yang
+  disebutkan, karena sebuah angka adalah satu-satunya klaim dalam kalimat yang
+  bisa diselesaikan pemeriksa tanpa memahami kalimatnya. Sebuah dokumen yang
+  mendaftar apa yang tidak terjaga harus jujur ke dua arah.
+- **ADR-0037 melepas hitungan `.astro`-nya.** Paragraf trade-off-nya mematok "28
+  berkas `.astro`"; jumlahnya kini 50. Perlakuannya sama seperti angka versi yang
+  baru saja dilepas dari ADR yang sama — argumennya tidak butuh angka itu, dan
+  sebuah ADR bertanggal adalah tempat terburuk untuk menyimpan nilai yang
+  berubah.
+
+### Tabel selisih versi mendapat pemeriksanya, lima hari setelah ia berhenti benar
+
+[`standar-teknis.md`](docs/awcms-astro/standar-teknis.md) §Stack membawa tabel
+versi yang dipin repo ini di sebelah yang dipin `awcms`, diperkenalkan sebuah
+kalimat yang menyatakan seluruh maksudnya: selisihnya ditulis "supaya tidak
+ditemukan ulang sebagai temuan". Pada 23 Agustus 2026 Dependabot
+[#60](https://github.com/ahliweb/awcms-astro/pull/60) menaikkan `astro` ke
+`^7.2.4` dan `@astrojs/node` ke `^11.1.4`. Pin-nya bergerak; tabelnya tidak.
+
+Selama lima hari berikutnya tiga dokumen mengumumkan ketertinggalan satu minor
+yang sudah tidak ada — dan kedua nilai itu kini justru **cocok persis** dengan
+`awcms`. Sembilan gerbang hijau sepanjang waktu itu, karena tidak satu pun dari
+mereka membaca tabelnya. Paragraf yang menjanjikan selisih ini tidak akan
+ditemukan ulang sebagai temuan adalah temuannya sendiri.
+
+Itu bentuk yang [ADR-0030](docs/adr/0030-aturan-tertulis-mendapat-pemeriksanya.md)
+sebut namanya, jadi yang mendarat bukan angka yang dikoreksi — angkanya pernah
+benar juga.
+
+- **Kolom `repo ini` kini dibuktikan terhadap `package.json` setiap kali
+  `bun test` berjalan**, di KEDUA mirror bahasa, lewat
+  [`tests/versi-toolchain.test.mjs`](tests/versi-toolchain.test.mjs).
+  Parsernya berjangkar pada sel `` `awcms` `` — satu-satunya sel kepala yang
+  dieja sama di kedua bahasa — sehingga satu pemeriksa melayani keduanya dan
+  tidak ada mirror yang hanyut ke aturan yang tidak dibagi pasangannya.
+- **Baris BARU yang tidak digerbangi ikut merah.** Asersinya kesamaan himpunan,
+  bukan subset: menambahkan dependency ke tabel tanpa menambahkannya ke daftar
+  yang diperiksa adalah cara berikutnya tabel ini menjadi salah tanpa ada yang
+  gagal.
+- **Kolom `awcms` sengaja TIDAK digerbangi**, dan dokumennya kini mengatakannya
+  dengan kata-kata sebanyak itu. Ia menyebut repo lain, dan membacanya berarti
+  menaruh jaringan di dalam gerbang yang wajib jalan luring dan sebelum
+  `bun install`. Yang bisa dijaga di sini hanyalah bahwa kedua mirror
+  menuliskannya sama.
+- **ADR-0037 berhenti membawa salinan kedua angkanya.** Ia paragraf yang basi
+  itu; sebuah ADR bertanggal, sebuah versi tidak, dan catatan keputusan adalah
+  tempat terburuk untuk menyimpan nilai yang berubah. Pernyataan sejarahnya
+  tetap — ketertinggalan itu ada pada hari ADR ditulis, dan ditutup 23 Agustus
+  2026 — sementara angkanya kini tinggal di satu tabel yang dibaca pemeriksa.
+
+### `astro` naik ke 7.2.9, dan tabel versinya ikut — karena gerbangnya menolak yang tidak
+
+Dependabot menaikkan `astro` dari `^7.2.4` ke `^7.2.9` (grup `minor-dan-patch`),
+dan PR-nya **merah**: `tests/versi-toolchain.test.mjs` membandingkan kolom "repo
+ini" di `docs/awcms-astro/standar-teknis.md` dengan `package.json`, dan Dependabot
+tidak bisa menyunting prosa. Itu gerbang yang bekerja persis seperti maksudnya —
+ia lahir dari tabel yang terus mengatakan hal yang sudah berhenti benar selama
+lima hari — jadi yang dikerjakan di sini adalah separuh yang memang harus
+dikerjakan manusia.
+
+- **Kedua cermin tabel diperbarui**, dan bukan sekadar angkanya. Baris `astro`
+  dulu berbunyi "cocok persis" dengan `awcms`; sejak bump ini repo ini **lima
+  patch di depan**, karena Dependabot menaikkan repo ini sendirian. Selisihnya
+  DICATAT alih-alih ditutup dengan menahan patch: rentang patch `astro` tidak
+  membawa kontrak lintas-repo, dan menahan sebuah patch supaya sebuah tabel tetap
+  berbunyi "cocok" adalah tabel yang menyetir kode.
+- **Kolom `awcms` dibaca dari repo itu pada 2 September 2026** dan barisnya kini
+  mengatakan kapan ia dibaca. Kolom itu sengaja tidak digerbangi — ia menyebut
+  repo lain, dan gerbang yang butuh jaringan gagal karena sebabnya sendiri — jadi
+  yang bisa dilakukan adalah menyatakan umurnya.
+
+Diverifikasi di luar CI, yang melewati build integrasi karena repo template tidak
+punya sumber konten: `bun run build` penuh terhadap feed tiruan, `bun run check`,
+kesembilan gerbang, dan `bun audit --audit-level=low` — nol kerentanan atas 382
+paket.
+
+### Beranda akhirnya menunjukkan isinya, dan gerbang aset menemukan gaya yang salah alamat
+
+Sampai hari ini, seorang pembaca yang mendarat di beranda tidak bisa melihat
+**satu judul artikel pun**. Yang ada di sana adalah hero, tiga kartu kanal, dan
+tiga baris prinsip penyusunan — ketiganya tentang situs, tidak satu pun berisi
+apa yang ditulis situs itu. Untuk sampai ke sebuah artikel, pembaca harus lebih
+dulu menebak kanal mana yang memuatnya.
+
+Redesign ini menata ulang beranda dan kromium yang membingkai setiap halaman,
+mengikuti rancangan yang dikerjakan bersama pemilik repo.
+
+#### Yang dilihat pembaca
+
+- **Panel "terbaru" di dalam hero** — tiga artikel terbaru lintas kanal, dengan
+  nama kanal dan tanggal terbitnya. Ia hilang seluruhnya pada situs yang belum
+  punya artikel, dan hero-nya menjadi satu kolom.
+- **Pita statistik** — jumlah kanal, jumlah artikel, dan tanggal tinjauan
+  termuda di situs. Ia hanya muncul bila ada artikel; sel tanggalnya dilepas
+  bila tanggalnya tidak ada.
+- **Blok sorotan** — artikel paling baru, dengan gambarnya sendiri, dan baris
+  "diperbarui" yang hanya tampil bila artikelnya benar-benar disunting setelah
+  terbit ([ADR-0033](docs/adr/0033-seksi-berita-urutan-dari-tanggal-dan-dua-tanggal-yang-terpisah.md)).
+- **Sorotan dan panel tidak pernah menampilkan artikel yang sama.** Sorotan
+  mengambil yang pertama, panel mengambil tiga berikutnya — dari satu daftar,
+  dengan **pemutus seri pada slug**, karena dua artikel yang terbit pada detik
+  yang sama akan bertukar tempat antar-build tanpa ada yang berubah.
+- **Pita utilitas** di atas masthead memuat tagline, pengalih bahasa, dan
+  pengalih tema. Ketiganya bukan navigasi isi, dan memindahkannya ke sana yang
+  mengosongkan ruang bagi bilah kanal untuk naik ke baris masthead — sehingga
+  halaman tidak lagi dibuka dengan dua baris kromium sebelum satu kata isi pun.
+- **Bilah kanal menjadi pil, bukan tab bergaris bawah**, karena garis bawah
+  hanya terbaca sebagai "yang ini sedang dibuka" selama bilahnya punya baris
+  sendiri.
+- **Pencarian berbentuk kotak cari** — kaca pembesar, bidang redam — tetapi
+  tetap sebuah **tautan** ke `/cari/`. Bentuknya yang dicari mata; `<input>`-nya
+  ditolak karena kotak yang menelan ketikan lalu diam tanpa JavaScript lebih
+  buruk daripada tidak ada kotak.
+- **Footer menjadi permukaan gelap tetap**, bersama pita utilitas dan hero.
+  Ketiganya kini memakai kelompok token `--gelap-*` yang tidak ditimpa blok tema
+  mana pun.
+
+#### Yang tidak ikut, dan kenapa
+
+**Angka "Skor Lighthouse 100" dari rancangan.** Tidak ada apa pun di build ini
+yang mengukurnya, jadi ia akan menjadi klaim yang dicetak setiap halaman dan
+diperiksa tidak seorang pun — kelas cacat yang sama dengan `og:image` yang
+menunjuk kartu yang tidak pernah dibangkitkan siapa pun, yang sudah pernah
+ditolak repo ini. Tiga angka yang tersisa dihitung dari feed yang membangun
+halaman itu juga.
+
+**Pita buletin di badan beranda.** Formulirnya tetap di footer, tempat
+[ADR-0049](docs/adr/0049-a-reader-may-subscribe-and-the-first-write-from-a-strangers-browser.md)
+menaruhnya: ia ada di setiap halaman tanpa pernah menyela apa yang sedang dibaca
+seseorang.
+
+#### Dua cacat yang ditemukan sambil jalan
+
+- **Nama situs menempel di tepi kiri layar pada 360px.** `.header-top` menulis
+  `padding: 0.85rem 0` — sebuah *shorthand* — di elemen yang juga membawa
+  `.container`, sehingga padding samping containernya menjadi nol. Di layar
+  lebar hal itu tidak terlihat sama sekali, karena container sudah mentok
+  `--max-width` dan margin otomatisnya yang memberi jarak. Diukur, bukan
+  ditaksir dari tangkapan layar: `.brand-logo` berada di `x=0`.
+- **Penafian di footer tidak terbaca.** `.disclaimer-footer` adalah pembungkus
+  dua `<p>`, dan aturan elemen `p { color: var(--text-secondary) }` menargetkan
+  paragraf itu langsung — jadi ia menang atas warna yang diwarisi dari
+  pembungkusnya, dan penafiannya tampil `#334155` di atas `#090d16`.
+
+#### Gerbang aset menemukan gaya yang salah alamat
+
+`bun run audit:aset` merah lebih dulu, dan yang ditunjuknya bukan beranda:
+halaman `/cari/` melewati plafon 36.000 B karena **gaya hero** yang duduk di
+`src/styles/global.css` sementara `Home.astro` satu-satunya pemakainya. Setiap
+pembaca setiap halaman artikel, halaman seksi, dan halaman pencarian mengunduhnya
+tanpa pernah merendernya. Memindahkan bloknya ke `<style>` komponennya
+memulangkan **1.853 B ke setiap halaman**, bukan hanya ke yang merah.
+
+- **Plafon total naik 36.000 → 40.000 B**, sebagai pengukuran dan bukan
+  kelonggaran: beranda kini halaman terberat pada 38.136 B, dan kelebihannya
+  adalah permukaan yang benar-benar baru. Ruang 1.864 B di atasnya sengaja
+  sempit — plafon yang dinaikkan dengan kelegaan besar berhenti menangkap akresi
+  berikutnya.
+- **Yang TIDAK dikerjakan ditulis di dalam skrip gerbangnya**, supaya ia tidak
+  diam-diam menjadi keadaan normal: `BaseLayout.css` masih 22.577 B dan masih
+  mengirim gaya badan artikel, tabel biaya, dan akordeon ke setiap halaman yang
+  tidak punya satu pun di antaranya.
+- `docs/awcms-astro/standar-performa-dan-keamanan.md` baris 11 mencatat
+  pengukuran barunya, dan `tests/audit-aset.test.mjs` ikut membuktikan plafon
+  yang baru — bukan hanya yang lama diubah angkanya.
+
+#### Katalog dan dokumen
+
+Dua belas string antarmuka baru masuk **kedua** katalog PO. `home.cta` berubah
+bunyi dari "Mulai dari panduan" menjadi "Baca kanal": kartu kanal dulu
+menyambungnya dengan nama kanal HURUF BESAR, sehingga kartu Panduan berbunyi
+"Mulai dari panduan PANDUAN".
+
+`docs/awcms-astro/ui-ux-design-system.md` mendapat empat seksi baru — permukaan
+gelap tetap, bingkai halaman, permukaan beranda, dan tempat tinggal gaya sebuah
+komponen — beserta cerminnya.
+
+Empat dokumen lain diperbaiki karena redesign ini membuat kalimatnya TIDAK BENAR,
+bukan sekadar kurang lengkap:
+
+- **`AGENTS.md` §Gambar** berbunyi "setiap pemanggil merender
+  `.visual-placeholder`". Hero beranda kini tidak, dan kekecualian itu ditulis
+  beserta alasannya supaya ia tidak menyebar lewat peniruan ke bingkai yang
+  memang menahan tata letak.
+- **`checklist-repo-baru.md` dan skill `awcms-astro-situs-baru`** menjanjikan
+  placeholder untuk setiap nama seni yang berkasnya tidak ada, termasuk `hero`.
+- **`AGENTS.md` §Antarmuka** mendapat dua pelajaran yang ditemukan gerbang:
+  `global.css` dimuat setiap halaman sehingga aturan milik satu komponen adalah
+  byte yang dibayar semua halaman lain, dan shorthand `padding` pada elemen
+  ber-`.container` menghapus padding sampingnya tanpa terlihat di layar desktop.
+- **`standar-teknis.md` dan skill `awcms-astro-performa-keamanan`** menyebutkan
+  anggaran gambar tetapi tidak pernah menyebutkan plafon byte skrip dan
+  stylesheet sama sekali; keduanya kini menyebutnya berikut angkanya.
+
+### Pengalih bahasa di kedua halaman buletin menawarkan URL yang tidak pernah dibangun siapa pun
+
+`/newsletter/confirm` dan `/newsletter/unsubscribe` WAJIB berada persis di situ,
+tanpa prefiks locale: `awcms` yang merangkai tautannya dari
+`NEWSLETTER_CONFIRM_PATH` dan `NEWSLETTER_UNSUBSCRIBE_PATH`, dan tautan itu sudah
+berada di kotak masuk orang. Itu sudah tertulis di docblock komponennya.
+
+Yang tidak ikut ditulis adalah akibatnya bagi pengalih bahasa. Ia menukar locale
+pada path halaman yang sedang dibuka, jadi di kedua halaman itu ia menawarkan
+`/en/newsletter/confirm/` dan `/en/newsletter/unsubscribe/` — dua URL yang tidak
+pernah dibangun siapa pun. Setiap situs dwibahasa yang menyalakan buletin
+menerbitkan dua tautan mati, di halaman yang justru dibuka orang yang baru saja
+mengeklik tautan dari email.
+
+`langSwitchPath="/"` mengarahkannya ke beranda tiap locale — pola dan alasan yang
+sama persis dengan `NotFound.astro`, satu-satunya halaman lain di repo ini yang
+path-nya bukan URL yang bisa ditukar locale-nya.
+
+#### Kenapa ia bertahan selama ini
+
+Gerbang tautan mati di `bun run audit:konten` membaca `dist/client`, dan repo
+template tidak punya sumber konten — jadi build integrasinya DILEWATI di CI, dan
+lapisan yang bisa melihat cacat ini tidak pernah berjalan di sana. Yang
+menemukannya adalah `bun run release`: ia membangun lebih dulu, lalu menjalankan
+gerbang itu atas hasilnya, lalu **menolak merilis**. Urutan itu bukan kerapian —
+ia satu-satunya alasan cacat ini tidak ikut terbit di v0.5.0.
+
+### ADR-0119 `awcms` mendapat vonisnya, dan satu hitungan dalam prosa berhenti dihitung dari ingatan
+
+`bun run audit:serapan` merah sejak `awcms` menerbitkan ADR-0119 pada 28 Agustus
+2026: sebuah keputusan di repo itu yang belum dibaca siapa pun di sini. Itu
+persis satu-satunya pemeriksaan yang MENGHADAP KELUAR di repo ini, dan
+kegunaannya habis kalau ia dibiarkan merah.
+
+- **ADR-0119 milik `awcms` divonis `diperiksa`.** Ia memutuskan bahwa lencana
+  *GitHub Release* dipilih dengan `--latest` eksplisit alih-alih diwarisi dari
+  bawaan tanggal-dan-versi milik `gh` — "latest" KEDUA di alur kerja yang sama,
+  yang ADR-0117 `awcms` hanya perbaiki separuhnya, dan yang benar-benar mundur ke
+  versi empat rilis terlampaui saat run yang terparkir akhirnya disetujui. Di sini tidak ada
+  yang berubah: `bun run release` membuat **tag git saja** — repo ini tidak
+  menerbitkan GitHub Release, tidak membangun image, dan tidak menggerakkan
+  `:latest` apa pun. Barisnya tetap ditulis karena kesenyapan dan
+  ketidakrelevanan terbaca sama, dan ia menyebutkan kapan harus dibaca ulang:
+  saat repo ini punya alur rilis sendiri.
+
+- **Ringkasan buku besar berhenti mengutip jumlah persisnya.** Cermin Indonesia
+  skill integrasi berbunyi "68 ADR bervonis" sementara gerbangnya menghitung 70 —
+  hanyut tanpa ada yang melihat, karena tidak satu pun pemeriksa membaca kalimat
+  itu. Ia tidak sekadar dikoreksi menjadi angka baru yang akan hanyut lagi:
+  angkanya dilepas, dan pembacanya diarahkan ke keluaran `bun run audit:serapan`,
+  yang mencetak cakupan, lantai, dan puncaknya setiap kali ia berjalan. Sebuah
+  angka yang dihitung mengalahkan angka yang diingat
+  ([ADR-0030](docs/adr/0030-aturan-tertulis-mendapat-pemeriksanya.md)).
+
 ## [0.4.0] — 2026-08-28
 
 > **Build integrasi tidak berjalan pada rilis ini.** `AWCMS_API_URL` kosong,
