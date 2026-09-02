@@ -47,13 +47,37 @@ msgid "home.description"
 msgstr "A public information site built on the awcms-astro template."
 
 msgid "home.cta"
-msgstr "Start with the guides"
+msgstr "Read this section"
 
 msgid "home.ctaKanal"
 msgstr "See every section"
 
+msgid "home.ctaTerbaru"
+msgstr "Read the newest"
+
+msgid "home.trust.tanpaPelacak"
+msgstr "No trackers"
+
+msgid "home.trust.tanpaJs"
+msgstr "Readable without JavaScript"
+
 msgid "home.heroAlt"
 msgstr "Home page illustration"
+
+msgid "home.terbaru.judul"
+msgstr "Latest"
+
+msgid "home.terbaru.semua"
+msgstr "All"
+
+msgid "home.statistik.kanal"
+msgstr "Sections"
+
+msgid "home.statistik.artikel"
+msgstr "Articles published"
+
+msgid "home.statistik.diperbarui"
+msgstr "Last reviewed"
 
 msgid "home.sectionTitle"
 msgstr "Sections"
@@ -61,8 +85,20 @@ msgstr "Sections"
 msgid "home.sectionLead"
 msgstr "Each section holds articles that are reviewed on a schedule."
 
+msgid "home.arsip"
+msgstr "See every article"
+
 msgid "home.articleCount"
 msgstr "articles"
+
+msgid "home.sorotan.badge"
+msgstr "Highlight"
+
+msgid "home.sorotan.cta"
+msgstr "Read the article"
+
+msgid "home.sorotan.diperbarui"
+msgstr "Updated"
 
 msgid "home.principles.title"
 msgstr "How this is written"

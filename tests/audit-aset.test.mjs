@@ -164,11 +164,11 @@ describe("anggaran per halaman terbit", () => {
     const akar = pohon({
       ...PUBLIC_LENGKAP,
       "dist/client/index.html": halaman({ gaya: ["/besar.css"] }),
-      "dist/client/besar.css": "y".repeat(40000)
+      "dist/client/besar.css": "y".repeat(44000)
     });
 
     const { kode, keluaran } = await jalankan(akar);
-    expect(keluaran).toContain("melampaui 36000 B");
+    expect(keluaran).toContain("melampaui 40000 B");
     expect(keluaran).not.toContain("B skrip melampaui");
     expect(kode).toBe(1);
   });

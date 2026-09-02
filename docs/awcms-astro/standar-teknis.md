@@ -192,6 +192,7 @@ How they are achieved — and this is what binds:
 - Response compression is not only gzip: `compression` negotiates **Brotli** (RFC 7932) when a browser asks for it, and Brotli beats gzip by roughly 15–20% on HTML.
 - `Cache-Control` in two rules per RFC 9111: hashed assets `immutable` for a year, HTML `max-age=0, must-revalidate` so a rebuild is immediately visible to a reader.
 - The budgets proven in the reference repo: **home ≤ 250 KB of images, content page ≤ 100 KB.** Since 4 August 2026 they are **measured** by `bun run audit:konten` over `dist/client`, per page. What is weighed is only the images this build actually publishes — `awcms` media are not there, so this figure guards local artwork rather than the whole page weight.
+- **Script and stylesheet bytes have their own ceilings**, checked by `bun run audit:aset`: 13,000 B of script and 40,000 B in total per page, plus 8,000 B for one published script file. They are measurements with headroom rather than round numbers, and the measurement is recorded in `scripts/audit-aset.mjs` beside each one. A violation names the file that grew, which is the whole reason it exists next to Lighthouse rather than inside it — a lab score cannot say which file to look at. **Where a rule LIVES is part of this budget**: `src/styles/global.css` is loaded by every page, so a rule only one component uses is bytes every other page pays for.
 
 ## Security
 

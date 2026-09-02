@@ -302,6 +302,39 @@ const jsonLd = {
   <body>
     <a class="skip-link" href="#main-content">{t(locale, 'ui.skipToMain')}</a>
 
+    {/* Bilah utilitas — pita tipis di atas masthead.
+
+        Ia membawa tiga hal yang dulu berdesakan di baris masthead bersama nama
+        situs dan bilah kanal: tagline, pengalih bahasa, pengalih tema. Tidak
+        satu pun dari ketiganya adalah navigasi isi, dan memindahkannya ke sini
+        adalah yang mengosongkan ruang bagi bilah kanal untuk naik ke baris
+        masthead — bukan penambahan hiasan.
+
+        Ia SENGAJA di luar `<header class="header-wrapper">` yang sticky: sebuah
+        pita status yang ikut menempel akan memakan 38px dari tinggi layar
+        sepanjang halaman digulir, di situs yang mayoritas pembacanya di ponsel. */}
+    <div class="bar-utilitas">
+      <div class="container bar-utilitas-isi">
+        <p class="bar-utilitas-tagline">
+          {/* Hiasan, jadi ia tidak punya nama yang dibacakan. */}
+          <span class="titik-hidup" aria-hidden="true"></span>
+          {taglineSitus(profil, locale)}
+        </p>
+        <div class="bar-utilitas-aksi">
+          <LangSwitcher path={langSwitchPath} />
+          <button
+            type="button"
+            class="chip theme-toggle-btn"
+            data-theme-toggle
+            aria-label={t(locale, 'ui.themeToggle')}
+          >
+            <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+            <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <header class="header-wrapper">
       <div class="container header-top">
         {/* Lambang dipisahkan dari nama supaya kedua barisnya rata kiri saat
@@ -326,37 +359,37 @@ const jsonLd = {
             : siteConfig.mark && <span class="brand-mark" aria-hidden="true">{siteConfig.mark}</span>}
           <span class="brand-name">{namaSitusIni}</span>
         </a>
+
+        {/* Bilah kanal berbagi baris dengan nama situs alih-alih menempati
+            barisnya sendiri di bawahnya. Itu bukan pemadatan demi ringkas: baris
+            kedua yang isinya HANYA bilah kanal membuat setiap halaman membuka
+            dengan dua baris kromium sebelum satu kata isi pun muncul, dan di
+            layar 360px itu sepertiga lipatan pertama. Ia turun sendiri ke baris
+            di bawahnya begitu ruangnya kurang dari 20rem — lihat `.header-top`
+            di `global.css`. */}
+        <TabNav currentTab={currentTab} />
+
         <div class="header-actions">
-          <div class="header-tagline">
-            {taglineSitus(profil, locale)}
-          </div>
           {/* Tautan, bukan kotak. Sebuah kotak di kepala setiap halaman harus
               disembunyikan tanpa JavaScript (hasilnya butuh JS), dan yang
               tersisa bagi pembaca tanpa JS adalah tidak ada jalan sama sekali.
               Sebuah tautan bekerja tanpa JS: ia mendarat di `/cari/`, yang
               mengatakan dengan jujur apa yang dibutuhkannya.
 
+              Ia BERBENTUK kotak cari — ikon kaca pembesar, latar redam, lebar
+              tetap — karena bentuk itu yang dicari mata pembaca di kepala
+              halaman. Yang tidak ditiru adalah `<input>`-nya, tepat karena
+              alasan di atas.
+
               Hanya tampil bila build ini punya `awcms` untuk dicari — lihat
               `pencarianAktif`. */}
           {pencarianAktif && (
             <a class="chip cari-tautan" href={localePath(locale, `/${SEGMEN_CARI}/`)}>
-              {t(locale, 'cari.tombol')}
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+              <span>{t(locale, 'cari.tombol')}</span>
             </a>
           )}
-          <LangSwitcher path={langSwitchPath} />
-          <button
-            type="button"
-            class="chip theme-toggle-btn"
-            data-theme-toggle
-            aria-label={t(locale, 'ui.themeToggle')}
-          >
-            <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
-            <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
-          </button>
         </div>
-      </div>
-      <div class="container">
-        <TabNav currentTab={currentTab} />
       </div>
 
       {widgetHeader.length > 0 && (
@@ -513,8 +546,14 @@ const jsonLd = {
         </div>
 
         <DisclaimerNote variant="footer" />
+      </div>
 
-        <div class="footer-bawah">
+      {/* Pita penutup melintasi seluruh lebar, jadi ia berdiri DI LUAR
+          `.container` dan menaruh containernya sendiri di dalam. Sebelumnya
+          garis atasnya berhenti di batas container, yang membuat footer tampak
+          seperti dua kotak bertumpuk alih-alih satu blok dengan penutup. */}
+      <div class="footer-bawah">
+        <div class="container">
           {/* Tahun mulai tidak ditulis di sini: `2023` adalah tahun repo
               rujukan berdiri, dan situs mana pun yang lahir dari template ini
               akan mengklaim tahun itu sebagai tahunnya sendiri. Tahunnya
@@ -535,14 +574,28 @@ const jsonLd = {
 </html>
 
 <style>
+  /* Footer memakai palet `--gelap-*`, bukan token bertema — lihat catatan pada
+     `footer` di `src/styles/global.css`. Ini adalah separuh kedua dari
+     keputusan itu: warna teksnya harus ikut, karena `--text-primary` di tema
+     TERANG adalah `#0f172a` dan tulisan setua itu di atas `#090d16` tidak
+     terbaca oleh siapa pun. */
   .footer-judul {
-    font-size: 1rem;
-    margin-bottom: 0.75rem;
-    color: var(--text-primary);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    color: var(--gelap-teks-redup);
   }
 
+  /* Kolom pertama adalah blok identitas situs, bukan judul kolom — jadi ia
+     tidak ikut menjadi label huruf kapital kecil. */
   .footer-judul--utama {
     font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    text-transform: none;
+    color: var(--gelap-teks);
   }
 
   .widget-baris {
@@ -568,8 +621,10 @@ const jsonLd = {
   }
 
   .footer-teks {
-    font-size: 0.875rem;
-    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.65;
+    color: var(--gelap-teks-redup);
+    max-width: 22rem;
   }
 
   .footer-daftar {
@@ -577,7 +632,8 @@ const jsonLd = {
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+    gap: 0.6rem;
+    font-size: 0.9rem;
   }
 
   /* Kolom kontak (`awcms` #596). Sedikit lebih longgar dari daftar tautan
@@ -591,7 +647,7 @@ const jsonLd = {
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: var(--text-muted);
+    color: var(--gelap-teks-redup);
   }
 
   /* `<address>` dimiringkan peramban secara bawaan, dan alamat redaksi bukan
@@ -599,16 +655,18 @@ const jsonLd = {
   .footer-alamat {
     font-style: normal;
     font-size: 0.875rem;
-    color: var(--text-muted);
+    color: var(--gelap-teks-redup);
     white-space: pre-line;
   }
 
+  /* Pita penutup: garisnya melintasi seluruh lebar footer, jadi ia berdiri di
+     luar `.container` dan menaruh padding-nya sendiri di dalam. */
   .footer-bawah {
-    margin-top: 2rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--border-color);
+    margin-top: 2.5rem;
+    border-top: 1px solid var(--gelap-garis);
+    padding: 1.35rem 0;
     text-align: center;
     font-size: 0.8rem;
-    color: var(--text-muted);
+    color: var(--gelap-teks-redup);
   }
 </style>

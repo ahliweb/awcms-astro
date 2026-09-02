@@ -47,13 +47,37 @@ msgid "home.description"
 msgstr "Situs informasi publik yang dibangun di atas template awcms-astro."
 
 msgid "home.cta"
-msgstr "Mulai dari panduan"
+msgstr "Baca kanal"
 
 msgid "home.ctaKanal"
 msgstr "Lihat semua kanal"
 
+msgid "home.ctaTerbaru"
+msgstr "Baca yang terbaru"
+
+msgid "home.trust.tanpaPelacak"
+msgstr "Tanpa pelacak"
+
+msgid "home.trust.tanpaJs"
+msgstr "Bisa dibaca tanpa JavaScript"
+
 msgid "home.heroAlt"
 msgstr "Ilustrasi halaman depan"
+
+msgid "home.terbaru.judul"
+msgstr "Terbaru"
+
+msgid "home.terbaru.semua"
+msgstr "Semua"
+
+msgid "home.statistik.kanal"
+msgstr "Kanal informasi"
+
+msgid "home.statistik.artikel"
+msgstr "Artikel diterbitkan"
+
+msgid "home.statistik.diperbarui"
+msgstr "Terakhir ditinjau"
 
 msgid "home.sectionTitle"
 msgstr "Kanal informasi"
@@ -61,8 +85,20 @@ msgstr "Kanal informasi"
 msgid "home.sectionLead"
 msgstr "Setiap kanal berisi artikel yang ditinjau berkala."
 
+msgid "home.arsip"
+msgstr "Lihat semua artikel"
+
 msgid "home.articleCount"
 msgstr "artikel"
+
+msgid "home.sorotan.badge"
+msgstr "Sorotan"
+
+msgid "home.sorotan.cta"
+msgstr "Baca artikel"
+
+msgid "home.sorotan.diperbarui"
+msgstr "Diperbarui"
 
 msgid "home.principles.title"
 msgstr "Prinsip penyusunan"

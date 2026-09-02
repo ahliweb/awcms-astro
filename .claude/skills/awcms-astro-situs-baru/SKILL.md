@@ -83,7 +83,10 @@ to change.
 4. **Illustrations** in `src/assets/`: `hero`, `tab/<tab>`,
    `artikel/<tab>/<slug>`, without an extension. There is no map to fill in
    (ADR-0024). `awcms` media wins over them when the article has a
-   `featuredMediaId`.
+   `featuredMediaId`. A missing file renders a styled placeholder **except for
+   `hero`**, which renders nothing: the home page hero panel already carries the
+   latest articles, and an empty striped frame above them would take the first
+   fold to say that a decoration is missing.
 5. **Presentation** — tokens in `:root`, contrast in light **and** dark, 360px
    and up.
 

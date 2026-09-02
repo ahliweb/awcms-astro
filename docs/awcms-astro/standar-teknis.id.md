@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](standar-teknis.md)
 
-<!-- i18n-source-hash: sha256:91d88238d01a371a49cc4fb93d21253ffded917d1302eed9e1632fa75199976f -->
+<!-- i18n-source-hash: sha256:ebcb474080f3ed1c882833e50f0faf6bcf9a2fbcdcce0e64b12c4dc269233d45 -->
 
 # awcms-astro — Standar Teknis
 
@@ -193,6 +193,7 @@ Cara mencapainya — dan ini yang mengikat:
 - Kompresi respons bukan hanya gzip: `compression` menegosiasikan **Brotli** (RFC 7932) saat browser memintanya, dan Brotli mengalahkan gzip sekitar 15–20% pada HTML.
 - `Cache-Control` dua aturan sesuai RFC 9111: aset ber-hash `immutable` satu tahun, HTML `max-age=0, must-revalidate` sehingga rebuild langsung terlihat pembaca.
 - Anggaran yang terbukti di repo rujukan: **beranda ≤ 250 KB gambar, halaman konten ≤ 100 KB.** Sejak 4 Agustus 2026 ia **diukur** `bun run audit:konten` atas `dist/client`, per halaman. Yang ditimbang hanya gambar yang benar-benar diterbitkan build ini — media `awcms` tidak ada di sana, jadi angka ini menjaga seni lokal dan bukan seluruh berat halaman.
+- **Byte skrip dan stylesheet punya plafonnya sendiri**, diperiksa `bun run audit:aset`: 13.000 B skrip dan 40.000 B total per halaman, ditambah 8.000 B untuk satu berkas skrip terbit. Semuanya pengukuran berikut ruang di atasnya, bukan angka bulat, dan pengukurannya dicatat di `scripts/audit-aset.mjs` di sebelah masing-masing angka. Pelanggarannya menyebut berkas mana yang membesar, dan itu seluruh alasan ia berdiri di sebelah Lighthouse alih-alih di dalamnya — skor lab tidak bisa menyebut berkas mana yang harus dilihat. **Di mana sebuah aturan TINGGAL adalah bagian dari anggaran ini**: `src/styles/global.css` dimuat setiap halaman, jadi aturan yang hanya dipakai satu komponen adalah byte yang dibayar setiap halaman lain.
 
 ## Keamanan
 

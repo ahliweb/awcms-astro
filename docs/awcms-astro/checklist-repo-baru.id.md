@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](checklist-repo-baru.md)
 
-<!-- i18n-source-hash: sha256:6139764ce6463dc9890147b0a8f8d1ff777064d53159751fba0b98f204eec78b -->
+<!-- i18n-source-hash: sha256:8a5e1dca830fa2b7dc009385a492c0e0105f259a016ffd8d0dc4ae00314175f2 -->
 
 # Memulai Situs Baru di Atas awcms-astro
 
@@ -57,7 +57,7 @@ Pertanyaan yang menentukan bentuk skema: **kesalahan apa yang paling merugikan p
 
 - [ ] Tulis satu artikel lengkap di locale default **lewat panel admin `awcms`** sebagai acuan bentuk, lalu build dan lihat hasilnya. Konten tidak ditulis di repo ini.
 - [ ] **Tetapkan satu rasio gambar untuk seluruh situs**, lalu pakai rasio itu di setiap bingkai **dan** setiap sumber. Bingkai memakai `object-fit: cover`; sumber berasio lain dipotong diam-diam, bukan diperkecil. Nilainya `--ratio-visual` di `src/styles/global.css`, dan `bun run audit:konten` menegakkannya atas tiap berkas di `src/assets/`.
-- [ ] Taruh ilustrasi di `src/assets/` mengikuti konvensi nama — `hero`, `tab/<tab>`, `artikel/<tab>/<slug>`, tanpa ekstensi ([ADR-0024](../adr/0024-seni-lokal-di-src-assets.md)). **Tidak ada peta yang harus diisi**: `src/lib/article-images.ts` menyelesaikannya lewat `import.meta.glob`, dan berkas yang tidak ada merender placeholder bergaya.
+- [ ] Taruh ilustrasi di `src/assets/` mengikuti konvensi nama — `hero`, `tab/<tab>`, `artikel/<tab>/<slug>`, tanpa ekstensi ([ADR-0024](../adr/0024-seni-lokal-di-src-assets.md)). **Tidak ada peta yang harus diisi**: `src/lib/article-images.ts` menyelesaikannya lewat `import.meta.glob`, dan berkas yang tidak ada merender placeholder bergaya — **dengan satu kekecualian, `hero`**, yang tidak merender apa pun di beranda (lihat di bawah).
 - [ ] Kartu share: **opsional, dan defaultnya tidak ada.** `awcms-astro` tidak
       membawa pembangkit kartu (`scripts/kartu-share.mjs` hanya ada di repo
       rujukan). Bila situs ini punya satu kartu baku, taruh berkasnya di
@@ -117,6 +117,14 @@ Wajib tetap hijau:
 disunting. Berkas yang tidak ada merender placeholder bergaya, dan itu keadaan
 yang **didukung**. Rinciannya di
 [ADR-0024](../adr/0024-seni-lokal-di-src-assets.md).
+
+**`hero` satu-satunya nama yang TIDAK merender apa pun saat berkasnya tidak
+ada**, alih-alih placeholder. Di tempat lain bingkai kosong menahan tata letak
+yang tanpanya akan runtuh; di beranda, panel hero sudah membawa artikel terbaru,
+jadi bingkai kosong di sana menahan perhatian pembaca dan bukan tata letaknya —
+persegi bergaris di lipatan pertama, tepat di atas satu-satunya isi sungguhan
+yang dimiliki halaman itu. Pasang berkas `hero` dan ia muncul; tidak dipasang,
+panelnya cukup berupa daftar artikel.
 
 Dua aturan gambar tidak punya pemeriksa dan tidak akan pernah punya: **teks di
 dalam gambar hanya label topik**, dan **tanpa lambang atau atribut instansi

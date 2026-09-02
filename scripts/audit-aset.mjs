@@ -91,8 +91,38 @@ const ANGGARAN_SKRIP = 13000;
  * menjadi satu angka karena biayanya berbeda — CSS menahan render, JS menahan
  * DAN dieksekusi — dan satu angka gabungan akan membuat 4 KB skrip baru tampak
  * sama murahnya dengan 4 KB CSS.
+ *
+ * ## 36.000 → 40.000, 2 September 2026
+ *
+ * Redesign beranda memindahkan halaman TERBERAT dari `/cari/` ke `/`: hero
+ * dengan panel artikel terbaru, pita statistik, blok sorotan, dan kisi prinsip
+ * bernomor. Terukur **38.136 B** (skrip 5.999 + gaya 32.137), yang 9.560 B di
+ * antaranya `Home.css` — gaya yang HANYA ditarik beranda.
+ *
+ * Dua hal dilakukan lebih dulu, dan keduanya karena gerbang inilah yang
+ * menemukannya:
+ *
+ *   1. Gaya hero dipindahkan dari `src/styles/global.css` ke `<style>`
+ *      `Home.astro`. Ia dipakai satu komponen sementara berkas global dimuat
+ *      setiap halaman, jadi selama ia di sana `/cari/` membayar gaya sebuah
+ *      elemen yang tidak pernah direndernya. Itu memulangkan 1.853 B ke SETIAP
+ *      halaman, bukan hanya ke yang melanggar.
+ *   2. Bingkai seni beranda tidak lagi merender placeholder saat situs belum
+ *      punya seninya.
+ *
+ * Yang TIDAK dilakukan, dan disebut supaya ia tidak hilang: `BaseLayout.css`
+ * masih 22.577 B dan masih membawa gaya badan artikel (`.content-body`,
+ * `.galeri`, `.video-berita`), tabel biaya, dan akordeon ke setiap halaman yang
+ * tidak punya satu pun di antaranya. Memindahkannya akan memulangkan beberapa
+ * kilobyte kepada setiap pembaca setiap halaman — pekerjaan tersendiri, dengan
+ * risikonya sendiri pada badan artikel, dan bukan pekerjaan sebuah redesign
+ * beranda.
+ *
+ * 40.000 memberi ruang 1.864 B di atas halaman terberat hari ini. Sengaja
+ * sempit: plafon yang dinaikkan dengan kelegaan besar berhenti menangkap akresi
+ * berikutnya, dan menangkap akresi persis yang dilakukannya di sini.
  */
-const ANGGARAN_TOTAL = 36000;
+const ANGGARAN_TOTAL = 40000;
 
 /**
  * Satu berkas skrip TERBIT. Terbesar hari ini 4.808 B (kotak cari).

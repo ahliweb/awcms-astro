@@ -55,7 +55,7 @@ The question that shapes your schema: **what mistake harms this site's readers m
 
 - [ ] Write one complete article in the default locale **through the `awcms` admin panel** as a shape reference, then build and look at the result. Content is not written in this repo.
 - [ ] **Settle one image ratio for the whole site**, then use that ratio in every frame **and** every source. A frame uses `object-fit: cover`; a source at another ratio is cropped silently, not scaled down. Its value is `--ratio-visual` in `src/styles/global.css`, and `bun run audit:konten` enforces it over every file in `src/assets/`.
-- [ ] Put illustrations in `src/assets/` following the naming convention — `hero`, `tab/<tab>`, `artikel/<tab>/<slug>`, with no extension ([ADR-0024](../adr/0024-seni-lokal-di-src-assets.md)). **There is no map to fill in**: `src/lib/article-images.ts` resolves it through `import.meta.glob`, and a file that does not exist renders a styled placeholder.
+- [ ] Put illustrations in `src/assets/` following the naming convention — `hero`, `tab/<tab>`, `artikel/<tab>/<slug>`, with no extension ([ADR-0024](../adr/0024-seni-lokal-di-src-assets.md)). **There is no map to fill in**: `src/lib/article-images.ts` resolves it through `import.meta.glob`, and a file that does not exist renders a styled placeholder — **with one exception, `hero`**, which renders nothing at all on the home page (see below).
 - [ ] Share cards: **optional, and absent by default.** `awcms-astro` carries no
       card generator (`scripts/kartu-share.mjs` exists only in the reference
       repo). If this site has one standard card, put its file in `public/` and
@@ -115,6 +115,14 @@ They must stay green:
 edit alongside. A file that does not exist renders a styled placeholder, and that
 is a **supported** state. Details in
 [ADR-0024](../adr/0024-seni-lokal-di-src-assets.md).
+
+**`hero` is the one name that renders NOTHING when the file is absent**, rather
+than a placeholder. Everywhere else an empty frame holds up a layout that would
+otherwise collapse; on the home page the hero panel already carries the latest
+articles, so an empty frame there holds the reader's attention rather than the
+layout — a striped rectangle in the first fold, directly above the only real
+content the page has. Ship a `hero` file and it appears; ship none and the panel
+is simply the article list.
 
 Two image rules have no checker and never will: **text inside an image is only a
 topic label**, and **no state institution's emblem or attributes**. Both are

@@ -5,7 +5,7 @@ description: Pemeriksaan performa dan keamanan awcms-astro terhadap standar yang
 
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](SKILL.md)
 
-<!-- i18n-source-hash: sha256:cf3e2f2f04c27ac57cac8fbba56de20ab493744d83976f72b9a78050634cb7e3 -->
+<!-- i18n-source-hash: sha256:fc2714082ecc8050469a950dd180cb29bb0cf9ec8060bba3fa7f9c08873594ed -->
 
 # awcms-astro — performa dan keamanan
 
@@ -113,6 +113,29 @@ Anggaran: **beranda ≤ 250 KB gambar, halaman konten ≤ 100 KB.** Sejak 4 Agus
 2026 ia **diukur** `bun run audit:konten` atas `dist/client`, per halaman — yang
 ditimbang hanya gambar yang benar-benar diterbitkan build ini, karena media
 `awcms` tidak ada di sana.
+
+**Anggaran byte untuk skrip dan stylesheet adalah gerbang lain**, `bun run
+audit:aset`, dan plafonnya tinggal di `scripts/audit-aset.mjs`: **13.000 B skrip
+dan 40.000 B total per halaman**, ditambah 8.000 B untuk satu berkas skrip
+terbit. Setiap angkanya adalah PENGUKURAN berikut ruang di atasnya, bukan angka
+bulat yang disukai seseorang — plafon skrip mula-mula ditulis 9.000 dari hitungan
+tangan yang melewatkan sebagian blok inline, dan gerbangnya mengoreksinya pada
+jalan pertama.
+
+Totalnya berpindah 36.000 → 40.000 pada 2 September 2026, saat redesign beranda
+menjadikan `/` halaman terberat pada 38.136 B. Baca apa yang terjadi sebelum
+mengutip angka barunya: gerbangnya dibiarkan menggigit lebih dulu, dan yang
+ditemukannya adalah CSS hero yang duduk di `src/styles/global.css` sementara satu
+komponen memakainya — setiap halaman artikel, seksi, dan pencarian mengunduhnya.
+Memindahkan blok itu memulangkan 1.853 B ke setiap halaman, dan yang tersisa
+untuk membenarkan kenaikan hanyalah permukaan yang benar-benar baru.
+**`audit:aset` yang merah adalah pertanyaan tentang aturan ini ada di berkas mana
+sebelum ia menjadi pertanyaan tentang plafon.**
+
+Apa yang masih salah dan sengaja tidak diperbaiki di sana dicatat di dalam
+skripnya: `BaseLayout.css` berukuran 22.577 B dan masih mengirim gaya badan
+artikel, tabel biaya, dan akordeon ke halaman yang tidak punya satu pun di
+antaranya.
 
 ## Sepuluh celah — seluruhnya tertutup, dua batas tetap dinyatakan
 

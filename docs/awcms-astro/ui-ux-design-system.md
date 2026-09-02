@@ -42,6 +42,27 @@ Implemented as CSS custom properties on `:root` in `src/styles/global.css`, with
 | `--emerald-primary` | `#059669` | The success marker | `--color-success` |
 | `--emerald-subtle` | `#dcfce7` | A soft success background | — |
 
+### Fixed dark surfaces
+
+Three surfaces are dark in **both** themes: the utility strip above the masthead, the home page hero, and the footer. Their colours come from a separate `--gelap-*` group on `:root` that no theme block overrides.
+
+| Token | Value | Used for |
+| --- | --- | --- |
+| `--gelap-bg` | `#090d16` | The footer ground |
+| `--gelap-bg-lembut` | `#0b1220` | The utility strip |
+| `--gelap-teks` | `#f8fafc` | Text on those surfaces |
+| `--gelap-teks-lembut` | `#cbd5e1` | Links and secondary text there |
+| `--gelap-teks-redup` | `#94a3b8` | Muted text there |
+| `--gelap-garis` / `--gelap-garis-kuat` | `rgba(255,255,255,.13)` / `.32` | Dividers, and a divider on hover |
+| `--gelap-aksen` | `#38bdf8` | Links on those surfaces |
+| `--gelap-emerald` / `--gelap-emerald-teks` | `#10b981` / `#052e21` | The primary call to action and the text on it |
+
+**This is not a group of tokens somebody forgot to theme.** The hero gradient in this repo has been a fixed value since the first version of `global.css`, for one reason: a masthead and a footer that change colour halfway down a page make the top and bottom of the site flicker on every navigation. The `--gelap-*` group only gives that decision a name, so the strip and the footer stop copying the value one at a time.
+
+What comes with it is a rule with no exception: **every colour used inside those surfaces has to come from this group too.** Half a surface converted is `--text-primary` — `#0f172a` in the light theme — sitting on `#090d16`: present, passed by every gate, and literally unreadable. That is not hypothetical, it happened twice while this redesign was being built. The footer's own text and headings are set in `BaseLayout.astro`'s scoped block; components that only ever render **inside** the footer (`DisclaimerNote` in its `footer` variant, `FormBuletin`) are converted by descendant rules under `footer` in `global.css`, so "this footer is dark" stays one fact in one place.
+
+One trap is worth naming because it survived the first pass: `.disclaimer-footer` is a wrapper around two `<p>` elements, and the element rule `p { color: var(--text-secondary) }` **targets those paragraphs directly**, so it beats any colour inherited from the wrapper. Converting the wrapper alone changes nothing on screen.
+
 ### The other scales
 
 | Category | Token | Value | AWCMS equivalent |
@@ -103,7 +124,7 @@ The last column shows the equivalent to aim for at integration, so a component i
 | Component | Role | Note | AWCMS equivalent |
 | --- | --- | --- | --- |
 | `BaseLayout` | The page skeleton: the SEO head, hreflang, JSON-LD, the skip link, header, footer | Installs the skip link, structured data, and share buttons for **every** page | The admin/public layout |
-| `TabNav` | The main navigation, marking the active item with `aria-current` | Its order from `siteConfig.tabs` | Nav |
+| `TabNav` | The main navigation, marking the active item with `aria-current` | Its order from `siteConfig.tabs`. **A pill, not an underlined tab**: a 3px bottom border only reads as "this one is open" while the bar has a row to itself, and it now shares the masthead row — where the same line reads as a divider. A pill carries its state inside itself, so it is right in both positions, and `aria-current` is still what states it for a screen reader | Nav |
 | `Breadcrumb` | The navigation trail + `BreadcrumbList` JSON-LD | — | Breadcrumb |
 | `LangSwitcher` | A `<details>`-based locale switcher | **Works without JavaScript** | The i18n switcher |
 | `TranslationNotice` | A marker for content that fell back to the default locale | Carries the correct `lang` for screen readers | — (specific to awcms-astro) |
@@ -116,6 +137,46 @@ The last column shows the equivalent to aim for at integration, so a component i
 | `LangFlag`, `TabNav`, `Breadcrumb`, `TranslationNotice` | See their own rows above | — | — |
 
 **`UnitLayananTable` and `WilayahFilter` were deleted from this table, not marked "not built yet".** Both are reference repo components that never came to this template, and `WilayahFilter` even had a row of its own in the "Without JavaScript" table below promising the behaviour of a component that does not exist. A component table listing a component that does not exist is the same defect class as `.wilayah-filter-btn` in §The hover shine — and both came from the same repo.
+
+### The page frame
+
+Every page opens with three bands, and which band a control belongs in is decided by what it does, not by how much room is left.
+
+| Band | Holds | Why there |
+| --- | --- | --- |
+| The utility strip | The site tagline, the language switcher, the theme toggle | None of the three is content navigation. It is deliberately **outside** the sticky `<header>`: a status strip that stuck too would eat 38px of screen for the whole scroll, on a site whose readers are mostly on phones |
+| The masthead (sticky) | The site name, the section bar, the search link | One row, not two. A second row carrying only the section bar means every page opens with two rows of chrome before a single word of content — a third of the first fold at 360px |
+| The footer | Identity, sections, site links, contact, the newsletter form, the disclaimer, the closing bar | Unchanged in structure; it is now a fixed dark surface (see §Fixed dark surfaces) |
+
+The section bar shares the masthead row down to 20rem of remaining space and drops to a row of its own below that. Below 720px it also takes `order: 1`, so the row reads **site name · search** and the section bar sits under it, rather than the section bar taking the whole second row and pushing search onto a third.
+
+That `order` is the one place in this repo where visual order and DOM order differ, and the trade is stated rather than left to be discovered: keyboard focus still runs name → sections → search while the eye reads name → search → sections. One element moves, and it moves to directly below the other two — not across the page — which is what keeps it inside WCAG 2.4.3. A fourth element on that row is not a free addition; it is a decision to re-read this paragraph.
+
+The search control is a **link shaped like a search box** — the magnifier, the recessed field, the fixed width — and not an `<input>`. The shape is what a reader's eye looks for at the top of a page; the behaviour is refused for the reason in §Without JavaScript, because a box that swallows typing and then does nothing is worse than no box.
+
+### Home page surfaces
+
+The redesigned home page carries two surfaces that show the site's actual content, which the previous version did not: a reader landing on it could not see a single article title without first guessing which section to open.
+
+| Surface | What it shows | Where it stops |
+| --- | --- | --- |
+| The latest panel, inside the hero | The three most recent articles across every section — section name, date, title | Renders only when there are articles to list. The hero collapses to one column otherwise |
+| The trust strip | Section count, article count, the most recent `updatedDate` on the site | Renders only when the site has at least one article. The date cell is dropped when there is no date |
+| The highlight | The single newest article, with its own image, description, and the "updated" line only when it was really edited after publication ([ADR-0033](../adr/0033-seksi-berita-urutan-dari-tanggal-dan-dua-tanggal-yang-terpisah.md)) | Renders only when there is an article |
+
+Both read one list and never show the same article twice: the highlight takes the first, the panel takes the next three. Their order has a **tiebreak on slug**, because two articles published in the same second would otherwise swap places between builds — a different static output with nothing changed.
+
+**The strip carries only numbers this build can count.** The design this was worked from had a fourth: "Lighthouse score 100". It is not here. Nothing in the build measures it, so it would be a claim printed on every page and checked by nobody — the same defect class as the `og:image` pointing at a card no generator ever produced, which this repo already refused once.
+
+The home page hero is the one frame in the repo that renders **no placeholder** when its artwork is missing. Everywhere else an empty frame holds up a layout that would otherwise collapse; here the panel beneath it already carries the latest articles, so what an empty frame holds is not the layout but the reader's attention — a striped rectangle the width of the panel, in the first fold, directly above the only real content the home page has. The `hero` naming convention under `src/assets/` still works, and the artwork is still shown when a site ships it.
+
+### Where a component's styles live, and what enforces it
+
+`src/styles/global.css` is for what more than one component uses; a component's own styles go in its scoped `<style>`. That was already the rule in §Principles, and `bun run audit:aset` is what turned it into something with teeth.
+
+The hero was in `global.css` while `Home.astro` was its only user. Every reader of every article page, section page, and the search page therefore downloaded hero styles their page never rendered — and adding the redesign's grid and glow layers pushed `/cari/` past the 36,000 B page ceiling on the strength of an element that is not on it. Moving the block returned 1,853 B to **every** page, not only to the one that went red.
+
+The same gate then recorded what is still wrong and was not fixed here: `BaseLayout.css` is 22,577 B and still carries article-body styles (`.content-body`, `.galeri`, `.video-berita`), the fee table, and the accordion to every page that has none of them. That is work of its own, with its own risk to article bodies, and it is named in `scripts/audit-aset.mjs` so it does not quietly become the status quo.
 
 ### Components that do not exist yet and will be needed
 
@@ -180,7 +241,9 @@ This sweep is pure CSS. It adds not one byte of JavaScript and has no effect on 
 
 ### Responsive
 
-Mobile-first from 360px. Cards use `grid-template-columns: repeat(auto-fill, minmax(320px, 1fr))`.
+Mobile-first from 360px. Cards use `grid-template-columns: repeat(auto-fill, minmax(320px, 1fr))`. How the masthead reflows at that width is in §The page frame.
+
+**A `padding` shorthand on an element that also carries `.container` silently deletes the container's side padding**, and the failure is invisible on a desktop screen. `.header-top` wrote `padding: 0.85rem 0` for months: at any width above `--max-width` the container is already inset by its own auto margins, so nothing looked wrong; at 360px, where the container is the full screen, the site name sat **flush against the left edge of the glass** — measured at `x=0`, not guessed from a screenshot. It is `padding-block` now. Check any other element that carries `.container` together with a class of its own.
 
 **A table in an article body scrolls itself, not through a wrapper.** An earlier version of this paragraph named a `.table-responsive` "inserted by a rehype plugin"; that markdown pipeline no longer exists in this repo, and what was left of that recipe was a `min-width: 34rem` table with no scrolling wrapper — exactly the cause of horizontal scrolling at 360px. `src/styles/global.css` therefore uses `display: block` + `overflow-x: auto` directly on `.content-body table`, with no `min-width`. (`renderContentBlocks()` itself does not emit a table at all yet — `awcms` has no table block type — so that rule waits for that type to exist.)
 

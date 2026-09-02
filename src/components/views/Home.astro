@@ -1,18 +1,108 @@
 ---
+/**
+ * Beranda.
+ *
+ * ## Apa yang berubah pada redesign, dan kenapa
+ *
+ * Versi sebelumnya menampilkan tiga hal: hero, kartu kanal, prinsip penyusunan.
+ * Tidak satu pun dari ketiganya adalah ISI situs — seorang pembaca yang mendarat
+ * di beranda tidak bisa melihat satu judul artikel pun sebelum ia menebak kanal
+ * mana yang harus dibuka. Redesign ini menambahkan dua permukaan yang membawa
+ * isi sungguhan, dan keduanya diturunkan dari data yang sudah dibaca build ini:
+ *
+ *   - **Panel "terbaru"** di dalam hero — tiga artikel terbaru lintas kanal.
+ *   - **Sorotan** — artikel PALING baru, dengan gambarnya sendiri.
+ *
+ * Keduanya membaca satu daftar yang sama dan tidak pernah menampilkan artikel
+ * yang sama dua kali: sorotan mengambil yang pertama, panel mengambil tiga
+ * berikutnya. Duplikasi itu bukan kemungkinan teoretis — rancangannya sendiri
+ * memuat judul yang sama di kedua tempat.
+ *
+ * ## Angka pada pita statistik hanya yang bisa dihitung build ini
+ *
+ * Rancangan yang dikerjakan ulang di sini memuat empat angka; yang keempat
+ * adalah "Skor Lighthouse 100". Ia TIDAK ikut. Tidak ada apa pun di build ini
+ * yang mengukurnya, jadi angka itu akan menjadi klaim yang dicetak setiap
+ * halaman dan diperiksa tidak seorang pun — persis kelas cacat yang membuat repo
+ * ini menolak `og:image` ke kartu yang tak pernah dibangkitkan. Ketiga angka
+ * yang tersisa dihitung dari feed yang sama yang membangun halaman ini.
+ *
+ * ## Urutan panel "terbaru" punya pemutus seri
+ *
+ * Dua artikel yang terbit pada detik yang sama akan bertukar tempat antar-build
+ * bila urutannya hanya tanggal — keluaran statis yang berbeda tanpa ada yang
+ * berubah. Slug memutuskannya, dan slug unik per kanal.
+ */
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import DisclaimerNote from '../DisclaimerNote.astro';
 import Ilustrasi from '../Ilustrasi.astro';
-import { siteConfig, getLocaleFromPath, localePath, tabTitleKey } from '../../config/site';
-import { getArticles } from '../../lib/content';
-import { getTabImage, heroImage } from '../../lib/article-images';
+import {
+  siteConfig,
+  getLocaleFromPath,
+  localePath,
+  localeMeta,
+  locales,
+  tabTitleKey,
+  type Locale,
+} from '../../config/site';
+import { getArticles, type LocalizedArticle } from '../../lib/content';
+import { getArticleVisual, getTabImage, heroImage } from '../../lib/article-images';
 import { collectionSchema } from '../../lib/schema';
+import { pernahDiubahSetelahTerbit, tanggalMesin, tanggalPanjang } from '../../lib/tanggal';
 import { t } from '../../lib/po';
 
 const locale = getLocaleFromPath(Astro.url.pathname);
 
+/** Satu artikel beserta kanal tempat ia berdiri — kanal tidak ada di artikelnya. */
+type ArtikelBerkanal = {
+  tab: (typeof siteConfig.tabs)[number];
+  artikel: LocalizedArticle;
+};
+
 const counts: Record<string, number> = {};
+const semuaArtikel: ArtikelBerkanal[] = [];
+
 for (const tab of siteConfig.tabs) {
-  counts[tab.slug] = (await getArticles(tab.slug, locale)).length;
+  const artikel = await getArticles(tab.slug, locale);
+  counts[tab.slug] = artikel.length;
+  for (const satu of artikel) semuaArtikel.push({ tab, artikel: satu });
+}
+
+// Terbaru lebih dulu. Slug adalah pemutus seri — lihat catatan di atas.
+const menurutTerbaru = [...semuaArtikel].sort((a, b) => {
+  const selisih =
+    b.artikel.entry.data.publishedDate.getTime() -
+    a.artikel.entry.data.publishedDate.getTime();
+  return selisih !== 0 ? selisih : a.artikel.slug.localeCompare(b.artikel.slug);
+});
+
+const sorotan = menurutTerbaru[0];
+const panelTerbaru = menurutTerbaru.slice(1, 4);
+
+const totalArtikel = semuaArtikel.length;
+
+/**
+ * Tanggal tinjauan TERAKHIR di seluruh situs, atau tidak sama sekali.
+ *
+ * `updatedDate`, bukan `publishedDate`: yang dijanjikan labelnya adalah kapan
+ * isi situs ini terakhir disentuh, dan sebuah koreksi pada artikel lama adalah
+ * sentuhan yang paling layak dilaporkan (ADR-0033 memisahkan keduanya justru
+ * supaya pertanyaan ini punya jawaban sendiri).
+ */
+const terakhirDitinjau = semuaArtikel.reduce<Date | undefined>((paling, { artikel }) => {
+  const nilai = artikel.entry.data.updatedDate;
+  return paling === undefined || nilai.getTime() > paling.getTime() ? nilai : paling;
+}, undefined);
+
+/** Nama setiap bahasa situs ini, dirangkai dari konfigurasi alih-alih ditulis. */
+const daftarBahasa = locales.map((loc: Locale) => localeMeta[loc].nama).join(' · ');
+
+function jalurArtikel(butir: ArtikelBerkanal): string {
+  return localePath(locale, `/${butir.tab.slug}/${butir.artikel.slug}/`);
+}
+
+function namaKanal(butir: ArtikelBerkanal): string {
+  return t(locale, tabTitleKey(butir.tab.slug), butir.tab.label);
 }
 
 const schema = collectionSchema(
@@ -23,6 +113,10 @@ const schema = collectionSchema(
     url: localePath(locale, `/${tab.slug}/`),
   }))
 );
+
+const sorotanVisual = sorotan
+  ? getArticleVisual(sorotan.artikel, sorotan.tab.slug, sorotan.artikel.slug)
+  : undefined;
 ---
 
 <BaseLayout
@@ -42,27 +136,122 @@ const schema = collectionSchema(
         {t(locale, 'home.lead')}
       </p>
       <div class="baris-aksi">
-        {/* Panah dan pin adalah hiasan: dipisahkan dari teks katalog supaya
-            penerjemah tidak perlu ikut memindahkannya, dan supaya pembaca
-            layar tidak melafalkan "round pushpin" di ujung kalimat. */}
+        {/* Panah adalah hiasan: dipisahkan dari teks katalog supaya penerjemah
+            tidak perlu ikut memindahkannya, dan supaya pembaca layar tidak
+            melafalkan namanya di ujung kalimat. */}
         <a href="#kanal-layanan" class="chip chip--ajakan">
           {t(locale, 'home.ctaKanal')}
           <span aria-hidden="true">↓</span>
         </a>
+        {/* Hanya bila ada yang baru untuk dibaca. Sebuah tombol yang melompat ke
+            jangkar yang tidak dirender halaman ini tidak akan berbunyi rusak —
+            ia hanya tidak melakukan apa pun, yang lebih buruk. */}
+        {sorotan && (
+          <a href="#sorotan" class="chip chip--ajakan-samar">
+            {t(locale, 'home.ctaTerbaru')}
+          </a>
+        )}
       </div>
+      <ul class="hero-jaminan">
+        <li>{t(locale, 'home.trust.tanpaPelacak')}</li>
+        <li>{t(locale, 'home.trust.tanpaJs')}</li>
+        <li>{daftarBahasa}</li>
+      </ul>
     </div>
-    <div class="hero-visual-frame animate-float">
-      {/* `alt` dari katalog PO, bukan dari `heroImage.alt` yang sengaja kosong:
-          beranda satu-satunya tempat yang punya string terjemahannya. */}
-      <Ilustrasi src={heroImage.src} alt={t(locale, 'home.heroAlt')} hero />
+
+    <div class="hero-panel">
+      {/* Seni beranda, dan HANYA bila situs ini benar-benar punya — berbeda dari
+          setiap bingkai lain di repo ini, yang merender `.visual-placeholder`
+          saat seninya tidak ada.
+
+          Alasannya adalah apa yang berdiri di bawahnya. Bingkai kosong di tempat
+          lain menahan tata letak halaman yang tanpa gambar akan runtuh; di sini
+          panelnya sudah berisi daftar artikel terbaru, jadi yang ditahan
+          placeholder bukan tata letak melainkan perhatian — sebuah persegi
+          bergaris selebar panel, di lipatan pertama, tepat di atas satu-satunya
+          isi sungguhan yang dibawa beranda. Rancangan redesign ini memang tidak
+          memuat gambar di sana sama sekali.
+
+          `heroImage` TIDAK dihapus bersamanya: konvensi `src/assets/hero.svg`
+          tetap berlaku, dan situs yang memasang berkasnya tetap melihatnya. Yang
+          hilang hanya bingkai kosongnya. */}
+      {heroImage.src && (
+        <div class="hero-visual-frame">
+          {/* `alt` dari katalog PO, bukan dari `heroImage.alt` yang sengaja
+              kosong: beranda satu-satunya tempat yang punya string
+              terjemahannya. */}
+          <Ilustrasi src={heroImage.src} alt={t(locale, 'home.heroAlt')} hero />
+        </div>
+      )}
+
+      {panelTerbaru.length > 0 && (
+        <div class="panel-terbaru">
+          <div class="panel-terbaru-kepala">
+            <span class="panel-terbaru-judul">{t(locale, 'home.terbaru.judul')}</span>
+            <a href={localePath(locale, '/sitemap/')} class="panel-terbaru-semua">
+              {t(locale, 'home.terbaru.semua')}
+              <span aria-hidden="true">→</span>
+            </a>
+          </div>
+          <ul class="panel-terbaru-daftar">
+            {panelTerbaru.map((butir) => (
+              <li>
+                <a href={jalurArtikel(butir)}>
+                  <span class="panel-terbaru-meta">
+                    <span class="panel-terbaru-kanal">{namaKanal(butir)}</span>
+                    <time datetime={tanggalMesin(butir.artikel.entry.data.publishedDate)}>
+                      {tanggalPanjang(locale, butir.artikel.entry.data.publishedDate)}
+                    </time>
+                  </span>
+                  <span class="panel-terbaru-tajuk">{butir.artikel.entry.data.title}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   </section>
 
+  {/* Pita statistik. Ia hanya muncul pada situs yang PUNYA artikel: "0 artikel
+      diterbitkan" dicetak besar-besar di lipatan pertama adalah pengumuman yang
+      tidak dibutuhkan template kosong maupun pembacanya. */}
+  {totalArtikel > 0 && (
+    <div class="pita-statistik">
+      <div class="statistik">
+        <div class="statistik-nilai">{siteConfig.tabs.length}</div>
+        <div class="statistik-label">{t(locale, 'home.statistik.kanal')}</div>
+      </div>
+      <div class="statistik">
+        <div class="statistik-nilai">{totalArtikel}</div>
+        <div class="statistik-label">{t(locale, 'home.statistik.artikel')}</div>
+      </div>
+      {terakhirDitinjau && (
+        <div class="statistik">
+          <time class="statistik-nilai statistik-nilai--tanggal" datetime={tanggalMesin(terakhirDitinjau)}>
+            {tanggalPanjang(locale, terakhirDitinjau)}
+          </time>
+          <div class="statistik-label">{t(locale, 'home.statistik.diperbarui')}</div>
+        </div>
+      )}
+    </div>
+  )}
+
   <section class="my-6" id="kanal-layanan">
-    <h2>{t(locale, 'home.sectionTitle')}</h2>
-    <p class="seksi-lead">
-      {t(locale, 'home.sectionLead')}
-    </p>
+    <div class="seksi-kepala">
+      <div>
+        <h2>{t(locale, 'home.sectionTitle')}</h2>
+        <p class="seksi-lead">
+          {t(locale, 'home.sectionLead')}
+        </p>
+      </div>
+      {/* Peta situs, bukan sebuah "arsip" yang tidak punya rute. Halaman itu
+          sudah ada dan sudah mendaftar setiap kanal beserta artikelnya. */}
+      <a href={localePath(locale, '/sitemap/')} class="seksi-tautan">
+        {t(locale, 'home.arsip')}
+        <span aria-hidden="true">→</span>
+      </a>
+    </div>
 
     <div class="grid-cards">
       {siteConfig.tabs.map((tab) => (
@@ -81,12 +270,12 @@ const schema = collectionSchema(
               </span>
             </div>
             <p class="card-desc">{t(locale, `home.tab.${tab.slug}.desc`, '')}</p>
-            <div class="card-meta teks-aksen">
-              {/* Dulu `{t('home.cta')} {tab.name}` — "Mulai dari panduan"
-                  disambung nama tab HURUF BESAR, jadi kartu Panduan berbunyi
-                  "Mulai dari panduan PANDUAN". Sekarang satu ajakan, satu
-                  nama tab, keduanya dari katalog. */}
-              <span>{t(locale, 'home.cta')} {t(locale, tabTitleKey(tab.slug), tab.label)}</span>
+            {/* Dulu `{t('home.cta')} {tab.name}` — "Mulai dari panduan"
+                disambung nama tab HURUF BESAR, jadi kartu Panduan berbunyi
+                "Mulai dari panduan PANDUAN". Sekarang satu ajakan, tanpa nama
+                kanal: judul kanal berdiri tiga baris di atasnya. */}
+            <div class="card-meta teks-aksen kartu-kaki">
+              <span>{t(locale, 'home.cta')}</span>
               <span aria-hidden="true">→</span>
             </div>
           </div>
@@ -95,19 +284,223 @@ const schema = collectionSchema(
     </div>
   </section>
 
+  {sorotan && sorotanVisual && (
+    <section class="sorotan" id="sorotan">
+      <div class="sorotan-visual">
+        <Ilustrasi
+          src={sorotanVisual.src}
+          alt={sorotanVisual.alt}
+          width={sorotanVisual.width}
+          height={sorotanVisual.height}
+        />
+      </div>
+      <div class="sorotan-isi">
+        <div class="sorotan-baris-atas">
+          <span class="badge badge--emerald">{t(locale, 'home.sorotan.badge')}</span>
+          <span class="sorotan-jejak">
+            {namaKanal(sorotan)}
+            <span aria-hidden="true"> · </span>
+            <time datetime={tanggalMesin(sorotan.artikel.entry.data.publishedDate)}>
+              {tanggalPanjang(locale, sorotan.artikel.entry.data.publishedDate)}
+            </time>
+          </span>
+        </div>
+        <h2 class="sorotan-judul">{sorotan.artikel.entry.data.title}</h2>
+        <p class="sorotan-ringkas">{sorotan.artikel.entry.data.description}</p>
+        {/* Hanya bila artikelnya BENAR-BENAR pernah diubah setelah terbit —
+            baris "diperbarui" yang selalu menampilkan tanggal terbit adalah
+            klaim koreksi yang tidak pernah terjadi (ADR-0033). */}
+        {pernahDiubahSetelahTerbit(
+          sorotan.artikel.entry.data.publishedDate,
+          sorotan.artikel.entry.data.updatedDate
+        ) && (
+          <p class="sorotan-diperbarui">
+            {t(locale, 'home.sorotan.diperbarui')}{' '}
+            <time datetime={tanggalMesin(sorotan.artikel.entry.data.updatedDate)}>
+              {tanggalPanjang(locale, sorotan.artikel.entry.data.updatedDate)}
+            </time>
+          </p>
+        )}
+        <a href={jalurArtikel(sorotan)} class="chip chip--ajakan-pekat">
+          {t(locale, 'home.sorotan.cta')}
+          <span aria-hidden="true">→</span>
+        </a>
+      </div>
+    </section>
+  )}
+
   <section class="my-6 panel panel--besar">
     <h2>{t(locale, 'home.principles.title')}</h2>
-    <ul class="daftar-prinsip">
-      <li><strong>{t(locale, 'home.principles.1.label')}</strong> {t(locale, 'home.principles.1.body')}</li>
-      <li><strong>{t(locale, 'home.principles.2.label')}</strong> {t(locale, 'home.principles.2.body')}</li>
-      <li><strong>{t(locale, 'home.principles.3.label')}</strong> {t(locale, 'home.principles.3.body')}</li>
-    </ul>
+    <div class="prinsip-grid">
+      <div class="prinsip-butir">
+        <span class="prinsip-nomor" aria-hidden="true">01</span>
+        <h3 class="prinsip-judul">{t(locale, 'home.principles.1.label')}</h3>
+        <p class="prinsip-teks">{t(locale, 'home.principles.1.body')}</p>
+      </div>
+      <div class="prinsip-butir">
+        <span class="prinsip-nomor" aria-hidden="true">02</span>
+        <h3 class="prinsip-judul">{t(locale, 'home.principles.2.label')}</h3>
+        <p class="prinsip-teks">{t(locale, 'home.principles.2.body')}</p>
+      </div>
+      <div class="prinsip-butir">
+        <span class="prinsip-nomor" aria-hidden="true">03</span>
+        <h3 class="prinsip-judul">{t(locale, 'home.principles.3.label')}</h3>
+        <p class="prinsip-teks">{t(locale, 'home.principles.3.body')}</p>
+      </div>
+    </div>
   </section>
 
   <DisclaimerNote variant="general" />
 </BaseLayout>
 
 <style>
+  /* ==========================================================================
+     HERO BERANDA
+
+     Ia tinggal di sini, bukan di `src/styles/global.css`, karena tidak ada
+     halaman lain yang punya hero — dan berkas global dimuat oleh setiap halaman.
+     `bun run audit:aset` yang membuktikannya berbiaya: dengan gaya ini di berkas
+     global, halaman `/cari/` melewati plafon 36.000 B karena gaya sebuah elemen
+     yang tidak pernah direndernya.
+
+     Gradiennya bernilai tetap, bukan token, dan itu sudah begitu sejak versi
+     pertama repo ini: ia gelap pada tema terang MAUPUN gelap. Yang ditambahkan
+     redesign ini di atasnya adalah dua lapisan hiasan — kisi tipis dan satu rona
+     melingkar — keduanya `::before`/`::after`, jadi tidak ada satu pun elemen
+     tambahan di markup dan tidak ada satu byte JavaScript.
+
+     `overflow: hidden` bukan kebetulan yang beruntung: ia yang memotong kedua
+     lapisan itu mengikuti sudut membulat hero. Menghapusnya membuat rona
+     melingkar menonjol keluar dan mendorong halaman menggulir mendatar.
+     ========================================================================== */
+  .hero-banner-grid {
+    display: grid;
+    grid-template-columns: 1.12fr 0.88fr;
+    gap: 3rem;
+    align-items: center;
+    background: linear-gradient(135deg, #090d16 0%, #0d1f30 48%, #062c3f 100%);
+    color: var(--gelap-teks);
+    padding: 3.75rem 3rem;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    margin-bottom: 2rem;
+    animation: fadeInUp 0.7s ease-out;
+  }
+
+  /* Kisi tipis. `mask-image` memudarkannya sebelum ia mencapai tepi bawah, jadi
+     ia tidak pernah bersaing dengan teks yang berdiri di atasnya. */
+  .hero-banner-grid::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+    background-size: 72px 72px;
+    mask-image: radial-gradient(120% 90% at 20% 0%, #000 20%, transparent 78%);
+  }
+
+  /* Rona melingkar di pojok kanan atas. */
+  .hero-banner-grid::after {
+    content: '';
+    position: absolute;
+    top: -180px;
+    right: -120px;
+    width: 620px;
+    height: 620px;
+    z-index: -1;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.2), transparent 62%);
+    pointer-events: none;
+  }
+
+  @media (max-width: 900px) {
+    .hero-banner-grid {
+      grid-template-columns: 1fr;
+      padding: 2.25rem 1.5rem;
+      gap: 1.75rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .hero-banner-grid {
+      padding: 1.75rem 1.25rem;
+    }
+  }
+
+  .hero-banner-content h1 {
+    color: var(--gelap-teks);
+    font-size: 3.25rem;
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+    font-weight: 800;
+    margin-bottom: 1.25rem;
+    text-wrap: balance;
+  }
+
+  .hero-banner-content p {
+    color: var(--gelap-teks-lembut);
+    font-size: 1.15rem;
+    line-height: 1.6;
+    margin-bottom: 1.75rem;
+    max-width: 34rem;
+    text-wrap: pretty;
+  }
+
+  /* Skala judul di layar sempit. Nilainya sama dengan aturan `h1` global untuk
+     lebar yang sama — ia ditulis lagi di sini hanya karena aturan hero di atas
+     lebih spesifik dan akan menang tanpa itu. */
+  @media (max-width: 1100px) {
+    .hero-banner-content h1 {
+      font-size: 2.5rem;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .hero-banner-content h1 {
+      font-size: 1.75rem;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .hero-banner-content h1 {
+      font-size: 1.5rem;
+    }
+  }
+
+  /* Chip di dalam hero selalu berdiri di atas gradien gelap, apa pun temanya.
+     Rona aksen akan hilang di sana — sama seperti pada `.share-btn`. */
+  .hero-banner-grid .chip {
+    --kilau-warna: rgba(255, 255, 255, 0.18);
+    --kilau-puncak: rgba(255, 255, 255, 0.42);
+  }
+
+  .hero-visual-frame {
+    position: relative;
+    aspect-ratio: var(--ratio-visual);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: rgba(15, 23, 42, 0.4);
+  }
+
+  /* `:global` karena `<img>`-nya dirender komponen lain (`Ilustrasi`), sehingga
+     atribut scoped Astro tidak pernah dipasang padanya. */
+  .hero-visual-frame :global(img) {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+
+  .hero-visual-frame:hover :global(img) {
+    transform: scale(1.03);
+  }
+
   .badge--emerald {
     background: var(--emerald-primary);
     color: #ffffff;
@@ -120,20 +513,273 @@ const schema = collectionSchema(
 
   .baris-aksi {
     display: flex;
-    gap: 1rem;
+    gap: 0.75rem;
     flex-wrap: wrap;
   }
 
+  /* Ukuran ketiga ajakan ditulis SEKALI. Tiga salinan `min-height`/`padding`
+     yang sepakat hari ini adalah tiga salinan yang akan berbeda pada hari
+     seseorang menyesuaikan salah satunya. */
+  .chip--ajakan,
+  .chip--ajakan-samar,
+  .chip--ajakan-pekat {
+    min-height: 44px;
+    padding: 0.7rem 1.4rem;
+    font-size: 0.98rem;
+    font-weight: 700;
+  }
+
+  /* Ajakan utama: hijau pekat dengan teks gelap di atasnya. Pasangan warna ini
+     dipilih agar kontrasnya tetap terbaca di atas gradien hero yang gelap. */
   .chip--ajakan {
-    background: var(--emerald-primary);
-    color: #ffffff;
+    background: var(--gelap-emerald);
+    color: var(--gelap-emerald-teks);
     border: none;
-    padding: 0.6rem 1.25rem;
+  }
+
+  .chip--ajakan:hover,
+  .chip--ajakan:focus-visible {
+    background: #34d399;
+    color: var(--gelap-emerald-teks);
+  }
+
+  /* Ajakan kedua: bergaris saja, supaya hierarki kedua tombol terbaca sebelum
+     salah satunya dibaca. */
+  .chip--ajakan-samar {
+    background: transparent;
+    border-color: var(--gelap-garis-kuat);
+    color: var(--gelap-teks);
+    --kilau-warna: rgba(255, 255, 255, 0.16);
+    --kilau-puncak: rgba(255, 255, 255, 0.38);
+  }
+
+  .chip--ajakan-samar:hover,
+  .chip--ajakan-samar:focus-visible {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: var(--gelap-teks);
+  }
+
+  /* Ajakan pada permukaan TERANG (sorotan). Ia gelap di tema terang dan aksen
+     di tema gelap, jadi ia memakai token bertema — tidak seperti dua di atas,
+     yang selalu berdiri di atas hero. */
+  .chip--ajakan-pekat {
+    align-self: flex-start;
+    background: var(--text-primary);
+    border-color: transparent;
+    color: var(--bg-surface);
+    --kilau-warna: rgba(255, 255, 255, 0.16);
+    --kilau-puncak: rgba(255, 255, 255, 0.38);
+  }
+
+  .chip--ajakan-pekat:hover,
+  .chip--ajakan-pekat:focus-visible {
+    background: var(--accent-primary);
+    border-color: transparent;
+    color: #ffffff;
+  }
+
+  /* Tiga janji situs, di bawah tombol hero. `list-style: none` + baris mendatar,
+     tetapi tetap `<ul>`: pembaca layar mengumumkannya sebagai daftar tiga butir,
+     yang persis apa adanya. */
+  .hero-jaminan {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1.5rem;
+    margin: 2.25rem 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.85rem;
+    color: var(--gelap-teks-redup);
+  }
+
+  /* Pemisah di ANTARA butir, tidak di ujung — dan `aria-hidden` tidak
+     dibutuhkan karena ia `content` sebuah pseudo-element, yang tidak masuk
+     pohon aksesibilitas di peramban mana pun yang diuji repo ini. */
+  .hero-jaminan li + li::before {
+    content: '·';
+    margin-right: 1.5rem;
+    opacity: 0.4;
+  }
+
+  /* Di layar sempit ketiganya menjadi baris sendiri-sendiri dan pemisahnya
+     DILEPAS. Dibiarkan, titik pemisah itu jatuh di AWAL baris berikutnya —
+     sebuah tanda baca yang menggantung di depan kalimat yang tidak
+     dipisahkannya dari apa pun. */
+  @media (max-width: 720px) {
+    .hero-jaminan {
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .hero-jaminan li + li::before {
+      content: none;
+    }
+  }
+
+  /* ── Panel kanan hero ──────────────────────────────────────────────────── */
+
+  .hero-panel {
+    background: rgba(255, 255, 255, 0.045);
+    border: 1px solid var(--gelap-garis);
+    border-radius: var(--radius-lg);
+    padding: 0.5rem;
+    min-width: 0;
+  }
+
+
+  .panel-terbaru-kepala {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 0.75rem 0.6rem;
+  }
+
+  .panel-terbaru-judul {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gelap-teks-redup);
+  }
+
+  .panel-terbaru-semua {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.78rem;
+    font-weight: 650;
+    color: var(--gelap-aksen);
+    white-space: nowrap;
+  }
+
+  .panel-terbaru-semua:hover,
+  .panel-terbaru-semua:focus-visible {
+    color: #7dd3fc;
+  }
+
+  .panel-terbaru-daftar {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .panel-terbaru-daftar li + li {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .panel-terbaru-daftar a {
+    display: block;
+    /* Target sentuh jauh di atas 44px karena butirnya dua baris; yang dijaga di
+       sini adalah bahwa SELURUH butir dapat ditekan, bukan judulnya saja. */
+    padding: 0.85rem 0.75rem;
+    border-radius: var(--radius-md);
+    color: var(--gelap-teks);
+    text-decoration: none;
+  }
+
+  .panel-terbaru-daftar a:hover,
+  .panel-terbaru-daftar a:focus-visible {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--gelap-teks);
+    text-decoration: none;
+  }
+
+  .panel-terbaru-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.35rem;
+    font-size: 0.72rem;
+    color: var(--gelap-teks-redup);
+  }
+
+  .panel-terbaru-kanal {
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--gelap-emerald);
+  }
+
+  .panel-terbaru-tajuk {
+    display: block;
     font-size: 0.95rem;
+    font-weight: 650;
+    line-height: 1.4;
+    color: var(--gelap-teks);
+  }
+
+  /* ── Pita statistik ────────────────────────────────────────────────────── */
+
+  .pita-statistik {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: 1px;
+    margin-bottom: 2rem;
+    background: var(--border-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  /* Latar sel, bukan garis pembatas: gap 1px di atas latar berwarna menghasilkan
+     garis pemisah yang tidak pernah menggantung di ujung baris terakhir saat
+     jumlah kolom berubah mengikuti lebar layar. */
+  .statistik {
+    background: var(--bg-surface);
+    padding: 1.5rem 1.5rem;
+  }
+
+  .statistik-nilai {
+    font-size: 1.7rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    color: var(--text-primary);
+  }
+
+  /* Tanggal panjang tidak muat pada ukuran angka; ia diturunkan alih-alih
+     dipenggal. */
+  .statistik-nilai--tanggal {
+    display: block;
+    font-size: 1.15rem;
+  }
+
+  .statistik-label {
+    margin-top: 0.35rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  /* ── Kepala seksi ──────────────────────────────────────────────────────── */
+
+  .seksi-kepala {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.75rem;
+  }
+
+  .seksi-kepala h2 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
   }
 
   .seksi-lead {
+    margin: 0;
     color: var(--text-muted);
+  }
+
+  .seksi-tautan {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    font-size: 0.95rem;
+    font-weight: 650;
   }
 
   .kartu-tanpa-garis {
@@ -144,9 +790,129 @@ const schema = collectionSchema(
     margin: 0;
   }
 
-  .daftar-prinsip {
-    padding-left: 1.25rem;
+  /* Kaki kartu dipisahkan garis tipis dari isinya, seperti pada rancangan. */
+  .kartu-kaki {
+    margin-top: 1.1rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--border-color);
+  }
+
+  /* ── Sorotan ───────────────────────────────────────────────────────────── */
+
+  .sorotan {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+    margin: 2.5rem 0;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+  }
+
+  .sorotan-visual {
+    min-width: 0;
+    background: var(--bg-subtle);
+  }
+
+  .sorotan-visual :global(img),
+  .sorotan-visual :global(.visual-placeholder) {
+    width: 100%;
+    height: 100%;
+    min-height: 16rem;
+    object-fit: cover;
+    display: block;
+  }
+
+  .sorotan-isi {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 2.75rem 2.5rem;
+  }
+
+  .sorotan-baris-atas {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+  }
+
+  .sorotan-jejak {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .sorotan-judul {
+    margin: 0 0 0.9rem;
+    font-size: 1.85rem;
+    line-height: 1.2;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+
+  .sorotan-ringkas {
+    margin: 0;
+    font-size: 1.02rem;
+    line-height: 1.65;
     color: var(--text-secondary);
-    line-height: 1.8;
+    text-wrap: pretty;
+  }
+
+  .sorotan-diperbarui {
+    margin: 0.9rem 0 0;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .sorotan-isi .chip--ajakan-pekat {
+    margin-top: 1.75rem;
+  }
+
+  @media (max-width: 640px) {
+    .sorotan-isi {
+      padding: 1.75rem 1.35rem;
+    }
+
+    .sorotan-judul {
+      font-size: 1.45rem;
+    }
+  }
+
+  /* ── Prinsip penyusunan ────────────────────────────────────────────────── */
+
+  .prinsip-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+
+  .prinsip-nomor {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.375rem;
+    height: 2.375rem;
+    border-radius: var(--radius-md);
+    background: var(--accent-subtle);
+    color: var(--accent-primary);
+    font-size: 0.95rem;
+    font-weight: 800;
+  }
+
+  .prinsip-judul {
+    margin: 1rem 0 0;
+    font-size: 1.1rem;
+    letter-spacing: -0.015em;
+  }
+
+  .prinsip-teks {
+    margin: 0.5rem 0 0;
+    color: var(--text-muted);
+    line-height: 1.65;
+    text-wrap: pretty;
   }
 </style>

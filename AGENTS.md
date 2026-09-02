@@ -507,6 +507,22 @@ exactly what
   dynamic — it is ordinary text, and it can be seen.
 - **Design tokens, not loose values.** No one-off styles; a new component uses
   tokens that already exist in `src/styles/global.css`.
+- **`src/styles/global.css` is loaded by every page, so a rule only one component
+  uses is bytes every other page pays for.** The split — shared in the global
+  file, a component's own in its scoped `<style>` — is not tidiness, it is the
+  page weight budget. `bun run audit:aset` is what makes it real: the home page
+  hero sat in the global file while `Home.astro` was its only user, and adding to
+  it pushed `/cari/` past the total ceiling on the strength of an element that
+  page never renders. Moving the block returned 1,853 B to **every** page. When
+  that gate goes red, look first for a rule in the wrong file, not for a budget to
+  raise.
+- **A `padding` shorthand on an element that also carries `.container` deletes
+  the container's side padding, and it is invisible on a desktop screen.** Above
+  `--max-width` the container is already inset by its own auto margins, so
+  nothing looks wrong; at 360px, where the container is the full screen, the
+  content sits flush against the edge of the glass. `.header-top` did exactly
+  this for months. Use `padding-block`. Measure the result — `x=0` on the site
+  name is a fact, "it looks fine in the screenshot" is not.
 - **No `style=""` attribute, and no `<style>` block inside the HTML.** Styles
   live in `src/styles/global.css` (when used by more than one component) or in a
   component's scoped `<style>` — which Astro emits as a separate CSS file rather
@@ -579,9 +595,16 @@ looking like an image chosen for it. A missing file renders
 - **The smallest text in an SVG is at least 22px on an 800px canvas.** On a card
   328px wide — a 360px viewport — an 800px canvas appears at 0.41 scale, so
   below that threshold its text appears under 9px and is practically unreadable.
-- **`src: undefined` is a supported state.** Every caller renders
+- **`src: undefined` is a supported state.** A caller renders
   `.visual-placeholder`. A missing illustration must not become a missing page —
   nor a frame of zero height.
+- **One caller renders NOTHING instead, and it is named here so the exception
+  does not spread by imitation: the home page hero.** The rule above exists
+  because an empty frame holds up a layout that would otherwise collapse. On the
+  home page the hero panel already carries the latest articles, so an empty frame
+  there holds not the layout but the reader's attention — a striped rectangle the
+  width of the panel, in the first fold, directly above the only real content the
+  page has. Anywhere the frame is load-bearing, the placeholder stays.
 
 Four of the rules above are now **checked** by `scripts/audit-konten.mjs` across
 every source in `src/assets/`: ratio (including an SVG `viewBox`), format read
