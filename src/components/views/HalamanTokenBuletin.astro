@@ -61,7 +61,20 @@ const judul = t(locale, `buletin.${jenis}.judul`);
 const deskripsi = t(locale, `buletin.${jenis}.deskripsi`);
 ---
 
-<BaseLayout title={judul} description={deskripsi} noindex={true}>
+{/* `langSwitchPath="/"` karena halaman INI tidak punya kembaran per-locale, dan
+    itu konsekuensi langsung dari "jalurnya bukan milik repo ini" di atas: hanya
+    ada `/newsletter/confirm`, tidak pernah `/en/newsletter/confirm`.
+
+    Tanpa baris ini pengalih bahasa menukar locale pada path halaman ini apa
+    adanya dan menawarkan URL yang tidak pernah dibangun siapa pun — dua tautan
+    mati di setiap situs dwibahasa yang menyalakan buletin. Ia tidak terlihat di
+    CI repo template, karena gerbang tautan mati membaca `dist/` dan build
+    integrasi dilewati tanpa sumber konten; yang menemukannya adalah `bun run
+    release`, yang membangun lebih dulu lalu menolak menerbitkan keluaran itu.
+
+    Pola dan alasannya sama persis dengan `NotFound.astro`: mengarahkan pengalih
+    ke beranda tiap locale, satu-satunya halaman yang pasti ada di semuanya. */}
+<BaseLayout title={judul} description={deskripsi} noindex={true} langSwitchPath="/">
   <section class="token-buletin container">
     <h1>{judul}</h1>
     <p class="token-teks">{deskripsi}</p>
