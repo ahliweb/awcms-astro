@@ -28,7 +28,7 @@ The word **must** in this document means that breaking it fails a quality gate, 
 | Value | `awcms` | this repo | Its state |
 | --- | --- | --- | --- |
 | Bun | `1.3.14` | `1.3.14` | An exact match, and guarded by `tests/versi-toolchain.test.mjs` over five values here |
-| `astro` | `^7.2.4` | `^7.2.4` | An exact match since Dependabot [#60](https://github.com/ahliweb/awcms-astro/pull/60) raised both pins on 23 August 2026. Before that this repo was one minor behind — and this table went on saying so for five days after it stopped being true, which is why the third column now has a checker |
+| `astro` | `^7.2.4` | `^7.2.9` | **This repo is five patches AHEAD since 2 September 2026**, and the direction is the new part: from 23 August it matched `awcms` exactly, and it is Dependabot raising this repo alone that separated them. Nothing here depends on the two agreeing — an `astro` patch range carries no cross-repo contract — so the gap is recorded rather than closed by holding a security-relevant patch back. `awcms` will close it on its own bump. The third column is the one with a checker; **this column is hand-written and read from `ahliweb/awcms` on 2 September 2026**, so treat it as a note that can go stale |
 | `@astrojs/node` | `^11.1.4` | `^11.1.4` | The same as above, raised in the same pull request |
 | `typescript` | `^7.0.2` | `^6.0.3` | **Deliberately different, and binding.** The 6.x pin here is the condition for the `astro check` gate being alive — see [ADR-0037](../adr/0037-pin-typescript-6-adalah-syarat-hidupnya-gerbang-astro-check.md) |
 
