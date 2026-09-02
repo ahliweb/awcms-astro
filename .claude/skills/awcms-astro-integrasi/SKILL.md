@@ -403,6 +403,7 @@ predating this consumer, and this repo has **not** examined them systematically
 
 | 0117 | diperiksa | `:latest` moves only after the release environment's approval signs it. Entirely `awcms`'s own release workflow — this repo builds no container from that pipeline and pulls no `:latest` — so nothing here changes. Recorded because silence and irrelevance read identically |
 | 0118 | diserap | The newsletter endpoints answer a cross-origin browser and resolve that origin's tenant, the four blockers this repo measured are closed, and the three paths are frozen as COMMITTED. Absorbed by [ADR-0049](../../../docs/adr/0049-a-reader-may-subscribe-and-the-first-write-from-a-strangers-browser.md), which turns the caller on |
+| 0119 | diperiksa | The GitHub Release **badge** is decided with an explicit `--latest`, not inherited from `gh`'s date-and-version default — the second "latest" in the same workflow ADR-0117 only half fixed, and it moved backwards to a four-releases-superseded version when parked runs were finally approved. Nothing here changes: `bun run release` creates a **git tag only**. This repo publishes no GitHub Release, no container image, and no `:latest` of any kind, so there is no badge to decide. Recorded because silence and irrelevance read identically — and re-read the moment this repo grows a release workflow, because the defect is invisible in final state: two events that cancel out look exactly like one that never happened |
 
 <!-- serapan:adr-awcms:selesai -->
 

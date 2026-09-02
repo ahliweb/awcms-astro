@@ -5,7 +5,7 @@ description: Menurunkan situs baru dari template awcms-astro lewat "Use this tem
 
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](SKILL.md)
 
-<!-- i18n-source-hash: sha256:e936a43de34ed37eed775e0e40e82bf34fd5b4bfbe8f933390ce3d6bcbc6931e -->
+<!-- i18n-source-hash: sha256:5199de92b770bbf80f4be4ecce4063ea49822c8bd6a6959a640c0cb2affe5147 -->
 
 # awcms-astro — menurunkan situs baru
 
@@ -82,7 +82,11 @@ Disengaja. Tampilan terakhir karena ia satu-satunya lapisan yang murah diubah.
    `src/content.config.ts` dan tidak ada frontmatter (ADR-0018).
 4. **Ilustrasi** di `src/assets/`: `hero`, `tab/<tab>`, `artikel/<tab>/<slug>`,
    tanpa ekstensi. Tidak ada peta yang harus diisi (ADR-0024). Media `awcms`
-   menang atasnya bila artikelnya punya `featuredMediaId`.
+   menang atasnya bila artikelnya punya `featuredMediaId`. Berkas yang tidak ada
+   merender placeholder bergaya **kecuali `hero`**, yang tidak merender apa pun:
+   panel hero beranda sudah membawa artikel terbaru, dan bingkai bergaris kosong
+   di atasnya akan memakai lipatan pertama untuk mengatakan bahwa sebuah hiasan
+   tidak ada.
 5. **Tampilan** — token di `:root`, kontras terang **dan** gelap, 360px ke atas.
 
 ## Jebakan yang paling sering terjadi

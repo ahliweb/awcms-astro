@@ -65,6 +65,34 @@
   --radius-xl: 1rem;
 
   /*
+   * PERMUKAAN GELAP TETAP — bilah utilitas, hero, dan footer.
+   *
+   * Ketiganya berdiri di atas latar pekat pada tema TERANG maupun GELAP, jadi
+   * warnanya tidak boleh datang dari token bertema: `--text-primary` di tema
+   * terang adalah `#0f172a`, dan teks setua itu di atas `#090d16` tidak terbaca
+   * oleh siapa pun. Gradien hero repo ini sudah bernilai tetap sejak lama
+   * dengan alasan yang persis sama; yang baru di sini hanyalah bahwa nilainya
+   * BERNAMA, sehingga bilah utilitas dan footer tidak menyalinnya lagi satu per
+   * satu.
+   *
+   * Konsekuensinya dinyatakan, bukan disembunyikan: ketiga permukaan itu TIDAK
+   * ikut berganti saat pembaca memilih tema terang. Itu keputusan — sebuah
+   * masthead dan sebuah footer yang berpindah warna di tengah halaman membuat
+   * batas atas dan bawah halaman berkedip pada setiap navigasi — dan bukan
+   * kelalaian menyetel token.
+   */
+  --gelap-bg: #090d16;
+  --gelap-bg-lembut: #0b1220;
+  --gelap-teks: #f8fafc;
+  --gelap-teks-lembut: #cbd5e1;
+  --gelap-teks-redup: #94a3b8;
+  --gelap-garis: rgba(255, 255, 255, 0.13);
+  --gelap-garis-kuat: rgba(255, 255, 255, 0.32);
+  --gelap-aksen: #38bdf8;
+  --gelap-emerald: #10b981;
+  --gelap-emerald-teks: #052e21;
+
+  /*
    * Satu rasio gambar untuk seluruh situs, dipakai bingkai MAUPUN sumber.
    *
    * Setiap bingkai di bawah memakai `object-fit: cover`, jadi sumber berasio
@@ -279,6 +307,95 @@ p {
   animation: floatAnim 6s ease-in-out infinite;
 }
 
+/* ==========================================================================
+   BILAH UTILITAS — pita tipis di atas masthead
+
+   Ia memindahkan tiga hal yang dulu berdesakan di baris masthead — tagline,
+   pengalih bahasa, pengalih tema — ke pita sendiri, sehingga masthead menyisakan
+   ruang untuk yang benar-benar navigasi: nama situs, bilah kanal, dan pencarian.
+
+   `position: relative` + `z-index` ada karena menu bahasa terbuka KE BAWAH,
+   melintasi masthead yang sticky (z-50). Tanpa konteks penumpukan sendiri di
+   sini, daftar bahasanya akan tergambar DI BALIK masthead — terbuka, benar
+   secara markup, dan tak terlihat.
+   ========================================================================== */
+.bar-utilitas {
+  position: relative;
+  z-index: 60;
+  background: var(--gelap-bg-lembut);
+  color: var(--gelap-teks-redup);
+  font-size: 0.8rem;
+}
+
+.bar-utilitas-isi {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  flex-wrap: wrap;
+  min-height: 2.375rem;
+  padding-block: 0.3rem;
+}
+
+.bar-utilitas-tagline {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0;
+  color: var(--gelap-teks-redup);
+  font-size: 0.8rem;
+}
+
+/* Titik hidup: hiasan, jadi ia tidak pernah punya teks alternatif. Ia menandai
+   pita ini sebagai status situs, bukan sebagai navigasi. */
+.titik-hidup {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gelap-emerald);
+  flex-shrink: 0;
+}
+
+.bar-utilitas-aksi {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+/* Chip di pita gelap: latarnya transparan dan garisnya putih redup, di tema
+   mana pun. Tanpa ini sebuah chip bertema terang (`--bg-subtle` = `#f1f5f9`)
+   akan menjadi dua kotak putih menyala di atas pita pekat. */
+.bar-utilitas .chip {
+  background: transparent;
+  border-color: var(--gelap-garis);
+  color: var(--gelap-teks);
+  font-size: 0.78rem;
+  padding: 0.3rem 0.6rem;
+}
+
+.bar-utilitas .chip:hover,
+.bar-utilitas .chip:focus-visible {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: var(--gelap-garis-kuat);
+  color: var(--gelap-teks);
+}
+
+/* Sapuan kilau di pita ini selalu berdiri di atas latar pekat — rona aksen
+   akan tenggelam, sama seperti pada `.share-btn` dan chip di dalam hero. */
+.bar-utilitas .chip {
+  --kilau-warna: rgba(255, 255, 255, 0.16);
+  --kilau-puncak: rgba(255, 255, 255, 0.38);
+}
+
+@media (max-width: 560px) {
+  /* Tagline dilepas lebih dulu, bukan pengalih bahasa atau tema: ia satu-satunya
+     isi pita yang tidak melakukan apa pun saat disentuh. */
+  .bar-utilitas-tagline {
+    display: none;
+  }
+}
+
 /* Header & Tab Navigation */
 .header-wrapper {
   background: var(--bg-surface);
@@ -291,11 +408,55 @@ p {
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
+/*
+ * Satu baris masthead: nama situs, bilah kanal, lalu pencarian.
+ *
+ * `flex-wrap` + `flex: 1 1 20rem` pada bilah kanal adalah seluruh perilaku
+ * responsifnya, dan basisnya dipilih bukan disukai: di bawah 20rem ruang tersisa
+ * bilah itu turun ke barisnya sendiri alih-alih menyusut sampai nama kanal
+ * terpotong. Di atas itu ia berbagi baris dengan nama situs, persis seperti
+ * rancangannya.
+ */
 .header-top {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0.85rem 0;
+  gap: 0.5rem 1.5rem;
+  flex-wrap: wrap;
+  /*
+   * `padding-block`, dan itu bukan gaya penulisan.
+   *
+   * Elemen ini juga membawa `.container`, yang memasang `padding: 0 1.25rem`.
+   * Versi sebelumnya menulis `padding: 0.85rem 0` di sini — sebuah SHORTHAND,
+   * yang menyetel keempat sisi — sehingga padding samping containernya menjadi
+   * nol. Di layar lebar hal itu tidak terlihat sama sekali: container sudah
+   * mentok `max-width` dan margin otomatisnya yang memberi jarak dari tepi. Di
+   * 360px, tempat container selebar layar, nama situs menempel persis di tepi
+   * kiri kaca — diukur, bukan ditaksir: `.brand-logo` berada di x=0.
+   */
+  padding-block: 0.7rem;
+}
+
+/*
+ * Di layar sempit bilah kanal turun ke barisnya sendiri DI BAWAH nama situs dan
+ * pencarian, bukan di antara keduanya.
+ *
+ * Tanpa `order`, urutan sumber (nama, kanal, pencarian) menghasilkan tiga baris:
+ * bilah kanal ber-basis 20rem tidak muat di sebelah nama situs, mengambil seluruh
+ * baris kedua, dan mendorong pencarian ke baris ketiga. Tiga baris kromium
+ * sebelum satu kata isi pun adalah separuh lipatan pertama sebuah layar 360px.
+ *
+ * Konsekuensinya dinyatakan: urutan FOKUS keyboard tetap urutan sumber (nama →
+ * kanal → pencarian) sementara urutan visual menjadi nama → pencarian → kanal.
+ * Satu elemen bertukar tempat, dan ia berada tepat di bawah keduanya — bukan di
+ * seberang halaman. Itu yang membuatnya masih memenuhi WCAG 2.4.3, dan alasannya
+ * ditulis di sini supaya penambahan elemen keempat ke baris ini tidak diputuskan
+ * tanpa membacanya.
+ */
+@media (max-width: 720px) {
+  .tab-nav-container {
+    order: 1;
+    flex-basis: 100%;
+  }
 }
 
 .brand-logo {
@@ -347,16 +508,45 @@ p {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  margin-left: auto;
 }
 
-.header-tagline {
-  font-size: 0.85rem;
+/*
+ * Pencarian di masthead: sebuah TAUTAN yang berbentuk kotak cari.
+ *
+ * Bentuknya mengikuti rancangan, perilakunya tidak — dan selisih itu disengaja.
+ * Sebuah `<input>` di kepala setiap halaman hanya berguna bila ada JavaScript
+ * yang mengirimkannya, dan situs ini harus utuh tanpa JavaScript; yang tersisa
+ * bagi pembaca tanpa JS adalah kotak yang menelan ketikan lalu diam. Tautan ini
+ * mendarat di `/cari/`, tempat kotaknya benar-benar bekerja dan mengatakan apa
+ * yang dibutuhkannya.
+ */
+.cari-tautan {
+  gap: 0.5rem;
+  min-height: 2.5rem;
+  padding: 0 0.85rem;
+  border-radius: var(--radius-md);
+  background: var(--bg-subtle);
   color: var(--text-muted);
+  font-weight: 500;
 }
 
-@media (max-width: 640px) {
-  .header-tagline {
+.cari-tautan:hover,
+.cari-tautan:focus-visible {
+  color: var(--accent-primary);
+}
+
+@media (max-width: 480px) {
+  /* Di layar tersempit label pencarian dilepas dan ikonnya tetap — target
+     sentuhnya tidak ikut mengecil karena `min-width` menggantikan lebar yang
+     hilang bersama teksnya. */
+  .cari-tautan span {
     display: none;
+  }
+
+  .cari-tautan {
+    min-width: 2.75rem;
+    justify-content: center;
   }
 }
 
@@ -419,9 +609,12 @@ p {
 /* Tab Navigation UI */
 .tab-nav-container {
   display: flex;
+  /* Ikut baris masthead sampai ruangnya habis, lalu turun utuh ke baris
+     sendiri — lihat catatan pada `.header-top`. */
+  flex: 1 1 20rem;
+  min-width: 0;
   overflow-x: auto;
-  gap: 0.35rem;
-  border-bottom: 2px solid transparent;
+  gap: 0.25rem;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -430,94 +623,57 @@ p {
   display: none;
 }
 
+/*
+ * Pil, bukan tab bergaris bawah.
+ *
+ * Garis bawah setebal 3px hanya terbaca sebagai "yang ini sedang dibuka" saat
+ * bilahnya berdiri sendiri di barisnya. Setelah ia pindah ke baris masthead,
+ * garis itu jatuh di tengah baris dan berbunyi seperti garis pemisah. Pil
+ * membawa keadaan aktifnya di dalam dirinya sendiri, jadi ia benar di kedua
+ * posisi — dan `aria-current` tetap yang menyatakannya bagi pembaca layar.
+ */
 .tab-link {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.75rem 1.15rem;
+  /* Target sentuh 44px (AGENTS.md §Antarmuka) tanpa menambah tinggi baris. */
+  min-height: 44px;
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--radius-md);
   font-weight: 600;
   font-size: 0.95rem;
   color: var(--text-secondary);
-  border-bottom: 3px solid transparent;
   white-space: nowrap;
-  transition: all 0.25s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
   text-decoration: none !important;
 }
 
 .tab-link:hover {
-  color: var(--accent-primary);
+  color: var(--text-primary);
   background: var(--bg-subtle);
-  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
 }
 
 .tab-link[aria-current="page"] {
   color: var(--accent-primary);
-  border-bottom-color: var(--accent-primary);
   background: var(--accent-subtle);
-  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
 }
 
-/* Rich Hero Banner & Hero Visual Section */
-.hero-banner-grid {
-  display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 2.5rem;
-  align-items: center;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #0284c7 100%);
-  color: #ffffff;
-  padding: 3rem 2.5rem;
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-lg);
-  position: relative;
-  overflow: hidden;
-  margin-bottom: 2rem;
-  animation: fadeInUp 0.7s ease-out;
-}
-
-@media (max-width: 900px) {
-  .hero-banner-grid {
-    grid-template-columns: 1fr;
-    padding: 2rem 1.5rem;
-    gap: 1.5rem;
-  }
-}
-
-.hero-banner-content h1 {
-  color: #ffffff;
-  font-size: 2.35rem;
-  line-height: 1.2;
-  font-weight: 800;
-  margin-bottom: 1rem;
-}
-
-.hero-banner-content p {
-  color: #e2e8f0;
-  font-size: 1.1rem;
-  line-height: 1.6;
-  margin-bottom: 1.5rem;
-}
-
-.hero-visual-frame {
-  position: relative;
-  aspect-ratio: var(--ratio-visual);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: var(--shadow-glow);
-  border: 2px solid rgba(255, 255, 255, 0.15);
-  background: rgba(15, 23, 42, 0.4);
-}
-
-.hero-visual-frame img {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-  transition: transform 0.5s ease;
-}
-
-.hero-visual-frame:hover img {
-  transform: scale(1.03);
-}
+/*
+ * Hero beranda TIDAK tinggal di berkas ini, dan itu bukan kelalaian.
+ *
+ * `.hero-banner-grid`, `.hero-banner-content` dan `.hero-visual-frame` hanya
+ * pernah dipakai satu komponen — `src/components/views/Home.astro` — sementara
+ * berkas ini dimuat oleh SETIAP halaman. Selama ketiganya di sini, setiap
+ * pembaca halaman artikel, halaman seksi, dan halaman pencarian mengunduh gaya
+ * hero yang tidak pernah dipakai halamannya. `bun run audit:aset` yang
+ * menemukannya: penambahan lapisan kisi dan rona pada hero mendorong halaman
+ * `/cari/` melewati plafon 36.000 B, dan yang melewatinya adalah gaya sebuah
+ * elemen yang tidak ada di halaman itu.
+ *
+ * Aturan berkas ini tetap seperti yang tertulis di AGENTS.md §Antarmuka: yang
+ * dipakai LEBIH DARI SATU komponen tinggal di sini, yang dipakai satu komponen
+ * tinggal di `<style>` komponennya.
+ */
 
 /* Feature Page Header Visual */
 .feature-hero {
@@ -964,21 +1120,106 @@ table.data-table tbody tr:hover {
   color: #fecaca;
 }
 
-/* Footer Styling */
+/*
+ * Footer — permukaan gelap tetap.
+ *
+ * Ia memakai token `--gelap-*`, bukan token bertema, dan konsekuensinya
+ * dinyatakan di tempat token itu didefinisikan: footer TIDAK ikut memutih saat
+ * pembaca memilih tema terang. Yang ditukar bersamanya adalah setiap warna yang
+ * dipakai di dalamnya — judul kolom, teks, tautan, garis pemisah — karena
+ * separuh yang ditukar adalah teks `#0f172a` di atas `#090d16`, yaitu tulisan
+ * yang secara harfiah tidak terbaca.
+ */
 footer {
   margin-top: auto;
-  background: var(--bg-surface);
-  border-top: 1px solid var(--border-color);
-  padding: 3rem 0 2rem;
-  color: var(--text-muted);
+  background: var(--gelap-bg);
+  border-top: 1px solid var(--gelap-garis);
+  padding: 4rem 0 0;
+  color: var(--gelap-teks-redup);
   font-size: 0.875rem;
+}
+
+footer a {
+  color: var(--gelap-teks-lembut);
+}
+
+footer a:hover,
+footer a:focus-visible {
+  color: var(--gelap-aksen);
 }
 
 .footer-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 2rem;
-  margin-bottom: 2rem;
+  gap: 2.5rem;
+  margin-bottom: 2.5rem;
+}
+
+/*
+ * Komponen yang HANYA dirender di dalam footer ikut palet gelapnya.
+ *
+ * Ditulis di sini sebagai aturan turunan, bukan di dalam `<style>` masing-masing
+ * komponen, karena "footer ini gelap di tema mana pun" adalah SATU fakta: kalau
+ * ia disalin ke DisclaimerNote dan ke FormBuletin, hari seseorang mengubahnya
+ * kembali adalah hari salah satu dari keduanya tertinggal dengan teks abu tua di
+ * atas latar hampir hitam — dan itu tidak akan tampak di tinjauan kode, hanya di
+ * layar pembaca.
+ *
+ * Spesifisitasnya cukup tanpa `!important`: gaya scoped Astro membungkus
+ * selektornya dengan `:where(...)`, yang bernilai nol, jadi satu selektor
+ * turunan di sini sudah menang.
+ */
+footer .disclaimer-footer,
+/* `p` di baris berikutnya bukan kelebihan hati-hati. Penafian footer adalah dua
+   `<p>`, dan aturan elemen `p { color: var(--text-secondary) }` di berkas ini
+   MENARGETKAN elemen itu langsung — jadi ia menang atas warna yang diwarisi dari
+   pembungkusnya, dan penafiannya tampil `#334155` di atas `#090d16`: ada,
+   terbaca oleh gerbang mana pun, dan tidak terbaca oleh mata. */
+footer .disclaimer-footer p,
+footer .buletin-label,
+footer .buletin-status,
+footer .buletin-catatan {
+  color: var(--gelap-teks-redup);
+}
+
+/* Label penafian ("Penafian:", "Disclaimer:") sedikit lebih terang daripada
+   kalimatnya — ia yang memberi tahu pembaca kalimat berikutnya sedang menyangkal
+   sesuatu, dan itu bagian yang paling tidak boleh terlewat. */
+footer .disclaimer-footer strong {
+  color: var(--gelap-teks-lembut);
+}
+
+/* Jarak sebelum pita penutup. Ia dipasang di penafian, bukan sebagai
+   `padding-bottom` pada `footer`, karena penafian adalah elemen TERAKHIR di
+   dalam container footer — dan padding pada `footer` akan jatuh di bawah pita
+   penutup, bukan di atasnya. */
+footer .disclaimer-footer {
+  padding-bottom: 2.5rem;
+}
+
+footer .buletin-input {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--gelap-garis);
+  color: var(--gelap-teks);
+}
+
+footer .buletin-input::placeholder {
+  color: var(--gelap-teks-redup);
+}
+
+footer .buletin-tombol {
+  background: var(--gelap-emerald);
+  border-color: transparent;
+  color: var(--gelap-emerald-teks);
+  --kilau-warna: rgba(255, 255, 255, 0.18);
+  --kilau-puncak: rgba(255, 255, 255, 0.42);
+}
+
+footer .buletin-tombol:hover,
+footer .buletin-tombol:focus-visible {
+  background: #34d399;
+  border-color: transparent;
+  color: var(--gelap-emerald-teks);
 }
 
 /* Utility Classes */
@@ -1048,14 +1289,12 @@ footer {
   h2 { font-size: 1.35rem; margin-top: 1.5rem; }
   h3 { font-size: 1.15rem; margin-top: 1.25rem; }
 
-  .hero-banner-content h1 { font-size: 1.75rem; }
   .artikel-title { font-size: 1.75rem; }
   .artikel-lead { font-size: 1rem; }
 }
 
 @media (max-width: 400px) {
   h1,
-  .hero-banner-content h1,
   .artikel-title { font-size: 1.5rem; }
 }
 
@@ -1359,12 +1598,6 @@ footer {
   }
 }
 
-/* Chip di dalam hero selalu berdiri di atas gradien gelap, apa pun temanya —
-   gradiennya nilai tetap, bukan token. Rona aksen akan hilang di sana. */
-.hero-banner-grid .chip {
-  --kilau-warna: rgba(255, 255, 255, 0.18);
-  --kilau-puncak: rgba(255, 255, 255, 0.42);
-}
 
 /* ---------------------------------------------------------------------------
  * Blok konten dari awcms (`src/lib/content-blocks.ts`).

@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](ui-ux-design-system.md)
 
-<!-- i18n-source-hash: sha256:b885bb60a1645292774ed8b0437762a0b524a82bd5cf09f922ed3a68fa3067bc -->
+<!-- i18n-source-hash: sha256:36c066d7a44f4a40cea9f077366aefcf21164937d6c5931f38dbae68f3e99adf -->
 
 # awcms-astro — Design System
 
@@ -43,6 +43,27 @@ Diimplementasikan sebagai CSS custom properties di `:root` pada `src/styles/glob
 | `--accent-subtle` | `#e0f2fe` | Latar lembut aksen | — |
 | `--emerald-primary` | `#059669` | Penanda keberhasilan | `--color-success` |
 | `--emerald-subtle` | `#dcfce7` | Latar lembut sukses | — |
+
+### Permukaan gelap tetap
+
+Tiga permukaan berwarna gelap di **kedua** tema: pita utilitas di atas masthead, hero beranda, dan footer. Warnanya datang dari kelompok `--gelap-*` tersendiri di `:root` yang tidak ditimpa blok tema mana pun.
+
+| Token | Nilai | Dipakai untuk |
+| --- | --- | --- |
+| `--gelap-bg` | `#090d16` | Latar footer |
+| `--gelap-bg-lembut` | `#0b1220` | Pita utilitas |
+| `--gelap-teks` | `#f8fafc` | Teks di permukaan itu |
+| `--gelap-teks-lembut` | `#cbd5e1` | Tautan dan teks sekunder di sana |
+| `--gelap-teks-redup` | `#94a3b8` | Teks redup di sana |
+| `--gelap-garis` / `--gelap-garis-kuat` | `rgba(255,255,255,.13)` / `.32` | Garis pemisah, dan garis saat hover |
+| `--gelap-aksen` | `#38bdf8` | Tautan di permukaan itu |
+| `--gelap-emerald` / `--gelap-emerald-teks` | `#10b981` / `#052e21` | Ajakan utama dan teks di atasnya |
+
+**Ini bukan sekelompok token yang lupa ditemakan.** Gradien hero repo ini sudah bernilai tetap sejak versi pertama `global.css`, dengan satu alasan: masthead dan footer yang berpindah warna di tengah halaman membuat batas atas dan bawah situs berkedip pada setiap navigasi. Kelompok `--gelap-*` hanya memberi keputusan itu sebuah nama, sehingga pita dan footer berhenti menyalin nilainya satu per satu.
+
+Yang datang bersamanya adalah aturan tanpa kekecualian: **setiap warna yang dipakai di dalam permukaan itu harus datang dari kelompok ini juga.** Separuh permukaan yang dikonversi adalah `--text-primary` — `#0f172a` di tema terang — duduk di atas `#090d16`: ada, lolos setiap gerbang, dan secara harfiah tidak terbaca. Itu bukan hipotesis, itu terjadi dua kali saat redesign ini dikerjakan. Teks dan judul footer sendiri disetel di blok scoped `BaseLayout.astro`; komponen yang hanya pernah dirender **di dalam** footer (`DisclaimerNote` varian `footer`, `FormBuletin`) dikonversi lewat aturan turunan di bawah `footer` dalam `global.css`, supaya "footer ini gelap" tetap satu fakta di satu tempat.
+
+Satu jebakan layak disebut karena ia selamat dari jalan pertama: `.disclaimer-footer` adalah pembungkus dua elemen `<p>`, dan aturan elemen `p { color: var(--text-secondary) }` **menargetkan paragraf itu langsung**, jadi ia menang atas warna apa pun yang diwarisi dari pembungkusnya. Mengonversi pembungkusnya saja tidak mengubah apa pun di layar.
 
 ### Skala lain
 
@@ -105,7 +126,7 @@ Kolom terakhir menunjukkan padanan yang harus dituju saat integrasi, agar kompon
 | Komponen | Peran | Catatan | Padanan AWCMS |
 | --- | --- | --- | --- |
 | `BaseLayout` | Kerangka halaman: head SEO, hreflang, JSON-LD, skip link, header, footer | Memasang skip link, structured data, dan tombol bagikan untuk **semua** halaman | Layout admin/publik |
-| `TabNav` | Navigasi utama, menandai aktif dengan `aria-current` | Urutan dari `siteConfig.tabs` | Nav |
+| `TabNav` | Navigasi utama, menandai aktif dengan `aria-current` | Urutan dari `siteConfig.tabs`. **Pil, bukan tab bergaris bawah**: garis bawah 3px hanya terbaca sebagai "yang ini sedang dibuka" selama bilahnya punya barisnya sendiri, dan ia kini berbagi baris masthead — tempat garis yang sama berbunyi seperti pemisah. Pil membawa keadaannya di dalam dirinya sendiri, jadi ia benar di kedua posisi, dan `aria-current` tetap yang menyatakannya bagi pembaca layar | Nav |
 | `Breadcrumb` | Jejak navigasi + JSON-LD `BreadcrumbList` | — | Breadcrumb |
 | `LangSwitcher` | Pengalih locale berbasis `<details>` | **Jalan tanpa JavaScript** | i18n switcher |
 | `TranslationNotice` | Penanda konten yang jatuh ke locale default | Membawa `lang` yang benar untuk pembaca layar | — (khas awcms-astro) |
@@ -118,6 +139,46 @@ Kolom terakhir menunjukkan padanan yang harus dituju saat integrasi, agar kompon
 | `LangFlag`, `TabNav`, `Breadcrumb`, `TranslationNotice` | Lihat baris di atasnya masing-masing | — | — |
 
 **`UnitLayananTable` dan `WilayahFilter` dihapus dari tabel ini, bukan ditandai "belum dibuat".** Keduanya komponen repo rujukan yang tidak pernah ikut ke template ini, dan `WilayahFilter` bahkan punya baris sendiri di tabel "Tanpa JavaScript" di bawah yang menjanjikan perilaku sebuah komponen yang tidak ada. Sebuah tabel komponen yang mendaftarkan komponen yang tidak ada adalah kelas cacat yang sama dengan `.wilayah-filter-btn` di §Kilau hover — dan keduanya berasal dari repo yang sama.
+
+### Bingkai halaman
+
+Setiap halaman dibuka oleh tiga pita, dan pita mana yang memuat sebuah kontrol diputuskan oleh apa yang dilakukannya, bukan oleh berapa ruang yang tersisa.
+
+| Pita | Memuat | Kenapa di situ |
+| --- | --- | --- |
+| Pita utilitas | Tagline situs, pengalih bahasa, pengalih tema | Tidak satu pun dari ketiganya adalah navigasi isi. Ia sengaja **di luar** `<header>` yang sticky: pita status yang ikut menempel akan memakan 38px layar sepanjang gulir, di situs yang mayoritas pembacanya di ponsel |
+| Masthead (sticky) | Nama situs, bilah kanal, tautan pencarian | Satu baris, bukan dua. Baris kedua yang isinya hanya bilah kanal membuat setiap halaman dibuka dengan dua baris kromium sebelum satu kata isi pun — sepertiga lipatan pertama di 360px |
+| Footer | Identitas, kanal, tautan situs, kontak, formulir buletin, penafian, pita penutup | Strukturnya tidak berubah; ia kini permukaan gelap tetap (lihat §Permukaan gelap tetap) |
+
+Bilah kanal berbagi baris masthead sampai ruang tersisa kurang dari 20rem, lalu turun ke baris sendiri. Di bawah 720px ia juga mengambil `order: 1`, sehingga barisnya terbaca **nama situs · pencarian** dan bilah kanal berada di bawahnya — bukan bilah kanal mengambil seluruh baris kedua dan mendorong pencarian ke baris ketiga.
+
+`order` itu satu-satunya tempat di repo ini yang urutan visual dan urutan DOM-nya berbeda, dan pertukarannya dinyatakan alih-alih dibiarkan ditemukan: fokus keyboard tetap berjalan nama → kanal → pencarian sementara mata membaca nama → pencarian → kanal. Satu elemen berpindah, dan ia berpindah ke tepat di bawah kedua lainnya — bukan ke seberang halaman — dan itu yang menjaganya tetap di dalam WCAG 2.4.3. Elemen keempat di baris itu bukan tambahan gratis; ia keputusan untuk membaca ulang paragraf ini.
+
+Kontrol pencarian adalah **tautan yang berbentuk kotak cari** — kaca pembesar, bidang redam, lebar tetap — dan bukan `<input>`. Bentuknya yang dicari mata pembaca di kepala halaman; perilakunya ditolak dengan alasan di §Tanpa JavaScript, karena kotak yang menelan ketikan lalu tidak melakukan apa pun lebih buruk daripada tidak ada kotak.
+
+### Permukaan beranda
+
+Beranda hasil redesign membawa dua permukaan yang menampilkan isi sungguhan situs, yang tidak dimiliki versi sebelumnya: pembaca yang mendarat di sana tidak bisa melihat satu judul artikel pun tanpa lebih dulu menebak kanal mana yang harus dibuka.
+
+| Permukaan | Yang ditampilkan | Di mana ia berhenti |
+| --- | --- | --- |
+| Panel terbaru, di dalam hero | Tiga artikel terbaru lintas kanal — nama kanal, tanggal, judul | Hanya dirender bila ada artikel untuk didaftar. Hero menjadi satu kolom bila tidak |
+| Pita statistik | Jumlah kanal, jumlah artikel, `updatedDate` termuda di situs | Hanya dirender bila situs punya sedikitnya satu artikel. Sel tanggal dilepas bila tidak ada tanggalnya |
+| Sorotan | Satu artikel paling baru, dengan gambarnya sendiri, keterangannya, dan baris "diperbarui" hanya bila ia benar-benar disunting setelah terbit ([ADR-0033](../adr/0033-seksi-berita-urutan-dari-tanggal-dan-dua-tanggal-yang-terpisah.id.md)) | Hanya dirender bila ada artikel |
+
+Keduanya membaca satu daftar yang sama dan tidak pernah menampilkan artikel yang sama dua kali: sorotan mengambil yang pertama, panel mengambil tiga berikutnya. Urutannya punya **pemutus seri pada slug**, karena dua artikel yang terbit pada detik yang sama akan bertukar tempat antar-build — keluaran statis yang berbeda tanpa ada yang berubah.
+
+**Pita itu hanya memuat angka yang bisa dihitung build ini.** Rancangan yang dikerjakan ulang di sini memuat yang keempat: "Skor Lighthouse 100". Ia tidak ada di sini. Tidak ada apa pun di build yang mengukurnya, jadi ia akan menjadi klaim yang dicetak setiap halaman dan diperiksa tidak seorang pun — kelas cacat yang sama dengan `og:image` yang menunjuk kartu yang tidak pernah dibangkitkan siapa pun, yang sudah pernah ditolak repo ini.
+
+Hero beranda adalah satu-satunya bingkai di repo ini yang **tidak merender placeholder** saat seninya tidak ada. Di tempat lain bingkai kosong menahan tata letak yang tanpanya akan runtuh; di sini panel di bawahnya sudah membawa artikel terbaru, jadi yang ditahan bingkai kosong bukan tata letaknya melainkan perhatian pembaca — sebuah persegi bergaris selebar panel, di lipatan pertama, tepat di atas satu-satunya isi sungguhan yang dibawa beranda. Konvensi penamaan `hero` di bawah `src/assets/` tetap berlaku, dan seninya tetap ditampilkan pada situs yang memasangnya.
+
+### Di mana gaya sebuah komponen tinggal, dan apa yang menegakkannya
+
+`src/styles/global.css` untuk yang dipakai lebih dari satu komponen; gaya milik satu komponen tinggal di `<style>` scoped-nya. Itu sudah menjadi aturan di §Prinsip, dan `bun run audit:aset` yang mengubahnya menjadi sesuatu yang bergigi.
+
+Hero berada di `global.css` sementara `Home.astro` satu-satunya pemakainya. Setiap pembaca setiap halaman artikel, halaman seksi, dan halaman pencarian karena itu mengunduh gaya hero yang halamannya tidak pernah render — dan penambahan lapisan kisi serta rona redesign ini mendorong `/cari/` melewati plafon 36.000 B per halaman atas nama sebuah elemen yang tidak ada di sana. Memindahkan bloknya memulangkan 1.853 B ke **setiap** halaman, bukan hanya ke yang merah.
+
+Gerbang yang sama lalu mencatat apa yang masih salah dan tidak diperbaiki di sini: `BaseLayout.css` berukuran 22.577 B dan masih membawa gaya badan artikel (`.content-body`, `.galeri`, `.video-berita`), tabel biaya, dan akordeon ke setiap halaman yang tidak punya satu pun di antaranya. Itu pekerjaan tersendiri, dengan risikonya sendiri pada badan artikel, dan ia disebut di `scripts/audit-aset.mjs` supaya ia tidak diam-diam menjadi keadaan normal.
 
 ### Komponen yang belum ada dan akan dibutuhkan
 
@@ -182,7 +243,9 @@ Sapuan ini murni CSS. Ia tidak menambah satu byte JavaScript pun dan tidak berpe
 
 ### Responsif
 
-Mobile-first dari 360px. Kartu memakai `grid-template-columns: repeat(auto-fill, minmax(320px, 1fr))`.
+Mobile-first dari 360px. Kartu memakai `grid-template-columns: repeat(auto-fill, minmax(320px, 1fr))`. Bagaimana masthead menata ulang dirinya pada lebar itu ada di §Bingkai halaman.
+
+**Shorthand `padding` pada elemen yang juga membawa `.container` diam-diam menghapus padding samping containernya**, dan kegagalannya tidak terlihat di layar desktop. `.header-top` menulis `padding: 0.85rem 0` selama berbulan-bulan: pada lebar berapa pun di atas `--max-width`, container sudah masuk ke dalam oleh margin otomatisnya sendiri, jadi tidak ada yang tampak salah; di 360px, tempat container selebar layar, nama situs duduk **menempel di tepi kiri kaca** — diukur di `x=0`, bukan ditaksir dari tangkapan layar. Kini ia `padding-block`. Periksa elemen lain mana pun yang membawa `.container` bersama kelasnya sendiri.
 
 **Tabel di badan artikel menggulir sendiri, bukan lewat pembungkus.** Versi sebelumnya paragraf ini menyebut `.table-responsive` "yang disisipkan rehype plugin"; pipeline markdown itu tidak ada lagi di repo ini, dan yang tersisa dari resep itu adalah tabel `min-width: 34rem` tanpa pembungkus penggulung — persis penyebab gulir mendatar di 360px. `src/styles/global.css` karena itu memakai `display: block` + `overflow-x: auto` langsung pada `.content-body table`, tanpa `min-width`. (`renderContentBlocks()` sendiri belum memancarkan tabel sama sekali — `awcms` tidak punya tipe blok tabel — jadi aturan itu menunggu tipe itu ada.)
 

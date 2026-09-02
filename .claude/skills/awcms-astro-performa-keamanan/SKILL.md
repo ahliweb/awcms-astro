@@ -113,6 +113,26 @@ they are **measured** by `bun run audit:konten` over `dist/client`, per page —
 what is weighed is only the images this build actually publishes, because `awcms`
 media are not there.
 
+**The byte budget for scripts and stylesheets is a different gate**, `bun run
+audit:aset`, and its ceilings live in `scripts/audit-aset.mjs`: **13,000 B of
+script and 40,000 B in total per page**, plus 8,000 B for one published script
+file. Every one of them is a MEASUREMENT with headroom, not a round number
+somebody liked — the script ceiling was first written as 9,000 from a hand count
+that missed some inline blocks, and the gate corrected it on its first run.
+
+The total moved 36,000 → 40,000 on 2 September 2026, when the home page redesign
+made `/` the heaviest page at 38,136 B. Read what happened before quoting the new
+number: the gate was let bite first, and what it found was hero CSS sitting in
+`src/styles/global.css` while one component used it — every article, section and
+search page was downloading it. Moving that block returned 1,853 B to every page,
+and only the genuinely new surface was left to justify the raise. **A red
+`audit:aset` is a question about which file a rule is in before it is a question
+about the ceiling.**
+
+What is still wrong and deliberately not fixed there is recorded in the script:
+`BaseLayout.css` is 22,577 B and still ships article-body, fee-table and
+accordion styles to pages that have none of them.
+
 ## Ten gaps — all closed, two limits still stated
 
 All ten (1 HSTS, 2 `fetchpriority`, 3 image budgets, 4 the `awcmsGet` timeout,

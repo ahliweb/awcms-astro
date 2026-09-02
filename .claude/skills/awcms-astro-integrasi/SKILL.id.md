@@ -5,7 +5,7 @@ description: Kontrak integrasi awcms-astro ↔ awcms — tenant dari token mesin
 
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](SKILL.md)
 
-<!-- i18n-source-hash: sha256:d5f4a9f242e1867d5f65087f0fc9d04dce13deedae999a55ba1ac07a56087923 -->
+<!-- i18n-source-hash: sha256:e6693862c3ff75de29ec398d073a0f551f0aa7ac55eebbd2b757d398dfdccc7a -->
 
 # awcms-astro — kontrak integrasi dengan `awcms`
 
@@ -342,8 +342,14 @@ dan sengaja TIDAK diduplikasi di sini: dua salinan data yang digerbangi adalah
 dua salinan yang boleh menyimpang, dan yang menyimpang selalu yang tidak dibaca
 mesin. Yang ada di sini penjelasannya; yang ada di sana buku besarnya.
 
-Ringkasannya per 27 Agustus 2026: **lantai ADR-0049**, 68 ADR bervonis sampai
-ADR-0118, **nol** bervonis `belum`. Lantainya ADR-0049 karena di situlah
+Ringkasannya: **lantai ADR-0049**, puncaknya ADR-0119, **nol** bervonis `belum`.
+Jumlah persisnya sengaja TIDAK ditulis di sini lagi — ia berbunyi "68 ADR" sampai
+2 September 2026 sementara gerbangnya menghitung 70, dan sebuah angka dalam prosa
+yang tidak dibaca pemeriksa mana pun akan hanyut lagi persis seperti itu
+([ADR-0030](../../../docs/adr/0030-aturan-tertulis-mendapat-pemeriksanya.md)).
+`bun run audit:serapan` mencetak cakupan, lantai, dan puncaknya setiap kali ia
+berjalan; itu angka yang benar karena ia dihitung, bukan diingat. Lantainya
+ADR-0049 karena di situlah
 hubungannya bermula — kredensial mesin dan serah-terima sesi BFF adalah keputusan
 `awcms` pertama yang melibatkan repo ini. Di bawahnya, ADR 0000–0048 adalah
 fondasi platform yang mendahului konsumen ini, dan repo ini **belum**

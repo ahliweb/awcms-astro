@@ -5,7 +5,7 @@ description: Sembilan gerbang awcms-astro (check, test, audit:konten, audit:doku
 
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](SKILL.md)
 
-<!-- i18n-source-hash: sha256:e205296446109f485c5d164c8d1114af85aeb8efcbc91b639d22fff4240cb88c -->
+<!-- i18n-source-hash: sha256:fdaf5b8e94b07b7d0b640b998dda0dc719a605af6288b935ae9a18717c84c2be -->
 
 # awcms-astro — gerbang
 
@@ -35,7 +35,7 @@ bun run audit:rilis       # backlog changeset menunggu  — tanpa build, tanpa j
 | `audit:translation` | Cermin basi (sebuah `.id.md` yang hash tercatatnya tidak lagi cocok dengan sumber Inggrisnya), cermin yatim yang sumbernya hilang, dokumen tanpa cermin yang tidak ada di buku besar yang hanya boleh menyusut, dan entri buku besar yang cerminnya kini ada (ADR-0039) |
 | `audit:graf` | Artefak `graphify-out/` terlacak di luar keempat keluaran bersama, laporan yang tidak sepakat dengan `graph.json`, **nama komunitas yang tidak dipilih** (nama berkas, placeholder, kembar, atau berbeda antar-artefak), korpus yang mengabaikan `.graphifyignore` |
 | `audit:serapan` | Sebuah ADR `awcms` tanpa vonis di buku besar serapan, nomor yang bolong antara lantai yang dinyatakan dan nomor tertinggi yang didaftarkan, jumlah `belum` di atas plafonnya, dan — satu-satunya pemeriksaan yang MELIHAT KE LUAR di repo ini — keputusan yang terbit di `ahliweb/awcms` yang belum dibaca siapa pun di sini |
-| `audit:aset` | Sebuah `<script>` sumber atau berkas `public/**` di atas plafon sumber, dan — bila `dist/client` ada — byte yang benar-benar ditarik satu halaman, disebut per berkas (ADR-0044; `awcms` ADR-0101 separuh keluarga lainnya) |
+| `audit:aset` | Sebuah `<script>` sumber atau berkas `public/**` di atas plafon sumber, dan — bila `dist/client` ada — byte yang benar-benar ditarik satu halaman, disebut per berkas (ADR-0044; `awcms` ADR-0101 separuh keluarga lainnya). **Baca pelanggarannya sebagai pertanyaan tentang aturan itu ada di BERKAS mana sebelum memperlakukannya sebagai plafon yang harus dinaikkan**: pada 2 September 2026 ia memerahkan `/cari/` atas CSS hero yang duduk di `src/styles/global.css` sementara satu komponen memakainya, dan memindahkan blok itu memulangkan 1.853 B ke setiap halaman. Plafonnya sendiri adalah pengukuran berikut ruang di atasnya, dicatat di dalam skripnya di sebelah angkanya |
 | `audit:rilis` | Backlog changeset menunggu di atas 12 berkas atau lebih tua dari 14 hari, dan changeset yang namanya tidak membawa tanggal `YYYY-MM-DD-` yang bisa dipakai — termasuk tanggal yang tidak ada di kalender dan tanggal lebih dari sehari di depan ([ADR-0048](../../../docs/adr/0048-a-release-is-cut-when-the-backlog-crosses-a-bound.id.md)) |
 
 ## Yang TIDAK ditangkap — dan disebut supaya tidak dikira terjaga

@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](AGENTS.md)
 
-<!-- i18n-source-hash: sha256:aa50e9a3820e6d5553f10d09688ffaca28f3718fdf6dbb614896703f5ed7e7e2 -->
+<!-- i18n-source-hash: sha256:1833895853f4fa50497b4b28c2cc54341295684345ae21a8bed777811cc26ab7 -->
 
 # AGENTS.md — kontrak kerja `awcms-astro`
 
@@ -520,6 +520,23 @@ yang [ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.m
   key dinamis tidak lagi dinamis — ia teks biasa, dan bisa dilihat.
 - **Token desain, bukan nilai lepas.** Tidak ada gaya sekali pakai; komponen
   baru memakai token yang sudah ada di `src/styles/global.css`.
+- **`src/styles/global.css` dimuat setiap halaman, jadi aturan yang hanya dipakai
+  satu komponen adalah byte yang dibayar setiap halaman lain.** Pembagiannya —
+  yang bersama di berkas global, milik satu komponen di `<style>` scoped-nya —
+  bukan kerapian, melainkan anggaran berat halaman. `bun run audit:aset` yang
+  membuatnya nyata: hero beranda duduk di berkas global sementara `Home.astro`
+  satu-satunya pemakainya, dan menambahinya mendorong `/cari/` melewati plafon
+  total atas nama sebuah elemen yang tidak pernah dirender halaman itu.
+  Memindahkan bloknya memulangkan 1.853 B ke **setiap** halaman. Saat gerbang itu
+  merah, cari lebih dulu aturan yang salah berkas, bukan plafon yang bisa
+  dinaikkan.
+- **Shorthand `padding` pada elemen yang juga membawa `.container` menghapus
+  padding samping containernya, dan itu tidak terlihat di layar desktop.** Di
+  atas `--max-width`, container sudah masuk ke dalam oleh margin otomatisnya
+  sendiri, jadi tidak ada yang tampak salah; di 360px, tempat container selebar
+  layar, isinya menempel di tepi kaca. `.header-top` melakukan persis itu selama
+  berbulan-bulan. Pakai `padding-block`. Ukur hasilnya — `x=0` pada nama situs
+  adalah fakta, "tampak baik-baik saja di tangkapan layar" bukan.
 - **Tidak ada atribut `style=""`, dan tidak ada blok `<style>` di dalam HTML.**
   Gaya tinggal di `src/styles/global.css` (bila dipakai lebih dari satu
   komponen) atau di `<style>` scoped milik komponen — yang Astro terbitkan
@@ -592,9 +609,17 @@ merender `.visual-placeholder`, dan itu jujur.
 - **Teks terkecil di dalam SVG minimal 22px pada kanvas 800px.** Pada kartu
   selebar 328px — viewport 360px — kanvas 800px tampil pada skala 0,41, jadi di
   bawah ambang itu teksnya tampil di bawah 9px dan praktis tidak terbaca.
-- **`src: undefined` adalah keadaan yang didukung.** Setiap pemanggil merender
+- **`src: undefined` adalah keadaan yang didukung.** Pemanggil merender
   `.visual-placeholder`. Ilustrasi yang hilang tidak boleh menjadi halaman yang
   hilang — maupun bingkai setinggi nol.
+- **Satu pemanggil justru TIDAK merender apa pun, dan ia disebut di sini supaya
+  kekecualiannya tidak menyebar lewat peniruan: hero beranda.** Aturan di atas
+  ada karena bingkai kosong menahan tata letak yang tanpanya akan runtuh. Di
+  beranda, panel hero sudah membawa artikel terbaru, jadi bingkai kosong di sana
+  menahan bukan tata letaknya melainkan perhatian pembaca — persegi bergaris
+  selebar panel, di lipatan pertama, tepat di atas satu-satunya isi sungguhan
+  yang dimiliki halaman itu. Di mana pun bingkainya menahan tata letak,
+  placeholder-nya tetap.
 
 Empat aturan di atas kini **diperiksa** `scripts/audit-konten.mjs` atas seluruh
 sumber di `src/assets/`: rasio (termasuk `viewBox` SVG), format dibaca dari isi
