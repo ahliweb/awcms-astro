@@ -139,7 +139,7 @@ is the only lockfile.
 | `bun run dev`               | Astro development server (HMR), `http://localhost:4321`          |
 | `bun run check`             | Lockfile gate, then `astro check`                                |
 | `bun run check:lockfile`    | The lockfile gate alone — pure file reading                      |
-| `bun test`                  | 21 gate files: the `awcms` contract, site roles, no-backend, the `news` vocabulary, feeds, the server, output CSP, translation mirrors |
+| `bun test` | 39 gate files: the `awcms` contract, site roles, no-backend, no Node.js runtime, the `news` vocabulary, feeds, the server, toolchain versions, output CSP, translation mirrors, and meta-tests over the audit scripts |
 | `bun run audit:konten`      | Audit gate: image sources, and the build output when it exists   |
 | `bun run audit:dokumen`     | Document gate: dead markdown links, the ADR index, the shine-surface list |
 | `bun run audit:graf`        | Graph gate: the tracked `graphify-out/` artefacts, and their community names |

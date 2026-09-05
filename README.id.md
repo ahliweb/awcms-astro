@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:7bada74eeba5378e7e082c83c2b7ae9cb61955f6e2af7ea84685828bb5d3ce06 -->
+<!-- i18n-source-hash: sha256:40bf37a47aa4e36e9d9de4ad796dd21de8b092cbaa90f6085044715c5b3d9ef2 -->
 
 # awcms-astro
 
@@ -142,7 +142,7 @@ satu-satunya lockfile.
 | `bun run dev`            | Server pengembangan Astro (HMR), `http://localhost:4321`        |
 | `bun run check`          | Gerbang lockfile lalu `astro check`                             |
 | `bun run check:lockfile` | Hanya gerbang lockfile — murni baca berkas                      |
-| `bun test`               | 21 berkas gerbang: kontrak `awcms`, peran situs, tanpa backend, kosakata `news`, feed, penyaji, CSP keluaran, cermin terjemahan |
+| `bun test` | 39 berkas gerbang: kontrak `awcms`, peran situs, tanpa backend, tanpa runtime Node.js, kosakata `news`, feed, penyaji, versi toolchain, CSP keluaran, cermin terjemahan, dan meta-tes atas skrip audit |
 | `bun run audit:konten`   | Gerbang audit: sumber gambar, dan keluaran build bila sudah ada |
 | `bun run audit:dokumen`  | Gerbang dokumen: tautan markdown mati, indeks ADR, daftar permukaan kilau |
 | `bun run audit:graf`     | Gerbang graf: artefak `graphify-out/` yang terlacak, dan nama komunitasnya |

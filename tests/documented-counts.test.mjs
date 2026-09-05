@@ -51,16 +51,23 @@ const META_TES = BERKAS_TES.filter((f) => f.startsWith("audit-"));
 /**
  * Where each count is written, and how to read it back out.
  *
- * Both mirrors of both documents are listed. A pair kept in one language only is
- * how a correction lands on the English source and leaves the Indonesian reader
- * with the old number — the exact asymmetry ADR-0039 makes possible by having a
- * mirror at all.
+ * Both mirrors of all three documents are listed. A pair kept in one language
+ * only is how a correction lands on the English source and leaves the
+ * Indonesian reader with the old number — the exact asymmetry ADR-0039 makes
+ * possible by having a mirror at all.
+ *
+ * `README.md`/`README.id.md` joined this list on 5 September 2026, having been
+ * missed the first time: they told the reader **21** while `tests/` held 39,
+ * the same drift the other two documents had already been caught and fixed
+ * for on 28 August 2026.
  */
 const DOKUMEN = [
   ".claude/skills/awcms-astro-gerbang/SKILL.md",
   ".claude/skills/awcms-astro-gerbang/SKILL.id.md",
   "docs/awcms-astro/checklist-repo-baru.md",
-  "docs/awcms-astro/checklist-repo-baru.id.md"
+  "docs/awcms-astro/checklist-repo-baru.id.md",
+  "README.md",
+  "README.id.md"
 ];
 
 /** The skill row is the only place the meta-test count is written. */
@@ -108,8 +115,8 @@ describe("hitungan yang ditulis dokumen sama dengan yang ada di repo (ADR-0030)"
         BERKAS_TES.length,
         `${jalur} menyebut ${ditulis} berkas gerbang, sementara tests/ berisi ` +
           `${BERKAS_TES.length}. Yang salah hampir selalu DOKUMENNYA: sebuah gerbang ` +
-          "ditambahkan dan tidak ada yang menaikkan angkanya. Perbaiki keempat " +
-          "dokumen sekaligus — memperbaiki satu meninggalkan tiga yang lain berbohong"
+          "ditambahkan dan tidak ada yang menaikkan angkanya. Perbaiki keenam " +
+          "dokumen sekaligus — memperbaiki satu meninggalkan lima yang lain berbohong"
       );
     });
   }
@@ -142,7 +149,8 @@ describe("hitungan yang ditulis dokumen sama dengan yang ada di repo (ADR-0030)"
     // menyebut pasangan mana yang pincang.
     const pasangan = [
       [DOKUMEN[0], DOKUMEN[1]],
-      [DOKUMEN[2], DOKUMEN[3]]
+      [DOKUMEN[2], DOKUMEN[3]],
+      [DOKUMEN[4], DOKUMEN[5]]
     ];
 
     for (const [en, id] of pasangan) {
