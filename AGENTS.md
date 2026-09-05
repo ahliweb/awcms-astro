@@ -489,10 +489,14 @@ exactly what
 - **Mobile-first from 360px.** `.container`'s own padding leaves an inner width
   of exactly 320px at that floor — a grid track fixed to that same figure has
   zero margin, which is what `.grid-cards` did until it was found and wrapped
-  in `min(320px, 100%)`. This rule now has a checker: `tests/lebar-360.test.mjs`
-  reads the 360px floor and `.container`'s padding, derives that inner width
-  from the CSS itself, and refuses any other fixed-px `minmax(…)` or fixed
-  `width`/`min-width` in `src/styles/global.css` that reaches or exceeds it
+  in `min(320px, 100%)`; `Home.astro`'s `.sorotan` (`minmax(20rem, 1fr)`, a
+  component `<style>` block) had the identical bug, found only once the
+  checker's own file scope was corrected. This rule now has a checker:
+  `tests/lebar-360.test.mjs` reads the 360px floor and `.container`'s padding,
+  derives that inner width from the CSS itself, and refuses any other
+  fixed-px/rem `minmax(…)` or fixed `width`/`min-width` — in
+  `src/styles/global.css` AND in every `<style>` block of every `.astro` file
+  under `src/` (components, layouts, pages) — that reaches or exceeds it
   without a `min(…, 100%)` escape, a desktop-only media query, or a
   self-contained `overflow-x`. It is a static gate over CSS TEXT: it cannot
   prove real rendering safety — sub-pixel rounding, real font metrics, and

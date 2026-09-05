@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](AGENTS.md)
 
-<!-- i18n-source-hash: sha256:ff20fbce4a6e5cbf3e472c79ea00a791eeb5079503511fe542b211a1146d23ee -->
+<!-- i18n-source-hash: sha256:215c437bb7248a5b0933aec516cd7419a7769e0c05d136d36a5eadb8ebbc6827 -->
 
 # AGENTS.md — kontrak kerja `awcms-astro`
 
@@ -502,17 +502,20 @@ yang [ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.m
 - **Mobile-first dari 360px.** Padding `.container` sendiri menyisakan lebar
   bersih persis 320px pada lantai itu — sebuah track grid yang dipatok ke angka
   yang sama punya sisa nol, dan itu yang dilakukan `.grid-cards` sampai
-  ditemukan dan dibungkus `min(320px, 100%)`. Aturan ini kini punya
-  pemeriksanya: `tests/lebar-360.test.mjs` membaca lantai 360px dan padding
-  `.container`, menurunkan lebar bersih itu dari CSS-nya sendiri, dan menolak
-  `minmax(…)` angka tetap lain atau `width`/`min-width` tetap di
-  `src/styles/global.css` yang mencapai atau melebihinya tanpa jalan keluar
-  `min(…, 100%)`, media query khusus layar lebar, atau `overflow-x` pada
-  dirinya sendiri. Ia gerbang statik atas TEKS CSS: tidak bisa membuktikan
-  keamanan render sungguhan — pembulatan sub-piksel, metrik font nyata, dan
-  scrollbar sungguhan butuh browser, yaitu mengasersikan
-  `document.documentElement.scrollWidth <= 360` pada halaman kunci setelah
-  build, terhadap `awcms` backend yang hidup.
+  ditemukan dan dibungkus `min(320px, 100%)`; `.sorotan` di `Home.astro`
+  (`minmax(20rem, 1fr)`, blok `<style>` komponen) punya cacat yang identik,
+  ditemukan hanya setelah cakupan berkas gerbangnya sendiri diperbaiki. Aturan
+  ini kini punya pemeriksanya: `tests/lebar-360.test.mjs` membaca lantai 360px
+  dan padding `.container`, menurunkan lebar bersih itu dari CSS-nya sendiri,
+  dan menolak `minmax(…)` angka tetap/rem lain atau `width`/`min-width` tetap —
+  di `src/styles/global.css` DAN di setiap blok `<style>` setiap berkas
+  `.astro` di bawah `src/` (komponen, layout, halaman) — yang mencapai atau
+  melebihinya tanpa jalan keluar `min(…, 100%)`, media query khusus layar
+  lebar, atau `overflow-x` pada dirinya sendiri. Ia gerbang statik atas TEKS
+  CSS: tidak bisa membuktikan keamanan render sungguhan — pembulatan
+  sub-piksel, metrik font nyata, dan scrollbar sungguhan butuh browser, yaitu
+  mengasersikan `document.documentElement.scrollWidth <= 360` pada halaman
+  kunci setelah build, terhadap `awcms` backend yang hidup.
 - **String antarmuka lewat katalog PO**, tidak pernah ditulis langsung di
   komponen. Ini berlaku juga bagi label yang datang dari konfigurasi: navigasi
   utama pernah merender nilai HURUF BESAR dari `src/config/site.ts`, sehingga

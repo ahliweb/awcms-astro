@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](ui-ux-design-system.md)
 
-<!-- i18n-source-hash: sha256:d0c7e84cf5c48ad225f0293715c1f873de775580185d62532dc554dade074f72 -->
+<!-- i18n-source-hash: sha256:bad883749144d514a50debf0eb25e62ed35e979f24b8c13168c08968454304f2 -->
 
 # awcms-astro — Design System
 
@@ -243,7 +243,7 @@ Sapuan ini murni CSS. Ia tidak menambah satu byte JavaScript pun dan tidak berpe
 
 ### Responsif
 
-Mobile-first dari 360px. `padding: 0 1.25rem` milik `.container` sendiri menyisakan lebar bersih persis 320px pada lantai itu. Kartu memakai `grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr))` — `min(320px, 100%)`, bukan `320px` telanjang, karena track yang dipatok ke angka sama dengan ruang tempatnya duduk punya sisa nol: `box-sizing: border-box` menutupinya hari ini, tapi pembulatan sub-piksel atau border yang kelak ditambahkan ke `.card` tidak akan. Bagaimana masthead menata ulang dirinya pada lebar itu ada di §Bingkai halaman. `tests/lebar-360.test.mjs` membaca aritmetika yang sama ini dari CSS dan menolak track atau lebar tetap lain yang mencapai lantai ini tanpa jalan keluar yang sama — ia gerbang statik atas teks CSS, bukan bukti render sungguhan; itu butuh pemeriksaan headless-browser atas halaman yang sudah dibangun.
+Mobile-first dari 360px. `padding: 0 1.25rem` milik `.container` sendiri menyisakan lebar bersih persis 320px pada lantai itu. Kartu memakai `grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr))` — `min(320px, 100%)`, bukan `320px` telanjang, karena track yang dipatok ke angka sama dengan ruang tempatnya duduk punya sisa nol: `box-sizing: border-box` menutupinya hari ini, tapi pembulatan sub-piksel atau border yang kelak ditambahkan ke `.card` tidak akan. Bagaimana masthead menata ulang dirinya pada lebar itu ada di §Bingkai halaman. `tests/lebar-360.test.mjs` membaca aritmetika yang sama ini dari CSS dan menolak track atau lebar tetap lain (angka tetap atau rem) yang mencapai lantai ini tanpa jalan keluar yang sama — baik di `global.css` maupun di blok `<style>` komponen/layout/halaman mana pun, itulah yang juga menangkap `.sorotan` di `Home.astro` melakukan hal identik lewat `minmax(20rem, 1fr)`. Ia gerbang statik atas teks CSS, bukan bukti render sungguhan; itu butuh pemeriksaan headless-browser atas halaman yang sudah dibangun.
 
 **Shorthand `padding` pada elemen yang juga membawa `.container` diam-diam menghapus padding samping containernya**, dan kegagalannya tidak terlihat di layar desktop. `.header-top` menulis `padding: 0.85rem 0` selama berbulan-bulan: pada lebar berapa pun di atas `--max-width`, container sudah masuk ke dalam oleh margin otomatisnya sendiri, jadi tidak ada yang tampak salah; di 360px, tempat container selebar layar, nama situs duduk **menempel di tepi kiri kaca** — diukur di `x=0`, bukan ditaksir dari tangkapan layar. Kini ia `padding-block`. Periksa elemen lain mana pun yang membawa `.container` bersama kelasnya sendiri.
 
