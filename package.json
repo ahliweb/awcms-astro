@@ -10,7 +10,7 @@
     "url": "git+https://github.com/ahliweb/awcms-astro.git"
   },
   "license": "MIT",
-  "packageManager": "bun@1.3.14",
+  "packageManager": "bun@1.4.2",
   "engines": {
     "bun": ">=1.3.0"
   },

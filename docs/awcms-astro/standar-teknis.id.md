@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](standar-teknis.md)
 
-<!-- i18n-source-hash: sha256:cd836a4734a1b39dcf3713fcdc4a74426c520478c94a7e88637aa0818e62610f -->
+<!-- i18n-source-hash: sha256:443754b41579a6f6444ca0dd833f689698f5ac54709ad1d4f7d1227657c4e3ba -->
 
 # awcms-astro — Standar Teknis
 
@@ -29,7 +29,7 @@ Kata **wajib** di dokumen ini berarti pelanggarannya menggagalkan gerbang mutu, 
 
 | Nilai | `awcms` | repo ini | Keadaannya |
 | --- | --- | --- | --- |
-| Bun | `1.3.14` | `1.3.14` | Cocok persis, dan dijaga `tests/versi-toolchain.test.mjs` atas lima nilai di sini |
+| Bun | `1.3.14` | `1.4.2` | Repo ini menaikkan pin-nya pada 5 September 2026; kolom `awcms` tidak berubah dan kini tertinggal — dijaga `tests/versi-toolchain.test.mjs` atas lima nilai di sini |
 | `astro` | `^7.2.4` | `^7.2.9` | **Repo ini lima patch DI DEPAN sejak 2 September 2026**, dan arahnya yang baru: sejak 23 Agustus ia cocok persis dengan `awcms`, dan yang memisahkannya adalah Dependabot yang menaikkan repo ini sendirian. Tidak ada apa pun di sini yang bergantung pada keduanya sepakat — rentang patch `astro` tidak membawa kontrak lintas-repo — jadi selisihnya dicatat alih-alih ditutup dengan menahan patch yang bisa saja relevan bagi keamanan. `awcms` akan menutupnya lewat bump-nya sendiri. Kolom ketiga yang punya pemeriksa; **kolom ini ditulis tangan dan dibaca dari `ahliweb/awcms` pada 2 September 2026**, jadi perlakukan ia sebagai catatan yang bisa basi |
 | `@astrojs/node` | `^11.1.4` | `^11.1.4` | Sama seperti di atas, dinaikkan di pull request yang sama |
 | `typescript` | `^7.0.2` | `^6.0.3` | **Sengaja berbeda, dan mengikat.** Pin 6.x di sini adalah syarat hidupnya gerbang `astro check` — lihat [ADR-0037](../adr/0037-pin-typescript-6-adalah-syarat-hidupnya-gerbang-astro-check.md) |
