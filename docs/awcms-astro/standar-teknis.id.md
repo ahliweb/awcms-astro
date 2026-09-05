@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](standar-teknis.md)
 
-<!-- i18n-source-hash: sha256:443754b41579a6f6444ca0dd833f689698f5ac54709ad1d4f7d1227657c4e3ba -->
+<!-- i18n-source-hash: sha256:fe3a6f44f5a59fda850b7ab4cfd1f719503a06859b685964301a96222d66b0ba -->
 
 # awcms-astro — Standar Teknis
 
@@ -13,7 +13,7 @@ Kata **wajib** di dokumen ini berarti pelanggarannya menggagalkan gerbang mutu, 
 | Aspek | Keputusan | Alasan |
 | --- | --- | --- |
 | Framework | Astro 7, `output: 'static'` | Nol JavaScript pengiriman default; halaman tetap terbaca penuh tanpa JS |
-| Runtime | Bun `>=1.3.0`, ditegakkan `engines.bun` + `packageManager` | Satu runtime untuk seluruh keluarga AWCMS (ADR-0015); `bun.lock` satu-satunya lockfile |
+| Runtime | Bun `>=1.4.0`, ditegakkan `engines.bun` + `packageManager` | Satu runtime untuk seluruh keluarga AWCMS (ADR-0015); `bun.lock` satu-satunya lockfile. Batas bawahnya naik dari `>=1.3.0` pada 5 September 2026: Bun 1.4 menulis `bun.lock` sebagai `lockfileVersion: 2`, yang tidak bisa diurai sama sekali oleh Bun yang hanya memenuhi `>=1.3.0` — jadi batas lama menerima versi yang justru tidak bisa menginstal repo ini |
 | Framework UI | **Tidak ada** | Interaktivitas ditulis DOM vanilla. Tidak ada React/Vue/Svelte |
 | Styling | Satu berkas CSS global + design token | Tanpa framework CSS; token di `:root`, tema gelap lewat `data-theme` |
 | Konten | **Ditarik dari `awcms` saat build** (ADR-0018); standar keluarga menyebut markdown per koleksi per locale | Kontraknya `LocalizedArticle` di `src/lib/content.ts`, bukan frontmatter |
@@ -190,7 +190,7 @@ Cara mencapainya — dan ini yang mengikat:
 - **Tidak ada webfont.** `--font-sans` adalah `system-ui`: nol permintaan font, nol FOIT/FOUT, nol kontribusi ke CLS. Ia dicatat sebagai keputusan privasi di `src/styles/global.css`; ia juga keputusan performa, dan sebuah situs yang menambahkan font wajib men-self-host-nya di `public/` alih-alih menambah origin ke jalur render kritis.
 - Gambar layar pertama `loading="eager"` + `fetchpriority="high"`; sisanya `loading="lazy"`. Keduanya dibutuhkan dan tidak saling menggantikan: `eager` hanya berarti "jangan tunda", sementara prioritas bawaan sebuah `<img>` tetap **Low** sampai layout membuktikan ia di viewport. Ditegakkan `bun run audit:konten` atas keluaran, jadi `<img>` yang tidak lewat `src/components/Ilustrasi.astro` ikut tertangkap.
 - **Tema dipasang berkas eksternal `public/tema.js` yang dimuat `<script src>` klasik**, bukan skrip inline. Sejak [ADR-0019](../adr/0019-csp-ketat-dikirim-penyaji.md) penyaji mengirim `script-src 'self'` tanpa `'unsafe-inline'`, jadi skrip inline bukan "kurang rapi" — ia mati di browser pembaca. Bundel Astro selalu `type="module"` dan modul selalu ditunda, jadi ia bukan pengganti untuk kasus sebelum-paint.
-- Kompresi respons bukan hanya gzip: `compression` menegosiasikan **Brotli** (RFC 7932) saat browser memintanya, dan Brotli mengalahkan gzip sekitar 15–20% pada HTML.
+- Kompresi respons bukan hanya gzip: `compression` menegosiasikan **Brotli** (RFC 7932) saat browser memintanya, dan Brotli mengalahkan gzip sekitar 15–20% pada HTML. Mempertahankan `compression` di `dependencies` adalah keputusan yang disengaja, bukan runtime Node.js yang menyelinap kembali — ia berjalan sepenuhnya di atas Bun, dan [ADR-0050](../adr/0050-bun-is-this-repos-only-runtime-and-a-gate-finally-says-so.md) menggerbangi keberadaannya dari sisi mempertahankan.
 - `Cache-Control` dua aturan sesuai RFC 9111: aset ber-hash `immutable` satu tahun, HTML `max-age=0, must-revalidate` sehingga rebuild langsung terlihat pembaca.
 - Anggaran yang terbukti di repo rujukan: **beranda ≤ 250 KB gambar, halaman konten ≤ 100 KB.** Sejak 4 Agustus 2026 ia **diukur** `bun run audit:konten` atas `dist/client`, per halaman. Yang ditimbang hanya gambar yang benar-benar diterbitkan build ini — media `awcms` tidak ada di sana, jadi angka ini menjaga seni lokal dan bukan seluruh berat halaman.
 - **Byte skrip dan stylesheet punya plafonnya sendiri**, diperiksa `bun run audit:aset`: 13.000 B skrip dan 40.000 B total per halaman, ditambah 8.000 B untuk satu berkas skrip terbit. Semuanya pengukuran berikut ruang di atasnya, bukan angka bulat, dan pengukurannya dicatat di `scripts/audit-aset.mjs` di sebelah masing-masing angka. Pelanggarannya menyebut berkas mana yang membesar, dan itu seluruh alasan ia berdiri di sebelah Lighthouse alih-alih di dalamnya — skor lab tidak bisa menyebut berkas mana yang harus dilihat. **Di mana sebuah aturan TINGGAL adalah bagian dari anggaran ini**: `src/styles/global.css` dimuat setiap halaman, jadi aturan yang hanya dipakai satu komponen adalah byte yang dibayar setiap halaman lain.

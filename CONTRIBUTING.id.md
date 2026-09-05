@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](CONTRIBUTING.md)
 
-<!-- i18n-source-hash: sha256:487850e35d822c4eb6b10d452f3e2055997f3fd98e10ccf3fc6266ed65581c92 -->
+<!-- i18n-source-hash: sha256:37777d47a73b5f0a03a593bbeaea4e09ad3d84cdcfc4e4fc8f47a620d16f75bc -->
 
 # Panduan Kontribusi
 
@@ -35,7 +35,7 @@ Kontributor agen AI: baca [`AGENTS.md`](AGENTS.md) lebih dulu. Ia kontrak kerja 
 ## Menyiapkan lingkungan
 
 ```bash
-bun --version         # >= 1.3.0, sesuai `engines.bun`
+bun --version         # >= 1.4.0, sesuai `engines.bun`
 cp .env.example .env  # isi AWCMS_API_URL, token, dan tenant
 bun install
 bun run dev           # http://localhost:4321
