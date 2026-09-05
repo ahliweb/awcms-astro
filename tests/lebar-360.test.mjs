@@ -73,6 +73,38 @@
  * (`tests/versi-toolchain.test.mjs`, `tests/documented-counts.test.mjs`,
  * `tests/analisis-statik.test.mjs` sendiri) — berkas ini mengikutinya.
  *
+ * ## Celah ketiga: format satu-baris mengelabui jangkar `^`
+ *
+ * Draf kedua gerbang ini (yang menambah cakupan `<style>` .astro di atas)
+ * menjaga pemindaian `width`/`min-width` dengan `^[ \t]*(min-width|width)…` —
+ * regex yang hanya cocok kalau deklarasinya membuka barisnya sendiri. Uji
+ * independen menyuntik `.zz { min-width: 500px; }` sebagai SATU baris ke
+ * dalam blok `<style>` komponen, dan gerbang tetap hijau: format satu-baris
+ * itu CSS yang sah dan lazim di blok `<style>` ringkas, tapi tidak pernah
+ * "membuka baris sendiri", jadi jangkar `^` melewatkannya sama sekali.
+ * Mengubah `^[ \t]*` menjadi lookbehind `(?<=[{;])` memperbaikinya: syarat
+ * struktural sebuah deklarasi CSS yang sah bukan "di awal baris", melainkan
+ * "didahului `{` (deklarasi pertama sebuah rule) atau `;` (deklarasi
+ * berikutnya)" — dan itu benar di format satu-baris maupun multi-baris.
+ * Lookbehind dipilih alih-alih memakai `[{;]` yang MENGONSUMSI karakter
+ * pembatasnya: konsumsi berarti dua deklarasi di satu baris yang sama
+ * (`min-width: 500px; width: 600px;`) kehilangan yang kedua, karena `;`
+ * pemisahnya sudah "habis" dipakai pertandingan pertama.
+ *
+ * Perubahan jangkar memindahkan `m.index` menjauh dari nama properti — ia
+ * kini menunjuk ke posisi tepat SEBELUM properti (kadang spasi/baris baru
+ * peninggalan lookbehind yang zero-width), bukan ke propertinya sendiri.
+ * `posProperti` menghitung ulang posisi nama properti yang tertangkap di
+ * dalam `m[0]`, dan itulah yang dipakai untuk nomor baris serta pemeriksaan
+ * zona (komentar, media desktop) — supaya keduanya tetap menunjuk ke
+ * deklarasi yang sebenarnya, bukan ke `}` sebelumnya atau baris lain.
+ *
+ * `(?<=[{;])` DIVERIFIKASI, bukan diasumsikan, tidak menangkap kondisi
+ * `@media (min-width: 640px)`: karakter sebelum "min-width" di situ adalah
+ * `(`, bukan `{`/`;` (lookbehind gagal SENDIRI), dan yang mengikuti angkanya
+ * adalah `)`, bukan `;` (syarat akhir pola juga gagal SENDIRI) — dua alasan
+ * independen, bukan satu yang kebetulan cukup.
+ *
  * ## Apa yang dikecualikan, dan kenapa
  *
  * - **Menu/dropdown/target sentuh/scrollbar** (nama selektor cocok
@@ -318,21 +350,43 @@ describe("tidak ada width/min-width tetap di alur konten utama CSS repo ini tanp
     for (const { jalur, css } of DOKUMEN_CSS) {
       const zonaDesktop = zonaMediaDesktop(css);
       const zonaKomen = zonaKomentar(css);
-      const pola = /^[ \t]*(min-width|width)\s*:\s*([0-9.]+)(px|rem)\s*;/gm;
+      // Lookbehind `(?<=[{;])`, BUKAN `^[ \t]*`: sebuah rule bisa menaruh
+      // beberapa deklarasi di SATU baris (`.zz { min-width: 500px; }`), yang
+      // sah secara CSS dan lazim di blok <style> komponen yang ringkas — dan
+      // regex berbasis `^` melewatkannya sepenuhnya. Deklarasi CSS yang sah
+      // SELALU didahului `{` (deklarasi pertama sebuah rule) atau `;`
+      // (deklarasi berikutnya) — itu satu-satunya syarat struktural, bukan
+      // "ada di awal baris". Lookbehind tidak MENGONSUMSI `{`/`;` itu, jadi
+      // deklarasi kedua di baris yang sama tetap bisa ditemukan setelahnya.
+      // Ini juga MENGECUALIKAN `@media (min-width: 640px)` dua kali secara
+      // independen: karakter sebelum "min-width" di situ adalah `(`, bukan
+      // `{`/`;` (lookbehind gagal), DAN yang mengikuti angkanya adalah `)`,
+      // bukan `;` (syarat akhir pola juga gagal) — diverifikasi dengan
+      // sengaja, bukan diasumsikan salah satunya cukup.
+      const pola = /(?<=[{;])\s*(min-width|width)\s*:\s*([0-9.]+)(px|rem)\s*;/g;
       let m;
       while ((m = pola.exec(css))) {
         const nilaiPx = Number(m[2]) * (m[3] === "rem" ? 16 : 1);
         if (nilaiPx < LEBAR_BERSIH_PX) continue;
-        if (zonaDesktop.some(([a, b]) => m.index >= a && m.index < b)) continue;
-        if (zonaKomen.some(([a, b]) => m.index >= a && m.index < b)) continue;
 
-        const { selektor, isi } = blokAturan(css, m.index);
+        // Lookbehind bersifat zero-width dan tidak mengonsumsi `{`/`;` di
+        // depannya, jadi `m.index` bisa menunjuk ke spasi/baris baru SEBELUM
+        // nama properti, bukan ke propertinya sendiri. `posProperti` mencari
+        // balik posisi `m[1]` (nama properti yang tertangkap) DI DALAM
+        // `m[0]`, supaya nomor baris dan pemeriksaan zona di bawah menunjuk
+        // ke deklarasinya sendiri — bukan ke `}` sebelumnya atau baris lain.
+        const posProperti = m.index + m[0].indexOf(m[1]);
+
+        if (zonaDesktop.some(([a, b]) => posProperti >= a && posProperti < b)) continue;
+        if (zonaKomen.some(([a, b]) => posProperti >= a && posProperti < b)) continue;
+
+        const { selektor, isi } = blokAturan(css, posProperti);
         if (SELEKTOR_DIKECUALIKAN.test(selektor)) continue;
         if (LUAR_ALUR.test(isi)) continue;
         if (/overflow(-x)?\s*:\s*(auto|scroll)/.test(isi)) continue;
 
         pelanggar.push(
-          `${jalur} baris ${nomorBaris(css, m.index)} (\`${selektor || "?"}\`): \`${m[0].trim()}\` (${nilaiPx}px)`
+          `${jalur} baris ${nomorBaris(css, posProperti)} (\`${selektor || "?"}\`): \`${m[0].trim()}\` (${nilaiPx}px)`
         );
       }
     }
