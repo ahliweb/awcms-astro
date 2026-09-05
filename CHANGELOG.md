@@ -8,6 +8,135 @@ Berkas ini diisi `bun run release` dengan melipat seluruh changeset di [`.change
 
 Sejak [ADR-0040](docs/adr/0040-changeset-menyatakan-bump-semver.md) setiap changeset menyatakan `bump: major | minor | patch`, dan versi berikutnya adalah bump TERBESAR di antara yang menunggu — jadi besar sebuah rilis adalah akibat dari isinya, bukan keputusan terpisah yang diambil saat merilis.
 
+## [0.5.1] — 2026-09-05
+
+> **Build integrasi tidak berjalan pada rilis ini.** `AWCMS_API_URL` kosong,
+> yang normal untuk repo template ini sendiri — jadi `bun run build`,
+> `bun run audit:konten`, dan lapis penyaji/CSP di `bun test` DILEWATI, bukan
+> lulus. Sebuah situs yang dibangun dari template ini mengisi variabel itu dan
+> menjalankan ketiganya.
+
+### Override `fast-uri` naik ke `^3.1.7`, menutup empat advisory sekaligus
+
+`bun audit --audit-level=low` mulai merah lagi meski override sudah ada:
+`^3.1.5` di `package.json` tetap resolve ke `fast-uri@3.1.5`, dan versi itu
+sendiri yang dinamai empat advisory `high` —
+[GHSA-5jgf-p345-68v8](https://github.com/advisories/GHSA-5jgf-p345-68v8),
+[GHSA-f65p-4m7j-42xc](https://github.com/advisories/GHSA-f65p-4m7j-42xc),
+[GHSA-fph4-wmhf-6fwf](https://github.com/advisories/GHSA-fph4-wmhf-6fwf), dan
+[GHSA-jqff-g426-hqxp](https://github.com/advisories/GHSA-jqff-g426-hqxp) —
+yang rentangnya (`>=3.0.0 <3.1.6`, `>=3.1.2 <3.1.6`, `>=3.1.3 <3.1.6`) semuanya
+masih mencakup `3.1.5`. Rantainya sama seperti override sebelumnya:
+
+```
+@astrojs/check › @astrojs/language-server › volar-service-yaml
+  › yaml-language-server › ajv-i18n › ajv › fast-uri
+```
+
+`ajv` menyatakan `fast-uri: ^3.0.1`, jadi `3.1.7` — rilis patch 3.x terbaru,
+dan pertama yang menutup keempat advisory di atas — masih di dalam rentang
+yang dinyatakan `ajv` sendiri. `overrides` dinaikkan ke **`^3.1.7`, bukan
+`^4.x`**: 4.x melompati mayor pada pustaka parsing URI yang tidak diminta
+`ajv` maupun advisory-nya, dan sebuah override yang memaksakan mayor yang
+tak teruji lintas dependency transitif adalah risiko baru untuk masalah yang
+sudah selesai di 3.x.
+
+Lockfile diregenerasi penuh (`rm -rf node_modules bun.lock && bun install`)
+sesuai aturan repo, bukan disunting sebagian. Regenerasi penuh ikut menaikkan
+beberapa dependency tak terkait ke versi terbaru yang masih di dalam rentang
+`^` masing-masing di `package.json` (a.l. `astro` resolve ke `7.3.1`,
+`@astrojs/node` ke `11.1.5`, `@astrojs/sitemap` ke `3.7.4`) — bukan perubahan
+kontrak, karena rentang `^` di `package.json` sendiri tidak berubah, dan
+`bun run check` + `bun test` tetap hijau sesudahnya.
+
+### Bun naik dari `1.3.14` ke `1.4.2`, dan `bun.lock` ikut berganti format
+
+Pin Bun repo ini naik di kelima nilai sekaligus — `packageManager` dan
+`engines.bun` di `package.json`, `bun-version` di kedua job
+`.github/workflows/ci.yml`, dan tag `oven/bun` beserta digestnya di kedua
+stage `Dockerfile` — mengikuti aturan lima-nilai-plus-digest yang
+`tests/versi-toolchain.test.mjs` gerbangi. `bun.lock` diregenerasi penuh
+(`rm -rf node_modules bun.lock && bun install`), bukan disunting sebagian,
+sesuai aturan repo.
+
+Regenerasi itu bukan sekadar isi lockfile yang berubah — **formatnya sendiri
+berubah**: Bun 1.4 menulis `bun.lock` sebagai `lockfileVersion: 2`, sementara
+setiap `bun.lock` yang lebih tua di repo ini adalah `lockfileVersion: 1`. Bun
+yang hanya memenuhi `engines.bun` LAMA (`>=1.3.0`) tidak bisa mengurai
+`lockfileVersion: 2` sama sekali — `bun install --frozen-lockfile` gagal
+dengan `error: Unknown lockfile version at bun.lock:2:22`, sebuah pesan yang
+menyebut nama berkas dan bukan versi Bun sama sekali. `engines.bun` karena itu
+juga naik ke `>=1.4.0`: batas lama menerima versi yang justru tidak bisa
+menginstal repo ini sejak `bun.lock` berformat baru.
+
+- Tidak ada perubahan output publik situs mana pun; ini murni kenaikan
+  toolchain.
+- **Terasa oleh situs yang diturunkan dari template ini sebelum 5 September
+  2026, atau yang belum mengikuti kenaikan ini**: begitu `bun.lock` situs itu
+  sendiri diregenerasi oleh siapa pun dengan Bun ≥1.4 terpasang lokal — bukan
+  mesti oleh perubahan di template ini — instalasi `--frozen-lockfile`
+  berikutnya di CI atau `docker build` di sana gagal dengan pesan yang sama,
+  selama kelima nilai pin situs itu belum ikut naik. Gejala, sebab, dan
+  perbaikannya (lima nilai plus digest, sama seperti aturan repo ini) ditulis
+  di [`docs/deploy-coolify.md`](docs/deploy-coolify.md#a-bun-install---frozen-lockfile-that-names-a-lockfile-not-a-bun-version)
+  dan [`docs/awcms-astro/checklist-repo-baru.md`](docs/awcms-astro/checklist-repo-baru.md).
+
+### Gerbang `tests/runtime-bun.test.mjs`: tanpa Node.js runtime, dan itu kini diperiksa
+
+Sebuah audit menemukan aturan "Bun adalah satu-satunya runtime repo ini"
+sudah benar di setiap tempat yang berarti — `scripts` di `package.json`,
+`.github/workflows/*.yml`, `Dockerfile`, dan shebang `server/penyaji.mjs` —
+tetapi tidak ada satu pun pemeriksa yang membuktikannya atau mencegahnya
+merosot. Persis bentuk yang diperingatkan
+[ADR-0030](docs/adr/0030-aturan-tertulis-mendapat-pemeriksanya.md): benar
+hari ini, tidak tertulis sebagai pemeriksa, dan karena itu bisa berhenti
+benar tanpa satu pun perintah berubah merah.
+
+[ADR-0050](docs/adr/0050-bun-is-this-repos-only-runtime-and-a-gate-finally-says-so.md)
+mencatat keputusannya dan `tests/runtime-bun.test.mjs` menggerbanginya:
+tidak ada `node`/`npm`/`npx`/`yarn`/`pnpm` di `scripts`, tidak ada
+`engines.node`, tidak ada lockfile/version-file package manager lain di
+akar repo, tidak ada `actions/setup-node` atau `node-version:` di workflow
+mana pun, `Dockerfile` hanya membangun dan berjalan di atas `oven/bun`, dan
+setiap shebang di `scripts/`/`server/` menyebut `bun`. Dua hal dinyatakan
+sebagai keputusan mempertahankan yang disengaja, bukan kealpaan: bawaan
+`node:*` (implementasi Bun sendiri, bukan dependency Node.js) dan
+`@astrojs/node`/`compression` di `dependencies` (keduanya dijalankan OLEH
+Bun — resolusi path URL, negosiasi Brotli).
+
+- Tidak ada perubahan perilaku situs; ini murni gerbang CI baru plus
+  dokumentasi yang memperbarui hitungan `bun test` dari 38 menjadi 39
+  berkas gerbang.
+- Terasa saat mengembangkan: sebuah langkah `node`/`npm`/`npx` yang tanpa
+  sengaja ditambahkan ke `package.json` scripts atau ke sebuah workflow kini
+  gagal `bun test` alih-alih lolos diam-diam.
+
+### README dan cerminnya menyebut 21 berkas gerbang selagi `tests/` berisi 39, dan tak satu gerbang pun membacanya
+
+`tests/documented-counts.test.mjs` sudah menggerbangi hitungan berkas gerbang
+`bun test` di empat dokumen sejak 28 Agustus 2026 — tapi `README.md` dan
+`README.id.md` tidak pernah masuk daftar itu. Baris tabelnya masih berbunyi
+**21**, angka yang sama persis dengan defek yang diperbaiki bulan lalu di dua
+dokumen lain, hanyut satu berkas demi satu berkas sejak itu sampai selisihnya
+mencapai 18. Daftar cakupan di baris yang sama juga ketinggalan: ia belum
+menyebut runtime Bun (ADR-0050), versi toolchain, atau meta-tes atas skrip
+audit — semuanya ditambahkan setelah baris itu terakhir ditulis.
+
+Persis bentuk yang [ADR-0030](docs/adr/0030-aturan-tertulis-mendapat-pemeriksanya.md)
+peringatkan: benar sekali waktu, tidak tertulis sebagai pemeriksa, dan karena
+itu bisa berhenti benar tanpa satu pun perintah berubah merah — kali ini di
+dokumen pertama yang dibaca siapa pun yang membuka repo ini.
+
+- Baris `bun test` di kedua README diperbarui ke 39 berkas, dan daftar
+  cakupannya diperluas secukupnya agar tetap jujur tanpa jadi enumerasi 39
+  butir.
+- `tests/documented-counts.test.mjs` diperluas: `README.md`/`README.id.md`
+  kini masuk `DOKUMEN` dan pasangan mirrornya, mengikuti pola yang sudah ada
+  persis — tidak ada regex atau pesan baru, hanya dua entri lagi yang diikat
+  ke hitungan yang sama.
+- Tidak ada perubahan perilaku situs; ini murni dokumentasi plus gerbang yang
+  sekarang menjaganya.
+
 ## [0.5.0] — 2026-09-02
 
 > **Build integrasi tidak berjalan pada rilis ini.** `AWCMS_API_URL` kosong,
