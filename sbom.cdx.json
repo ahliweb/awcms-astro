@@ -6,8 +6,8 @@
     "component": {
       "type": "application",
       "name": "awcms-astro",
-      "version": "0.5.1",
-      "purl": "pkg:npm/awcms-astro@0.5.1"
+      "version": "0.5.2",
+      "purl": "pkg:npm/awcms-astro@0.5.2"
     }
   },
   "components": [
