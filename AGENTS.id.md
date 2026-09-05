@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](AGENTS.md)
 
-<!-- i18n-source-hash: sha256:9079b0964aa2afbb4e410fcf96c5edf45f06893bfa5e17a0c7eac4e4034a71c7 -->
+<!-- i18n-source-hash: sha256:ff20fbce4a6e5cbf3e472c79ea00a791eeb5079503511fe542b211a1146d23ee -->
 
 # AGENTS.md — kontrak kerja `awcms-astro`
 
@@ -499,7 +499,20 @@ yang [ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.m
   — aturan `*` global hanya memangkas durasi, dan animasi 0,01 md tetap
   berkedip. Umpan balik hover juga aktif pada `:focus-visible`, sehingga
   pengguna keyboard tidak mendapat versi yang lebih miskin.
-- **Mobile-first dari 360px.**
+- **Mobile-first dari 360px.** Padding `.container` sendiri menyisakan lebar
+  bersih persis 320px pada lantai itu — sebuah track grid yang dipatok ke angka
+  yang sama punya sisa nol, dan itu yang dilakukan `.grid-cards` sampai
+  ditemukan dan dibungkus `min(320px, 100%)`. Aturan ini kini punya
+  pemeriksanya: `tests/lebar-360.test.mjs` membaca lantai 360px dan padding
+  `.container`, menurunkan lebar bersih itu dari CSS-nya sendiri, dan menolak
+  `minmax(…)` angka tetap lain atau `width`/`min-width` tetap di
+  `src/styles/global.css` yang mencapai atau melebihinya tanpa jalan keluar
+  `min(…, 100%)`, media query khusus layar lebar, atau `overflow-x` pada
+  dirinya sendiri. Ia gerbang statik atas TEKS CSS: tidak bisa membuktikan
+  keamanan render sungguhan — pembulatan sub-piksel, metrik font nyata, dan
+  scrollbar sungguhan butuh browser, yaitu mengasersikan
+  `document.documentElement.scrollWidth <= 360` pada halaman kunci setelah
+  build, terhadap `awcms` backend yang hidup.
 - **String antarmuka lewat katalog PO**, tidak pernah ditulis langsung di
   komponen. Ini berlaku juga bagi label yang datang dari konfigurasi: navigasi
   utama pernah merender nilai HURUF BESAR dari `src/config/site.ts`, sehingga
@@ -607,7 +620,7 @@ merender `.visual-placeholder`, dan itu jujur.
   ilustrasi.** Situs dari template ini adalah portal independen, dan lambang
   negara di halamannya membantah pernyataan itu dalam satu pandangan.
 - **Teks terkecil di dalam SVG minimal 22px pada kanvas 800px.** Pada kartu
-  selebar 328px — viewport 360px — kanvas 800px tampil pada skala 0,41, jadi di
+  selebar 320px — viewport 360px — kanvas 800px tampil pada skala 0,40, jadi di
   bawah ambang itu teksnya tampil di bawah 9px dan praktis tidak terbaca.
 - **`src: undefined` adalah keadaan yang didukung.** Pemanggil merender
   `.visual-placeholder`. Ilustrasi yang hilang tidak boleh menjadi halaman yang
@@ -803,7 +816,12 @@ performa:
       dengan tipe kontraknya menemukan seluruhnya dalam satu kali typecheck.
 - [ ] Locale default dan locale berprefiks menghasilkan jumlah halaman yang sama.
 - [ ] Gambar baru berasio `--ratio-visual`, ekstensinya sesuai isi berkas, tanpa
-      lambang instansi maupun data tiruan, dan teksnya terbaca pada lebar 360px.
+      lambang instansi maupun data tiruan, dan teksnya terbaca pada lebar
+      360px — `bun run audit:konten` memeriksa yang terakhir terhadap ambang
+      22px pada kanvas 800px; aritmetika lebar kartu asal ambang itu (320px,
+      skala 0,40) diperiksa terpisah oleh `tests/lebar-360.test.mjs`, yang
+      membaca CSS `.container` sendiri alih-alih mempercayai angka yang
+      ditulis di prosa.
 - [ ] Perubahan pada penyajian — header, CSP, `Cache-Control`, kompresi, port —
       dibuktikan `tests/penyaji.test.mjs`, bukan diperiksa dengan mata. **Sebuah
       `Vary` termasuk di dalamnya**: `Cookie` dan `Accept-Language` ditolak

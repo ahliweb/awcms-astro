@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](ui-ux-design-system.md)
 
-<!-- i18n-source-hash: sha256:36c066d7a44f4a40cea9f077366aefcf21164937d6c5931f38dbae68f3e99adf -->
+<!-- i18n-source-hash: sha256:d0c7e84cf5c48ad225f0293715c1f873de775580185d62532dc554dade074f72 -->
 
 # awcms-astro — Design System
 
@@ -243,7 +243,7 @@ Sapuan ini murni CSS. Ia tidak menambah satu byte JavaScript pun dan tidak berpe
 
 ### Responsif
 
-Mobile-first dari 360px. Kartu memakai `grid-template-columns: repeat(auto-fill, minmax(320px, 1fr))`. Bagaimana masthead menata ulang dirinya pada lebar itu ada di §Bingkai halaman.
+Mobile-first dari 360px. `padding: 0 1.25rem` milik `.container` sendiri menyisakan lebar bersih persis 320px pada lantai itu. Kartu memakai `grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr))` — `min(320px, 100%)`, bukan `320px` telanjang, karena track yang dipatok ke angka sama dengan ruang tempatnya duduk punya sisa nol: `box-sizing: border-box` menutupinya hari ini, tapi pembulatan sub-piksel atau border yang kelak ditambahkan ke `.card` tidak akan. Bagaimana masthead menata ulang dirinya pada lebar itu ada di §Bingkai halaman. `tests/lebar-360.test.mjs` membaca aritmetika yang sama ini dari CSS dan menolak track atau lebar tetap lain yang mencapai lantai ini tanpa jalan keluar yang sama — ia gerbang statik atas teks CSS, bukan bukti render sungguhan; itu butuh pemeriksaan headless-browser atas halaman yang sudah dibangun.
 
 **Shorthand `padding` pada elemen yang juga membawa `.container` diam-diam menghapus padding samping containernya**, dan kegagalannya tidak terlihat di layar desktop. `.header-top` menulis `padding: 0.85rem 0` selama berbulan-bulan: pada lebar berapa pun di atas `--max-width`, container sudah masuk ke dalam oleh margin otomatisnya sendiri, jadi tidak ada yang tampak salah; di 360px, tempat container selebar layar, nama situs duduk **menempel di tepi kiri kaca** — diukur di `x=0`, bukan ditaksir dari tangkapan layar. Kini ia `padding-block`. Periksa elemen lain mana pun yang membawa `.container` bersama kelasnya sendiri.
 
@@ -257,7 +257,7 @@ Pemotongan tidak hilang karenanya. Bingkai memotong lewat `object-fit: cover` di
 
 **Satu rasio untuk seluruh situs, dipakai bingkai maupun sumber.** Di repo ini 16∶9. Bingkai memakai `object-fit: cover`, jadi sumber berasio lain tidak diperkecil — ia dipotong, diam-diam, di setiap ukuran layar. Sumber 1∶1 pada bingkai 16∶9 kehilangan 22% teratas, dan judul gambar hampir selalu ada di sana.
 
-Teks di dalam gambar ikut menyusut bersama gambarnya. Pada kartu selebar 328px — viewport 360px — kanvas 800px tampil pada skala 0,41: teks 12px menjadi 5px. Tetapkan ambang tipografi dari lebar kartu tersempit, bukan dari tampilan di layar desktop.
+Teks di dalam gambar ikut menyusut bersama gambarnya. Pada kartu selebar 320px — viewport 360px — kanvas 800px tampil pada skala 0,40: teks 12px menjadi 4,8px. Tetapkan ambang tipografi dari lebar kartu tersempit, bukan dari tampilan di layar desktop.
 
 Isi gambar tunduk pada ADR-0013 repo rujukan: tanpa lambang instansi, tanpa data tiruan, teks hanya label topik.
 

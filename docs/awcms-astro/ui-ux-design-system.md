@@ -241,7 +241,7 @@ This sweep is pure CSS. It adds not one byte of JavaScript and has no effect on 
 
 ### Responsive
 
-Mobile-first from 360px. Cards use `grid-template-columns: repeat(auto-fill, minmax(320px, 1fr))`. How the masthead reflows at that width is in §The page frame.
+Mobile-first from 360px. `.container`'s own `padding: 0 1.25rem` leaves an inner width of exactly 320px at that floor. Cards use `grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr))` — the `min(320px, 100%)`, not a bare `320px`, because a track fixed to the same figure as the space it sits in has zero margin: `box-sizing: border-box` covers it today, but sub-pixel rounding or a border added to `.card` later would not. How the masthead reflows at that width is in §The page frame. `tests/lebar-360.test.mjs` reads this same arithmetic from the CSS and refuses any other fixed-px track or width that reaches this floor without the same escape — it is a static gate over CSS text, not proof of real rendering; that needs a headless-browser check on a built page.
 
 **A `padding` shorthand on an element that also carries `.container` silently deletes the container's side padding**, and the failure is invisible on a desktop screen. `.header-top` wrote `padding: 0.85rem 0` for months: at any width above `--max-width` the container is already inset by its own auto margins, so nothing looked wrong; at 360px, where the container is the full screen, the site name sat **flush against the left edge of the glass** — measured at `x=0`, not guessed from a screenshot. It is `padding-block` now. Check any other element that carries `.container` together with a class of its own.
 
@@ -255,7 +255,7 @@ Cropping does not disappear because of that. Frames crop through `object-fit: co
 
 **One ratio for the whole site, used by frames and sources alike.** In this repo, 16∶9. Frames use `object-fit: cover`, so a source at another ratio is not scaled down — it is cropped, silently, at every screen size. A 1∶1 source in a 16∶9 frame loses its top 22%, and an image's title is almost always there.
 
-Text inside an image shrinks along with its image. On a card 328px wide — a 360px viewport — an 800px canvas appears at a scale of 0.41: 12px text becomes 5px. Set your typography threshold from the narrowest card width, not from how it looks on a desktop screen.
+Text inside an image shrinks along with its image. On a card 320px wide — a 360px viewport — an 800px canvas appears at a scale of 0.40: 12px text becomes 4.8px. Set your typography threshold from the narrowest card width, not from how it looks on a desktop screen.
 
 An image's contents are subject to the reference repo's ADR-0013: no institutional emblems, no mock data, text only as a topic label.
 

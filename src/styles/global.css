@@ -712,9 +712,19 @@ p {
 }
 
 /* Cards & Grid Layouts */
+/* `min(320px, 100%)`, bukan `320px` telanjang: pada lantai dukungan 360px,
+   `.container` (di atas) menyisakan persis 320px bersih — 360px dikurangi
+   1.25rem padding di kedua sisi. Sebuah track selebar 320px pas di ruang
+   320px TANPA sisa sama sekali; `box-sizing: border-box` menyelamatkannya
+   hari ini, tapi pembulatan sub-piksel atau border/outline/shadow yang kelak
+   ditambahkan ke `.card` akan mendorong gulir mendatar persis di lebar yang
+   dijanjikan repo ini untuk didukung. `min()` membatasi track pada milik
+   kontainernya sendiri sehingga grid tidak pernah bisa memaksa overflow,
+   sementara pada setiap lebar di atas 320px hasilnya identik dengan bentuk
+   lama — jangan disederhanakan kembali menjadi `320px` telanjang. */
 .grid-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
   gap: 1.75rem;
   margin: 1.5rem 0;
 }
