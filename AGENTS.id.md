@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](AGENTS.md)
 
-<!-- i18n-source-hash: sha256:1833895853f4fa50497b4b28c2cc54341295684345ae21a8bed777811cc26ab7 -->
+<!-- i18n-source-hash: sha256:9079b0964aa2afbb4e410fcf96c5edf45f06893bfa5e17a0c7eac4e4034a71c7 -->
 
 # AGENTS.md — kontrak kerja `awcms-astro`
 
@@ -668,6 +668,22 @@ aturan yang jelas-jelas manual.
   keduanya ada, digest yang dipatuhi Docker dan tag hanya menjadi komentar —
   jadi menaikkan tag tanpa digest membangun versi lama sambil berbunyi versi
   baru. Gerbang di atas memeriksanya secara khusus.
+
+- **Tidak ada runtime Node.js yang menyelinap kembali ke repo ini** (ADR-0050):
+  tidak ada pemanggilan `node`/`npm`/`npx`/`yarn`/`pnpm`, tidak ada
+  `actions/setup-node`, tidak ada `engines.node`, tidak ada image dasar
+  selain Bun, tidak ada shebang `#!/usr/bin/env node`, tidak ada berkas
+  `.nvmrc`/`.node-version`, tidak ada `package-lock.json`/`yarn.lock`/
+  `pnpm-lock.yaml`. Ini sudah benar di setiap tempat yang berarti dan tak
+  terjaga sampai sekarang; sejak ADR-0050 aturan ini punya pemeriksa:
+  `tests/runtime-bun.test.mjs`.
+
+  Yang **tidak** dilarangnya: `node:fs`, `node:http`, dan sisa bawaan
+  `node:*` adalah implementasi Bun sendiri, bukan dependency Node.js, dan
+  tetap ada. Begitu pula `@astrojs/node` atau `compression` di
+  `dependencies` tidak dilarang — keduanya berjalan sepenuhnya di bawah Bun
+  dan dipertahankan dengan sengaja (resolusi path URL; negosiasi Brotli),
+  diperiksa dari sisi mempertahankan oleh berkas tes yang sama.
 
 - **Action GitHub dipin ke SHA commit, bukan ke tag**, dengan komentar
   `# vX.Y.Z` yang Dependabot baca. Tag bisa dipindahkan, dan action berjalan
