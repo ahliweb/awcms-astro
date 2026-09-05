@@ -33,7 +33,7 @@ AI agent contributors: read [`AGENTS.md`](AGENTS.md) first. It is the binding te
 ## Setting up
 
 ```bash
-bun --version         # >= 1.3.0, per `engines.bun`
+bun --version         # >= 1.4.0, per `engines.bun`
 cp .env.example .env  # fill in AWCMS_API_URL, the token, and the tenant
 bun install
 bun run dev           # http://localhost:4321

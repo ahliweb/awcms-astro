@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](standar-performa-dan-keamanan.md)
 
-<!-- i18n-source-hash: sha256:628726c172dafaf5d4a14f53fa3d6a4347168b7a1300087b05bcaaec271a5440 -->
+<!-- i18n-source-hash: sha256:793e6a1a6e047c99b8d32e9123455679d6c1fb45f1ec162896d14b53e95ea9f0 -->
 
 # awcms-astro — Standar Performa dan Keamanan
 
@@ -215,7 +215,7 @@ situs yang butuh cakupan lebih menaikkannya di berkas itu.
 | Tanpa webfont — `system-ui` sebagai `--font-sans` | Nol permintaan font, nol FOIT/FOUT, nol kontribusi ke CLS. Ia dicatat sebagai keputusan **privasi** di [`src/styles/global.css`](../../src/styles/global.css); ia juga keputusan performa | `src/styles/global.css` |
 | Tanpa framework UI, tanpa framework CSS | JS terkirim mendekati nol pada sebagian besar halaman | [`standar-teknis.md`](standar-teknis.md#the-stack) |
 | `compressHTML: true` | HTML lebih kecil sebelum kompresi transport | `astro.config.mjs` |
-| Kompresi respons memakai pustaka matang | Bukan hanya gzip: `compression` v1.8 menegosiasikan **Brotli** (RFC 7932) saat browser memintanya, dan Brotli mengalahkan gzip sekitar 15–20% pada HTML | [`server/penyaji.mjs`](../../server/penyaji.mjs) |
+| Kompresi respons memakai pustaka matang | Bukan hanya gzip: `compression` v1.8 menegosiasikan **Brotli** (RFC 7932) saat browser memintanya, dan Brotli mengalahkan gzip sekitar 15–20% pada HTML. Keberadaannya di `dependencies` adalah keputusan mempertahankan yang disengaja, bukan runtime Node.js yang menyelinap kembali — ia berjalan sepenuhnya di atas Bun, digerbangi dari sisi mempertahankan oleh [ADR-0050](../adr/0050-bun-is-this-repos-only-runtime-and-a-gate-finally-says-so.md) | [`server/penyaji.mjs`](../../server/penyaji.mjs) |
 | `Cache-Control` dua aturan | Aset ber-hash `immutable` satu tahun; HTML `max-age=0, must-revalidate` sehingga rebuild langsung terlihat. Keduanya sesuai RFC 9111, dan keduanya **dibuktikan tes** — termasuk paritas GET/HEAD yang pernah membuat `curl -I` melaporkan nilai yang salah | [`tests/penyaji.test.mjs`](../../tests/penyaji.test.mjs) |
 | Konten ditarik saat build | Nol panggilan ke CMS saat pembaca meminta halaman; situs tetap tayang saat `awcms` mati | [ADR-0018](../adr/0018-kontrak-build-token-mesin-dan-traversal-konten.md) |
 | Media di-resolve **sekali per build** | Situs 300 artikel × 2 locale tidak berubah menjadi ratusan permintaan HTTP saat render | [`src/lib/content.ts`](../../src/lib/content.ts) |

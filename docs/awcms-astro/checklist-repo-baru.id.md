@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](checklist-repo-baru.md)
 
-<!-- i18n-source-hash: sha256:63616ed2e930e90b7c2cb2e96d08847ed0dc32dc4f113bbc5d2bccf69118cb76 -->
+<!-- i18n-source-hash: sha256:650e87320ed4fe83f3bed1d8613e3487f15bb58a43611366c90b1db3060e0ab7 -->
 
 # Memulai Situs Baru di Atas awcms-astro
 
@@ -43,6 +43,8 @@ Yang **tidak** perlu disentuh: `src/lib/`, `src/layouts/`, `src/components/`, `s
 - [ ] `astro.config.mjs` — `site`, `compressHTML: true`, `serialize` sitemap. **Tidak ada pipeline markdown**: konten datang dari `awcms` sebagai blok terstruktur, dan yang merendernya `src/lib/content-blocks.ts`, bukan remark/rehype. Empat setelan lain di berkas itu **jangan disentuh tanpa membaca alasannya**: `output: "static"`, adapter node, `build.inlineStylesheets: "never"`, dan `vite.build.assetsInlineLimit: 0` — dua yang terakhir yang membuat CSP ketat mungkin, dan keduanya gagal secara diam-diam bila dilonggarkan.
 - [ ] `package.json` — `name`, `description`, `homepage`, `repository`, `engines`, dan seluruh skrip.
 - [ ] Versi Bun konsisten di **lima nilai**, bukan tiga berkas — `packageManager`, `engines.bun`, `bun-version` di **dua** job CI, dan tag image (identik di kedua stage `Dockerfile`) — ditambah digest yang dipin di sebelah tag itu, sehingga ada enam hal yang bergerak bersama ([ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md) §Konsekuensi). Menghitung BERKAS alih-alih NILAI adalah kesalahan yang [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md) ditulis untuk mengakhirinya: duplikat kedua di tiap berkas yang paling mungkin tertinggal, dan keduanya tetap hijau sendirian. `tests/versi-toolchain.test.mjs` membandingkan seluruhnya, dan ia juga menolak satu stage dipin ke digest sementara yang lain tidak — saat tag dan digest sama-sama ada, Docker mematuhi digest dan tag hanya menjadi komentar.
+
+  **Menaikkan pin-nya belakangan punya satu jebakan yang tidak bisa dilihat gerbang di atas, karena itu soal BINER Bun yang dijalankan seseorang, bukan nilai yang tertulis di repo ini.** Sejak Bun 1.4 menulis `bun.lock` sebagai `lockfileVersion: 2` — format yang sama sekali tidak bisa diurai Bun yang hanya memenuhi `>=1.3.0` — sebuah `bun.lock` yang diregenerasi oleh siapa pun dengan Bun lebih baru terpasang di mesinnya (kontributor, PR rekan tim, Dependabot) diam-diam menaikkan formatnya sementara kelima nilai pin situsmu sendiri bisa saja masih menyebut `1.3.x`. Kelimanya tetap konsisten satu sama lain dan gerbang di atas tetap hijau, tetapi `bun install --frozen-lockfile` berikutnya di CI atau `docker build` gagal dengan `error: Unknown lockfile version at bun.lock:2:22` — pesan yang menyebut nama lockfile, tidak pernah Bun. Gejala, sebab, dan perbaikannya tertulis di [`deploy-coolify.md`](../deploy-coolify.id.md#bun-install---frozen-lockfile-yang-menyebut-nama-lockfile-bukan-versi-bun).
 
 Pertanyaan yang menentukan bentuk skema: **kesalahan apa yang paling merugikan pembaca situs ini, dan field mana yang membuat kesalahan itu sulit dilakukan?** Di repo rujukan jawabannya `cakupan` dan `biaya[].jenis` — keduanya memaksa keputusan yang kalau tidak dipaksa akan terlewat.
 

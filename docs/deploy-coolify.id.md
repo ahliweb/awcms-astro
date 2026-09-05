@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](deploy-coolify.md)
 
-<!-- i18n-source-hash: sha256:1122a0757929a0e6284d9b6f75e874855e7a418816225bd84a9324602dc608cf -->
+<!-- i18n-source-hash: sha256:c5691cc56e9da1cb44043ce02d233b9bf64c5ddbfbf18cb4d01690fc661af9da -->
 
 # Deploy dan rebuild lewat webhook (Coolify)
 
@@ -226,6 +226,45 @@ dikerjakan berbeda-beda:
 
 Ketiganya menghasilkan build gagal **total** — nol berkas terbit — sehingga
 situs tetap tayang dengan konten lama, dan itulah yang membuatnya sunyi.
+
+### `bun install --frozen-lockfile` yang menyebut nama lockfile, bukan versi Bun
+
+Kegagalan build keempat, tak terkait tiga di atas dan pantas punya judulnya
+sendiri karena pesannya menunjuk jauh dari sebab sesungguhnya:
+
+```
+error: Unknown lockfile version  at bun.lock:2:22
+error: lockfile had changes, but lockfile is frozen
+```
+
+**Sebab:** repo template ini menaikkan pin Bun-nya sendiri dari `1.3.14` ke
+`1.4.2` pada 5 September 2026, dan `bun.lock` diregenerasi penuh — Bun 1.4
+menulis `bun.lock` sebagai `lockfileVersion: 2`, format yang **sama sekali**
+tidak bisa diurai Bun yang hanya memenuhi `>=1.3.0`. Situs yang diturunkan
+dari template ini sebelum tanggal itu, atau yang belum mengikutinya, membawa
+`bun.lock` dalam format LAMA; tidak ada yang gagal sampai suatu saat ada yang
+— kontributor yang meregenerasinya secara lokal, PR rekan tim, Dependabot —
+menulis `bun.lock` baru dengan Bun yang lebih baru sudah terpasang di
+mesinnya. Commit yang dihasilkan terbaca persis seperti pembaruan lockfile
+biasa, dan tidak ada yang menyebut "ini sekarang butuh Bun 1.4". Kegagalannya
+muncul belakangan dan di tempat lain: di langkah `bun install
+--frozen-lockfile` CI, atau di `RUN bun install --frozen-lockfile` dalam
+`docker build` — keduanya menjalankan versi Bun apa pun yang masih dinyatakan
+`bun-version`/tag image milik situs ini SENDIRI, yang bisa saja masih
+`1.3.x`. Pesan errornya menyebut nama berkas (`bun.lock`) dan offset byte,
+tidak pernah kata "Bun" atau nomor versi, jadi ia terbaca seperti lockfile
+yang rusak, bukan toolchain yang tertinggal.
+
+**Perbaikan:** naikkan pin Bun situs ini sendiri supaya sejalan — aturan lima-
+nilai-plus-digest yang sama yang didokumentasikan repo ini untuk dirinya
+sendiri ([`AGENTS.md`](../AGENTS.id.md#konfigurasi),
+[`checklist-repo-baru.md`](awcms-astro/checklist-repo-baru.id.md) langkah 2):
+naikkan `packageManager` **dan** `engines.bun` di `package.json`,
+`bun-version` di KEDUA job `.github/workflows/ci.yml`, dan tag image **dan**
+digestnya di KEDUA stage `Dockerfile`. Menaikkan hanya nilai yang menghasilkan
+lockfile baru (biasanya Bun lokal seorang kontributor) sementara keempat nilai
+lain tetap di `1.3.x` mengulang persis kegagalan ini di mana pun di antara
+keempatnya yang berjalan berikutnya.
 
 **Menerbitkan dan MENCABUT token itu kini sebuah layar**, bukan panggilan API
 yang harus diingat seseorang di bawah tekanan: `/admin/machine-credentials` di

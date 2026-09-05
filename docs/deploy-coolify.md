@@ -219,6 +219,43 @@ all three read like a revoked token — while what has to be done differs:
 All three produce a **total** build failure — zero files published — so the site
 stays live with its old content, and that is what makes it silent.
 
+### A `bun install --frozen-lockfile` that names a lockfile, not a Bun version
+
+A fourth build failure, unrelated to the three above and worth its own heading
+because its message points nowhere near its actual cause:
+
+```
+error: Unknown lockfile version  at bun.lock:2:22
+error: lockfile had changes, but lockfile is frozen
+```
+
+**Cause:** this template repo raised its own Bun pin from `1.3.14` to `1.4.2`
+on 5 September 2026, and `bun.lock` was regenerated in full — Bun 1.4 writes
+`bun.lock` as `lockfileVersion: 2`, a format a Bun that only satisfies
+`>=1.3.0` cannot parse **at all**. A site derived from this template before
+that date, or one that has not yet followed it, carries a `bun.lock` in the
+OLD format; nothing breaks until the moment somebody — a contributor
+regenerating it locally, a teammate's PR, Dependabot — writes a fresh
+`bun.lock` with a newer Bun already installed on their machine. The commit
+that results reads exactly like any other lockfile update, and nothing about
+it says "this now needs Bun 1.4". The failure surfaces later and elsewhere:
+in CI's `bun install --frozen-lockfile` step, or in `RUN bun install
+--frozen-lockfile` inside `docker build` — both running whatever Bun version
+this site's OWN `bun-version`/image tag still says, which may still be
+`1.3.x`. The error names the file (`bun.lock`) and a byte offset, never the
+word "Bun" or a version number, so it reads like lockfile corruption rather
+than a toolchain that has fallen behind.
+
+**Fix:** raise this site's own Bun pin to match — the same five-values-plus-
+digest rule this repo documents for itself
+([`AGENTS.md`](../AGENTS.md#configuration),
+[`checklist-repo-baru.md`](awcms-astro/checklist-repo-baru.md) step 2): bump
+`packageManager` **and** `engines.bun` in `package.json`, `bun-version` in
+BOTH jobs of `.github/workflows/ci.yml`, and the image tag **and** its digest
+in BOTH stages of `Dockerfile`. Raising only the value that produced the new
+lockfile (typically a contributor's local Bun) while leaving the other four
+at `1.3.x` reproduces this exact failure in whichever of them runs next.
+
 **Issuing and REVOKING that token is now a screen**, not an API call somebody has
 to remember under pressure: `/admin/machine-credentials` in awcms (since 13 August
 2026). A token's plaintext appears **once**, in its issuing response — reloading
