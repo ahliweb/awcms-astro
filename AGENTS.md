@@ -486,7 +486,23 @@ exactly what
   sped up — a global `*` rule only trims duration, and a 0.01 ms animation still
   flickers. Hover feedback is also active on `:focus-visible`, so keyboard users
   do not get a poorer version.
-- **Mobile-first from 360px.**
+- **Mobile-first from 360px.** `.container`'s own padding leaves an inner width
+  of exactly 320px at that floor — a grid track fixed to that same figure has
+  zero margin, which is what `.grid-cards` did until it was found and wrapped
+  in `min(320px, 100%)`; `Home.astro`'s `.sorotan` (`minmax(20rem, 1fr)`, a
+  component `<style>` block) had the identical bug, found only once the
+  checker's own file scope was corrected. This rule now has a checker:
+  `tests/lebar-360.test.mjs` reads the 360px floor and `.container`'s padding,
+  derives that inner width from the CSS itself, and refuses any other
+  fixed-px/rem `minmax(…)` or fixed `width`/`min-width` — in
+  `src/styles/global.css` AND in every `<style>` block of every `.astro` file
+  under `src/` (components, layouts, pages) — that reaches or exceeds it
+  without a `min(…, 100%)` escape, a desktop-only media query, or a
+  self-contained `overflow-x`. It is a static gate over CSS TEXT: it cannot
+  prove real rendering safety — sub-pixel rounding, real font metrics, and
+  actual scrollbars need a browser, which would mean asserting
+  `document.documentElement.scrollWidth <= 360` on the key templates after a
+  build, against a live `awcms` backend.
 - **Interface strings come through the PO catalogue**, never written straight
   into a component. This applies to labels coming from configuration too: the
   main navigation once rendered UPPERCASE values from `src/config/site.ts`, so
@@ -593,7 +609,7 @@ looking like an image chosen for it. A missing file renders
   illustrations.** A site from this template is an independent portal, and a
   state emblem on its pages contradicts that statement at a glance.
 - **The smallest text in an SVG is at least 22px on an 800px canvas.** On a card
-  328px wide — a 360px viewport — an 800px canvas appears at 0.41 scale, so
+  320px wide — a 360px viewport — an 800px canvas appears at 0.40 scale, so
   below that threshold its text appears under 9px and is practically unreadable.
 - **`src: undefined` is a supported state.** A caller renders
   `.visual-placeholder`. A missing illustration must not become a missing page —
@@ -784,7 +800,11 @@ Four things to know before touching headers, cache, or the performance budget:
 - [ ] The default locale and prefixed locales produce the same number of pages.
 - [ ] A new image is at `--ratio-visual`, its extension matches its contents, it
       carries no institutional emblem or mock data, and its text is readable at
-      360px wide.
+      360px wide — `bun run audit:konten` checks the last of those against the
+      22px-on-an-800px-canvas threshold; the card-width arithmetic that
+      threshold is derived from (320px, 0.40 scale) is checked separately by
+      `tests/lebar-360.test.mjs`, which reads `.container`'s own CSS rather
+      than trusting the number written in prose.
 - [ ] A change to serving — headers, CSP, `Cache-Control`, compression, port —
       is proven by `tests/penyaji.test.mjs`, not checked by eye. **A `Vary` is
       part of that**: `Cookie` and `Accept-Language` are refused outright

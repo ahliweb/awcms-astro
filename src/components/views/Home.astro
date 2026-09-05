@@ -799,9 +799,17 @@ const sorotanVisual = sorotan
 
   /* ── Sorotan ───────────────────────────────────────────────────────────── */
 
+  /* `.sorotan` duduk di dalam `<main class="container">` (BaseLayout.astro),
+     dan di lantai dukungan 360px `.container` menyisakan persis 320px = 20rem
+     bersih. `minmax(20rem, 1fr)` telanjang berarti track selebar 320px di
+     ruang 320px pas TANPA sisa sama sekali — persis kasus yang sudah pernah
+     ditemukan di `.grid-cards` (`src/styles/global.css`). `min(20rem, 100%)`
+     membatasi track pada milik kontainernya sendiri, jadi grid tidak pernah
+     bisa memaksa overflow; di atas 320px hasilnya identik dengan bentuk lama.
+     Jangan disederhanakan kembali menjadi `20rem` telanjang. */
   .sorotan {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(20rem, 100%), 1fr));
     margin: 2.5rem 0;
     background: var(--bg-surface);
     border: 1px solid var(--border-color);
