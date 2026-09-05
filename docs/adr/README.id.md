@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:1a469974e30e435590ed917c25e647119183fe1b02f3871a605b7b1e86054230 -->
+<!-- i18n-source-hash: sha256:e47c75afcdbcfb1d192decd5cedabd0d8f4138c4b59f67c0c02745bcd165c5e8 -->
 
 # Architecture Decision Records
 
@@ -56,6 +56,7 @@ menyesuaikan gaya, menambah tes.
 | [0047](0047-this-origin-answers-its-own-content-redirects-and-the-edge-keeps-the-rest.md) | Origin ini menjawab pengalihan KONTEN-nya sendiri — slug yang diganti, seksi yang digabung — dari peta jalur persis yang digerbangi, sementara edge memegang normalisasi protokol/host dan migrasi domain legacy; sampai kini `server/penyaji.mjs` tidak memuat satu pun `301`, dan awcms ADR-0114 mengukur 67 aturan terhadapnya yang semuanya 404 | Diterima |
 | [0048](0048-a-release-is-cut-when-the-backlog-crosses-a-bound.md) | Sebuah rilis sudah waktunya saat backlog yang menunggu melewati batas — paling banyak 12 changeset, yang tertua paling banyak 14 hari — diperiksa `audit:rilis` dan bukan oleh ingatan; ADR-0040 memindahkan "seberapa besar" ke penulisnya dan menyerahkan "kapan" ke siapa pun yang teringat, lalu tiga puluh changeset menunggu dua puluh hari di belakang `v0.2.0` dengan setiap gerbang hijau | Diterima |
 | [0049](0049-a-reader-may-subscribe-and-the-first-write-from-a-strangers-browser.md) | Sebuah situs boleh menerbitkan buletin dengan menyatakan `SITE_NEWSLETTER`, yang menyalakan formulir footer dan kedua halaman token sekaligus — dan ia panggilan PERTAMA di repo ini yang menulis dari peramban orang asing. Tokennya dikirim saat DIKLIK dan tidak pernah saat halaman dimuat, karena pemindai tautan di klien email akan mencatat persetujuan yang tidak diberikan manusia; `/newsletter/confirm` dan `/newsletter/unsubscribe` jalur milik awcms, bukan milik repo ini untuk diganti; jawaban netralnya dirender apa adanya di ketiga permukaan | Diterima |
+| [0050](0050-bun-is-this-repos-only-runtime-and-a-gate-finally-says-so.md) | Bun adalah satu-satunya runtime repo ini — sudah benar di scripts `package.json`, CI, `Dockerfile`, dan shebang `server/penyaji.mjs`, dan sampai kini tak terjaga; `tests/runtime-bun.test.mjs` menggerbangi ketiadaannya dari ujung ke ujung, sementara bawaan `node:*` (implementasi Bun sendiri) dan `@astrojs/node`/`compression` (keduanya dijalankan OLEH Bun, dipertahankan untuk resolusi path URL dan negosiasi Brotli) dinyatakan sebagai keputusan mempertahankan yang disengaja, bukan kealpaan | Diterima |
 
 > **Kenapa penomoran mulai dari 0014.** ADR di repo ini melanjutkan urutan repo
 > rujukan yang identitasnya dilepas di [#11](https://github.com/ahliweb/awcms-astro/pull/11);

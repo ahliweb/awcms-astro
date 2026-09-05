@@ -654,6 +654,20 @@ manual.
   becomes a comment — so raising the tag without the digest builds the old
   version while announcing the new one. The gate above checks this specifically.
 
+- **No Node.js runtime re-enters this repo** (ADR-0050): no `node`/`npm`/
+  `npx`/`yarn`/`pnpm` invocation, no `actions/setup-node`, no `engines.node`,
+  no non-Bun base image, no `#!/usr/bin/env node` shebang, no `.nvmrc`/
+  `.node-version` file, no `package-lock.json`/`yarn.lock`/`pnpm-lock.yaml`.
+  This was already true everywhere it matters and unguarded until now; since
+  ADR-0050 this rule has a checker: `tests/runtime-bun.test.mjs`.
+
+  What this does **not** forbid: `node:fs`, `node:http`, and the rest of the
+  `node:*` built-ins are Bun's own implementation, not a Node.js dependency,
+  and stay. Nor does it forbid `@astrojs/node` or `compression` in
+  `dependencies` — both run entirely under Bun and are kept on purpose
+  (URL-to-file-path resolution; Brotli negotiation), checked from the
+  keep-side by the same test file.
+
 - **GitHub Actions are pinned to a commit SHA, not a tag**, with a `# vX.Y.Z`
   comment that Dependabot reads. A tag can be moved, and an action runs with
   access to the workflow token and the whole checkout (ADR-0030).
