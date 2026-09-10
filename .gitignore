@@ -45,3 +45,11 @@ graphify-out/graph.html
 # hidup di runner dan mati bersamanya; reproduksi lokal yang merah meninggalkan
 # direktori ini — satu `git add -A` yang tidak hati-hati dari masuk riwayat.
 .lighthouseci/
+
+# Ekspor kanvas Claude Design (`.dc.html`, `image-slot.js`, `support.js`, dan
+# tangkapan layar yang ditempel di bawah `uploads/`) — bahan desain, bukan
+# kode yang dijalankan situs. Repo ini tidak melacak arsip apa pun; satu zip
+# 1.2 MB yang ter-commit di sini akan menetap di riwayat setiap klon
+# selamanya. Ikuti preseden `graphify-out/cache/`: abaikan sebelum sempat
+# ter-`add`, bukan setelahnya.
+redesign/
