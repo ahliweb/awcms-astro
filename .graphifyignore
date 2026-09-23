@@ -53,3 +53,11 @@
 # alih-alih menjaganya — dan itu memang keadaan yang benar untuk dicetak, bukan
 # yang disembunyikan.
 *.id.md
+
+# Vault Obsidian hasil generate `knowledge:obsidian:export` (isu #113) — ini
+# MENCERITAKAN ULANG graf itu sendiri, satu catatan per node, jadi
+# mengindeksnya akan memasukkan setiap konsep ke graf dua kali: sekali dari
+# sumbernya, sekali lagi dari catatan yang merangkumnya. Ini awalan BIASA
+# (bukan pola glob), jadi `bun run audit:graf` aturan 4 benar-benar
+# menegakkannya — bukan hanya melaporkannya sebagai tidak ditegakkan.
+knowledge/generated/

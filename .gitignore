@@ -53,3 +53,19 @@ graphify-out/graph.html
 # selamanya. Ikuti preseden `graphify-out/cache/`: abaikan sebelum sempat
 # ter-`add`, bukan setelahnya.
 redesign/
+
+# Staging efemeral `knowledge:obsidian:export` (isu #113) — graphify menulis
+# vaultnya di sini dulu, sebelum divalidasi dan disinkronkan berkas per
+# berkas ke knowledge/generated/. Dihapus dan dibuat ulang setiap run; tidak
+# ada alasan untuk melacaknya sama sekali.
+graphify-out/obsidian-staging/
+
+# Vault Obsidian hasil generate `knowledge:obsidian:export` (isu #113, D2) —
+# sengaja BEDA dari implementasi rujukan yang melacak direktori setaranya.
+# Satu ekspor penuh graf ini berjumlah kira-kira 1.500 berkas; repo ini sudah
+# menolak melacak arsip sebesar itu untuk alasan yang sama (lihat `graph.html`
+# dan `redesign/` di atas), dan 1.500 berkas gagal pada preseden itu lebih
+# parah daripada keduanya. `bun run audit:graf` menegakkan ini secara
+# fail-closed: apa pun yang terlacak di bawah `knowledge/generated/` akan
+# memerahkan gerbang.
+knowledge/generated/

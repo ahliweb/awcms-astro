@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](AGENTS.md)
 
-<!-- i18n-source-hash: sha256:215c437bb7248a5b0933aec516cd7419a7769e0c05d136d36a5eadb8ebbc6827 -->
+<!-- i18n-source-hash: sha256:326dbe362fc009d850349059ff556c264ad8f0a7f797cbf967831cb67d5732e5 -->
 
 # AGENTS.md — kontrak kerja `awcms-astro`
 
@@ -726,6 +726,43 @@ aturan yang jelas-jelas manual.
   Variabel non-`PUBLIC_` bisa terbaca `undefined` di dalam chunk prerender
   meskipun nilainya ada di `.env`, dan kegagalannya menyamar jadi masalah lain.
 
+### Bekerja dengan graf pengetahuan ([ADR-0051](docs/adr/0051-a-knowledge-tree-points-at-the-code-and-owns-none-of-it.id.md))
+
+`graphify-out/` dan `knowledge/` (catatan kurasi + ekspor Obsidian opsional,
+`knowledge:obsidian:export`) adalah alat bantu navigasi di atas kode basis
+ini, bukan sumber kebenaran kedua di sampingnya. Itu membentuk cara sebuah
+agen boleh memakainya:
+
+- **Graphify untuk penemuan dan analisis dampak** — menemukan apa yang
+  disentuh sebuah perubahan, bagaimana satu modul berkaitan dengan yang lain,
+  di mana sebuah konsep didokumentasikan — tidak pernah untuk jawaban akhir
+  dengan sendirinya.
+- **Temuan dari graf HARUS diverifikasi terhadap kode, test, dan kontrak yang
+  berlaku saat ini sebelum ditindaklanjuti atau dilaporkan.** Graf itu hasil
+  generate, basi-berbatas (di bawah), dan menggambarkan struktur, bukan
+  kebenaran.
+- **Kesimpulan yang bergantung pada perilaku backend `awcms` diperiksa di
+  `awcms`, bukan diasumsikan dari graf repo ini** — batas yang sama yang
+  digambar §Peran repo ini antara kedua repo berlaku juga untuk apa yang boleh
+  disimpulkan agen dari graf salah satunya.
+- **Perilaku konsumen tidak pernah dicampuradukkan dengan otoritas backend.**
+  Graf repo ini menggambarkan bagaimana `awcms-astro` *mengonsumsi* sebuah
+  kontrak; ia tidak pernah menjadi bukti apa yang *diputuskan* `awcms`.
+- **Komunitas berkohesi rendah atau bernama aneh diperiksa, bukan diasumsikan
+  cacat** — dan sebaliknya juga berlaku: nama yang tampak masuk akal bukan
+  bukti ia dipilih dan bukan diwarisi dari penamaan hub otomatis (lihat
+  §Graf pengetahuan di
+  [`standar-teknis.id.md`](docs/awcms-astro/standar-teknis.id.md)).
+- **`knowledge/generated/` tidak pernah disunting tangan.** Ia ditimpa
+  seluruhnya oleh `knowledge:obsidian:export`; suntingan tangan di sana hilang
+  diam-diam pada ekspor berikutnya dan memberi rasa aman palsu atas catatan
+  yang dikira bisa diandalkan. `knowledge/curated/` adalah satu-satunya pohon
+  di `knowledge/` yang ditulisi langsung oleh manusia atau agen.
+- **Utamakan query yang tepat sasaran daripada memuat konteks besar yang tak
+  terkait.** Graf ada supaya pertanyaan sempit bisa dijawab tanpa membaca
+  separuh repo; memakainya untuk menumpahkan konteks luas kembali ke sebuah
+  tugas justru mengalahkan tujuan itu.
+
 ## Standar luar yang mengikat repo ini (ADR-0028)
 
 Aturan di dokumen ini sebagian besar memetakan ke kontrol yang sudah punya nama
@@ -795,13 +832,20 @@ performa:
       indeks itu pernah mendaftarkan enam keputusan yang tak pernah ada di repo
       ini sambil melewatkan sembilan yang ada, dan bertahan sembilan ADR tanpa
       terlihat.
-- [ ] `bun run audit:graf` hijau. Ia juga tidak butuh build: artefak
-      `graphify-out/` yang terlacak di luar keempat keluaran bersama, dan nama
-      komunitas yang tidak dipilih — nama berkas warisan penamaan otomatis,
-      placeholder, kembar, atau berbeda antara `graph.json` dan
-      `GRAPH_REPORT.md`. Ia lahir dari 60 dari 101 label yang menempel pada
-      komunitas yang salah, di dalam JSON yang sah, dengan setiap gerbang lain
-      hijau karena tidak satu pun dari mereka membaca `graphify-out/`.
+- [ ] `bun run audit:graf` hijau (bisa juga dijalankan sebagai
+      `bun run knowledge:check`, sebuah alias, bukan gerbang kedua). Ia juga
+      tidak butuh build: artefak `graphify-out/` yang terlacak di luar
+      keempat keluaran bersama, dan nama komunitas yang tidak dipilih — nama
+      berkas warisan penamaan otomatis, placeholder, kembar, atau berbeda
+      antara `graph.json` dan `GRAPH_REPORT.md`. Ia lahir dari 60 dari 101
+      label yang menempel pada komunitas yang salah, di dalam JSON yang sah,
+      dengan setiap gerbang lain hijau karena tidak satu pun dari mereka
+      membaca `graphify-out/`. Sejak
+      [ADR-0051](docs/adr/0051-a-knowledge-tree-points-at-the-code-and-owns-none-of-it.id.md)
+      ia juga menolak apa pun yang terlacak di bawah `knowledge/generated/`
+      atau jalur `.obsidian/` mana pun, serta kesegaran konten berbatas yang
+      melewati `MAX_STALE_FILES = 40` — lihat §Bekerja dengan graf pengetahuan
+      di atas.
 - [ ] `bun run audit:translation` hijau. Ia juga tidak butuh build: cermin
       Indonesia yang basi terhadap sumber Inggris yang hash-nya ia catat, dan
       dokumen yang belum punya cermin sama sekali. **Dokumen yang ditulis setelah

@@ -124,9 +124,20 @@ The full and binding list is in [`AGENTS.md`](AGENTS.md#definition-of-done). In 
 - [ ] `bun test` is green — including the PO catalogue, serving, `awcms` surface,
       and toolchain version gates.
 - [ ] `bun run audit:konten`, `bun run audit:dokumen`, `bun run audit:translation`,
-      and `bun run audit:graf` are green. The last guards `graphify-out/` — an
-      artefact that is tracked, and therefore read as a map by whoever comes
-      after you.
+      and `bun run audit:graf` (aliased `bun run knowledge:check`) are green.
+      The last guards `graphify-out/` — an artefact that is tracked, and
+      therefore read as a map by whoever comes after you — plus, since
+      [ADR-0051](docs/adr/0051-a-knowledge-tree-points-at-the-code-and-owns-none-of-it.md),
+      that nothing under `knowledge/generated/` (the gitignored Obsidian
+      export) is ever tracked and that content staleness stays under
+      `MAX_STALE_FILES = 40`. `knowledge:graph:update`,
+      `knowledge:graph:label`, and `knowledge:obsidian:export` are
+      local/developer-run steps, not part of this gate or of CI. The first and
+      third need the real `graphify` binary; `knowledge:graph:label` needs
+      none of it — it only applies curated names to the partition already on
+      disk, and re-running `graphify cluster-only` to apply a name instead is
+      wrong here: this repo's own community detection is not deterministic,
+      so that re-clusters the very graph the names were chosen against.
 - [ ] `bun audit` reports **0 vulnerabilities**.
 
 `bun run release <level> --apply` runs six of those commands in an order that

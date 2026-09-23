@@ -17,6 +17,7 @@ What comes along and **must be emptied before the first commit**, because its co
 - [ ] `docs/adr/00*.md` + the table in `docs/adr/README.md` — this template's decisions, not your site's. Start your own numbering from `0001`; `bun run audit:dokumen` demands the table and its files match in both directions, so deleting one without the other turns CI red.
 - [ ] `package.json` — `name`, `description`, `homepage`, `repository`, and `version` (back to `0.1.0`).
 - [ ] `graphify-out/` — an analysis artefact of the template repo; delete it, and add it to `.gitignore` if you do not use its tooling.
+- [ ] `knowledge/curated/*.md` — the template's own curated notes describe THIS repo; rewrite them for your site (or delete them) rather than keeping them verbatim. The tooling itself (`scripts/knowledge-graph-update.mjs`, `scripts/knowledge-graph-label.mjs`, `scripts/knowledge-obsidian-export.mjs`, the `knowledge:*` scripts, `knowledge/generated/` gitignored) is inherited as-is — there is nothing to configure. An absent `graphify-out/` (and therefore an empty `knowledge/`) is a legal state; `bun run audit:graf` skips itself and says so ([ADR-0051](../adr/0051-a-knowledge-tree-points-at-the-code-and-owns-none-of-it.md)).
 
 What does **not** need touching: `src/lib/`, `src/layouts/`, `src/components/`, `src/styles/global.css`, `scripts/`, `tests/`, `server/`, `.github/`. That is the skeleton.
 
@@ -74,7 +75,7 @@ If illustrations are generated, **do not let their configuration inject raw mark
 They must stay green:
 
 - [ ] `bun run check` — the lockfile gate, then `astro check`.
-- [ ] `bun test` — 40 gate files. The ones that most often turn a new site red:
+- [ ] `bun test` — 44 gate files. The ones that most often turn a new site red:
       the PO catalogues (`tests/katalog-po.test.mjs` — a key used by the code but
       absent from a catalogue, a locale catalogue left behind, an empty `msgstr`,
       a tab key not yet written for any locale), the **site role**
@@ -106,11 +107,14 @@ They must stay green:
       template ([ADR-0039](../adr/0039-english-is-the-source-language.md)): English
       at the bare path is the source, and `<name>.id.md` records the hash of what
       it was translated from.
-- [ ] `bun run audit:graf` — the `graphify-out/` artefacts. A site that deletes
-      that directory (see the list above) gets a gate that **skips itself and says
+- [ ] `bun run audit:graf` (also runnable as `bun run knowledge:check`, an
+      alias) — the `graphify-out/` artefacts. A site that deletes that
+      directory (see the list above) gets a gate that **skips itself and says
       so**; one that keeps it is bound by the same rules as the template,
-      including that every community's name must be chosen rather than inherited
-      from graphify's automatic naming.
+      including that every community's name must be chosen rather than
+      inherited from graphify's automatic naming, that nothing under
+      `knowledge/generated/` or any `.obsidian/` path is ever git-tracked, and
+      bounded content staleness past `MAX_STALE_FILES = 40`.
 
 **Placing artwork:** files in `src/assets/`, with the naming convention `hero`,
 `tab/<tab>`, `artikel/<tab>/<slug>` without an extension — there is no registry to

@@ -1,0 +1,69 @@
+---
+bump: minor
+tipe: struktur
+dampak: internal
+---
+
+# Graf pengetahuan mendapat catatan kurasi dan ekspor Obsidian tervalidasi
+
+`awcms-one` sudah lebih dulu membangun lapis navigasi developer di atas
+graphify-nya sendiri (`awcms-one#11`): graf hasil generate, catatan kurasi
+tulisan tangan, dan ekspor Obsidian di belakang gerbang `audit:graf`.
+`awcms#805` yang seharusnya menstandarkan bentuk ini dari sisi backend masih
+terbuka dan belum dikerjakan — tidak ada apa pun yang kanonik untuk ditiru
+atau ditunggu — jadi repo ini mengadopsi bentuk `awcms-one` sekarang, dan
+menyimpang darinya di tepat tempat bentuknya tidak cocok di sini: repo ini
+tidak punya subtree untuk difederasikan, dan sebuah ekspor penuh graf ini
+berjumlah kira-kira 1.500 berkas — jauh lebih besar relatif terhadap apa pun
+yang pernah ingin dilacak repo ini ([ADR-0051](../docs/adr/0051-a-knowledge-tree-points-at-the-code-and-owns-none-of-it.md)).
+
+Empat skrip baru (`scripts/knowledge-graph-update.mjs`,
+`scripts/knowledge-graph-label.mjs`, `scripts/knowledge-obsidian-export.mjs`,
+dan logika murninya di `scripts/lib/obsidian-safety.mjs` +
+`scripts/lib/graf-staleness.mjs`) berdiri di belakang empat entri
+`package.json`: `knowledge:graph:update`, `knowledge:graph:label`,
+`knowledge:obsidian:export`, dan `knowledge:check` — yang terakhir sengaja
+sebuah ALIAS untuk `bun run audit:graf`, bukan gerbang kedua yang membaca
+artefak yang sama, persis seperti yang diminta isu #113 sendiri. Direktori
+baru `knowledge/` terbelah dua: `curated/` (tulisan tangan, terlacak, hanya
+Inggris) dan `generated/` (keluaran ekspor, diabaikan git — tidak pernah
+terlacak, berbeda dari `awcms-one`, karena preseden `graph.html`/`redesign/`
+repo ini sudah menolak artefak selaju itu pada ukuran yang jauh lebih kecil).
+`audit:graf` sendiri mendapat dua pemeriksa baru: fail-closed atas apa pun
+yang terlacak di bawah `knowledge/generated/` atau jalur `.obsidian/` mana
+pun, dan kesegaran konten BERBATAS (`MAX_STALE_FILES = 40`) yang
+mereproduksi `ast_hash` graphify sendiri lewat `node:crypto` — tanpa
+`graphify` terpasang, karena CI memang tidak memilikinya di `PATH`.
+
+**Temuan yang menambah skrip keempat: `graphify cluster-only` tidak
+deterministik di repo ini, terukur bukan sekadar diduga.** Tiga kali
+dijalankan berturut-turut atas graf yang byte-nya identik (1.404 node, 2.717
+edge), hasilnya 92, lalu 90, lalu 91 komunitas. Karena label kuratif diikat
+ke ID komunitas, alur penamaan yang didokumentasikan di hulu — edit
+`.graphify_labels.json`, lalu jalankan ulang `cluster-only` untuk
+menerapkannya — tidak akan pernah konvergen di sini: setiap jalannya
+sekaligus mempartisi ulang graf yang sedang diberi nama, dan itulah mekanisme
+persis di balik insiden yang sudah tercatat di repo ini sendiri (60 dari 101
+label menempel di komunitas yang salah, di dalam JSON yang sah, dengan semua
+gerbang lain hijau). `knowledge:graph:label` memisah tugas itu: `update`
+memegang PARTISI (boleh memindah komunitas, karena itu tugasnya) dan `label`
+memegang NAMA, diterapkan ke partisi yang sudah ada di disk, tanpa pernah
+memanggil `graphify` atau menyentuh `node.community` — fail-closed atas nama
+yang hilang, berbentuk nama berkas, placeholder `Community N`, kosong, atau
+kembar, dan menulis `.graphify_labels.json.sig` PALING AKHIR supaya jalan
+yang ditolak tidak pernah meninggalkan tanda tangan yang mengklaim partisi
+sudah dikurasi padahal belum. Keadaan graf saat ini, setelah rebuild dan
+sesi penamaan yang menemukan ini: **1.404 node, 2.717 edge, 91 komunitas**,
+semua 91 nama berbeda dan diturunkan dari isi (sebelumnya 1.421 / 2.603 / 97;
+rebuild-nya sendiri murni kode dan tidak memakan token).
+
+- Tidak ada perubahan yang terlihat pembaca situs; ini murni perkakas
+  developer/agen dan gerbang CI baru.
+- Terasa saat mengembangkan: `bun test` naik dari 40 menjadi 44 berkas
+  gerbang (43 sebelum skrip label ini, lalu +1 untuk
+  `tests/knowledge-graph-label.test.mjs`); enam dokumen (README, README.id,
+  `checklist-repo-baru` + cermin, dan `SKILL.md` gerbang + cermin) sekarang
+  menyebut 44, dan `tests/documented-counts.test.mjs` menegakkan itu di
+  keenamnya sekaligus. Situs turunan mewarisi perkakas ini apa adanya;
+  catatan kuratnya sendiri yang perlu ditulis ulang, dan `graphify-out/` yang
+  tidak ada (sehingga `knowledge/` kosong) tetap keadaan sah.

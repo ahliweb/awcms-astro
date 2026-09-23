@@ -710,6 +710,39 @@ manual.
   when its value is in `.env`, and the failure disguises itself as something
   else.
 
+### Working with the knowledge graph ([ADR-0051](docs/adr/0051-a-knowledge-tree-points-at-the-code-and-owns-none-of-it.md))
+
+`graphify-out/` and `knowledge/` (curated notes + an optional Obsidian export,
+`knowledge:obsidian:export`) are a navigation aid over this codebase, not a
+second source of truth beside it. That shapes how an agent may use them:
+
+- **Graphify is for discovery and impact analysis** — finding what a change
+  touches, how a module relates to others, where a concept is documented —
+  never for a final answer by itself.
+- **A finding from the graph MUST be verified against current code, tests, and
+  contracts before it is acted on or reported.** The graph is generated,
+  bounded-stale (below), and describes structure, not correctness.
+- **A conclusion that depends on `awcms`'s backend behaviour is checked in
+  `awcms`, not assumed from this repo's graph** — the same boundary
+  §This repo's role draws between the two repos applies to what an agent may
+  conclude from either one's graph.
+- **Consumer behaviour is never confused with backend authority.** This
+  repo's graph describes how `awcms-astro` *consumes* a contract; it is never
+  evidence of what `awcms` *decides*.
+- **A low-cohesion or oddly named community is inspected, not assumed to be a
+  defect** — and the reverse also holds: a name that looks plausible is not
+  proof it was chosen rather than inherited from automatic hub naming (see
+  §The knowledge graph in
+  [`standar-teknis.md`](docs/awcms-astro/standar-teknis.md)).
+- **`knowledge/generated/` is never hand-edited.** It is overwritten wholesale
+  by `knowledge:obsidian:export`; a hand-edit there is silently lost on the
+  next export and gives a false sense of a note someone can rely on.
+  `knowledge/curated/` is the only tree in `knowledge/` a human or agent
+  writes to directly.
+- **Prefer a targeted query over loading large unrelated context.** The graph
+  exists so a narrow question can be answered without reading half the repo;
+  using it to dump broad context back into a task defeats that purpose.
+
 ## External standards that bind this repo (ADR-0028)
 
 Most rules in this document map onto controls that already have names out there.
@@ -776,13 +809,17 @@ Four things to know before touching headers, cache, or the performance budget:
       `docs/adr/README.md`** — that index once listed six decisions that never
       existed in this repo while missing nine that did, and survived nine ADRs
       unseen.
-- [ ] `bun run audit:graf` green. It needs no build either: tracked
+- [ ] `bun run audit:graf` green (also runnable as `bun run knowledge:check`,
+      an alias, not a second gate). It needs no build either: tracked
       `graphify-out/` artefacts beyond the four shared outputs, and community
       names that were not chosen — file names inherited from automatic naming,
       placeholders, twins, or names differing between `graph.json` and
       `GRAPH_REPORT.md`. It was born from 60 of 101 labels attached to the wrong
       community, inside valid JSON, with every other gate green because not one
-      of them read `graphify-out/`.
+      of them read `graphify-out/`. Since [ADR-0051](docs/adr/0051-a-knowledge-tree-points-at-the-code-and-owns-none-of-it.md)
+      it also refuses anything tracked under `knowledge/generated/` or any
+      `.obsidian/` path, and bounded content staleness past
+      `MAX_STALE_FILES = 40` — see §Working with the knowledge graph above.
 - [ ] `bun run audit:translation` green. It needs no build either: an Indonesian
       mirror gone stale against the English source it records the hash of, and
       documents with no mirror at all. **A document written after

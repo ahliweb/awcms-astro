@@ -20,6 +20,7 @@
  * ikut menjaga `graphify-out/`, bukan hanya menjaga skripnya.
  */
 import { afterEach, describe, expect, test } from "bun:test";
+import { createHash } from "node:crypto";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -424,4 +425,157 @@ test("repo ini sendiri lolos", () => {
   const { kode, keluaran } = jalankan(".");
   if (kode !== 0) console.log(keluaran);
   expect(kode).toBe(0);
+});
+
+// ---------------------------------------------------------------------------
+// English addendum (issue #113) — the two checks added after the Indonesian
+// section above: `auditKnowledgeGeneratedUntracked` and
+// `auditKesegaranTerbatas` (MAX_STALE_FILES = 40). New code in this repo is
+// English post-ADR-0039; the cases above are not translated, and these below
+// follow this file's own established fixture-tree + `git` pattern exactly,
+// proven both directions (red on the injected defect, green when clean).
+// ---------------------------------------------------------------------------
+
+describe("knowledge/generated/ and .obsidian/ are never tracked (D2)", () => {
+  /** Real git repo; `git ls-files` reads the index, so no commit is needed. */
+  function repo(files, tracked) {
+    const root = pohon(files);
+    Bun.spawnSync(["git", "-C", root, "init", "-q"]);
+    Bun.spawnSync(["git", "-C", root, "add", "-f", ...tracked]);
+    return root;
+  }
+
+  test("a tracked file under knowledge/generated/ reddens the gate", () => {
+    const root = repo(
+      { "knowledge/generated/graphify/note.md": "# note\n" },
+      ["knowledge/generated/graphify/note.md"]
+    );
+
+    const { kode, keluaran } = jalankan(root);
+    expect(keluaran).toContain("knowledge/generated/graphify/note.md");
+    expect(keluaran).toContain("must never enter history");
+    expect(kode).toBe(1);
+  });
+
+  test("a tracked .obsidian/ path anywhere in the repo reddens the gate", () => {
+    const root = repo(
+      { ".obsidian/workspace.json": "{}" },
+      [".obsidian/workspace.json"]
+    );
+
+    const { kode, keluaran } = jalankan(root);
+    expect(keluaran).toContain(".obsidian/workspace.json");
+    expect(keluaran).toContain("workspace/session state");
+    expect(kode).toBe(1);
+  });
+
+  test("none tracked under knowledge/generated/ or .obsidian/ passes", () => {
+    const root = repo(
+      { "knowledge/curated/hand-written.md": "# curated\n" },
+      ["knowledge/curated/hand-written.md"]
+    );
+
+    const { kode, keluaran } = jalankan(root);
+    expect(keluaran).toContain("knowledge-generated-untracked: nothing tracked");
+    expect(kode).toBe(0);
+  });
+
+  test("runs even when graphify-out/ does not exist at all", () => {
+    const root = repo(
+      { "knowledge/generated/graphify/note.md": "# note\n" },
+      ["knowledge/generated/graphify/note.md"]
+    );
+
+    const { kode, keluaran } = jalankan(root);
+    expect(keluaran).toContain("must never enter history");
+    expect(kode).toBe(1);
+  });
+});
+
+describe("bounded content staleness (MAX_STALE_FILES = 40)", () => {
+  /**
+   * Real git repo with the four graph artefacts, a manifest seeded with ONE
+   * unchanged `.ts` entry (so the candidate scope learns the `.ts` extension
+   * without itself contributing any drift), and `n` additional tracked `.ts`
+   * files the manifest has never seen — each one counts as `added` staleness.
+   */
+  function repoWithStaleFiles(n) {
+    const nodes = [node("a", 0, "Konten Terstruktur")];
+    const seedContent = "export const seed = 0;\n";
+    const seedHash = createHash("md5").update(seedContent).digest("hex");
+    const files = {
+      "graphify-out/graph.json": graf(nodes),
+      "graphify-out/GRAPH_REPORT.md": laporan({ node: 1, komunitas: 1 }),
+      "graphify-out/manifest.json": JSON.stringify({ "src/seed.ts": { ast_hash: seedHash } }),
+      "graphify-out/cost.json": "{}",
+      "src/seed.ts": seedContent
+    };
+    const tracked = [
+      "graphify-out/graph.json",
+      "graphify-out/GRAPH_REPORT.md",
+      "graphify-out/manifest.json",
+      "graphify-out/cost.json",
+      "src/seed.ts"
+    ];
+    for (let i = 0; i < n; i++) {
+      const path = `src/stale${i}.ts`;
+      files[path] = `export const x${i} = ${i};\n`;
+      tracked.push(path);
+    }
+
+    const root = pohon(files);
+    Bun.spawnSync(["git", "-C", root, "init", "-q"]);
+    Bun.spawnSync(["git", "-C", root, "add", "-f", ...tracked]);
+    return root;
+  }
+
+  test("staleness at the bound (40) is only a note — exit 0", () => {
+    const root = repoWithStaleFiles(40);
+
+    const { kode, keluaran } = jalankan(root);
+    if (kode !== 0) console.log(keluaran);
+    expect(keluaran).toContain("staleness: 40/40 file(s)");
+    expect(kode).toBe(0);
+  });
+
+  test("staleness under the bound is only a note — exit 0", () => {
+    const root = repoWithStaleFiles(10);
+
+    const { kode, keluaran } = jalankan(root);
+    expect(keluaran).toContain("staleness: 10/40 file(s)");
+    expect(kode).toBe(0);
+  });
+
+  test("staleness over the bound is a violation naming the changed/added/removed breakdown and the remedy", () => {
+    const root = repoWithStaleFiles(41);
+
+    const { kode, keluaran } = jalankan(root);
+    expect(keluaran).toContain("41 file(s) changed/added/removed");
+    expect(keluaran).toContain("bound is 40");
+    expect(keluaran).toContain("41 added");
+    expect(keluaran).toContain("bun run knowledge:graph:update");
+    expect(kode).toBe(1);
+  });
+
+  test("SKIPPED, not silently passed as clean, when graphify-out/manifest.json does not exist", () => {
+    // manifest.json missing also fails the SEPARATE "four shared artefacts
+    // tracked" check (it is one of the four) — that failure is real and
+    // expected here, not a staleness bug. What this case actually proves is
+    // narrower: the staleness check itself reports SKIPPED with a named
+    // reason rather than silently reporting a clean 0/40, which would make a
+    // missing manifest indistinguishable from a genuinely fresh graph.
+    const nodes = [node("a", 0, "Konten Terstruktur")];
+    const root = pohon({
+      "graphify-out/graph.json": graf(nodes),
+      "graphify-out/GRAPH_REPORT.md": laporan({ node: 1, komunitas: 1 }),
+      "graphify-out/cost.json": "{}"
+    });
+    Bun.spawnSync(["git", "-C", root, "init", "-q"]);
+    Bun.spawnSync(["git", "-C", root, "add", "-A"]);
+
+    const { kode, keluaran } = jalankan(root);
+    expect(keluaran).toContain("staleness: SKIPPED — graphify-out/manifest.json does not exist");
+    expect(keluaran).not.toContain("[staleness]");
+    expect(kode).toBe(1);
+  });
 });

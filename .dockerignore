@@ -21,5 +21,12 @@ docs/
 # megabyte dan setiap rebuild-nya membatalkan cache lapisan sumber image.
 graphify-out/
 
+# Lapisan navigasi pengetahuan developer (isu #113) — dibaca manusia lewat
+# Obsidian, tidak pernah dibaca oleh proses build. `*.md` di atas hanya
+# cocok pada berkas di root, jadi tanpa baris ini seluruh pohon `knowledge/`
+# (termasuk hasil ekspor yang bisa mencapai ~1.500 berkas) akan ikut masuk
+# ke build context.
+knowledge/
+
 .DS_Store
 npm-debug.log*

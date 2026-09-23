@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](checklist-repo-baru.md)
 
-<!-- i18n-source-hash: sha256:c59c73ae4ae2572cdb2aeeed579a5d74026f5735218786e5c816985f27c49273 -->
+<!-- i18n-source-hash: sha256:d7e0fccb56ea4fbc65b74240565959b94739e83cb693d52b920337a0ebc74ef0 -->
 
 # Memulai Situs Baru di Atas awcms-astro
 
@@ -19,6 +19,7 @@ Yang ikut terbawa dan **harus dikosongkan sebelum commit pertama**, karena isiny
 - [ ] `docs/adr/00*.md` + tabel di `docs/adr/README.md` — keputusan template ini, bukan keputusan situs kamu. Mulai penomoranmu sendiri dari `0001`; `bun run audit:dokumen` menuntut tabel dan berkasnya cocok dua arah, jadi menghapus satu tanpa yang lain memerahkan CI.
 - [ ] `package.json` — `name`, `description`, `homepage`, `repository`, dan `version` (kembalikan ke `0.1.0`).
 - [ ] `graphify-out/` — artefak analisis repo template; hapus, dan tambahkan ke `.gitignore` bila kamu tidak memakai perkakasnya.
+- [ ] `knowledge/curated/*.md` — catatan kurasi milik template menjelaskan repo INI; tulis ulang untuk situsmu (atau hapus) alih-alih mempertahankannya apa adanya. Perkakasnya sendiri (`scripts/knowledge-graph-update.mjs`, `scripts/knowledge-graph-label.mjs`, `scripts/knowledge-obsidian-export.mjs`, skrip `knowledge:*`, `knowledge/generated/` yang diabaikan git) diwarisi apa adanya — tidak ada yang perlu dikonfigurasi. `graphify-out/` yang tidak ada (sehingga `knowledge/` kosong) adalah keadaan sah; `bun run audit:graf` melewati dirinya dan mengatakannya ([ADR-0051](../adr/0051-a-knowledge-tree-points-at-the-code-and-owns-none-of-it.id.md)).
 
 Yang **tidak** perlu disentuh: `src/lib/`, `src/layouts/`, `src/components/`, `src/styles/global.css`, `scripts/`, `tests/`, `server/`, `.github/`. Itulah kerangkanya.
 
@@ -76,7 +77,7 @@ Bila ilustrasi dibangkitkan sendiri, **jangan biarkan konfigurasinya menyisipkan
 Wajib tetap hijau:
 
 - [ ] `bun run check` — gerbang lockfile lalu `astro check`.
-- [ ] `bun test` — 40 berkas gerbang. Yang paling sering memerahkan situs baru:
+- [ ] `bun test` — 44 berkas gerbang. Yang paling sering memerahkan situs baru:
       katalog PO (`tests/katalog-po.test.mjs` — key yang dipakai kode tetapi tak
       ada di katalog, katalog locale yang tertinggal, `msgstr` kosong, key tab
       yang belum ditulis untuk locale mana pun), **peran situs**
@@ -108,11 +109,15 @@ Wajib tetap hijau:
       ([ADR-0039](../adr/0039-english-is-the-source-language.md)): Inggris di
       jalur telanjang adalah sumbernya, dan `<nama>.id.md` mencatat hash dari apa
       yang ia terjemahkan.
-- [ ] `bun run audit:graf` — artefak `graphify-out/`. Situs yang menghapus
-      direktori itu (lihat daftar di atas) mendapat gerbang yang **melewati
-      dirinya dan mengatakannya**; yang mempertahankannya terikat aturan yang
-      sama dengan template, termasuk bahwa nama tiap komunitas harus dipilih,
-      bukan diwarisi dari penamaan otomatis graphify.
+- [ ] `bun run audit:graf` (bisa juga dijalankan sebagai `bun run
+      knowledge:check`, sebuah alias) — artefak `graphify-out/`. Situs yang
+      menghapus direktori itu (lihat daftar di atas) mendapat gerbang yang
+      **melewati dirinya dan mengatakannya**; yang mempertahankannya terikat
+      aturan yang sama dengan template, termasuk bahwa nama tiap komunitas
+      harus dipilih, bukan diwarisi dari penamaan otomatis graphify, bahwa
+      tidak ada apa pun di bawah `knowledge/generated/` atau jalur
+      `.obsidian/` mana pun yang boleh terlacak git, dan kesegaran konten
+      berbatas melewati `MAX_STALE_FILES = 40`.
 
 **Menaruh seni:** berkas di `src/assets/`, konvensi nama `hero`, `tab/<tab>`,
 `artikel/<tab>/<slug>` tanpa ekstensi — tidak ada registry yang harus ikut
