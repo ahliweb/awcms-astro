@@ -561,6 +561,45 @@ describe("kutipan ADR", () => {
   });
 });
 
+// `knowledge/generated/` adalah keluaran mesin `bun run knowledge:obsidian:export`
+// (ADR-0051): satu catatan markdown per node graf, 1.496 berkas pada ekspor
+// pertama yang dijalankan di repo ini. Ia gitignored — tapi gerbang ini membaca
+// POHON KERJA, bukan indeks git, jadi sebelum pengecualian ini satu ekspor
+// memerahkan `audit:dokumen` pada mesin siapa pun yang menjalankannya. Dan
+// bukan karena ada yang salah: catatan yang dipancarkan graphify mengutip
+// `ADR-0090`/`ADR-0098` milik `awcms` dari isi node yang diindeksnya, tanpa
+// penanda repo yang dituntut gerbang kutipan. Menuntut keluaran mesin memenuhi
+// aturan penulisan dokumen repo ini berarti menuntut graphify menulis prosanya.
+describe("knowledge/generated/ tidak pernah dibaca", () => {
+  test("catatan hasil ekspor yang melanggar setiap aturan dokumen tetap LOLOS", () => {
+    const akar = pohon({
+      "docs/adr/0001-satu.md": adr("0001"),
+      "docs/adr/README.md": indeks("| [0001](0001-satu.md) | Satu | Diterima |"),
+      // Tiga pelanggaran sekaligus: kutipan ADR yang tidak resolve dan tanpa
+      // penanda, tautan relatif mati, dan jalur dalam span kode yang tidak ada.
+      "knowledge/generated/graphify/penyaji.test.mjs.md": [
+        "# penyaji.test.mjs",
+        "",
+        "Lihat ADR-0098 dan [tautan mati](../tidak-ada.md) serta `src/tidak/ada.ts`."
+      ].join("\n")
+    });
+
+    expect(jalankan(akar).kode).toBe(0);
+  });
+
+  test("pengecualiannya BERBASIS JALUR, bukan nama direktori — `generated/` di tempat lain tetap dibaca", () => {
+    const akar = pohon({
+      "docs/adr/0001-satu.md": adr("0001"),
+      "docs/adr/README.md": indeks("| [0001](0001-satu.md) | Satu | Diterima |"),
+      "docs/generated/catatan.md": "Lihat ADR-0098 untuk alasannya."
+    });
+    const { kode, keluaran } = jalankan(akar);
+
+    expect(kode).toBe(1);
+    expect(keluaran).toContain("ADR-0098");
+  });
+});
+
 test("repo ini sendiri lolos", () => {
   const { kode, keluaran } = jalankan(".");
 

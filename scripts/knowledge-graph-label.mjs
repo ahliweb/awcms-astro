@@ -90,6 +90,19 @@ const FILENAME_SUFFIX = /\.(astro|css|cjs|js|json|jsonc|md|mdx|mjs|svg|ts|tsx|tx
 const PLACEHOLDER = /^Community\s+\d+$/i;
 
 /**
+ * A curated name goes into `GRAPH_REPORT.md` inside a quoted heading
+ * (`### Community 7 - "..."`), so a name carrying a double quote or a
+ * backslash would have to be escaped on the way in. Refusing both instead is
+ * strictly safer than escaping them: an escape written by hand here is exactly
+ * the half-done kind CodeQL flags as `js/incomplete-sanitization` — escaping
+ * the quote but not the backslash emits a heading that no longer parses as a
+ * quoted string, and this script's own `audit:graf` counterpart then reads a
+ * name that disagrees with `graph.json`. No community in this repo has ever
+ * needed either character, so nothing expressible is lost.
+ */
+const QUOTE_OR_BACKSLASH = /["\\]/;
+
+/**
  * Serialise `graph.json` the way `graphify` itself does, byte for byte.
  *
  * This is not cosmetic. `graph.json` is TRACKED, so its formatting decides
@@ -162,6 +175,12 @@ for (const cid of [...members.keys()].sort((a, b) => a - b)) {
     problems.push(`community ${cid} is named "${name}" — that is the placeholder, not a chosen name`);
     continue;
   }
+  if (QUOTE_OR_BACKSLASH.test(name)) {
+    problems.push(
+      `community ${cid} is named ${JSON.stringify(name)} — a name may contain neither a double quote nor a backslash, because GRAPH_REPORT.md carries it inside a quoted heading`
+    );
+    continue;
+  }
 
   const taken = byName.get(name);
   if (taken !== undefined) {
@@ -196,7 +215,13 @@ if (existsSync(REPORT)) {
       const name = labels[cid];
       if (typeof name !== "string") return whole;
       headingsRewritten += 1;
-      return `${prefix}"${name.replace(/"/g, '\\"')}"`;
+      // No escaping here, and deliberately none: a name containing `"` or `\`
+      // was already refused above, so there is nothing left to escape. An
+      // escape pass at this point could only ever be an incomplete one — the
+      // obvious `.replace(/"/g, '\\"')` leaves a backslash in the name
+      // un-escaped and emits a heading that no longer parses as a quoted
+      // string, which is what CodeQL's js/incomplete-sanitization names.
+      return `${prefix}"${name}"`;
     }
   );
   writeFileSync(REPORT, report);

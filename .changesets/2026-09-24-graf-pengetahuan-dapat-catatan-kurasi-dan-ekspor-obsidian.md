@@ -57,6 +57,26 @@ sesi penamaan yang menemukan ini: **1.404 node, 2.717 edge, 91 komunitas**,
 semua 91 nama berbeda dan diturunkan dari isi (sebelumnya 1.421 / 2.603 / 97;
 rebuild-nya sendiri murni kode dan tidak memakan token).
 
+Dua hal lagi yang ditemukan justru saat menjalankan ini sungguhan, bukan saat
+merancangnya:
+
+- **Ekspor nyata memerahkan `audit:dokumen`.** Gerbang itu membaca POHON KERJA,
+  bukan indeks git, jadi 1.496 catatan hasil ekspor — yang gitignored dan tidak
+  pernah masuk riwayat — tetap ia baca, lalu menuntutnya memenuhi aturan
+  kutipan ADR: catatan graphify mengutip `ADR-0090`/`ADR-0098` milik `awcms`
+  dari isi node yang diindeksnya, tanpa penanda repo-lain. Menuntut keluaran
+  mesin menulis prosa repo ini adalah tuntutan yang salah sasaran, jadi
+  `knowledge/generated/` kini dikecualikan lewat prefiks JALUR (bukan nama
+  direktori — `docs/generated/` mana pun tetap dibaca), dan kedua arah itu
+  dibuktikan `tests/audit-dokumen.test.mjs`.
+- **CodeQL menolak escape separuh jalan di `knowledge:graph:label`.** Nama
+  komunitas masuk `GRAPH_REPORT.md` di dalam heading berkutip, dan versi
+  pertama meng-escape `"` tanpa meng-escape `\` — persis
+  `js/incomplete-sanitization`. Alih-alih melengkapi escape-nya, nama yang
+  memuat `"` atau `\` sekarang DITOLAK di tahap validasi: tidak ada komunitas
+  di repo ini yang pernah butuh salah satunya, jadi tidak ada yang hilang, dan
+  tidak ada escape tangan yang bisa jadi separuh jalan lagi.
+
 - Tidak ada perubahan yang terlihat pembaca situs; ini murni perkakas
   developer/agen dan gerbang CI baru.
 - Terasa saat mengembangkan: `bun test` naik dari 40 menjadi 44 berkas

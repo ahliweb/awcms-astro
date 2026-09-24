@@ -257,6 +257,35 @@ describe("fail-closed refusals leave every output untouched", () => {
     assertRefusedWithoutWriting(root, /both named "Shared Name"/);
   });
 
+  // A name reaches GRAPH_REPORT.md inside a quoted heading, so a `"` or a `\`
+  // in it would have to be escaped on the way in. Both are refused instead:
+  // the hand-written escape that would otherwise be needed here is exactly the
+  // half-done kind CodeQL reports as js/incomplete-sanitization — escape the
+  // quote, forget the backslash, and the heading stops parsing as a quoted
+  // string while `audit:graf` then reads a name that disagrees with
+  // `graph.json`. Refusing the two characters costs nothing expressible.
+  test("a name containing a double quote", () => {
+    const nodes = [node("a", 0, "x"), node("b", 1, "x")];
+    const root = tree({
+      [GRAPH_PATH]: graphOf(nodes),
+      [REPORT_PATH]: reportOf(),
+      [LABELS_PATH]: { 0: 'The "Nine" Gates', 1: "Release Tooling" }
+    });
+
+    assertRefusedWithoutWriting(root, /neither a double quote nor a backslash/);
+  });
+
+  test("a name containing a backslash — the character an escape pass would miss", () => {
+    const nodes = [node("a", 0, "x"), node("b", 1, "x")];
+    const root = tree({
+      [GRAPH_PATH]: graphOf(nodes),
+      [REPORT_PATH]: reportOf(),
+      [LABELS_PATH]: { 0: "Windows\\Paths", 1: "Release Tooling" }
+    });
+
+    assertRefusedWithoutWriting(root, /neither a double quote nor a backslash/);
+  });
+
   test("an empty-string / whitespace-only name", () => {
     const nodes = [node("a", 0, "x"), node("b", 1, "x")];
     const root = tree({

@@ -5,7 +5,7 @@ description: Sembilan gerbang awcms-astro (check, test, audit:konten, audit:doku
 
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](SKILL.md)
 
-<!-- i18n-source-hash: sha256:fb3e9cb301312f2f9bbf0ecd08a56fc5c836ce5eb329183a8b8190fa4c2a365d -->
+<!-- i18n-source-hash: sha256:bc0356736cddd0fd966c24af8c3e1e79140e01714985fea942c61da7f6be91b7 -->
 
 # awcms-astro — gerbang
 
@@ -53,6 +53,17 @@ bun run audit:rilis       # backlog changeset menunggu  — tanpa build, tanpa j
 - **URL eksternal dan anchor** di `audit:dokumen` — yang pertama butuh jaringan
   (gerbang yang merah karena situs pihak ketiga mati akan diabaikan orang), yang
   kedua berarti menebak slugifikasi heading GitHub.
+- **`knowledge/generated/`** — `audit:dokumen` tidak pernah membacanya. Pohon itu
+  keluaran mesin `bun run knowledge:obsidian:export` (ADR-0051): satu catatan
+  markdown per node graf, 1.496 berkas pada ekspor nyata pertama repo ini. Ia
+  gitignored, tapi gerbang ini membaca POHON KERJA dan bukan indeks git — jadi
+  sebelum pengecualian itu ada, satu ekspor memerahkan gerbang di mesin siapa pun
+  yang menjalankannya. Dan bukan karena ada yang salah: catatan graphify mengutip
+  `ADR-0090`/`ADR-0098` milik `awcms` dari isi node yang diindeksnya, tanpa satu
+  pun penanda repo-lain yang dituntut aturan kutipan. Menuntut keluaran mesin
+  memenuhi aturan penulisan dokumen repo ini berarti menuntut graphify menulis
+  prosa repo ini. Yang menjaga direktori itu justru `audit:graf`, yang
+  gagal-tertutup bila ada isinya yang pernah terlacak git.
 - **Apa yang DIMUAT sebuah cermin.** `audit:translation` menjaga cermin tetap
   SEUSIA sumbernya: hash yang cocok membuktikan ia diterjemahkan ulang saat
   sumbernya terakhir berubah, bukan bahwa ia menyatakan hal yang sama. Jebakan

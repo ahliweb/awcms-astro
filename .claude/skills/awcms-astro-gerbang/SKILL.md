@@ -51,6 +51,17 @@ bun run audit:rilis       # the waiting release backlog — no build, no network
 - **External URLs and anchors** in `audit:dokumen` — the first needs the network
   (a gate that goes red because a third-party site is down gets ignored), the
   second means guessing GitHub's heading slugification.
+- **`knowledge/generated/`** — `audit:dokumen` never reads it. That tree is
+  `bun run knowledge:obsidian:export`'s machine output (ADR-0051): one markdown
+  note per graph node, 1,496 files on this repo's first real export. It is
+  gitignored, but this gate reads the WORKING TREE rather than the git index, so
+  before the exclusion existed one export turned the gate red on the machine of
+  whoever ran it — and not because anything was wrong: graphify's notes quote
+  `awcms`'s `ADR-0090`/`ADR-0098` out of the node contents they index, with none
+  of the other-repo markers the citation rule demands. Requiring machine output
+  to obey this repo's document-writing rules is requiring graphify to write this
+  repo's prose. What guards that directory instead is `audit:graf`, which fails
+  closed if anything under it is ever git-tracked.
 - **What a mirror CONTAINS.** `audit:translation` keeps a mirror the same AGE as
   its source: a matching hash proves it was re-translated when the source last
   changed, not that it says the same thing. The related trap is on the other
