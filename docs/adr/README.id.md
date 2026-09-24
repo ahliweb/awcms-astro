@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:49fa01cc54816d9704e5feb0d2deef8a38aaff9782d3e55082dbfd3f7c26ea80 -->
+<!-- i18n-source-hash: sha256:19e9ff9e196653d4f78c17466ab67180a2bd4c75434f09cea9c944de7a96bdb1 -->
 
 # Architecture Decision Records
 
@@ -58,6 +58,7 @@ menyesuaikan gaya, menambah tes.
 | [0049](0049-a-reader-may-subscribe-and-the-first-write-from-a-strangers-browser.md) | Sebuah situs boleh menerbitkan buletin dengan menyatakan `SITE_NEWSLETTER`, yang menyalakan formulir footer dan kedua halaman token sekaligus — dan ia panggilan PERTAMA di repo ini yang menulis dari peramban orang asing. Tokennya dikirim saat DIKLIK dan tidak pernah saat halaman dimuat, karena pemindai tautan di klien email akan mencatat persetujuan yang tidak diberikan manusia; `/newsletter/confirm` dan `/newsletter/unsubscribe` jalur milik awcms, bukan milik repo ini untuk diganti; jawaban netralnya dirender apa adanya di ketiga permukaan | Diterima |
 | [0050](0050-bun-is-this-repos-only-runtime-and-a-gate-finally-says-so.md) | Bun adalah satu-satunya runtime repo ini — sudah benar di scripts `package.json`, CI, `Dockerfile`, dan shebang `server/penyaji.mjs`, dan sampai kini tak terjaga; `tests/runtime-bun.test.mjs` menggerbangi ketiadaannya dari ujung ke ujung, sementara bawaan `node:*` (implementasi Bun sendiri) dan `@astrojs/node`/`compression` (keduanya dijalankan OLEH Bun, dipertahankan untuk resolusi path URL dan negosiasi Brotli) dinyatakan sebagai keputusan mempertahankan yang disengaja, bukan kealpaan | Diterima |
 | [0051](0051-a-knowledge-tree-points-at-the-code-and-owns-none-of-it.md) | Pohon pengetahuan Graphify + Obsidian, di-porting dari desain `awcms-one` dan berdivergensi darinya di titik-titik yang bentuknya tak cocok di sini — `knowledge/generated/` diabaikan git alih-alih dilacak, basi konten berbatas pada `MAX_STALE_FILES = 40`, persis tiga skrip `knowledge:*` tanpa `knowledge:graph:check` yang redundan, dan `knowledge/**` ditulis dalam Bahasa Inggris tanpa cermin `.id.md` | Diterima |
+| [0052](0052-github-releases-are-part-of-this-repos-release-convention.md) | GitHub Release MEMANG konvensi rilis repo ini, bukan pemanis opsional — tujuh sudah ada, dibuat dengan tangan, dan pernah hanyut tiga versi di belakang tag dengan setiap gerbang hijau; `scripts/rilis.mjs` kini mencetak (tak pernah menjalankan) perintah `gh release create`, dan `audit:rilis` mendapat pemeriksaan keempat yang bergantung jaringan dan gagal tertutup bahwa setiap tag remote punya Release yang cocok | Diterima |
 
 > **Kenapa penomoran mulai dari 0014.** ADR di repo ini melanjutkan urutan repo
 > rujukan yang identitasnya dilepas di [#11](https://github.com/ahliweb/awcms-astro/pull/11);

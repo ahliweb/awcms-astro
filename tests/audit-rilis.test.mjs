@@ -64,6 +64,82 @@ function sebanyak(n, tanggal = HARI_INI) {
   return Array.from({ length: n }, (_, i) => `${tanggal}-perubahan-ke-${i + 1}.md`);
 }
 
+/** Menjalankan git dan melempar bila gagal — fixture harus dibangun tanpa cacat diam. */
+function git(cwd, ...args) {
+  const hasil = Bun.spawnSync(["git", "-C", cwd, ...args], {
+    stdout: "pipe",
+    stderr: "pipe"
+  });
+  if (hasil.exitCode !== 0) {
+    throw new Error(`git ${args.join(" ")} gagal: ${hasil.stderr.toString()}`);
+  }
+}
+
+/**
+ * Sebuah repo git NYATA dengan remote `origin` lokal (bare, bukan jaringan
+ * sungguhan) dan sekumpulan tag yang sudah didorong ke situ — bahan bakar
+ * pemeriksaan keempat, yang butuh `git ls-remote --tags origin` menjawab
+ * sesuatu yang benar-benar bisa dibaca `gitRun`.
+ *
+ * @param {{ dokumen?: string[], tag?: string[] }} opsi
+ * @returns {string} path direktori kerja (dipakai sebagai `cwd` skrip)
+ */
+function repoGit({ dokumen = [], tag = [] } = {}) {
+  const akar = mkdtempSync(join(tmpdir(), "audit-rilis-git-"));
+  sementara.push(akar);
+
+  const asal = mkdtempSync(join(tmpdir(), "audit-rilis-origin-"));
+  sementara.push(asal);
+  git(asal, "init", "--bare", "-q");
+
+  // Selalu dibuat, walau kosong: skrip berhenti dini lewat `reporter.finish()`
+  // begitu `.changesets/` tidak ada sama sekali, dan pemeriksaan keempat tidak
+  // pernah tercapai — beda dari keadaan "backlog kosong" yang tetap lanjut.
+  const direktori = join(akar, ".changesets");
+  mkdirSync(direktori, { recursive: true });
+  for (const berkas of dokumen) writeFileSync(join(direktori, berkas), "# fixture\n");
+
+  git(akar, "init", "-q");
+  git(akar, "config", "user.email", "test@example.invalid");
+  git(akar, "config", "user.name", "Test");
+  writeFileSync(join(akar, "placeholder.txt"), "x\n");
+  git(akar, "add", "-A");
+  git(akar, "commit", "-q", "-m", "init");
+  git(akar, "remote", "add", "origin", asal);
+
+  for (const satuTag of tag) git(akar, "tag", satuTag);
+  if (tag.length > 0) git(akar, "push", "-q", "origin", "--tags");
+
+  return akar;
+}
+
+/** @type {import("bun").Server[]} */
+const server = [];
+
+afterEach(() => {
+  while (server.length) server.pop()?.stop(true);
+});
+
+/**
+ * Server HTTP lokal (bukan jaringan sungguhan — loopback saja) yang menjawab
+ * persis bentuk `GET /repos/:slug/releases` GitHub: sebuah array berisi
+ * `tag_name`. Dipakai alih-alih jaringan nyata supaya test ini deterministik
+ * dan tetap lulus di runner tanpa keluar-jaringan.
+ *
+ * @param {string[]} tagRilis - nama tag yang dianggap punya GitHub Release
+ * @returns {string} URL lokal untuk `RILIS_RELEASES_API_URL`
+ */
+function layananRilis(tagRilis) {
+  const s = Bun.serve({
+    port: 0,
+    fetch() {
+      return Response.json(tagRilis.map((tag) => ({ tag_name: tag })));
+    }
+  });
+  server.push(s);
+  return `http://127.0.0.1:${s.port}/releases`;
+}
+
 async function jalankan(akar, env = {}) {
   const anak = Bun.spawn(["bun", SKRIP], {
     cwd: akar,
@@ -220,5 +296,64 @@ describe("jam dinding", () => {
     expect(keluaran).toContain("2020-01-01-purba.md");
     expect(keluaran).toContain("batasnya 14");
     expect(kode).toBe(1);
+  });
+});
+
+describe("pemeriksaan keempat: setiap tag rilis punya GitHub Release", () => {
+  test("tag tanpa GitHub Release yang cocok merah, dan tag yang hilang disebut", async () => {
+    const akar = repoGit({ tag: ["v1.0.0", "v1.1.0"] });
+    const url = layananRilis(["v1.0.0"]);
+
+    const { kode, keluaran } = await jalankan(akar, {
+      RILIS_RELEASES_API_URL: url
+    });
+
+    expect(keluaran).toContain("v1.1.0");
+    expect(keluaran).toContain("tanpa GitHub Release");
+    expect(kode).toBe(1);
+  });
+
+  test("semua tag punya GitHub Release yang cocok — hijau", async () => {
+    const akar = repoGit({ tag: ["v1.0.0", "v1.1.0"] });
+    const url = layananRilis(["v1.0.0", "v1.1.0"]);
+
+    const { kode, keluaran } = await jalankan(akar, {
+      RILIS_RELEASES_API_URL: url
+    });
+
+    expect(keluaran).toContain(
+      "2 tag diperiksa terhadap 2 GitHub Release, semua cocok"
+    );
+    expect(keluaran).toContain("Tidak ada pelanggaran");
+    expect(kode).toBe(0);
+  });
+
+  test("URL API yang tak terjangkau menghasilkan catatan DILEWATI, bukan kegagalan gerbang", async () => {
+    // Port loopback yang tidak ada layanannya — gagal cepat, tidak menyentuh
+    // jaringan sungguhan, jadi test ini tetap deterministik di runner mana pun.
+    const akar = repoGit({ tag: ["v1.0.0"] });
+
+    const { kode, keluaran } = await jalankan(akar, {
+      RILIS_RELEASES_API_URL: "http://127.0.0.1:1/tidak-ada",
+      RILIS_RELEASES_TIMEOUT_MS: "2000"
+    });
+
+    expect(keluaran).toContain("rilis GitHub: DILEWATI");
+    expect(keluaran).toContain("Tidak ada pelanggaran");
+    expect(kode).toBe(0);
+  });
+
+  test("repo tanpa tag rilis sama sekali mendapat catatan SEHAT, bukan DILEWATI palsu", async () => {
+    // Finding 1: `gitRun` menjawab `""` (bukan `null`) saat remote-nya
+    // benar-benar dihubungi dan memang belum punya tag — beda dari kegagalan
+    // git yang sesungguhnya, dan harus dibedakan dalam pesannya.
+    const akar = repoGit({ tag: [] });
+
+    const { kode, keluaran } = await jalankan(akar);
+
+    expect(keluaran).toContain("belum punya tag rilis apa pun");
+    expect(keluaran).not.toContain("tidak menjawab");
+    expect(keluaran).toContain("Tidak ada pelanggaran");
+    expect(kode).toBe(0);
   });
 });

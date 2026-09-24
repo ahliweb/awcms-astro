@@ -23,8 +23,8 @@
  *
  * ## What this gate checks
  *
- * Three things, all of them from file names and none of them needing a build, a
- * network, or awcms:
+ * Four things. The first three read only file names and need no build, no
+ * network, no awcms:
  *
  *   1. **A changeset can be aged at all.** Its name must begin `YYYY-MM-DD-`
  *      with a real calendar date, which `.changesets/README.md` has always
@@ -36,6 +36,36 @@
  *      sees it go red is the person whose merge crossed it.
  *   3. **The backlog has a deadline.** The oldest waiting changeset may be at
  *      most {@link MAX_AGE_DAYS} days old.
+ *   4. **Every release tag on the remote has a GitHub Release.** This one
+ *      needs both git and the network, and it exists for a defect that already
+ *      happened once and was fixed by hand, not by any gate: `scripts/rilis.mjs`
+ *      ends by printing `git push && git push origin <tag>` and has never once
+ *      created a GitHub Release. Six of them exist anyway — `v0.2.0` through
+ *      `v0.5.2` — created by a human running `gh release create` after the
+ *      fact, and for a while that human forgot: the Releases list sat three
+ *      versions behind the tags before anyone noticed, on a repo whose every
+ *      other gate stayed green throughout. `docs/adr/0031-...md` used to claim
+ *      "this repo's releases are annotated git tags, not GitHub Release
+ *      objects" — true of what the releaser DOES, false of what this repo's
+ *      convention actually is, and nothing read that sentence to know it had
+ *      gone stale. This is ADR-0030's rule applied to itself: a written
+ *      convention gets a checker, or it drifts a fourth time.
+ *
+ *      There is deliberately **no floor** on which tags are checked. Every tag
+ *      this repo has ever pushed already has a matching Release at the moment
+ *      this check was written — `v0.2.0` through `v0.6.0`, verified with
+ *      `gh release list` against `git ls-remote --tags origin` before this
+ *      code was added — so the gate is born GREEN rather than born yellow with
+ *      a bound someone has to remember to lower. A floor would only be a place
+ *      for a future gap to hide below.
+ *
+ *      This check fails CLOSED on network trouble, the same shape as check 2
+ *      of `audit-serapan.mjs`: a non-`ok` response or a thrown `fetch` is a
+ *      `note()` saying the check did not run, never a silent pass and never a
+ *      violation. The repo slug and the API URL are env-overridable the same
+ *      way — `RILIS_REPO_SLUG`, `RILIS_RELEASES_API_URL`,
+ *      `RILIS_RELEASES_TIMEOUT_MS` — because a site derived from this template
+ *      has its own repo to check, not this one's.
  *
  * ## Why the age bound is allowed to redden a run nobody caused
  *
@@ -65,9 +95,33 @@
 import { existsSync, readdirSync } from "node:fs";
 
 import { isChangesetFile } from "./lib/changeset.mjs";
+import { gitLines, gitRun } from "./lib/git.mjs";
 import { createReporter } from "./lib/reporter.mjs";
+import { tagRilisSah, tagTanpaRilis } from "./lib/tag-rilis.mjs";
 
 const DIRECTORY = ".changesets";
+
+/**
+ * Slug of the repo whose tags and Releases check 4 compares. Env-overridable
+ * because a site derived from this template has its own repo, not
+ * `ahliweb/awcms-astro`.
+ */
+const REPO_SLUG = (process.env.RILIS_REPO_SLUG ?? "ahliweb/awcms-astro").trim();
+
+/**
+ * Where the GitHub Releases list is read from, unauthenticated — public repos
+ * answer 200 for anyone. Overridable for the same reason `AWCMS_ADR_INDEX_URL`
+ * is in `audit-serapan.mjs`: a test fixture, or a repo whose Releases the real
+ * endpoint cannot see for some reason of its own.
+ */
+const RILIS_RELEASES_API_URL =
+  process.env.RILIS_RELEASES_API_URL ??
+  `https://api.github.com/repos/${REPO_SLUG}/releases?per_page=100`;
+
+/** Timeout for the Releases fetch. Not "a healthy request" — just not a hang. */
+const RILIS_RELEASES_TIMEOUT_MS = Number(
+  process.env.RILIS_RELEASES_TIMEOUT_MS ?? 15000
+);
 
 /**
  * At most this many changesets may wait for a release.
@@ -253,6 +307,100 @@ if (oldest) {
     `Tidak ada changeset menunggu. Batas yang berlaku: ${MAX_WAITING} berkas, ` +
       `${MAX_AGE_DAYS} hari (ADR-0048).`
   );
+}
+
+// ── Pemeriksaan keempat: setiap tag rilis di REMOTE punya GitHub Release ────
+// Beda bentuk dari tiga di atas: ia butuh git DAN jaringan, jadi ia gagal
+// TERTUTUP (note, bukan pelanggaran, bukan lulus diam-diam) begitu salah satu
+// tidak tersedia — persis bentuk pemeriksaan 2 di `audit-serapan.mjs`.
+//
+// Dicabang dari hasil MENTAH `gitRun`, bukan dari panjang `gitLines`-nya:
+// `gitRun` menjawab `null` saat perintahnya benar-benar gagal (bukan repo
+// git, tidak ada remote `origin`, tidak ada jaringan), tapi menjawab `""`
+// saat perintahnya BERHASIL dan remote-nya memang belum punya tag apa pun —
+// dan `gitLines` meratakan keduanya menjadi `[]`. Sebelum perbaikan ini,
+// kedua keadaan itu tercetak sebagai pesan DILEWATI yang sama, dan itu salah
+// untuk keadaan kedua: repo ini adalah TEMPLAT, dan setiap situs yang
+// diturunkan darinya mulai dengan nol tag rilis sampai rilis pertamanya
+// dipotong. Bagi mayoritas pengguna nyata gerbang ini — situs turunan yang
+// masih baru — pesan DILEWATI yang lama adalah klaim palsu tentang git yang
+// tidak menjawab, padahal git menjawab dengan benar bahwa tidak ada tag.
+const rawRefsRemote = gitRun(".", "ls-remote", "--tags", "origin");
+
+if (rawRefsRemote === null) {
+  reporter.note(
+    "  rilis GitHub: DILEWATI — `git ls-remote --tags origin` tidak menjawab " +
+      "(bukan repo git, tidak ada remote `origin`, atau tidak ada jaringan). " +
+      "Tiga pemeriksaan lain tetap jalan; yang ini tidak berjalan sama sekali."
+  );
+} else if (gitLines(rawRefsRemote).length === 0) {
+  reporter.note(
+    "  rilis GitHub: repo belum punya tag rilis apa pun di remote — tidak " +
+      "ada yang dicocokkan. Ini keadaan SEHAT, bukan lewatan: sebuah situs " +
+      "yang baru diturunkan dari templat ini mulai dengan nol tag sampai " +
+      "rilis pertamanya dipotong, dan itu normal."
+  );
+} else {
+  const refsRemote = gitLines(rawRefsRemote);
+  const tagRemote = [...new Set(refsRemote)]
+    .map((baris) => baris.split("\t")[1] ?? "")
+    .filter((ref) => ref.startsWith("refs/tags/") && !ref.endsWith("^{}"))
+    .map((ref) => ref.slice("refs/tags/".length))
+    .filter(tagRilisSah);
+
+  if (tagRemote.length === 0) {
+    reporter.note(
+      "  rilis GitHub: tidak ada tag `vX.Y.Z` di remote — tidak ada yang diperiksa."
+    );
+  } else {
+    let namaRilis = null;
+
+    try {
+      const respons = await fetch(RILIS_RELEASES_API_URL, {
+        headers: { accept: "application/vnd.github+json" },
+        signal: AbortSignal.timeout(RILIS_RELEASES_TIMEOUT_MS)
+      });
+
+      if (respons.ok) {
+        const muatan = await respons.json();
+        namaRilis = Array.isArray(muatan)
+          ? muatan.map((rilis) => String(rilis?.tag_name ?? ""))
+          : [];
+      } else {
+        reporter.note(
+          `  rilis GitHub: DILEWATI — daftar GitHub Release ${REPO_SLUG} menjawab ` +
+            `HTTP ${respons.status}. Tiga pemeriksaan lain tetap jalan; yang ini ` +
+            "tidak berjalan sama sekali."
+        );
+      }
+    } catch (galat) {
+      reporter.note(
+        `  rilis GitHub: DILEWATI — daftar GitHub Release ${REPO_SLUG} tidak bisa ` +
+          `diambil (${galat.message}). Ini normal di runner tanpa keluar-jaringan. ` +
+          "Yang ini tidak berjalan sama sekali."
+      );
+    }
+
+    if (namaRilis !== null) {
+      const hilang = tagTanpaRilis(tagRemote, namaRilis);
+
+      if (hilang.length > 0) {
+        reporter.violation(
+          "rilis GitHub",
+          REPO_SLUG,
+          `tag ${hilang.join(", ")} ada di remote tanpa GitHub Release — buat ` +
+            "dengan `gh release create <tag> --verify-tag --latest --title " +
+            '"<tag> — <judul>" --notes-file <catatan-rilis>` (lihat langkah ' +
+            "yang dicetak `scripts/rilis.mjs` sesudah tag didorong)"
+        );
+      } else {
+        reporter.note(
+          `  rilis GitHub: ${tagRemote.length} tag diperiksa terhadap ` +
+            `${namaRilis.length} GitHub Release, semua cocok.`
+        );
+      }
+    }
+  }
 }
 
 reporter.finish();

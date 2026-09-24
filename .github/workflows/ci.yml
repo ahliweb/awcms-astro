@@ -161,7 +161,10 @@ jobs:
       # itu diterima di sini justru karena merahnya tidak menuntut apa-apa dari
       # yang melihatnya: `main` tidak punya check wajib, jadi ia memberi tahu
       # tanpa menghalangi merge, dan yang membersihkannya satu perintah.
-      - name: Audit rilis (backlog changeset yang menunggu)
+      #
+      # Sejak ADR-0052 gerbang ini juga memeriksa bahwa setiap tag rilis di
+      # remote punya GitHub Release yang cocok — bukan hanya backlog changeset.
+      - name: Audit rilis (backlog changeset yang menunggu + GitHub Release)
         run: bun run audit:rilis
 
       # `bun audit` (dependency) dan `bun run audit:konten` adalah dua hal yang

@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:425d3ed7a3b6b9c691991670e6f00ddbed3bc32c6422098175e78c7146a93541 -->
+<!-- i18n-source-hash: sha256:881e3045b1996330f54bb44b47c38114d931e1789c80e1b070b0b34a70d6b1e2 -->
 
 # awcms-astro
 
@@ -142,14 +142,14 @@ satu-satunya lockfile.
 | `bun run dev`            | Server pengembangan Astro (HMR), `http://localhost:4321`        |
 | `bun run check`          | Gerbang lockfile lalu `astro check`                             |
 | `bun run check:lockfile` | Hanya gerbang lockfile — murni baca berkas                      |
-| `bun test` | 44 berkas gerbang: kontrak `awcms`, peran situs, tanpa backend, tanpa runtime Node.js, kosakata `news`, feed, penyaji, versi toolchain, CSP keluaran, lantai lebar 360px, cermin terjemahan, batas keamanan ekspor knowledge/Obsidian, langkah label graf pengetahuan, dan meta-tes atas skrip audit |
+| `bun test` | 45 berkas gerbang: kontrak `awcms`, peran situs, tanpa backend, tanpa runtime Node.js, kosakata `news`, feed, penyaji, versi toolchain, CSP keluaran, lantai lebar 360px, cermin terjemahan, batas keamanan ekspor knowledge/Obsidian, langkah label graf pengetahuan, dan meta-tes atas skrip audit |
 | `bun run audit:konten`   | Gerbang audit: sumber gambar, dan keluaran build bila sudah ada |
 | `bun run audit:dokumen`  | Gerbang dokumen: tautan markdown mati, indeks ADR, daftar permukaan kilau |
 | `bun run audit:graf`     | Gerbang graf: artefak `graphify-out/` yang terlacak, nama komunitasnya, apa pun yang terlacak di bawah `knowledge/generated/` atau `.obsidian/`, dan kesegaran konten berbatas melewati `MAX_STALE_FILES = 40` ([ADR-0051](docs/adr/0051-a-knowledge-tree-points-at-the-code-and-owns-none-of-it.id.md)) |
 | `bun run audit:translation` | Gerbang terjemahan: cermin Indonesia yang basi, dan dokumen yang belum punya cermin ([ADR-0039](docs/adr/0039-english-is-the-source-language.md)) |
 | `bun run audit:serapan`  | Gerbang serapan: keputusan `awcms` yang belum dibaca siapa pun di sini — satu-satunya gerbang yang melihat ke luar |
 | `bun run audit:aset`     | Gerbang aset: anggaran byte pembaca, atas sumber dan atas hasil build bila ada |
-| `bun run audit:rilis`    | Gerbang rilis: backlog changeset yang menunggu, dibatasi 12 berkas dan 14 hari ([ADR-0048](docs/adr/0048-a-release-is-cut-when-the-backlog-crosses-a-bound.id.md)) |
+| `bun run audit:rilis`    | Gerbang rilis: backlog changeset yang menunggu, dibatasi 12 berkas dan 14 hari ([ADR-0048](docs/adr/0048-a-release-is-cut-when-the-backlog-crosses-a-bound.id.md)), dan setiap tag rilis di remote punya GitHub Release yang cocok ([ADR-0052](docs/adr/0052-github-releases-are-part-of-this-repos-release-convention.id.md)) |
 | `bun run knowledge:graph:update` | Membangun ulang graf `graphify-out/` milik repo ini (code-only, tanpa panggilan LLM), dan mengklaster ulang — pemegang PARTISI. Butuh `graphify` di `PATH`; tidak berjalan di CI |
 | `bun run knowledge:graph:label` | Menerapkan nama komunitas kuratif ke partisi yang sudah ada di disk — pemegang NAMA, dan tidak pernah memanggil `graphify`. Tidak butuh `graphify`, Python, atau jaringan; tidak berjalan di CI |
 | `bun run knowledge:obsidian:export` | Mengekspor graf ke vault Obsidian `knowledge/generated/graphify/` yang tervalidasi dan ber-allowlist. Butuh `graphify` di `PATH`; tidak berjalan di CI |

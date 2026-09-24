@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md)
 
-<!-- i18n-source-hash: sha256:e61c26a97fd5f4ce026c1b7644b79773e64158a6b7c41ae5c0703bca8965467b -->
+<!-- i18n-source-hash: sha256:1e6b0126dd2f09e095c789beae4df9402a30f7942ce73b209d19dd634ce735f1 -->
 
 # ADR-0031 — SBOM CycloneDX diturunkan dari `bun.lock` pada setiap rilis
 
@@ -87,4 +87,9 @@ sebagaimana `awcms` ADR-0068 melakukannya untuk pin edisi.
   §Keputusan.
 - **SBOM sebagai aset GitHub Release.** Ditolak: rilis repo ini adalah tag git
   anotatif, bukan objek GitHub Release; menambah jalur publikasi kedua demi
-  satu berkas berarti dua tempat yang bisa tidak sepakat.
+  satu berkas berarti dua tempat yang bisa tidak sepakat. **Premis butir ini —
+  bahwa repo ini tak menerbitkan GitHub Release — digantikan
+  [ADR-0052](0052-github-releases-are-part-of-this-repos-release-convention.id.md)
+  pada 24 September 2026: GitHub Release memang ada dan kini bagian dari
+  konvensi rilis repo ini. Penalaran menolak aset Release untuk SBOM tetap
+  utuh melewati ADR itu; hanya premis "tak ada Release" yang berubah.**

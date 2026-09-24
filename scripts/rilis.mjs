@@ -26,6 +26,7 @@
  * commit dan tag diserahkan ke tangan manusia; perintah persisnya dicetak.
  */
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
 import { gitRunInherit, gitRunOrThrow } from './lib/git.mjs';
@@ -300,6 +301,20 @@ const catatanIntegrasi = sumberKonten
 const entry = `\n## [${next}] — ${today}\n\n${catatanIntegrasi}${body || '_Tidak ada changeset; lihat riwayat git._'}\n`;
 fs.writeFileSync('CHANGELOG.md', changelog.slice(0, at) + entry + changelog.slice(at));
 
+// ── Catatan rilis untuk GitHub Release ───────────────────────────────────────
+// `entry` DI ATAS sudah persis bagian CHANGELOG yang baru ditulis — dari
+// heading `## [<versi>] —` sampai sebelum heading versi berikutnya, verbatim —
+// jadi ia dipakai apa adanya sebagai isi `--notes-file`, bukan diambil lagi
+// dengan mem-parse ulang CHANGELOG.md.
+//
+// Ditulis ke direktori temp SISTEM, bukan ke sebuah jalur di repo ini: berkas
+// ini bukan artefak rilis (SBOM sudah menjadi itu) dan tidak ada alasan bagi
+// isinya — sebuah salinan CHANGELOG — untuk ikut ter-commit atau bahkan untuk
+// bertahan lebih lama dari run ini. Menaruhnya di repo berarti menambah entri
+// .gitignore baru untuk sesuatu yang sudah punya rumah.
+const catatanRilisPath = path.join(os.tmpdir(), `awcms-astro-rilis-${tag}.md`);
+fs.writeFileSync(catatanRilisPath, `${entry.trim()}\n`);
+
 for (const f of pending) fs.unlinkSync(`.changesets/${f}`);
 
 pkg.version = next;
@@ -332,6 +347,31 @@ execSync('bun run sbom', { stdio: 'inherit' });
 
 console.log(`\nCHANGELOG.md dan package.json diperbarui ke ${next}.`);
 
+// GitHub Release dicetak sebagai langkah berikutnya, tidak pernah dijalankan
+// skrip ini sendiri. Dua alasan, keduanya struktural bukan selera:
+//
+//   1. `--verify-tag` menolak tag yang belum ada DI REMOTE, dan perilis ini
+//      sengaja tidak pernah mendorong apa pun (lihat komentar di atas
+//      §Prasyarat) — menjalankan `gh release create` di sini berarti mencoba
+//      merilis sebuah tag yang belum tentu terdorong, atau melanggar batasnya
+//      sendiri dengan mendorong supaya bisa.
+//   2. `<ISI JUDUL RILIS>` adalah SENGAJA placeholder. Judul enam rilis yang
+//      sudah ada (`v0.2.0 — rilis pertama`, dst.) datang dari bagian sesudah
+//      `rilis: vX.Y.Z — ` di subjek COMMIT rilis — dan subjek itu ditulis
+//      TANGAN oleh manusia yang menjalankan `git commit`, bukan oleh baris
+//      `git commit -m "rilis: ${tag}"` yang dicetak di bawah ini. Skrip ini
+//      tidak tahu judulnya sampai manusia menuliskannya, jadi menebaknya di
+//      sini akan menerbitkan Release dengan judul yang tidak pernah ditulis
+//      siapa pun.
+//
+// `--latest` ditulis EKSPLISIT, bukan diwarisi dari bawaan tanggal-dan-versi
+// `gh`: `awcms` ADR-0119 (dicatat di CHANGELOG.md) memvonis pola itu
+// `diperiksa` di sini karena repo ini belum punya alur rilis sendiri, dan
+// mencatat baris itu harus dibaca ulang begitu punya. Baris di bawah ini
+// ADALAH momen itu.
+const gilirGhRelease = (isiJudul) =>
+  `  gh release create ${tag} --verify-tag --latest --title "${tag} — ${isiJudul}" --notes-file ${catatanRilisPath}`;
+
 // ── Commit dan tag ───────────────────────────────────────────────────────────
 if (!commit) {
   console.log('\nLangkah berikutnya:');
@@ -339,6 +379,7 @@ if (!commit) {
   console.log(`  git commit -m "rilis: ${tag}"`);
   console.log(`  git tag -a ${tag} -m "${tag}"`);
   console.log(`  git push && git push origin ${tag}`);
+  console.log(gilirGhRelease('<ISI JUDUL RILIS>'));
   process.exit(0);
 }
 
@@ -346,3 +387,4 @@ gitRunInherit('.', 'add', '-A');
 gitRunInherit('.', 'commit', '-m', `rilis: ${tag}`);
 gitRunInherit('.', 'tag', '-a', tag, '-m', tag);
 console.log(`\n${tag} dibuat. Dorong dengan: git push && git push origin ${tag}`);
+console.log(gilirGhRelease('<ISI JUDUL RILIS>'));

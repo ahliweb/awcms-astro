@@ -139,14 +139,14 @@ is the only lockfile.
 | `bun run dev`               | Astro development server (HMR), `http://localhost:4321`          |
 | `bun run check`             | Lockfile gate, then `astro check`                                |
 | `bun run check:lockfile`    | The lockfile gate alone — pure file reading                      |
-| `bun test` | 44 gate files: the `awcms` contract, site roles, no-backend, no Node.js runtime, the `news` vocabulary, feeds, the server, toolchain versions, output CSP, the 360px layout floor, translation mirrors, the knowledge/Obsidian export safety boundary, the knowledge-graph label step, and meta-tests over the audit scripts |
+| `bun test` | 45 gate files: the `awcms` contract, site roles, no-backend, no Node.js runtime, the `news` vocabulary, feeds, the server, toolchain versions, output CSP, the 360px layout floor, translation mirrors, the knowledge/Obsidian export safety boundary, the knowledge-graph label step, and meta-tests over the audit scripts |
 | `bun run audit:konten`      | Audit gate: image sources, and the build output when it exists   |
 | `bun run audit:dokumen`     | Document gate: dead markdown links, the ADR index, the shine-surface list |
 | `bun run audit:graf`        | Graph gate: the tracked `graphify-out/` artefacts, their community names, anything tracked under `knowledge/generated/` or `.obsidian/`, and bounded content staleness past `MAX_STALE_FILES = 40` ([ADR-0051](docs/adr/0051-a-knowledge-tree-points-at-the-code-and-owns-none-of-it.md)) |
 | `bun run audit:translation` | Translation gate: stale Indonesian mirrors, and documents with no mirror ([ADR-0039](docs/adr/0039-english-is-the-source-language.md)) |
 | `bun run audit:serapan`     | Absorption gate: `awcms` decisions nobody here has read yet — the one gate that looks outward |
 | `bun run audit:aset`        | Asset gate: the reader's byte budget, over the source and over the build output when it exists |
-| `bun run audit:rilis`       | Release gate: the waiting changeset backlog, bounded at 12 files and 14 days ([ADR-0048](docs/adr/0048-a-release-is-cut-when-the-backlog-crosses-a-bound.md)) |
+| `bun run audit:rilis`       | Release gate: the waiting changeset backlog, bounded at 12 files and 14 days ([ADR-0048](docs/adr/0048-a-release-is-cut-when-the-backlog-crosses-a-bound.md)), and every remote release tag has a matching GitHub Release ([ADR-0052](docs/adr/0052-github-releases-are-part-of-this-repos-release-convention.md)) |
 | `bun run knowledge:graph:update` | Rebuilds this repo's own `graphify-out/` graph (code-only, no LLM call), and re-clusters — it owns the PARTITION. Needs `graphify` on `PATH`; not run in CI |
 | `bun run knowledge:graph:label` | Applies curated community names to whatever partition is already on disk — it owns the NAMES, and never invokes `graphify`. Needs no `graphify`, no Python, no network; not run in CI |
 | `bun run knowledge:obsidian:export` | Exports the graph to a validated, allowlisted `knowledge/generated/graphify/` Obsidian vault. Needs `graphify` on `PATH`; not run in CI |
