@@ -139,7 +139,7 @@ is the only lockfile.
 | `bun run dev`               | Astro development server (HMR), `http://localhost:4321`          |
 | `bun run check`             | Lockfile gate, then `astro check`                                |
 | `bun run check:lockfile`    | The lockfile gate alone — pure file reading                      |
-| `bun test` | 44 gate files: the `awcms` contract, site roles, no-backend, no Node.js runtime, the `news` vocabulary, feeds, the server, toolchain versions, output CSP, the 360px layout floor, translation mirrors, the knowledge/Obsidian export safety boundary, the knowledge-graph label step, and meta-tests over the audit scripts |
+| `bun test` | 45 gate files: the `awcms` contract, site roles, no-backend, no Node.js runtime, the `news` vocabulary, feeds, the server, toolchain versions, output CSP, the 360px layout floor, translation mirrors, the knowledge/Obsidian export safety boundary, the knowledge-graph label step, and meta-tests over the audit scripts |
 | `bun run audit:konten`      | Audit gate: image sources, and the build output when it exists   |
 | `bun run audit:dokumen`     | Document gate: dead markdown links, the ADR index, the shine-surface list |
 | `bun run audit:graf`        | Graph gate: the tracked `graphify-out/` artefacts, their community names, anything tracked under `knowledge/generated/` or `.obsidian/`, and bounded content staleness past `MAX_STALE_FILES = 40` ([ADR-0051](docs/adr/0051-a-knowledge-tree-points-at-the-code-and-owns-none-of-it.md)) |

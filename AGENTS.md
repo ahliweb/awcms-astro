@@ -826,6 +826,14 @@ Four things to know before touching headers, cache, or the performance budget:
       [ADR-0039](docs/adr/0039-english-is-the-source-language.md) is written in
       English and mirrored in the same change** — the ledger of outstanding
       documents may only shrink, and nothing may be added to it.
+- [ ] `bun run audit:rilis` green. It needs no build: a waiting changeset
+      backlog over 12 files or older than 14 days, and a name carrying no
+      usable `YYYY-MM-DD-` date. **Since [ADR-0052](docs/adr/0052-github-releases-are-part-of-this-repos-release-convention.md)
+      it also checks — needing git and the network, and failing closed rather
+      than passing silently when either is unreachable — that every release
+      tag on the remote has a matching GitHub Release.** GitHub Releases are
+      this repo's convention, not an optional extra: seven exist by hand and
+      once drifted three versions behind the tags with every other gate green.
 - [ ] A new page works with JavaScript switched off.
 - [ ] New interface strings enter EVERY locale catalogue.
 - [ ] A key assembled from configuration or editorial data is called with a

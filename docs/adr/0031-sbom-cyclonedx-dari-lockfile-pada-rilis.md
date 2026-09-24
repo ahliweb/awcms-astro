@@ -85,4 +85,9 @@ does for edition pinning.
   see §Decision.
 - **The SBOM as a GitHub Release asset.** Refused: this repo's releases are
   annotated git tags, not GitHub Release objects; adding a second publication
-  path for one file means two places that can disagree.
+  path for one file means two places that can disagree. **The premise of this
+  bullet — that this repo publishes no GitHub Releases — was superseded by
+  [ADR-0052](0052-github-releases-are-part-of-this-repos-release-convention.md)
+  on 24 September 2026: GitHub Releases do exist and are now part of this
+  repo's convention. The reasoning against an SBOM Release asset survives
+  that ADR intact; only the "no Releases exist" premise changed.**

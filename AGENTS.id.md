@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](AGENTS.md)
 
-<!-- i18n-source-hash: sha256:326dbe362fc009d850349059ff556c264ad8f0a7f797cbf967831cb67d5732e5 -->
+<!-- i18n-source-hash: sha256:bda5c5f08495391ba345a72fac00298177d28610a57592b8d6ac64f0135322fb -->
 
 # AGENTS.md — kontrak kerja `awcms-astro`
 
@@ -853,6 +853,16 @@ performa:
       bahasa Inggris dan dicerminkan pada perubahan yang sama** — buku besar
       dokumen tertunggak hanya boleh MENYUSUT, dan tidak ada yang boleh
       ditambahkan padanya.
+- [ ] `bun run audit:rilis` hijau. Ia juga tidak butuh build: backlog
+      changeset menunggu di atas 12 berkas atau lebih tua dari 14 hari, dan
+      nama yang tak membawa tanggal `YYYY-MM-DD-` yang bisa dipakai. **Sejak
+      [ADR-0052](docs/adr/0052-github-releases-are-part-of-this-repos-release-convention.id.md)
+      ia juga memeriksa — butuh git dan jaringan, dan gagal tertutup alih-alih
+      lulus diam-diam saat salah satunya tak terjangkau — bahwa setiap tag
+      rilis di remote punya GitHub Release yang cocok.** GitHub Release adalah
+      konvensi repo ini, bukan pemanis opsional: tujuh sudah ada dengan tangan
+      dan pernah hanyut tiga versi di belakang tag dengan setiap gerbang lain
+      hijau.
 - [ ] Halaman baru bekerja dengan JavaScript dimatikan.
 - [ ] String antarmuka baru masuk ke SELURUH katalog locale.
 - [ ] Key yang dirangkai dari konfigurasi atau data redaksi dipanggil dengan

@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:425d3ed7a3b6b9c691991670e6f00ddbed3bc32c6422098175e78c7146a93541 -->
+<!-- i18n-source-hash: sha256:529b7231cf659faa0f369b74972a83cd14635b861ed54b60c2cadce942a0da0f -->
 
 # awcms-astro
 
@@ -142,7 +142,7 @@ satu-satunya lockfile.
 | `bun run dev`            | Server pengembangan Astro (HMR), `http://localhost:4321`        |
 | `bun run check`          | Gerbang lockfile lalu `astro check`                             |
 | `bun run check:lockfile` | Hanya gerbang lockfile — murni baca berkas                      |
-| `bun test` | 44 berkas gerbang: kontrak `awcms`, peran situs, tanpa backend, tanpa runtime Node.js, kosakata `news`, feed, penyaji, versi toolchain, CSP keluaran, lantai lebar 360px, cermin terjemahan, batas keamanan ekspor knowledge/Obsidian, langkah label graf pengetahuan, dan meta-tes atas skrip audit |
+| `bun test` | 45 berkas gerbang: kontrak `awcms`, peran situs, tanpa backend, tanpa runtime Node.js, kosakata `news`, feed, penyaji, versi toolchain, CSP keluaran, lantai lebar 360px, cermin terjemahan, batas keamanan ekspor knowledge/Obsidian, langkah label graf pengetahuan, dan meta-tes atas skrip audit |
 | `bun run audit:konten`   | Gerbang audit: sumber gambar, dan keluaran build bila sudah ada |
 | `bun run audit:dokumen`  | Gerbang dokumen: tautan markdown mati, indeks ADR, daftar permukaan kilau |
 | `bun run audit:graf`     | Gerbang graf: artefak `graphify-out/` yang terlacak, nama komunitasnya, apa pun yang terlacak di bawah `knowledge/generated/` atau `.obsidian/`, dan kesegaran konten berbatas melewati `MAX_STALE_FILES = 40` ([ADR-0051](docs/adr/0051-a-knowledge-tree-points-at-the-code-and-owns-none-of-it.id.md)) |
