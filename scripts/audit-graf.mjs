@@ -82,10 +82,82 @@
  * Argumen opsional pertama adalah akar yang diperiksa (default `.`); itu yang
  * membuat `tests/audit-graf.test.mjs` bisa menjalankannya atas pohon fixture
  * dan membuktikan tiap gerbang benar-benar MERAH saat cacatnya dikembalikan.
+ *
+ * ---------------------------------------------------------------------------
+ * English addendum (issue #113 — knowledge/Obsidian export)
+ * ---------------------------------------------------------------------------
+ *
+ * Two checks were added after the Indonesian docblock above was written, and
+ * they change what "Yang diperiksa" / "Yang sengaja TIDAK diperiksa" mean —
+ * both are amended here in English (new code in this repo is English,
+ * post-ADR-0039; the existing Indonesian gates above are not translated).
+ *
+ * **Now also checked:**
+ *
+ *   5. **`knowledge/generated/` is never tracked, and neither is any
+ *      `.obsidian/` path anywhere in the repo.** `knowledge:obsidian:export`
+ *      writes an Obsidian vault of roughly 1,500 files into
+ *      `knowledge/generated/graphify/`. This repo already refuses to commit
+ *      comparably-sized generated output for the same reason — see
+ *      `graph.html` and `redesign/` in `.gitignore`'s own comments: "a
+ *      committed copy rots silently, and its size doubles every rebuild's
+ *      load on history". A vault of ~1,500 files fails that precedent
+ *      harder than either of them. This check is fail-closed by design: it
+ *      is the enforcement that makes ADR-0051 (`knowledge/generated/` gitignored,
+ *      never tracked) a real property of the repo rather than a sentence in
+ *      an ADR nobody re-reads after the first export. `.obsidian/` (the
+ *      Obsidian app's own workspace/session state — window layout, plugin
+ *      settings, per-machine caches) is checked everywhere, not only under
+ *      `knowledge/`, because nothing stops a developer opening the vault
+ *      from a different working directory.
+ *   6. **Bounded content staleness is now BOUNDED, not merely reported.**
+ *      `checkStaleness` (further down) already existed here as
+ *      `catatKesegaran` — a commit-distance NOTE that never reddens the
+ *      gate, and that check stays exactly as it was: `built_at_commit` vs.
+ *      `HEAD` says how long ago a rebuild happened, but says nothing about
+ *      whether the tree actually changed. A repo that changed nothing in 200
+ *      commits is not stale by any definition that matters, and the old
+ *      check could not tell those two situations apart — it can only count
+ *      commits, not content.
+ *
+ *      The new check, `diffManifestStaleness` (`scripts/lib/graf-staleness.mjs`),
+ *      answers the question the old one could not: does `graphify-out/manifest.json`
+ *      still describe the CURRENT bytes of the tree? It reproduces graphify's
+ *      own per-file MD5 (`ast_hash`) with `node:crypto` — no `graphify`
+ *      install needed, which matters because CI has none on `PATH` — and
+ *      counts files changed, added, or removed since the graph was last
+ *      built. Below or at `MAX_STALE_FILES` (40) it is still only a NOTE:
+ *      that bound exists so ordinary day-to-day drift (a docs typo fix, one
+ *      new script) never forces an unrelated PR to carry a multi-megabyte
+ *      rebuild — the same reasoning the old `catatKesegaran` note gives for
+ *      never failing on commit distance. Past the bound it becomes a
+ *      VIOLATION, because at that size the graph's community structure and
+ *      names have almost certainly drifted from what the tree now contains,
+ *      and nothing else in this repo would ever notice — every other gate is
+ *      green precisely because none of them reads `graphify-out/`. Both
+ *      checks are kept side by side on purpose: one measures TIME since the
+ *      last rebuild (informational — a stale-looking timestamp can still
+ *      describe an unchanged tree), the other measures CONTENT drift
+ *      (enforced past a bound — because content drift is the thing that
+ *      actually makes the graph wrong).
+ *
+ * **Still deliberately NOT checked**, unchanged from the Indonesian section
+ * above, plus one addition: this staleness bound is an UNDER-approximation
+ * by construction. Candidates are git-tracked files whose extension the
+ * manifest has already indexed at least once — a brand-new file whose
+ * extension `graphify` has never seen here is not a staleness candidate at
+ * all (there is nothing in the manifest to compare it against, and
+ * reimplementing graphify's own file-type/noise-dir/secret-file
+ * classification here would mean keeping a second copy of logic this repo
+ * does not own in sync with a tool versioned independently of it). That
+ * trade — perfect parity with graphify's own scan, for a rule this module
+ * can state, test, and keep correct on its own — is the same one the
+ * reference implementation this was ported from made, for the same reason.
  */
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { gitLines, gitRun } from "./lib/git.mjs";
+import { diffManifestStaleness } from "./lib/graf-staleness.mjs";
 import { createReporter } from "./lib/reporter.mjs";
 
 const AKAR = process.argv[2] ?? ".";
@@ -436,8 +508,188 @@ function catatKesegaran(graf) {
 }
 
 // ---------------------------------------------------------------------------
+// 5. knowledge/generated/ and .obsidian/ are never tracked (English — issue #113)
+// ---------------------------------------------------------------------------
+
+/**
+ * Fail-closed check backing ADR-0051: `knowledge/generated/` (the
+ * `knowledge:obsidian:export` sync target) must never be a git-tracked
+ * path, and neither must any `.obsidian/` path anywhere in the repo (the
+ * Obsidian app's own workspace/session state).
+ *
+ * Runs unconditionally, even when `graphify-out/` does not exist — it is a
+ * property of the repo's git history, not of the graph artefact.
+ */
+function auditKnowledgeGeneratedUntracked() {
+  const semuaTerlacak = git("ls-files");
+
+  if (semuaTerlacak === null) {
+    catat("knowledge-generated-untracked: SKIPPED — not a git repo, `git ls-files` could not run");
+    return;
+  }
+
+  const terlacak = gitLines(semuaTerlacak);
+  let pelanggar = 0;
+
+  for (const jalur of terlacak) {
+    // The one tracked file allowed under there, adopted from `awcms` ADR-0124,
+    // which decided the same thing for that repo's own vault: a README so the
+    // directory does not read as missing or empty in a fresh clone. It is the
+    // only hand-written file below this path, so it is named exactly rather
+    // than matched by a pattern — a pattern would also admit the `README.md`
+    // note graphify emits for a node whose label happens to be `README.md`.
+    if (jalur === GENERATED_README) continue;
+
+    if (jalur === "knowledge/generated" || jalur.startsWith("knowledge/generated/")) {
+      langgar(
+        "knowledge-generated-untracked",
+        jalur,
+        "tracked under knowledge/generated/ — that directory is generated Obsidian export output and must never enter history (ADR-0051); a full export of this graph runs to roughly 1,500 files, and this repo's own graph.html and redesign/ precedents (see .gitignore) already refuse far less than that"
+      );
+      pelanggar += 1;
+      continue;
+    }
+
+    const segmen = jalur.split("/");
+    if (segmen.includes(".obsidian")) {
+      langgar(
+        "knowledge-generated-untracked",
+        jalur,
+        "tracked and contains a .obsidian path segment — Obsidian's own app workspace/session state, never generated content, must never enter history"
+      );
+      pelanggar += 1;
+    }
+  }
+
+  catat(
+    pelanggar === 0
+      ? "knowledge-generated-untracked: nothing tracked under knowledge/generated/ or any .obsidian/ path"
+      : `knowledge-generated-untracked: ${pelanggar} tracked path(s) that ADR-0051 forbids in history`
+  );
+}
+
+// ---------------------------------------------------------------------------
+// 6. Bounded content staleness (English — issue #113)
+// ---------------------------------------------------------------------------
+
+/** How many changed/added/removed files, since the graph was last built, this gate tolerates as a NOTE before it becomes a VIOLATION. See the English addendum above for why this bound exists and why it is a violation past it. */
+const MAX_STALE_FILES = 40;
+
+/**
+ * The only git-tracked path permitted under `knowledge/generated/`: its own
+ * README, kept so a fresh clone does not read the directory as missing. The
+ * practice comes from `awcms` ADR-0124, which decided it for that repo's vault.
+ */
+const GENERATED_README = "knowledge/generated/README.md";
+
+/** Path prefixes that are never staleness candidates, regardless of `.graphifyignore`: the graph's own output directory (a rebuild changing its own artefacts must never count as the source drifting away from the graph that describes it) and the two directories this workflow's own tooling writes into. */
+const STALENESS_OUT_OF_SCOPE_PREFIXES = ["graphify-out/", ".changesets/", "knowledge/generated/"];
+
+/** The file-extension vocabulary `manifest.json` already contains, lower-cased — see `scripts/lib/graf-staleness.mjs`'s docblock for why this, rather than reimplementing graphify's own file classification, decides what is a staleness candidate. */
+function ekstensiManifest(manifest) {
+  const ekstensi = new Set();
+  for (const jalur of Object.keys(manifest)) {
+    const titik = jalur.lastIndexOf(".");
+    const garis = jalur.lastIndexOf("/");
+    if (titik > garis) ekstensi.add(jalur.slice(titik + 1).toLowerCase());
+  }
+  return ekstensi;
+}
+
+/** Every currently git-tracked path this gate considers a staleness candidate — see `scripts/lib/graf-staleness.mjs`'s `diffManifestStaleness` docblock for the contract this feeds. */
+function kandidatDalamCakupan(terlacak, ekstensi) {
+  return terlacak
+    .filter((jalur) => {
+      if (jalur.endsWith(".id.md")) return false;
+      if (STALENESS_OUT_OF_SCOPE_PREFIXES.some((awalan) => jalur === awalan.slice(0, -1) || jalur.startsWith(awalan))) {
+        return false;
+      }
+
+      const titik = jalur.lastIndexOf(".");
+      const garis = jalur.lastIndexOf("/");
+      const ext = titik > garis ? jalur.slice(titik + 1).toLowerCase() : "";
+      return ekstensi.has(ext);
+    })
+    .sort();
+}
+
+/**
+ * @param {Record<string, { ast_hash?: string }>} manifest
+ */
+function auditKesegaranTerbatas(manifest) {
+  const semuaTerlacak = git("ls-files");
+
+  if (semuaTerlacak === null) {
+    catat("staleness: SKIPPED — not a git repo, `git ls-files` could not run");
+    return;
+  }
+
+  const kandidat = kandidatDalamCakupan(gitLines(semuaTerlacak), ekstensiManifest(manifest));
+
+  // The candidate set is derived from the extensions `manifest.json` already
+  // records, so an empty or gutted manifest makes it empty too — and an empty
+  // candidate set produces `changed: [], added: [], removed: []`, a total of 0,
+  // and a CLEAN NOTE, no matter how far the tree has actually drifted. That is
+  // the one failure this check must not have: a gate that reports zero drift
+  // because it measured nothing is worse than no gate, because it is trusted.
+  //
+  // So both halves are refused explicitly. A manifest with no entries cannot be
+  // a manifest of this repo, and a candidate set that came out empty while the
+  // repo has tracked files means the derivation itself failed.
+  if (Object.keys(manifest).length === 0) {
+    langgar(
+      "staleness",
+      `${KELUARAN}/manifest.json`,
+      "records no file at all — staleness cannot be measured against an empty manifest, and reporting 0 drift from it would be a green verdict over nothing; rebuild with `bun run knowledge:graph:update`"
+    );
+    return;
+  }
+
+  if (kandidat.length === 0) {
+    langgar(
+      "staleness",
+      `${KELUARAN}/manifest.json`,
+      `yielded no staleness candidate at all from ${gitLines(semuaTerlacak).length} tracked file(s) — the manifest records ${Object.keys(manifest).length} entr(y/ies), so an empty candidate set means the in-scope derivation failed rather than that nothing is in scope; this check refuses to report 0 drift it did not measure`
+    );
+    return;
+  }
+
+  const diff = diffManifestStaleness({
+    manifest,
+    candidatePaths: kandidat,
+    readFileBytes: (jalur) => {
+      try {
+        return readFileSync(join(AKAR, jalur));
+      } catch {
+        return null;
+      }
+    }
+  });
+
+  const total = diff.changed.length + diff.added.length + diff.removed.length;
+
+  if (total > MAX_STALE_FILES) {
+    langgar(
+      "staleness",
+      `${KELUARAN}/manifest.json`,
+      `${total} file(s) changed/added/removed since the graph was last built, bound is ${MAX_STALE_FILES} ` +
+        `(${diff.changed.length} changed, ${diff.added.length} added, ${diff.removed.length} removed) — ` +
+        "run `bun run knowledge:graph:update`"
+    );
+    return;
+  }
+
+  catat(
+    `staleness: ${total}/${MAX_STALE_FILES} file(s) changed/added/removed since the graph was last built ` +
+      `(${diff.changed.length} changed, ${diff.added.length} added, ${diff.removed.length} removed)`
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Jalankan
 // ---------------------------------------------------------------------------
+
+auditKnowledgeGeneratedUntracked();
 
 const dirKeluaran = join(AKAR, KELUARAN);
 
@@ -478,6 +730,20 @@ if (!existsSync(jalurGraf)) {
     auditLabelKomunitas(graf, laporan);
     auditPengecualian(graf);
     catatKesegaran(graf);
+
+    const jalurManifest = join(dirKeluaran, "manifest.json");
+    if (!existsSync(jalurManifest)) {
+      catat("staleness: SKIPPED — graphify-out/manifest.json does not exist");
+    } else {
+      let manifest;
+      try {
+        manifest = bacaJson(jalurManifest);
+      } catch (galat) {
+        langgar("staleness", `${KELUARAN}/manifest.json`, `tidak bisa dibaca sebagai JSON: ${galat.message}`);
+        manifest = null;
+      }
+      if (manifest) auditKesegaranTerbatas(manifest);
+    }
   }
 }
 

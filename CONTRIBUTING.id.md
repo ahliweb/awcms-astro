@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](CONTRIBUTING.md)
 
-<!-- i18n-source-hash: sha256:37777d47a73b5f0a03a593bbeaea4e09ad3d84cdcfc4e4fc8f47a620d16f75bc -->
+<!-- i18n-source-hash: sha256:cb2422b035c5710f3f4148fbca56017e3c245a32bda342d200a69a55ff1c30cb -->
 
 # Panduan Kontribusi
 
@@ -126,9 +126,21 @@ Daftar lengkap dan mengikat ada di [`AGENTS.md`](AGENTS.md#definition-of-done). 
 - [ ] `bun test` hijau — termasuk gerbang katalog PO, penyajian, permukaan
       `awcms`, dan versi toolchain.
 - [ ] `bun run audit:konten`, `bun run audit:dokumen`, `bun run audit:translation`,
-      dan `bun run audit:graf` hijau. Yang terakhir menjaga `graphify-out/` —
-      artefak yang ikut terlacak, jadi ikut terbaca sebagai peta oleh yang
-      datang sesudahmu.
+      dan `bun run audit:graf` (alias `bun run knowledge:check`) hijau. Yang
+      terakhir menjaga `graphify-out/` — artefak yang ikut terlacak, jadi ikut
+      terbaca sebagai peta oleh yang datang sesudahmu — ditambah, sejak
+      [ADR-0051](docs/adr/0051-a-knowledge-tree-points-at-the-code-and-owns-none-of-it.id.md),
+      memastikan tidak ada apa pun di bawah `knowledge/generated/` (ekspor
+      Obsidian yang diabaikan git) yang pernah terlacak, dan kesegaran konten
+      tetap di bawah `MAX_STALE_FILES = 40`. `knowledge:graph:update`,
+      `knowledge:graph:label`, dan `knowledge:obsidian:export` adalah langkah
+      lokal/dijalankan developer, bukan bagian gerbang ini atau CI. Yang
+      pertama dan ketiga butuh biner `graphify` sungguhan;
+      `knowledge:graph:label` tidak butuh sama sekali — ia hanya menerapkan
+      nama kuratif ke partisi yang sudah ada di disk, dan menjalankan ulang
+      `graphify cluster-only` untuk menerapkan nama justru salah di sini:
+      deteksi komunitas repo ini sendiri tidak deterministik, sehingga itu
+      mengklaster ulang graf yang menjadi dasar pemilihan nama tersebut.
 - [ ] `bun audit` melaporkan **0 kerentanan**.
 
 `bun run release <tingkat> --apply` menjalankan enam dari perintah itu dalam

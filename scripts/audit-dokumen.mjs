@@ -104,6 +104,28 @@ const LEWATI = new Set([
   "graphify-out"
 ]);
 
+/**
+ * Jalur relatif yang tidak pernah dibaca, dicocokkan sebagai PREFIKS — bukan
+ * sebagai nama direktori seperti `LEWATI` di atas, karena `generated` sebagai
+ * nama akan membuang direktori bernama sama di mana pun ia muncul.
+ *
+ * `knowledge/generated/` adalah sasaran sinkronisasi
+ * `bun run knowledge:obsidian:export` (ADR-0051): satu berkas markdown per node
+ * graf — 1.496 berkas pada ekspor pertama yang dijalankan di repo ini. Ia
+ * gitignored dan tidak pernah masuk riwayat, tapi ia ADA di pohon kerja
+ * siapa pun yang menjalankan ekspor itu, dan gerbang ini membaca pohon kerja,
+ * bukan indeks git.
+ *
+ * Tanpa baris ini, satu ekspor memerahkan `audit:dokumen` — dan bukan karena
+ * ada yang salah: catatan yang dipancarkan graphify mengutip `ADR-0090`/
+ * `ADR-0098` milik `awcms` dari isi node yang diindeksnya, tanpa penanda repo
+ * yang dituntut gerbang kutipan. Itu bukan dokumen yang ditulis siapa pun di
+ * sini; ia keluaran mesin, dan menuntutnya memenuhi aturan penulisan dokumen
+ * berarti menuntut graphify menulis prosa repo ini. Yang menjaga direktori itu
+ * adalah `audit:graf` — ia gagal-tertutup bila ada isinya yang terlacak.
+ */
+const LEWATI_PREFIKS = ["knowledge/generated/"];
+
 function langgar(gerbang, berkas, pesan) {
   pelapor.violation(gerbang, berkas, pesan);
 }
@@ -129,6 +151,8 @@ function berkasMarkdown(dir = "") {
     if (LEWATI.has(entri.name)) continue;
 
     const relatif = dir ? gabung(dir, entri.name) : entri.name;
+
+    if (LEWATI_PREFIKS.some((prefiks) => `${relatif}/`.startsWith(prefiks))) continue;
 
     if (entri.isDirectory()) hasil.push(...berkasMarkdown(relatif));
     else if (entri.name.endsWith(".md")) hasil.push(relatif);
