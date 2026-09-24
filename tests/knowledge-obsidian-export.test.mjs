@@ -241,6 +241,72 @@ describe("knowledge/curated/ survives a successful export unchanged", () => {
   });
 });
 
+describe("the .canvas gap: curated collision check now covers every allowlisted extension", () => {
+  test("a hand-written knowledge/curated/notes.canvas colliding with a staged notes.canvas aborts the whole sync", () => {
+    // Before fix 3, `checkCuratedCollision`'s basename set was built only
+    // from `.md` files in knowledge/curated/, so a hand-written `.canvas`
+    // file there was invisible to the check entirely — a generated canvas of
+    // the same name would silently overwrite it. `.canvas` is a real
+    // syncable output (`graphify export obsidian` really emits
+    // `graph.canvas`), so this is not a hypothetical extension.
+    const fixtureRoot = buildFixture(1);
+    const curatedPath = join(fixtureRoot, "knowledge/curated/notes.canvas");
+    const curatedContent = '{"nodes":[],"edges":[],"__marker":"hand-written, never touched by automation"}';
+    write(curatedPath, curatedContent);
+
+    const binDir = makeFakeBinDir();
+    fakeGraphifyBin(binDir, `printf '{"nodes":[],"edges":[]}' > $STAGE/notes.canvas`);
+
+    const { code, output } = runExport(fixtureRoot, binDir);
+
+    assert.equal(code, 1);
+    assert.match(output, /collides/);
+    assert.match(output, /notes\.canvas/);
+    assert.equal(existsSync(join(fixtureRoot, "knowledge/generated/graphify")), false);
+    // Explicit acceptance criterion, same as the .md collision case: the
+    // curated file itself must be byte-for-byte untouched.
+    assert.equal(readFileSync(curatedPath, "utf8"), curatedContent);
+  });
+});
+
+describe("a zero-output export is refused before the clear step (fix 4)", () => {
+  test("graphify exiting 0 while staging nothing syncable is refused with exit 1, and pre-existing generated/ contents survive", () => {
+    // Before fix 4, an export that staged only housekeeping (or nothing at
+    // all) still passed the `graphify export obsidian` exit-code check, then
+    // proceeded to CLEAR knowledge/generated/graphify/ before discovering
+    // there was nothing to copy back — reporting "OK — 0 file(s) synced" and
+    // leaving the vault empty. The fix moves that check before the clear
+    // step. This test plants a pre-existing generated file first, so a
+    // regression back to the old behaviour would delete it — the concrete,
+    // observable consequence the fix exists to prevent.
+    const fixtureRoot = buildFixture(1);
+    const survivorPath = join(fixtureRoot, "knowledge/generated/graphify/survivor.md");
+    const survivorContent = "# survivor\n\nmust still be here after a refused zero-output export.\n";
+    write(survivorPath, survivorContent);
+
+    const binDir = makeFakeBinDir();
+    // The fake exporter stages only housekeeping — an .obsidian/ path and the
+    // export manifest — exactly the "graphify exited 0 but produced no
+    // syncable file" case fix 4 targets.
+    fakeGraphifyBin(
+      binDir,
+      `mkdir -p $STAGE/.obsidian
+printf '{}' > $STAGE/.obsidian/workspace.json
+printf '{"files":[]}' > $STAGE/.graphify_obsidian_manifest.json`
+    );
+
+    const { code, output } = runExport(fixtureRoot, binDir);
+
+    assert.equal(code, 1);
+    assert.match(output, /produced no syncable file/);
+    // The point of fix 4: the pre-existing vault content must still be there,
+    // byte-for-byte — the old code would have cleared it before finding out
+    // there was nothing to replace it with.
+    assert.equal(existsSync(survivorPath), true);
+    assert.equal(readFileSync(survivorPath, "utf8"), survivorContent);
+  });
+});
+
 describe("a re-sync clears stale output", () => {
   test("a note for a node the current export no longer produces is removed", () => {
     const fixtureRoot = buildFixture(1);

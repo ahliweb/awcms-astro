@@ -103,6 +103,34 @@ memancarkan satu catatan per node dan sebuah node berlabel `README.md` akan
 menjadi `knowledge/generated/graphify/README.md` yang pola berbasis nama akan
 lewatkan. Keduanya dibuktikan `tests/audit-graf.test.mjs`.
 
+Tinjauan adversarial atas kode baru ini menemukan empat cacat lagi, dan
+keempatnya diperbaiki sebelum mendarat — dicatat karena tiga di antaranya adalah
+kelas cacat yang lolos dari setiap gerbang:
+
+- **`knowledge:graph:label` merusak format angka artefak terlacak.** Versi
+  pertamanya mem-`JSON.parse` lalu `JSON.stringify` seluruh `graph.json`.
+  JavaScript tidak membedakan int dan float, jadi setiap float bulat yang
+  ditulis graphify jadi gepeng: `"confidence_score": 1.0` menjadi `1` pada
+  **5.372 baris**, dan akan berbalik lagi pada run graphify berikutnya — persis
+  derau permanen yang docblock-nya sendiri klaim dicegah. Sekarang ia menyunting
+  `graph.json` sebagai TEKS dan hanya mengganti isi ruas `"community_name"`,
+  jadi setiap byte lain tinggal sebagaimana graphify menulisnya. Jumlah ruas itu
+  DIPERIKSA terhadap jumlah node dan ditolak bila tak cocok, dan kerusakan yang
+  sudah ter-commit diperbaiki.
+- **Gerbang kebasian bisa hijau tanpa mengukur apa pun.** Himpunan kandidatnya
+  diturunkan dari ekstensi yang sudah tercatat di `manifest.json`, jadi manifest
+  kosong menghasilkan kandidat kosong, total 0, dan CATATAN BERSIH betapa pun
+  jauh pohon sudah hanyut. Keduanya sekarang ditolak eksplisit: gerbang yang
+  melaporkan nol hanyut karena tidak mengukur apa pun lebih buruk daripada tidak
+  ada gerbang, karena ia dipercaya.
+- **`.canvas` berada di luar batas tabrakan.** Himpunan nama kuratorial hanya
+  mengumpulkan `.md`, padahal `.canvas` ikut disinkron dan graphify memang
+  memancarkan `graph.canvas` — jadi sebuah `knowledge/curated/x.canvas` tulisan
+  tangan bisa ditimpa oleh mekanisme yang justru dibangun untuk mencegahnya.
+- **Ekspor tanpa keluaran mengosongkan vault dengan pesan "OK".** Bila graphify
+  keluar 0 tanpa menulis berkas, langkah pembersih menghapus seluruh vault lalu
+  menyalin balik nol berkas. Sekarang ditolak SEBELUM pembersih berjalan.
+
 - Tidak ada perubahan yang terlihat pembaca situs; ini murni perkakas
   developer/agen dan gerbang CI baru.
 - Terasa saat mengembangkan: `bun test` naik dari 40 menjadi 44 berkas

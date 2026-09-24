@@ -626,6 +626,34 @@ function auditKesegaranTerbatas(manifest) {
 
   const kandidat = kandidatDalamCakupan(gitLines(semuaTerlacak), ekstensiManifest(manifest));
 
+  // The candidate set is derived from the extensions `manifest.json` already
+  // records, so an empty or gutted manifest makes it empty too — and an empty
+  // candidate set produces `changed: [], added: [], removed: []`, a total of 0,
+  // and a CLEAN NOTE, no matter how far the tree has actually drifted. That is
+  // the one failure this check must not have: a gate that reports zero drift
+  // because it measured nothing is worse than no gate, because it is trusted.
+  //
+  // So both halves are refused explicitly. A manifest with no entries cannot be
+  // a manifest of this repo, and a candidate set that came out empty while the
+  // repo has tracked files means the derivation itself failed.
+  if (Object.keys(manifest).length === 0) {
+    langgar(
+      "staleness",
+      `${KELUARAN}/manifest.json`,
+      "records no file at all — staleness cannot be measured against an empty manifest, and reporting 0 drift from it would be a green verdict over nothing; rebuild with `bun run knowledge:graph:update`"
+    );
+    return;
+  }
+
+  if (kandidat.length === 0) {
+    langgar(
+      "staleness",
+      `${KELUARAN}/manifest.json`,
+      `yielded no staleness candidate at all from ${gitLines(semuaTerlacak).length} tracked file(s) — the manifest records ${Object.keys(manifest).length} entr(y/ies), so an empty candidate set means the in-scope derivation failed rather than that nothing is in scope; this check refuses to report 0 drift it did not measure`
+    );
+    return;
+  }
+
   const diff = diffManifestStaleness({
     manifest,
     candidatePaths: kandidat,

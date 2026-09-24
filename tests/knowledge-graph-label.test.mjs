@@ -74,8 +74,14 @@ function node(id, community, community_name, source_file = "src/a.ts") {
   return { id, label: id, community, community_name, source_file };
 }
 
+// Written exactly as graphify itself writes `graph.json` — `null, 2`, giving
+// the `": "` key/value separator the production script's `COMMUNITY_NAME_FIELD`
+// regex expects. A compact `JSON.stringify` (no third argument) emits
+// `"community_name":"..."` with no space, which the regex would not match at
+// all — that mismatch is exactly why the fixtures needed repairing after the
+// script stopped re-serialising and started editing the file as text.
 function graphOf(nodes, extra = {}) {
-  return JSON.stringify({ nodes, links: [], built_at_commit: "0".repeat(40), ...extra });
+  return JSON.stringify({ nodes, links: [], built_at_commit: "0".repeat(40), ...extra }, null, 2);
 }
 
 function reportOf({ headings = [] } = {}) {
@@ -389,6 +395,94 @@ describe(".graphify_labels.json.sig", () => {
 // 5. Missing graph.json / missing labels sidecar: exit 1, naming
 //    knowledge:graph:update.
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// 6. Text-editing regression: everything except `community_name` fields
+//    survives byte-for-byte — the defect that made `"confidence_score": 1.0`
+//    become `1` on 5,372 lines when the script used to JSON.parse + re-
+//    JSON.stringify the whole file.
+// ---------------------------------------------------------------------------
+
+describe("graph.json is edited as TEXT, not re-serialised (the 5,372-line regression)", () => {
+  test("a whole-valued float survives untouched — JSON.stringify has no way to emit 1.0", () => {
+    // Hand-write graph.json instead of going through `graphOf` (which itself
+    // uses JSON.stringify) so this test does not depend on JS's own
+    // stringifier ever being able to reproduce a bare `1.0` — it cannot, and
+    // that impossibility is exactly why the production script switched to
+    // text-editing in the first place.
+    const root = tree({});
+    const graphText =
+      "{\n" +
+      '  "nodes": [\n' +
+      "    {\n" +
+      '      "id": "a",\n' +
+      '      "community": 0,\n' +
+      '      "community_name": "Community 0",\n' +
+      '      "confidence_score": 1.0,\n' +
+      '      "weight": 0.85,\n' +
+      '      "source_file": "src/a.ts"\n' +
+      "    }\n" +
+      "  ],\n" +
+      '  "links": [],\n' +
+      '  "built_at_commit": "' + "0".repeat(40) + '"\n' +
+      "}\n";
+    write(join(root, GRAPH_PATH), graphText);
+    write(join(root, REPORT_PATH), reportOf({ headings: [[0, "Community 0"]] }));
+    write(join(root, LABELS_PATH), { 0: "Content Rendering Pipeline" });
+
+    const { code, output } = run(root);
+    assert.equal(code, 0, output);
+
+    const after = readFileSync(join(root, GRAPH_PATH), "utf8");
+    // The exact bytes of the untouched fields must still be there — a
+    // JSON.parse/JSON.stringify round-trip would have silently rewritten
+    // `1.0` to `1`, which is precisely the defect this test guards against.
+    assert.match(after, /"confidence_score": 1\.0,/);
+    assert.match(after, /"weight": 0\.85,/);
+
+    // Stronger than substring matching: every line except the one rewritten
+    // field must be byte-identical to the original, in the same order.
+    const beforeLines = graphText.split("\n");
+    const afterLines = after.split("\n");
+    assert.equal(afterLines.length, beforeLines.length);
+    for (let i = 0; i < beforeLines.length; i++) {
+      if (beforeLines[i].includes('"community_name"')) {
+        assert.match(afterLines[i], /"community_name": "Content Rendering Pipeline"/);
+      } else {
+        assert.equal(afterLines[i], beforeLines[i], `line ${i} changed: ${JSON.stringify(beforeLines[i])} -> ${JSON.stringify(afterLines[i])}`);
+      }
+    }
+  });
+
+  test("a community_name field COUNT that disagrees with the node count is refused, nothing written", () => {
+    // Hand-craft a graph.json where the node array says 2 nodes but the text
+    // only contains one "community_name" field (as if the document shape
+    // changed under the script, or a node object was assembled without one).
+    // The script asserts this correspondence explicitly and must refuse
+    // rather than write the Nth field onto the wrong node.
+    const root = tree({});
+    const graphText =
+      "{\n" +
+      '  "nodes": [\n' +
+      '    { "id": "a", "community": 0, "community_name": "Community 0", "source_file": "src/a.ts" },\n' +
+      '    { "id": "b", "community": 1, "source_file": "src/b.ts" }\n' +
+      "  ],\n" +
+      '  "links": [],\n' +
+      '  "built_at_commit": "' + "0".repeat(40) + '"\n' +
+      "}\n";
+    write(join(root, GRAPH_PATH), graphText);
+    write(join(root, REPORT_PATH), reportOf());
+    write(join(root, LABELS_PATH), { 0: "Content Rendering Pipeline", 1: "Release Tooling" });
+
+    const before = graphText;
+    const { code, output } = run(root);
+
+    assert.equal(code, 1);
+    assert.match(output, /has 1 "community_name" field\(s\) but 2 node\(s\)/);
+    assert.equal(readFileSync(join(root, GRAPH_PATH), "utf8"), before, "graph.json was modified on a refused run");
+    assert.throws(() => readFileSync(join(root, SIG_PATH), "utf8"));
+  });
+});
 
 describe("missing prerequisites", () => {
   test("missing graphify-out/graph.json exits 1 naming knowledge:graph:update", () => {

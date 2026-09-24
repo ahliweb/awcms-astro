@@ -103,28 +103,27 @@ const PLACEHOLDER = /^Community\s+\d+$/i;
 const QUOTE_OR_BACKSLASH = /["\\]/;
 
 /**
- * Serialise `graph.json` the way `graphify` itself does, byte for byte.
+ * `"community_name": "…"` exactly as it appears in `graph.json`, with a value
+ * body that tolerates the `\uXXXX` escapes graphify emits for non-ASCII. One
+ * match per node object, in file order.
+ */
+const COMMUNITY_NAME_FIELD = /("community_name": )"(?:[^"\\]|\\.)*"/g;
+
+/**
+ * Escape a curated name the way Python's `json.dump` does with its default
+ * `ensure_ascii=True`: every non-ASCII character as a lowercase `\uXXXX`. This
+ * repo's community names are full of em dashes, so without it the very names
+ * this script writes would differ from the ones graphify writes for the same
+ * string.
  *
- * This is not cosmetic. `graph.json` is TRACKED, so its formatting decides
- * whether a future rebuild produces a readable diff or an unreviewable one:
- * writing it compact turned a 46,646-line file into a single line, which reads
- * as 47,042 deletions and makes every subsequent change to the graph
- * impossible to review. Worse, it would flip back and forth on every
- * alternation between this script and `graphify`, so the noise would be
- * permanent rather than one-off.
+ * `"` and `\` need no handling: both are refused by the validation above, so
+ * neither can reach here.
  *
- * `graphify` writes through Python's `json.dump` with `indent=2` and the
- * default `ensure_ascii=True`, and appends no trailing newline. The first two
- * match `JSON.stringify(value, null, 2)` exactly; the third does not, because
- * JavaScript emits non-ASCII literally where Python escapes it — and this
- * repo's community names are full of em dashes, so without the escape pass
- * every label line would show as changed.
- *
- * @param {unknown} value
+ * @param {string} name
  * @returns {string}
  */
-function serialiseLikeGraphify(value) {
-  return JSON.stringify(value, null, 2).replace(/[\u007f-￿]/g, (character) =>
+function escapeLikeGraphify(name) {
+  return name.replace(/[\u007f-￿]/g, (character) =>
     `\\u${character.charCodeAt(0).toString(16).padStart(4, "0")}`
   );
 }
@@ -201,11 +200,45 @@ if (problems.length > 0) {
 // Apply. Past this line every name is accepted, so no write is partial.
 // ---------------------------------------------------------------------------
 
-for (const node of graph.nodes) {
-  if (node.community === undefined || node.community === null) continue;
-  node.community_name = labels[String(node.community)];
+// `graph.json` is edited as TEXT, not re-serialised — and that is the whole
+// point of doing it this way.
+//
+// The obvious implementation, `JSON.parse` then `JSON.stringify(…, null, 2)`,
+// was written first and was wrong: JavaScript has no int/float distinction, so
+// every value graphify wrote as a clean float came back as an integer.
+// `"confidence_score": 1.0` became `"confidence_score": 1` on **5,372 lines**
+// of a tracked artefact, and it would flip back on the next real `graphify`
+// run — the exact permanent, review-obscuring churn this script exists to
+// avoid, just in the numbers instead of the indentation. A JSON round-trip
+// cannot preserve that: `JSON.stringify` has no way to emit `1.0`.
+//
+// Replacing only the `"community_name": "…"` field bodies leaves every other
+// byte — indentation, key order, number formatting, escape style — exactly as
+// graphify wrote it. There is one such field per node object and none anywhere
+// else in the document (verified: 1,421 occurrences against 1,421 nodes, zero
+// on links or graph metadata), so the Nth match is node N, in file order. That
+// correspondence is ASSERTED rather than assumed: a count that disagrees means
+// the document shape changed under this script, and it refuses instead of
+// writing names into the wrong places.
+const graphText = readFileSync(GRAPH, "utf8");
+const fieldCount = (graphText.match(COMMUNITY_NAME_FIELD) ?? []).length;
+
+if (fieldCount !== graph.nodes.length) {
+  fail([
+    `graph.json has ${fieldCount} "community_name" field(s) but ${graph.nodes.length} node(s) — this script rewrites the Nth field as node N, and that correspondence no longer holds, so it refuses rather than writing names onto the wrong nodes`
+  ]);
 }
-writeFileSync(GRAPH, serialiseLikeGraphify(graph));
+
+let nodeIndex = 0;
+const rewrittenGraph = graphText.replace(COMMUNITY_NAME_FIELD, (whole, prefix) => {
+  const node = graph.nodes[nodeIndex];
+  nodeIndex += 1;
+
+  if (node.community === undefined || node.community === null) return whole;
+  return `${prefix}"${escapeLikeGraphify(labels[String(node.community)])}"`;
+});
+
+writeFileSync(GRAPH, rewrittenGraph);
 
 let headingsRewritten = 0;
 if (existsSync(REPORT)) {

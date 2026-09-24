@@ -111,11 +111,25 @@ describe("artefak yang terlacak git", () => {
     return akar;
   }
 
+  // manifest.json must record at least one entry whose extension matches a
+  // tracked fixture file, or `auditKesegaranTerbatas` now refuses an empty
+  // manifest / empty candidate set outright (fix 2) instead of reporting a
+  // silent, meaningless "0 file(s) changed" — see "bounded content staleness"
+  // below for that behaviour's own dedicated tests. The seed cannot be any
+  // path under `graphify-out/` itself — that whole prefix is out of staleness
+  // scope by design (a rebuild changing its own artefacts must never count as
+  // the SOURCE drifting) — so a top-level `README.md` is seeded instead, with
+  // a manifest entry whose hash matches its real on-disk content, giving
+  // staleness a real, zero-drift candidate to measure.
+  const readmeContent = "# fixture\n";
   const empatArtefak = {
     "graphify-out/graph.json": graf([node("a", 0, "Konten Terstruktur")]),
     "graphify-out/GRAPH_REPORT.md": laporan({ node: 1, komunitas: 1 }),
-    "graphify-out/manifest.json": "{}",
-    "graphify-out/cost.json": "{}"
+    "graphify-out/manifest.json": JSON.stringify({
+      "README.md": { ast_hash: createHash("md5").update(readmeContent).digest("hex") }
+    }),
+    "graphify-out/cost.json": "{}",
+    "README.md": readmeContent
   };
 
   test("hanya empat artefak bersama lolos", () => {
@@ -123,11 +137,13 @@ describe("artefak yang terlacak git", () => {
       "graphify-out/graph.json",
       "graphify-out/GRAPH_REPORT.md",
       "graphify-out/manifest.json",
-      "graphify-out/cost.json"
+      "graphify-out/cost.json",
+      "README.md"
     ]);
 
     const { kode, keluaran } = jalankan(akar);
     expect(keluaran).toContain("terlacak: 4/4 artefak bersama");
+    expect(keluaran).toContain("staleness: 0/40");
     expect(kode).toBe(0);
   });
 
@@ -606,6 +622,82 @@ describe("bounded content staleness (MAX_STALE_FILES = 40)", () => {
     const { kode, keluaran } = jalankan(root);
     expect(keluaran).toContain("staleness: SKIPPED — graphify-out/manifest.json does not exist");
     expect(keluaran).not.toContain("[staleness]");
+    expect(kode).toBe(1);
+  });
+
+  // Fix 2, first fail-open state: an empty manifest.json (`{}`) used to yield
+  // an empty candidate set, hence `total = 0`, hence a clean note — a green
+  // verdict over a manifest that describes nothing at all. `auditKesegaranTerbatas`
+  // now refuses this explicitly rather than reporting zero drift it never
+  // measured.
+  test("an empty manifest.json ({}) reddens the gate instead of reporting 0 drift", () => {
+    const nodes = [node("a", 0, "Konten Terstruktur")];
+    const root = pohon({
+      "graphify-out/graph.json": graf(nodes),
+      "graphify-out/GRAPH_REPORT.md": laporan({ node: 1, komunitas: 1 }),
+      "graphify-out/manifest.json": "{}",
+      "graphify-out/cost.json": "{}"
+    });
+    Bun.spawnSync(["git", "-C", root, "init", "-q"]);
+    Bun.spawnSync(["git", "-C", root, "add", "-A"]);
+
+    const { kode, keluaran } = jalankan(root);
+    expect(keluaran).toContain("records no file at all");
+    expect(keluaran).toContain("graphify-out/manifest.json");
+    expect(kode).toBe(1);
+  });
+
+  // The clean case still passes: a non-empty manifest whose extensions really
+  // are present among tracked files, with zero drift, stays a NOTE at exit 0.
+  // This is the same fixture shape as "hanya empat artefak bersama lolos"
+  // above, restated here explicitly as the paired positive case for fix 2 so
+  // this describe block proves both directions on its own.
+  test("a non-empty manifest with a real, unchanged candidate stays a clean note", () => {
+    const nodes = [node("a", 0, "Konten Terstruktur")];
+    const readmeContent = "# fixture\n";
+    const root = pohon({
+      "graphify-out/graph.json": graf(nodes),
+      "graphify-out/GRAPH_REPORT.md": laporan({ node: 1, komunitas: 1 }),
+      "graphify-out/manifest.json": JSON.stringify({
+        "README.md": { ast_hash: createHash("md5").update(readmeContent).digest("hex") }
+      }),
+      "graphify-out/cost.json": "{}",
+      "README.md": readmeContent
+    });
+    Bun.spawnSync(["git", "-C", root, "init", "-q"]);
+    Bun.spawnSync(["git", "-C", root, "add", "-A"]);
+
+    const { kode, keluaran } = jalankan(root);
+    expect(keluaran).toContain("staleness: 0/40");
+    expect(kode).toBe(0);
+  });
+
+  // Fix 2, second fail-open state: a candidate set that comes out empty while
+  // the repo genuinely has tracked files — realistic when the manifest only
+  // indexes an extension no tracked file carries any more (e.g. the manifest
+  // is stale enough to predate a rename/removal, or was hand-edited). Unlike
+  // the empty-manifest case above, `Object.keys(manifest).length` is NOT zero
+  // here — the manifest has an entry — so this exercises the SECOND refusal
+  // branch (`kandidat.length === 0`) specifically, not the first.
+  test("a non-empty manifest whose extension matches no tracked file yields an empty candidate set and is refused", () => {
+    const nodes = [node("a", 0, "Konten Terstruktur")];
+    const root = pohon({
+      "graphify-out/graph.json": graf(nodes),
+      "graphify-out/GRAPH_REPORT.md": laporan({ node: 1, komunitas: 1 }),
+      // The manifest indexes a `.xyz` file that does not exist anywhere in
+      // the tracked tree, and no tracked file happens to end in `.xyz`
+      // either — so the extension vocabulary this manifest contributes maps
+      // to zero in-scope candidates, even though the manifest itself is
+      // non-empty and the repo has tracked files.
+      "graphify-out/manifest.json": JSON.stringify({ "long/gone/file.xyz": { ast_hash: "0".repeat(32) } }),
+      "graphify-out/cost.json": "{}"
+    });
+    Bun.spawnSync(["git", "-C", root, "init", "-q"]);
+    Bun.spawnSync(["git", "-C", root, "add", "-A"]);
+
+    const { kode, keluaran } = jalankan(root);
+    expect(keluaran).toContain("yielded no staleness candidate at all");
+    expect(keluaran).toContain("graphify-out/manifest.json");
     expect(kode).toBe(1);
   });
 });

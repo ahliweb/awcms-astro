@@ -57,7 +57,12 @@
 import { copyFileSync, existsSync, lstatSync, mkdirSync, readdirSync, rmSync } from "node:fs";
 import { extname, join, relative, resolve } from "node:path";
 
-import { checkCuratedCollision, classifyEntry, resolveWithin } from "./lib/obsidian-safety.mjs";
+import {
+  ALLOWED_EXTENSIONS,
+  checkCuratedCollision,
+  classifyEntry,
+  resolveWithin
+} from "./lib/obsidian-safety.mjs";
 
 const ROOT = process.env.KNOWLEDGE_GRAPH_ROOT ?? resolve(import.meta.dirname, "..");
 const STAGING = join(ROOT, "graphify-out/obsidian-staging");
@@ -130,8 +135,15 @@ function walk(dir) {
   return entries;
 }
 
+// Every allowlisted extension, not just `.md`. `.canvas` is syncable too —
+// `graphify export obsidian` really does emit `graph.canvas` — so collecting
+// only `.md` basenames would leave a hand-written `knowledge/curated/x.canvas`
+// outside the collision check entirely, and a generated canvas of the same name
+// would overwrite it. That is precisely the defect this boundary exists to stop,
+// and scoping the check to one of the two allowlisted types would have left it
+// open for the other.
 const curatedBasenames = existsSync(CURATED)
-  ? new Set(readdirSync(CURATED).filter((name) => name.endsWith(".md")))
+  ? new Set(readdirSync(CURATED).filter((name) => ALLOWED_EXTENSIONS.has(extname(name).toLowerCase())))
   : new Set();
 
 const entries = walk(STAGING);
@@ -175,6 +187,21 @@ for (const { relativePath, isSymlink } of entries) {
 
 if (rejections.length > 0) {
   fail(rejections);
+}
+
+// An export that produced nothing is a failure, not an empty success — and it
+// has to be caught HERE, before the clear step, because the clear step would
+// otherwise delete the whole existing vault and then copy nothing back into it,
+// reporting "OK — 0 file(s) synced". `graphify` exiting 0 while writing no file
+// is exactly the upstream regression this wrapper exists to absorb; silently
+// emptying the reader's vault in response to it would be the worst available
+// answer.
+if (syncable.length === 0) {
+  fail([
+    `\`graphify export obsidian\` exited 0 but produced no syncable file in ${STAGING} ` +
+      `(${entries.length} entr(y/ies) seen, ${skipped} housekeeping) — refusing to clear ` +
+      "knowledge/generated/graphify/ and replace it with nothing"
+  ]);
 }
 
 mkdirSync(GENERATED, { recursive: true });
