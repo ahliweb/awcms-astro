@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:529b7231cf659faa0f369b74972a83cd14635b861ed54b60c2cadce942a0da0f -->
+<!-- i18n-source-hash: sha256:881e3045b1996330f54bb44b47c38114d931e1789c80e1b070b0b34a70d6b1e2 -->
 
 # awcms-astro
 
@@ -149,7 +149,7 @@ satu-satunya lockfile.
 | `bun run audit:translation` | Gerbang terjemahan: cermin Indonesia yang basi, dan dokumen yang belum punya cermin ([ADR-0039](docs/adr/0039-english-is-the-source-language.md)) |
 | `bun run audit:serapan`  | Gerbang serapan: keputusan `awcms` yang belum dibaca siapa pun di sini — satu-satunya gerbang yang melihat ke luar |
 | `bun run audit:aset`     | Gerbang aset: anggaran byte pembaca, atas sumber dan atas hasil build bila ada |
-| `bun run audit:rilis`    | Gerbang rilis: backlog changeset yang menunggu, dibatasi 12 berkas dan 14 hari ([ADR-0048](docs/adr/0048-a-release-is-cut-when-the-backlog-crosses-a-bound.id.md)) |
+| `bun run audit:rilis`    | Gerbang rilis: backlog changeset yang menunggu, dibatasi 12 berkas dan 14 hari ([ADR-0048](docs/adr/0048-a-release-is-cut-when-the-backlog-crosses-a-bound.id.md)), dan setiap tag rilis di remote punya GitHub Release yang cocok ([ADR-0052](docs/adr/0052-github-releases-are-part-of-this-repos-release-convention.id.md)) |
 | `bun run knowledge:graph:update` | Membangun ulang graf `graphify-out/` milik repo ini (code-only, tanpa panggilan LLM), dan mengklaster ulang — pemegang PARTISI. Butuh `graphify` di `PATH`; tidak berjalan di CI |
 | `bun run knowledge:graph:label` | Menerapkan nama komunitas kuratif ke partisi yang sudah ada di disk — pemegang NAMA, dan tidak pernah memanggil `graphify`. Tidak butuh `graphify`, Python, atau jaringan; tidak berjalan di CI |
 | `bun run knowledge:obsidian:export` | Mengekspor graf ke vault Obsidian `knowledge/generated/graphify/` yang tervalidasi dan ber-allowlist. Butuh `graphify` di `PATH`; tidak berjalan di CI |

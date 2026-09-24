@@ -146,7 +146,7 @@ is the only lockfile.
 | `bun run audit:translation` | Translation gate: stale Indonesian mirrors, and documents with no mirror ([ADR-0039](docs/adr/0039-english-is-the-source-language.md)) |
 | `bun run audit:serapan`     | Absorption gate: `awcms` decisions nobody here has read yet — the one gate that looks outward |
 | `bun run audit:aset`        | Asset gate: the reader's byte budget, over the source and over the build output when it exists |
-| `bun run audit:rilis`       | Release gate: the waiting changeset backlog, bounded at 12 files and 14 days ([ADR-0048](docs/adr/0048-a-release-is-cut-when-the-backlog-crosses-a-bound.md)) |
+| `bun run audit:rilis`       | Release gate: the waiting changeset backlog, bounded at 12 files and 14 days ([ADR-0048](docs/adr/0048-a-release-is-cut-when-the-backlog-crosses-a-bound.md)), and every remote release tag has a matching GitHub Release ([ADR-0052](docs/adr/0052-github-releases-are-part-of-this-repos-release-convention.md)) |
 | `bun run knowledge:graph:update` | Rebuilds this repo's own `graphify-out/` graph (code-only, no LLM call), and re-clusters — it owns the PARTITION. Needs `graphify` on `PATH`; not run in CI |
 | `bun run knowledge:graph:label` | Applies curated community names to whatever partition is already on disk — it owns the NAMES, and never invokes `graphify`. Needs no `graphify`, no Python, no network; not run in CI |
 | `bun run knowledge:obsidian:export` | Exports the graph to a validated, allowlisted `knowledge/generated/graphify/` Obsidian vault. Needs `graphify` on `PATH`; not run in CI |

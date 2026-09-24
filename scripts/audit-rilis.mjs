@@ -313,15 +313,35 @@ if (oldest) {
 // Beda bentuk dari tiga di atas: ia butuh git DAN jaringan, jadi ia gagal
 // TERTUTUP (note, bukan pelanggaran, bukan lulus diam-diam) begitu salah satu
 // tidak tersedia — persis bentuk pemeriksaan 2 di `audit-serapan.mjs`.
-const refsRemote = gitLines(gitRun(".", "ls-remote", "--tags", "origin"));
+//
+// Dicabang dari hasil MENTAH `gitRun`, bukan dari panjang `gitLines`-nya:
+// `gitRun` menjawab `null` saat perintahnya benar-benar gagal (bukan repo
+// git, tidak ada remote `origin`, tidak ada jaringan), tapi menjawab `""`
+// saat perintahnya BERHASIL dan remote-nya memang belum punya tag apa pun —
+// dan `gitLines` meratakan keduanya menjadi `[]`. Sebelum perbaikan ini,
+// kedua keadaan itu tercetak sebagai pesan DILEWATI yang sama, dan itu salah
+// untuk keadaan kedua: repo ini adalah TEMPLAT, dan setiap situs yang
+// diturunkan darinya mulai dengan nol tag rilis sampai rilis pertamanya
+// dipotong. Bagi mayoritas pengguna nyata gerbang ini — situs turunan yang
+// masih baru — pesan DILEWATI yang lama adalah klaim palsu tentang git yang
+// tidak menjawab, padahal git menjawab dengan benar bahwa tidak ada tag.
+const rawRefsRemote = gitRun(".", "ls-remote", "--tags", "origin");
 
-if (refsRemote.length === 0) {
+if (rawRefsRemote === null) {
   reporter.note(
     "  rilis GitHub: DILEWATI — `git ls-remote --tags origin` tidak menjawab " +
       "(bukan repo git, tidak ada remote `origin`, atau tidak ada jaringan). " +
       "Tiga pemeriksaan lain tetap jalan; yang ini tidak berjalan sama sekali."
   );
+} else if (gitLines(rawRefsRemote).length === 0) {
+  reporter.note(
+    "  rilis GitHub: repo belum punya tag rilis apa pun di remote — tidak " +
+      "ada yang dicocokkan. Ini keadaan SEHAT, bukan lewatan: sebuah situs " +
+      "yang baru diturunkan dari templat ini mulai dengan nol tag sampai " +
+      "rilis pertamanya dipotong, dan itu normal."
+  );
 } else {
+  const refsRemote = gitLines(rawRefsRemote);
   const tagRemote = [...new Set(refsRemote)]
     .map((baris) => baris.split("\t")[1] ?? "")
     .filter((ref) => ref.startsWith("refs/tags/") && !ref.endsWith("^{}"))
