@@ -10,8 +10,10 @@ dampak: internal
 graphify-nya sendiri (`awcms-one#11`): graf hasil generate, catatan kurasi
 tulisan tangan, dan ekspor Obsidian di belakang gerbang `audit:graf`.
 `awcms#805` yang seharusnya menstandarkan bentuk ini dari sisi backend masih
-terbuka dan belum dikerjakan — tidak ada apa pun yang kanonik untuk ditiru
-atau ditunggu — jadi repo ini mengadopsi bentuk `awcms-one` sekarang, dan
+terbuka dan belum dikerjakan **saat pekerjaan ini dimulai** — tidak ada apa pun
+yang kanonik untuk ditiru atau ditunggu; ia baru mendarat di tengah jalan, dan
+sejalan, seperti dicatat di bawah — jadi repo ini mengadopsi bentuk
+`awcms-one` sekarang, dan
 menyimpang darinya di tepat tempat bentuknya tidak cocok di sini: repo ini
 tidak punya subtree untuk difederasikan, dan sebuah ekspor penuh graf ini
 berjumlah kira-kira 1.500 berkas — jauh lebih besar relatif terhadap apa pun
@@ -76,6 +78,30 @@ merancangnya:
   memuat `"` atau `\` sekarang DITOLAK di tahap validasi: tidak ada komunitas
   di repo ini yang pernah butuh salah satunya, jadi tidak ada yang hilang, dan
   tidak ada escape tangan yang bisa jadi separuh jalan lagi.
+
+**Temuan susulan: `awcms#805` mendarat, dan sejalan dengan desain ini.** Isu
+yang tadinya terbuka dan tanpa linimasa itu tertutup sebagai selesai pada
+2026-09-23T22:25:59Z, lewat PR #819 milik `awcms` dan tercatat sebagai `awcms`
+ADR-0124. Kedua desain konvergen secara independen — vault `knowledge/`
+khusus, catatan kuratorial di samping ekspor sekali pakai, sinkronisasi
+daftar-izin gagal-tertutup dari direktori staging terisolasi — dan `awcms`
+ternyata juga tidak melacak vault generate-nya sendiri (`.gitignore`-nya
+mengecualikan `knowledge/generated/*`, hanya melacak satu README). Jadi tak
+melacak `knowledge/generated/` di sini SEJALAN dengan `awcms`, bukan
+divergensi darinya — divergensinya cuma dari `awcms-one`, yang tetap
+melacak direktori padanannya. Satu divergensi nyata dari `awcms` bertahan:
+`awcms` menerjemahkan pohon pengetahuannya ke Bahasa Indonesia, repo ini
+tidak, karena situs turunan repo ini akan menulis ulang catatan kuratorialnya
+sendiri dan penerjemahan akan menggandakan beban itu per situs. `ADR-0051`
+dan `knowledge/README.md` diperbarui dengan temuan ini.
+
+Satu gagasan `awcms` ADR-0124 juga diadopsi apa adanya: `knowledge/generated/`
+tetap membawa SATU berkas terlacak, READMEnya sendiri, supaya direktori itu
+tidak terbaca hilang atau kosong di klon yang baru. `audit:graf` mengizinkan
+tepat jalur itu — dicocokkan PERSIS, bukan sebagai pola, karena graphify
+memancarkan satu catatan per node dan sebuah node berlabel `README.md` akan
+menjadi `knowledge/generated/graphify/README.md` yang pola berbasis nama akan
+lewatkan. Keduanya dibuktikan `tests/audit-graf.test.mjs`.
 
 - Tidak ada perubahan yang terlihat pembaca situs; ini murni perkakas
   developer/agen dan gerbang CI baru.

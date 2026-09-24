@@ -457,6 +457,36 @@ describe("knowledge/generated/ and .obsidian/ are never tracked (D2)", () => {
     expect(kode).toBe(1);
   });
 
+  // The single exemption, adopted from `awcms` ADR-0124: the directory's own
+  // README stays tracked so a fresh clone does not read it as missing. It is
+  // matched by its EXACT path rather than by a pattern, and the next test is
+  // why — graphify emits one note per node, so a node labelled `README.md`
+  // becomes `knowledge/generated/graphify/README.md`, which a basename pattern
+  // would have waved through.
+  test("knowledge/generated/README.md is the one tracked file that passes", () => {
+    const root = repo(
+      { "knowledge/generated/README.md": "# generated\n" },
+      ["knowledge/generated/README.md"]
+    );
+
+    const { kode, keluaran } = jalankan(root);
+    expect(keluaran).toContain("knowledge-generated-untracked");
+    expect(keluaran).not.toContain("must never enter history");
+    expect(kode).toBe(0);
+  });
+
+  test("a README.md DEEPER than that exemption still reddens the gate", () => {
+    const root = repo(
+      { "knowledge/generated/graphify/README.md": "# a node happened to be called README.md\n" },
+      ["knowledge/generated/graphify/README.md"]
+    );
+
+    const { kode, keluaran } = jalankan(root);
+    expect(keluaran).toContain("knowledge/generated/graphify/README.md");
+    expect(keluaran).toContain("must never enter history");
+    expect(kode).toBe(1);
+  });
+
   test("a tracked .obsidian/ path anywhere in the repo reddens the gate", () => {
     const root = repo(
       { ".obsidian/workspace.json": "{}" },

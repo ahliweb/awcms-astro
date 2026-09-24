@@ -532,6 +532,14 @@ function auditKnowledgeGeneratedUntracked() {
   let pelanggar = 0;
 
   for (const jalur of terlacak) {
+    // The one tracked file allowed under there, adopted from `awcms` ADR-0124,
+    // which decided the same thing for that repo's own vault: a README so the
+    // directory does not read as missing or empty in a fresh clone. It is the
+    // only hand-written file below this path, so it is named exactly rather
+    // than matched by a pattern — a pattern would also admit the `README.md`
+    // note graphify emits for a node whose label happens to be `README.md`.
+    if (jalur === GENERATED_README) continue;
+
     if (jalur === "knowledge/generated" || jalur.startsWith("knowledge/generated/")) {
       langgar(
         "knowledge-generated-untracked",
@@ -566,6 +574,13 @@ function auditKnowledgeGeneratedUntracked() {
 
 /** How many changed/added/removed files, since the graph was last built, this gate tolerates as a NOTE before it becomes a VIOLATION. See the English addendum above for why this bound exists and why it is a violation past it. */
 const MAX_STALE_FILES = 40;
+
+/**
+ * The only git-tracked path permitted under `knowledge/generated/`: its own
+ * README, kept so a fresh clone does not read the directory as missing. The
+ * practice comes from `awcms` ADR-0124, which decided it for that repo's vault.
+ */
+const GENERATED_README = "knowledge/generated/README.md";
 
 /** Path prefixes that are never staleness candidates, regardless of `.graphifyignore`: the graph's own output directory (a rebuild changing its own artefacts must never count as the source drifting away from the graph that describes it) and the two directories this workflow's own tooling writes into. */
 const STALENESS_OUT_OF_SCOPE_PREFIXES = ["graphify-out/", ".changesets/", "knowledge/generated/"];

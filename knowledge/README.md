@@ -151,18 +151,32 @@ proves the export script's wiring against a fixture tree.
   a second copy of the same fact drifts from the first, silently, and a graph
   that indexed both would report the drifted copy as if it were still true.
 - **This repo diverges from `awcms-one`'s design on purpose in several places**
-  (D2/D4/D6/D7 of this issue's own working notes), and those divergences need
-  recording in `awcms`'s `awcms-family-compatibility.yaml` per `awcms`
-  ADR-0068 — this repo cannot write that file itself. See
+  (D2/D4/D6/D7 of this issue's own working notes) — divergences from prior art
+  in a sibling repo, not from a family standard.
+- **`ahliweb/awcms#805` closed as completed at 2026-09-23T22:25:59Z**, landed
+  by `awcms` PR #819 and recorded as `awcms` ADR-0124 ("Obsidian opens a
+  dedicated `knowledge/` vault, not the repository root"). This repo's
+  workflow was built following `awcms-one`'s prior art
+  ([issue #11](https://github.com/ahliweb/awcms-one/issues/11)) while
+  `awcms#805` was still open, and the two designs converged independently: a
+  dedicated `knowledge/` vault, curated notes beside a disposable generated
+  export, and an allowlisted fail-closed sync fed by an isolated staging
+  directory. **`awcms` does not track its generated vault either** — its
+  `.gitignore` excludes `knowledge/generated/*`, keeping only a tracked
+  README so the directory does not read as empty in a fresh checkout, which
+  this repo now does too (`knowledge/generated/README.md`). So not tracking
+  the generated vault is family-consistent, not a divergence — the divergence
+  is only from `awcms-one`, which does track its equivalent directory.
+- **One real divergence from `awcms` remains, and needs recording in its
+  `awcms-family-compatibility.yaml` (`awcms` ADR-0068) — this repo cannot
+  write that file itself:** `awcms` mirrors its knowledge tree into
+  Indonesian (`knowledge/README.id.md`, `knowledge/curated/*.id.md`); this
+  repo keeps `knowledge/**` English-only. The reason is specific to being a
+  TEMPLATE: every site derived from this repo is expected to rewrite its own
+  curated notes, and mirroring would double that rewrite burden per derived
+  site, whereas `awcms` mirrors once, for itself. See
   [ADR-0051](../docs/adr/0051-a-knowledge-tree-points-at-the-code-and-owns-none-of-it.md)'s
-  Consequences for what is stated here and what still needs recording there.
-- **`ahliweb/awcms#805` is open and unimplemented.** There is no canonical
-  knowledge-graph design on the `awcms` side to copy from or federate with —
-  this repo's workflow follows `awcms-one`'s prior art
-  ([issue #11](https://github.com/ahliweb/awcms-one/issues/11)) instead, and is
-  therefore diverging from an unbuilt design, not copying a built one. If
-  `awcms#805` lands later with a different shape, this directory is revisited
-  then, not before.
+  Consequences and Decision item 4 for the full reasoning.
 
 ### Worked procedure: verifying a frontend finding that depends on an `awcms` contract
 

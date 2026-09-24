@@ -68,4 +68,11 @@ graphify-out/obsidian-staging/
 # parah daripada keduanya. `bun run audit:graf` menegakkan ini secara
 # fail-closed: apa pun yang terlacak di bawah `knowledge/generated/` akan
 # memerahkan gerbang.
-knowledge/generated/
+#
+# SATU pengecualian, diambil dari `awcms` ADR-0124 yang memutuskan hal yang
+# sama untuk repo itu: READMEnya sendiri tetap dilacak, supaya direktori ini
+# tidak terbaca hilang atau kosong di klon yang baru. Ia satu-satunya berkas di
+# bawah sini yang ditulis tangan, dan satu-satunya yang `audit:graf` izinkan
+# terlacak.
+knowledge/generated/*
+!knowledge/generated/README.md

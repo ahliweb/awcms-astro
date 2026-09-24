@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](0051-a-knowledge-tree-points-at-the-code-and-owns-none-of-it.md)
 
-<!-- i18n-source-hash: sha256:ce0463037681142ceaf9eb6dd45e5f2d5c958ba0ebdb669ea1eff63f9db112f7 -->
+<!-- i18n-source-hash: sha256:9d067585a964e18fe98ed6d4a237150cebbf427a5a083b4c7208a7b2c5f9933b -->
 
 # ADR-0051 — Pohon pengetahuan menunjuk ke kode, dan tak memiliki satu pun isinya
 
@@ -23,21 +23,39 @@ di titik-titik yang bentuk `awcms-one` sendiri tidak cocok di sini — repo ini
 tak punya subtree, tak punya graf kedua untuk difederasikan, dan sudah punya
 aturan cermin terjemahan yang berbeda.
 
-### `awcms#805` masih terbuka, dan tak ada yang kanonik untuk ditunggu
+### `awcms#805` masih terbuka saat desain ini dipilih — kini sudah tertutup, dan sejalan
 
 Pertanyaan wajar — "bukankah repo backend seharusnya mendefinisikan ini lebih
-dulu, supaya kedua repo konvergen ke satu desain?" — punya jawaban konkret:
+dulu, supaya kedua repo konvergen ke satu desain?" — punya jawaban konkret
+saat bentuk alur kerja ini dipilih:
 [`ahliweb/awcms#805`](https://github.com/ahliweb/awcms/issues/805)
 mengusulkan persis itu, dan statusnya **terbuka dan belum diimplementasikan**.
 Tak ada bentuk graf pengetahuan kanonik di sisi `awcms` untuk disalin,
 didivergensikan dengan alasan, atau ditunggu. Repo ini karenanya tidak
 memilih berdivergensi dari desain yang sudah dibangun — belum ada desain yang
-dibangun sama sekali. Menunggunya berarti menahan pekerjaan ini tanpa batas
-waktu terhadap isu tanpa linimasa yang disepakati, persis bentuk yang sudah
-ditutup ADR-0027 untuk repo ini secara umum: "apakah ini akan ditulis ulang
-jika `awcms` berubah?" dijawab di sini dengan "tidak" — alur kerja ini hanya
-membaca pohon repo ini sendiri, dan tak menyentuh apa pun yang akan
+dibangun sama sekali. Menunggunya akan berarti menahan pekerjaan ini tanpa
+batas waktu terhadap isu tanpa linimasa yang disepakati, persis bentuk yang
+sudah ditutup ADR-0027 untuk repo ini secara umum: "apakah ini akan ditulis
+ulang jika `awcms` berubah?" dijawab di sini dengan "tidak" — alur kerja ini
+hanya membaca pohon repo ini sendiri, dan tak menyentuh apa pun yang akan
 diputuskan `awcms#805`.
+
+**Isu itu tertutup sebagai selesai pada 2026-09-23T22:25:59Z**, mendarat lewat
+PR #819 milik `awcms` dan tercatat sebagai `awcms` ADR-0124 ("Obsidian membuka
+vault `knowledge/` khusus, bukan akar repositori"), bertanggal sehari
+setelahnya. Dibaca berdampingan dengan ADR aslinya, kedua desain konvergen
+secara independen, bukan satu menyalin yang lain: vault `knowledge/` khusus
+alih-alih akar repositori, catatan kuratorial tulisan tangan (`knowledge/curated/`
+milik `awcms`, direktori bernama sama milik repo ini) di samping ekspor yang
+dihasilkan mesin dan sekali pakai, sinkronisasi daftar-izin gagal-tertutup
+yang diberi makan dari direktori staging terisolasi (`graphify-out/obsidian-staging/`
+milik `awcms`; jalur staging repo ini sendiri berperan sama), dan direktori
+hasil generate yang tak dilacak penuh oleh kedua repo — `awcms` mengecualikan
+`knowledge/generated/*` di `.gitignore`-nya sendiri, hanya melacak satu README
+supaya direktori itu tak terbaca kosong di checkout baru, gagasan yang juga
+diadopsi repo ini (lihat Konsekuensi). Konvergensi ini adalah bukti desain di
+bawah adalah desain yang tepat untuk dibangun tanpa menunggu, bukan bukti
+bahwa menunggu tak akan berbiaya apa-apa — lihat Ditolak.
 
 ### Empat titik bentuk repo ini sendiri yang tak cocok dengan desain `awcms-one`
 
@@ -154,15 +172,23 @@ yang mengklaim sebuah partisi sudah dikurasi padahal belum.
 
 Berdivergensi dari setiap dokumen lain di `docs/**` dan setiap berkas
 SHOUTING di root, yang tetap memikul persyaratan cermin ADR-0039 tanpa
-perubahan. `knowledge/` adalah lapisan navigasi pengembang atas kode, bukan
-dokumentasi produk atau proses — kategori yang sama yang sudah dikecualikan
-fungsi `isInScope` milik gerbang terjemahan sendiri (cakupannya `docs/**`,
-`.claude/skills/**`, `.changesets/README.md`, dan berkas SHOUTING root saja).
-Menerjemahkannya akan menciptakan ulang, pada level prosa, persis duplikasi
-yang sudah dikecualikan cermin `*.id.md` dari GRAF itu sendiri untuk
-dihindari (penalaran `.graphifyignore` sendiri): salinan kedua dari fakta
-yang sama yang bisa diam-diam melenceng dari yang pertama sementara gerbang
-berbasis hash melaporkannya sebagai masih terkini.
+perubahan — dan berdivergensi dari `awcms` sendiri, yang `awcms` ADR-0124-nya
+menerjemahkan pohon pengetahuannya ke Bahasa Indonesia
+(`knowledge/README.id.md`, `knowledge/curated/*.id.md`). `knowledge/` adalah
+lapisan navigasi pengembang atas kode, bukan dokumentasi produk atau proses —
+kategori yang sama yang sudah dikecualikan fungsi `isInScope` milik gerbang
+terjemahan sendiri (cakupannya `docs/**`, `.claude/skills/**`,
+`.changesets/README.md`, dan berkas SHOUTING root saja). Menerjemahkannya
+akan menciptakan ulang, pada level prosa, persis duplikasi yang sudah
+dikecualikan cermin `*.id.md` dari GRAF itu sendiri untuk dihindari
+(penalaran `.graphifyignore` sendiri): salinan kedua dari fakta yang sama
+yang bisa diam-diam melenceng dari yang pertama sementara gerbang berbasis
+hash melaporkannya sebagai masih terkini. Alasan jawaban repo ini berbeda
+dari `awcms` bersifat khusus karena berstatus TEMPLATE, bukan repo produk
+tunggal: setiap situs turunan dari repo ini diharapkan menulis ulang catatan
+kuratorialnya sendiri untuk basis kodenya sendiri, dan penerjemahan akan
+menggandakan beban tulis-ulang itu untuk tiap situs turunan, sementara
+`awcms` menerjemahkan sekali saja, untuk dirinya sendiri.
 
 ### Penempatan mengikuti konvensi repo ini sendiri, bukan `awcms-one`
 
@@ -187,20 +213,37 @@ salah satunya.
   sembarang** — `MAX_STALE_FILES = 40` dipilih berdasarkan drift repo ini
   sendiri saat adopsi (28, jauh di bawah), bukan disalin dari `awcms-one`
   tanpa diperiksa apakah cocok.
-- **Lima divergensi repo ini dari desain `awcms-one` (D2/D4/D6/D7 pada
-  catatan kerja isu ini sendiri, dilipat menjadi tiga di atas begitu D6 —
-  pengawatan berkas ignore — dihitung sebagai konsekuensi D2, bukan pilihan
-  desain terpisah) perlu dicatat di `awcms-family-compatibility.yaml` milik
+- **Divergensi repo ini dari desain `awcms-one` (D2/D4/D6/D7 pada catatan
+  kerja isu ini sendiri, dilipat menjadi tiga di atas begitu D6 — pengawatan
+  berkas ignore — dihitung sebagai konsekuensi D2, bukan pilihan desain
+  terpisah) adalah divergensi dari prior art di repo saudara, bukan dari
+  standar keluarga.** Kini setelah `awcms` ADR-0124 mendarat, gambarannya
+  lebih tajam: tak melacak `knowledge/generated/` ternyata SEJALAN dengan
+  `awcms`, yang `.gitignore`-nya sendiri mengecualikan
+  `knowledge/generated/*` kecuali satu README yang dilacak, dengan penalaran
+  artefak-regenerabel yang sama seperti ADR ini — tak ada yang perlu dicatat
+  di mana pun untuk itu. **Satu divergensi yang tersisa dari `awcms` sendiri
+  adalah bahasa**: `awcms` menerjemahkan pohon pengetahuannya ke Bahasa
+  Indonesia; repo ini menjaga `knowledge/**` berbahasa Inggris saja, dengan
+  alasan khusus karena berstatus TEMPLATE (butir 4 §Keputusan). Divergensi
+  tunggal itu perlu dicatat di `awcms-family-compatibility.yaml` milik
   `awcms` (`awcms` ADR-0068), dan repo ini tak bisa menulis berkas itu
-  sendiri.** Yang bisa dilakukan di sini, dan dilakukan ADR ini, adalah
+  sendiri — yang bisa dilakukan di sini, dan dilakukan ADR ini, adalah
   menyatakan perbedaan dan alasannya secara tertulis, persis jalur yang
   sudah dipakai ADR-0034 untuk divergensi keluarganya sendiri.
-- **Jika `awcms#805` mendarat kelak dengan bentuk kanonik berbeda**, alur
-  kerja ini ditinjau ulang saat itu, terhadap desain nyata, alih-alih
-  diblokir sekarang terhadap desain hipotetis — konsisten dengan jawaban
+- **`awcms#805` sudah mendarat, sebagai `awcms` ADR-0124, dalam kesepakatan
+  independen dengan desain di bawah** alih-alih bentuk kanonik berbeda yang
+  akan memaksa alur kerja ini ditinjau ulang — konsisten dengan jawaban
   ADR-0027 bahwa "butuh instance `awcms` untuk membuktikan panggilannya
   benar" adalah alasan menunggu hanya untuk pekerjaan yang benar-benar
-  memanggil `awcms`; alur kerja ini tak melakukan panggilan semacam itu.
+  memanggil `awcms`; alur kerja ini tak melakukan panggilan semacam itu, dan
+  penantian yang tidak diambilnya tak pernah berada di jalur kritis
+  kebenaran di sini.
+- **Repo ini mengadopsi gagasan README-terlacak dari `awcms` ADR-0124 untuk
+  direktori generate-nya sendiri** — `knowledge/generated/README.md`, tetap
+  dilacak dan dikecualikan dari pemeriksaan direktori-tak-terlacak
+  `audit:graf`, supaya checkout baru tak membaca `knowledge/generated/`
+  sebagai kosong atau hilang.
 - **Yang TIDAK dibuktikan ADR ini:** bahwa graf atau catatan kuratorialnya
   lengkap, bahwa setiap fakta di dalamnya tetap benar seiring kode berubah
   (hanya dibatasi, bukan dihilangkan, oleh gerbang basi), atau bahwa
@@ -243,9 +286,18 @@ salah satunya.
   karena ia membaca dan menulis `graph.json` tanpa memanggil `graphify` sama
   sekali, sehingga menerapkan sebuah nama tak pernah bisa menjadi tindakan
   yang membatalkannya sendiri.
-- **Menunggu `awcms#805` sebelum mengerjakan apa pun dari ini.** Tak ada
-  linimasa yang disepakati untuk isu itu, dan alur kerja ini tak melakukan
-  panggilan apa pun ke `awcms` serta tak membaca kontrak `awcms` apa pun —
-  penalaran "tunggu kontrak stabil" yang secara sah menahan pekerjaan lain
-  di repo ini (ADR-0023, ADR-0027) tak berlaku pada alur kerja yang sama
-  sekali tak menyentuh `awcms`.
+- **Menunggu `awcms#805` sebelum mengerjakan apa pun dari ini.** Saat ADR ini
+  ditulis, tak ada linimasa yang disepakati untuk isu itu, dan alur kerja ini
+  tak melakukan panggilan apa pun ke `awcms` serta tak membaca kontrak
+  `awcms` apa pun — penalaran "tunggu kontrak stabil" yang secara sah
+  menahan pekerjaan lain di repo ini (ADR-0023, ADR-0027) tak berlaku pada
+  alur kerja yang sama sekali tak menyentuh `awcms`. Penolakan ini justru
+  terbaca lebih kuat dengan kaca mata belakang, bukan lebih lemah:
+  `awcms#805` tertutup sebagai `awcms` ADR-0124 sehari sebelum tanggal ADR
+  ini sendiri, mendarat secara independen pada bentuk yang sama — vault
+  `knowledge/` khusus, catatan kuratorial di samping ekspor yang dihasilkan
+  mesin dan sekali pakai, sinkronisasi daftar-izin gagal-tertutup yang
+  diberi makan dari direktori staging terisolasi. Menunggu akan berbiaya
+  kira-kira sehari dan menghasilkan desain yang sudah dipilih di sini;
+  kesepakatan itu adalah bukti desainnya benar, bukan bukti bahwa menunggu
+  akan gratis.

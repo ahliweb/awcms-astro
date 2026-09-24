@@ -20,19 +20,36 @@ design wholesale would be wrong in exactly the places `awcms-one`'s own shape
 does not apply here — this repo has no subtree, no second graph to federate
 with, and a different translation-mirror rule already in force.
 
-### `awcms#805` is open, and there is nothing canonical to wait for
+### `awcms#805` was open when this design was chosen — it has since closed, in agreement
 
 The natural question — "shouldn't the backend repo define this first, so both
-repos converge on one design?" — has a concrete answer:
-[`ahliweb/awcms#805`](https://github.com/ahliweb/awcms/issues/805) proposes
-exactly that, and it is **open and unimplemented**. There is no canonical
-knowledge-graph shape on the `awcms` side to copy, diverge from with reasons,
-or block on. This repo is therefore not choosing to diverge from a built
-design — there is no built design yet. Waiting for it would mean holding this
-work indefinitely against an issue with no committed timeline, which is the
-exact shape ADR-0027 already closed off for this repo in general: "will this
-be rewritten if `awcms` changes?" is answered here by "no" — this workflow
-reads this repo's own tree only, and touches nothing `awcms#805` would decide.
+repos converge on one design?" — had a concrete answer when this workflow's
+shape was chosen: [`ahliweb/awcms#805`](https://github.com/ahliweb/awcms/issues/805)
+proposed exactly that, and it was **open and unimplemented**. There was no
+canonical knowledge-graph shape on the `awcms` side to copy, diverge from with
+reasons, or block on. This repo was therefore not choosing to diverge from a
+built design — there was no built design yet. Waiting for it would have meant
+holding this work indefinitely against an issue with no committed timeline,
+which is the exact shape ADR-0027 already closed off for this repo in
+general: "will this be rewritten if `awcms` changes?" was answered here by
+"no" — this workflow reads this repo's own tree only, and touches nothing
+`awcms#805` would decide.
+
+**That issue closed as completed at 2026-09-23T22:25:59Z**, landed by `awcms`
+PR #819 and recorded as `awcms` ADR-0124 ("Obsidian opens a dedicated
+`knowledge/` vault, not the repository root"), dated one day after. Read
+against the real ADR, the two designs converge independently rather than one
+copying the other: a dedicated `knowledge/` vault instead of the repository
+root, hand-written curated notes (`awcms`'s `knowledge/curated/`, this repo's
+own directory of the same name) beside a disposable generated export, an
+allowlisted fail-closed sync fed by an isolated staging directory (`awcms`'s
+`graphify-out/obsidian-staging/`; this repo's own staging path serves the
+same role), and a generated directory neither repo tracks in full — `awcms`
+excludes `knowledge/generated/*` in its own `.gitignore`, keeping only a
+tracked README so the directory does not read as empty in a fresh checkout,
+an idea this repo is adopting too (see Consequences). The convergence is
+evidence the design below was the right one to build without waiting, not
+evidence that waiting would have cost nothing — see Rejected.
 
 ### Four points of this repo's own shape that `awcms-one`'s design does not fit
 
@@ -137,15 +154,22 @@ claiming a partition was curated when it was not.
 ### 4. `knowledge/**` is English-only, with no `.id.md` mirror
 
 Diverging from every other document in `docs/**` and every root SHOUTING
-file, which keep ADR-0039's mirror requirement unchanged. `knowledge/` is a
-developer navigation layer over the code, not product or process
-documentation — the same category the translation gate's own `isInScope`
-function already excludes (it scopes to `docs/**`, `.claude/skills/**`,
-`.changesets/README.md`, and root SHOUTING files only). Mirroring it would
-recreate, at the level of prose, exactly the duplication `*.id.md` mirrors
-are already excluded from the GRAPH itself to avoid (`.graphifyignore`'s own
-stated reasoning): a second copy of the same fact that can silently drift
-from the first while a hash-based gate reports it as still current.
+file, which keep ADR-0039's mirror requirement unchanged — and diverging from
+`awcms` itself, whose `awcms` ADR-0124 mirrors its knowledge tree into
+Indonesian (`knowledge/README.id.md`, `knowledge/curated/*.id.md`).
+`knowledge/` is a developer navigation layer over the code, not product or
+process documentation — the same category the translation gate's own
+`isInScope` function already excludes (it scopes to `docs/**`,
+`.claude/skills/**`, `.changesets/README.md`, and root SHOUTING files only).
+Mirroring it would recreate, at the level of prose, exactly the duplication
+`*.id.md` mirrors are already excluded from the GRAPH itself to avoid
+(`.graphifyignore`'s own stated reasoning): a second copy of the same fact
+that can silently drift from the first while a hash-based gate reports it as
+still current. The reason this repo's answer differs from `awcms`'s is
+specific to being a TEMPLATE, not a single product repo: every site derived
+from this repo is expected to rewrite its own curated notes for its own
+codebase, and mirroring would double that rewrite burden for each derived
+site, whereas `awcms` mirrors once, for itself.
 
 ### Placement follows this repo's own conventions, not `awcms-one`'s
 
@@ -169,19 +193,34 @@ and no `packages/` directory here, so nothing is placed in either.
   arbitrary round one** — `MAX_STALE_FILES = 40` was chosen against this
   repo's own drift at adoption time (28, comfortably under), not copied from
   `awcms-one` without checking it fits.
-- **This repo's five divergences from `awcms-one`'s design (D2/D4/D6/D7 in
-  this issue's own working notes, folded into three above once D6 — the
+- **This repo's divergences from `awcms-one`'s design (D2/D4/D6/D7 in this
+  issue's own working notes, folded into three above once D6 — the
   ignore-file wiring — is counted as consequence of D2 rather than a separate
-  design choice) need recording in `awcms`'s own
-  `awcms-family-compatibility.yaml` (`awcms` ADR-0068), and this repo cannot
-  write that file itself.** What can be done here, and is done by this ADR,
-  is stating the difference and the reason for it in writing, exactly the
-  path ADR-0034 already used for its own family divergences.
-- **If `awcms#805` lands later with a different canonical shape**, this
-  workflow is revisited then, against a real design, rather than blocked now
-  against a hypothetical one — consistent with ADR-0027's answer that "needs
-  an `awcms` instance to prove its calls are right" is a reason to wait only
-  for work that actually calls `awcms`; this workflow makes no such call.
+  design choice) are divergences from prior art in a sibling repo, not from a
+  family standard.** Now that `awcms` ADR-0124 has landed, one of those D-items
+  turns out not to be a divergence at all: not tracking `knowledge/generated/`
+  AGREES with `awcms`, whose own `.gitignore` excludes `knowledge/generated/*`
+  bar one tracked README, for the same regenerable-artefact reasoning this ADR
+  gives — nothing there needs recording anywhere. **The one divergence that
+  remains from `awcms` itself is language**: `awcms` mirrors its knowledge
+  tree into Indonesian; this repo keeps `knowledge/**` English-only, for a
+  reason specific to being a TEMPLATE (Decision item 4). That single
+  divergence needs recording in `awcms`'s own `awcms-family-compatibility.yaml`
+  (`awcms` ADR-0068), and this repo cannot write that file itself — what can
+  be done here, and is done by this ADR, is stating the difference and the
+  reason for it in writing, exactly the path ADR-0034 already used for its own
+  family divergences.
+- **`awcms#805` has already landed, as `awcms` ADR-0124, in independent
+  agreement with the design below** rather than a different canonical shape
+  this workflow would need to revisit — consistent with ADR-0027's answer that
+  "needs an `awcms` instance to prove its calls are right" was a reason to
+  wait only for work that actually calls `awcms`; this workflow makes no such
+  call, and the wait it declined to take was never on the critical path of
+  correctness here.
+- **This repo is adopting `awcms` ADR-0124's tracked-README idea for its own
+  generated directory** — `knowledge/generated/README.md`, kept tracked and
+  exempted from `audit:graf`'s untracked-directory check, so a fresh checkout
+  does not read `knowledge/generated/` as empty or missing.
 - **What this ADR does NOT prove:** that the graph or its curated notes are
   complete, that every fact in them stays correct as the code changes (only
   bounded, not eliminated, by the staleness gate), or that Obsidian-specific
@@ -219,8 +258,16 @@ and no `packages/` directory here, so nothing is placed in either.
   `knowledge:graph:label` replaces it precisely because it reads and writes
   `graph.json` without invoking `graphify` at all, so applying a name can
   never itself be the act that invalidates it.
-- **Waiting for `awcms#805` before doing any of this.** There is no committed
-  timeline for that issue, and this workflow makes no call to `awcms` and
-  reads no `awcms` contract — the "wait for a stable contract" reasoning that
-  correctly holds other work in this repo (ADR-0023, ADR-0027) does not apply
-  to a workflow that never touches `awcms` at all.
+- **Waiting for `awcms#805` before doing any of this.** At the time this ADR
+  was written there was no committed timeline for that issue, and this
+  workflow makes no call to `awcms` and reads no `awcms` contract — the "wait
+  for a stable contract" reasoning that correctly holds other work in this
+  repo (ADR-0023, ADR-0027) does not apply to a workflow that never touches
+  `awcms` at all. This rejection reads stronger in hindsight, not weaker:
+  `awcms#805` closed as `awcms` ADR-0124 one day before this ADR's own date,
+  landing independently on the same shape — a dedicated `knowledge/` vault,
+  curated notes beside a disposable generated export, an allowlisted
+  fail-closed sync fed by an isolated staging directory. Waiting would have
+  cost roughly a day and produced the design already chosen here; the
+  agreement is evidence the design was right, not proof that waiting would
+  have been free.
