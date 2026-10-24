@@ -15,3 +15,9 @@ susunan halaman bisa dibahas sebelum komponen apa pun diubah.
 - Halaman memakai `public/favicon.svg` repo ini dan salinan font Public Sans /
   JetBrains Mono di `design/redesain-ui-ux-2026-10/assets/fonts/` (OFL); build
   situs tidak membaca folder ini.
+- `design/` masuk `.graphifyignore` dan `STALENESS_OUT_OF_SCOPE_PREFIXES` di
+  `scripts/audit-graf.mjs`: proposal desain bukan pengetahuan tentang kode situs,
+  dan tanpa itu lima berkas barunya mendorong `audit:graf` dari 38 ke 43 berkas
+  yang berubah, melewati batas 40. Batasnya sendiri tidak diubah; graf tetap perlu
+  dibangun ulang (`bun run knowledge:graph:update` lalu penamaan komunitas) sebelum
+  PR berikutnya yang menambah tiga berkas terindeks.

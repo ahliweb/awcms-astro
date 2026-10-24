@@ -61,3 +61,13 @@
 # (bukan pola glob), jadi `bun run audit:graf` aturan 4 benar-benar
 # menegakkannya — bukan hanya melaporkannya sebagai tidak ditegakkan.
 knowledge/generated/
+
+# `design/` — proposal rancangan halaman (HTML, JSON spesifikasi, dan satu
+# runtime `support.js` berukuran ribuan baris), bukan kode atau dokumen situs.
+#
+# Ia bukan pengetahuan yang bisa ditanyakan tentang repo ini, dan build tidak
+# membacanya. Mengindeksnya hanya akan menambah node dari berkas yang bukan
+# milik kontrak mana pun. Awalan BIASA, jadi `bun run audit:graf` aturan 4
+# menegakkannya; ia juga disebut di `STALENESS_OUT_OF_SCOPE_PREFIXES` agar lima
+# berkas barunya tidak dihitung sebagai graf yang menjauh dari sumbernya.
+design/
