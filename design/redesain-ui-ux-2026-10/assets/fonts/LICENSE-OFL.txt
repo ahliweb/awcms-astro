@@ -1,0 +1,19 @@
+Design-reference web fonts — SIL Open Font License 1.1
+=====================================================
+
+The woff2 files in this directory are byte-identical copies of the
+self-hosted fonts in ahliweb/awcms `public/fonts/` (ADR-0120 there). They are
+used ONLY by the design-reference pages in the parent folder; nothing in this
+site's build reads them. All are licensed under the SIL Open Font License,
+Version 1.1 (https://openfontlicense.org). Redistribution is explicit
+Permitted Use under that licence.
+
+- Public Sans — latin, latin-ext (normal, variable 300–800), latin italic 400
+  Copyright 2015 The Public Sans Project Authors
+  https://github.com/uswds/public-sans
+
+- JetBrains Mono — latin, latin-ext (normal, 400–600)
+  Copyright 2020 The JetBrains Mono Project Authors
+  https://github.com/JetBrains/JetBrainsMono
+
+Full licence text: https://openfontlicense.org/open-font-license-official-text/

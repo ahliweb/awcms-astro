@@ -1,0 +1,167 @@
+[
+  {
+    "r": "/",
+    "n": "Beranda",
+    "s": "Publik",
+    "t": "Beranda",
+    "q": "Kotak cari → /cari",
+    "f": "Kanal, topik populer",
+    "o": "—",
+    "p": "Terbaru: 4 · Sorotan: 3",
+    "now": "SSG"
+  },
+  {
+    "r": "/{kanal}/",
+    "n": "Arsip kanal (Panduan/Layanan/Informasi)",
+    "s": "Publik",
+    "t": "Arsip",
+    "q": "Cari di kanal ini",
+    "f": "Kategori, tag",
+    "o": "Urutan seksi (manual/terbaru)",
+    "p": "Nomor · 12 (SITE_POSTS_PER_PAGE)",
+    "now": "SSG"
+  },
+  {
+    "r": "/{kanal}/halaman/{n}/",
+    "n": "Arsip kanal, halaman n",
+    "s": "Publik",
+    "t": "Arsip",
+    "q": "Cari di kanal ini",
+    "f": "Kategori, tag",
+    "o": "Sama dengan halaman 1",
+    "p": "Nomor · 12; halaman 1 tetap di /{kanal}/",
+    "now": "SSG"
+  },
+  {
+    "r": "/{kanal}/{slug}/",
+    "n": "Artikel / halaman layanan",
+    "s": "Publik",
+    "t": "Artikel",
+    "q": "—",
+    "f": "—",
+    "o": "—",
+    "p": "—",
+    "now": "SSG"
+  },
+  {
+    "r": "/kategori/{slug}/",
+    "n": "Arsip kategori",
+    "s": "Publik",
+    "t": "Arsip",
+    "q": "Cari di kategori ini",
+    "f": "Kanal",
+    "o": "Terbaru",
+    "p": "Nomor · 12",
+    "now": "SSG"
+  },
+  {
+    "r": "/kategori/{slug}/halaman/{n}/",
+    "n": "Arsip kategori, halaman n",
+    "s": "Publik",
+    "t": "Arsip",
+    "q": "Cari di kategori ini",
+    "f": "Kanal",
+    "o": "Terbaru",
+    "p": "Nomor · 12",
+    "now": "SSG"
+  },
+  {
+    "r": "/tag/{slug}/",
+    "n": "Arsip tag",
+    "s": "Publik",
+    "t": "Arsip",
+    "q": "Cari di tag ini",
+    "f": "Kanal",
+    "o": "Terbaru",
+    "p": "Nomor · 12",
+    "now": "SSG"
+  },
+  {
+    "r": "/tag/{slug}/halaman/{n}/",
+    "n": "Arsip tag, halaman n",
+    "s": "Publik",
+    "t": "Arsip",
+    "q": "Cari di tag ini",
+    "f": "Kanal",
+    "o": "Terbaru",
+    "p": "Nomor · 12",
+    "now": "SSG"
+  },
+  {
+    "r": "/cari/",
+    "n": "Pencarian",
+    "s": "Publik",
+    "t": "Hasil cari",
+    "q": "Kata kunci (awcms search, CORS sederhana)",
+    "f": "Jenis konten, kanal, topik, instansi, wilayah",
+    "o": "Relevansi",
+    "p": "Muat lebih banyak · 20",
+    "now": "SSG"
+  },
+  {
+    "r": "/sitemap/",
+    "n": "Peta situs",
+    "s": "Publik",
+    "t": "Indeks",
+    "q": "Saring judul (di halaman)",
+    "f": "Kanal",
+    "o": "Kanal → judul",
+    "p": "Seluruhnya, dikelompokkan per kanal",
+    "now": "SSG"
+  },
+  {
+    "r": "/privasi/",
+    "n": "Kebijakan privasi",
+    "s": "Publik",
+    "t": "Dokumen",
+    "q": "—",
+    "f": "—",
+    "o": "—",
+    "p": "—",
+    "now": "SSG"
+  },
+  {
+    "r": "/buletin/token/",
+    "n": "Konfirmasi buletin",
+    "s": "Publik",
+    "t": "Status",
+    "q": "—",
+    "f": "—",
+    "o": "—",
+    "p": "—",
+    "now": "SSG"
+  },
+  {
+    "r": "/404",
+    "n": "Tidak ditemukan",
+    "s": "Publik",
+    "t": "Status",
+    "q": "Kotak cari",
+    "f": "—",
+    "o": "—",
+    "p": "—",
+    "now": "SSG"
+  },
+  {
+    "r": "/{kanal}/feed.xml",
+    "n": "Feed RSS kanal",
+    "s": "Mesin",
+    "t": "Feed",
+    "q": "—",
+    "f": "—",
+    "o": "Terbaru",
+    "p": "20 item terbaru",
+    "now": "SSG"
+  },
+  {
+    "r": "/en/…",
+    "n": "Semua rute di atas, bahasa Inggris",
+    "s": "Publik",
+    "t": "Cermin bahasa",
+    "q": "Sama",
+    "f": "Sama",
+    "o": "Sama",
+    "p": "Sama",
+    "now": "SSG"
+  }
+]

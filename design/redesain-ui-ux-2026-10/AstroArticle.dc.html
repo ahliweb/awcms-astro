@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>awcms-astro · Halaman layanan</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&amp;display=swap">
+<style>
+@font-face{font-family:"Public Sans";font-style:normal;font-weight:300 800;font-display:swap;src:url("assets/fonts/public-sans-latin.woff2") format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Public Sans";font-style:normal;font-weight:300 800;font-display:swap;src:url("assets/fonts/public-sans-latin-ext.woff2") format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Public Sans";font-style:italic;font-weight:400;font-display:swap;src:url("assets/fonts/public-sans-italic-latin.woff2") format("woff2");unicode-range:U+0000-00FF,U+2000-206F}
+@font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:400 600;font-display:swap;src:url("assets/fonts/jetbrains-mono-latin.woff2") format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+body{margin:0}
+a{color:#0369a1}a:hover{color:#075985}
+.lk{text-decoration:none;color:#0f172a}.lk:hover{color:#0369a1;text-decoration:underline;text-underline-offset:3px}
+.nav:hover{color:#0369a1}
+summary{list-style:none;cursor:pointer}
+summary::-webkit-details-marker{display:none}
+details[open]>summary .caret{transform:rotate(45deg)}
+.toc:hover{color:#0369a1;background:#f1f5f9}
+.req input:checked+span{text-decoration:line-through;color:#64748b}
+</style>
+</helmet>
+<div style="background: #ffffff; color: #0f172a; font-family: 'Public Sans', system-ui, sans-serif; font-size: 17px; line-height: 1.65">
+
+<div style="background: #0b1220; color: #cbd5e1; font-size: 13px">
+<div style="max-width: 1200px; margin: 0 auto; padding: 8px clamp(16px, 4vw, 32px); display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center">
+<span>Tanpa pelacak · Bisa dibaca tanpa JavaScript</span>
+<span style="flex: 1"></span>
+<nav aria-label="Bahasa" style="display: flex; gap: 12px"><a href="#" aria-current="page" style="color: #ffffff; font-weight: 600; text-decoration: none">Bahasa Indonesia</a><a href="#" lang="en" style="color: #cbd5e1">English</a></nav>
+</div>
+</div>
+<header style="border-bottom: 1px solid #e2e8f0">
+<div style="max-width: 1200px; margin: 0 auto; padding: 16px clamp(16px, 4vw, 32px); display: flex; flex-wrap: wrap; align-items: center; gap: 16px 32px">
+<a href="AstroHome.dc.html" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: #0f172a">
+<img src="../../public/favicon.svg" alt="" width="44" height="44" style="width: 44px; height: 44px; flex: none">
+<span style="display: flex; flex-direction: column; line-height: 1.25"><span style="font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; font-size: 20px">Info Layanan Publik</span><span style="font-size: 13px; color: #475569">Informasi publik yang bisa dipercaya</span></span>
+</a>
+<nav aria-label="Navigasi utama" style="display: flex; flex-wrap: wrap; gap: 4px 24px; flex: 1; font-weight: 600; font-size: 15px">
+<a href="#" class="nav" style="color: #0f172a; text-decoration: none; padding: 8px 0">Panduan</a>
+<a href="#" class="nav" aria-current="page" style="color: #0369a1; text-decoration: none; padding: 8px 0; box-shadow: inset 0 -2px 0 #0369a1">Layanan</a>
+<a href="#" class="nav" style="color: #0f172a; text-decoration: none; padding: 8px 0">Informasi</a>
+<a href="#" class="nav" style="color: #0f172a; text-decoration: none; padding: 8px 0">Peta situs</a>
+</nav>
+<a href="#" style="display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px; border: 1px solid #94a3b8; border-radius: 10px; color: #0f172a; text-decoration: none; font-weight: 600; font-size: 15px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14M21 21l-4.3-4.3"></path></svg>Cari</a>
+</div>
+</header>
+
+<main>
+<div style="background: #f4f7fa; border-bottom: 1px solid #e2e8f0">
+<div style="max-width: 1200px; margin: 0 auto; padding: 32px clamp(16px, 4vw, 32px) 40px; display: flex; flex-direction: column; gap: 18px">
+<nav aria-label="Remah roti" style="font-size: 14px; color: #475569; display: flex; flex-wrap: wrap; gap: 8px"><a href="AstroHome.dc.html">Beranda</a><span aria-hidden="true">/</span><a href="#">Layanan</a><span aria-hidden="true">/</span><span aria-current="page">Perpanjangan SIM A dan C</span></nav>
+<div style="display: flex; flex-wrap: wrap; gap: 8px"><span style="font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0">Layanan</span><span style="font-size: 13px; padding: 3px 10px; border-radius: 999px; background: #ffffff; color: #334155; border: 1px solid #cbd5e1">SIM</span></div>
+<h1 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: clamp(34px, 4.6vw, 52px); line-height: 1.1; letter-spacing: -0.015em; font-weight: 700; max-width: 900px; text-wrap: balance">Perpanjangan SIM A dan C: syarat, langkah, dan biaya</h1>
+<p style="margin: 0; font-size: 20px; color: #334155; max-width: 760px; text-wrap: pretty">Apa yang perlu dibawa, urutan di loket, dan rincian biaya beserta dasar hukumnya — dalam satu halaman.</p>
+<dl style="margin: 0; display: flex; flex-wrap: wrap; gap: 8px 28px; font-size: 14px; color: #475569">
+<div style="display: flex; gap: 6px"><dt>Ditulis oleh</dt><dd style="margin: 0; color: #0f172a; font-weight: 600">Redaksi</dd></div>
+<div style="display: flex; gap: 6px"><dt>Terbit</dt><dd style="margin: 0; color: #0f172a"><time>3 Mar 2026</time></dd></div>
+<div style="display: flex; gap: 6px"><dt>Diperbarui</dt><dd style="margin: 0; color: #0f172a"><time>20 Okt 2026</time></dd></div>
+<div style="display: flex; gap: 6px"><dt>Ditinjau ulang sebelum</dt><dd style="margin: 0; color: #047857; font-weight: 600"><time>20 Jan 2027</time></dd></div>
+<div style="display: flex; gap: 6px"><dt>Perkiraan waktu baca</dt><dd style="margin: 0; color: #0f172a">6 menit</dd></div>
+</dl>
+</div>
+</div>
+
+<div style="max-width: 1200px; margin: 0 auto; padding: 40px clamp(16px, 4vw, 32px) 64px; display: flex; flex-wrap: wrap; gap: 48px; align-items: flex-start">
+<aside style="flex: 1 1 220px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+<nav aria-labelledby="toc" style="display: flex; flex-direction: column; gap: 2px; border-left: 1px solid #e2e8f0; padding-left: 4px">
+<h2 id="toc" style="margin: 0 0 6px 12px; font-size: 13px; font-weight: 700; color: #475569">Di halaman ini</h2>
+<sc-for list="{{toc}}" as="t" hint-placeholder-count="6">
+<a href="{{t.href}}" class="toc" style="padding: 7px 12px; border-radius: 8px; font-size: 15px; text-decoration: none; {{t.st}}">{{t.label}}</a>
+</sc-for>
+</nav>
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 14px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 14px">
+<span style="font-weight: 700">Bagikan</span>
+<div style="display: flex; flex-wrap: wrap; gap: 6px">
+<a href="#" style="height: 36px; padding: 0 12px; border: 1px solid #cbd5e1; border-radius: 8px; display: flex; align-items: center; text-decoration: none; color: #0f172a">Salin tautan</a>
+<a href="#" style="height: 36px; padding: 0 12px; border: 1px solid #cbd5e1; border-radius: 8px; display: flex; align-items: center; text-decoration: none; color: #0f172a">WhatsApp</a>
+<a href="#" style="height: 36px; padding: 0 12px; border: 1px solid #cbd5e1; border-radius: 8px; display: flex; align-items: center; text-decoration: none; color: #0f172a">Cetak</a>
+</div>
+</div>
+<p style="margin: 0; font-size: 14px; color: #475569">Tersedia juga dalam <a href="#" lang="en">English</a>.</p>
+</aside>
+
+<article style="flex: 999 1 620px; min-width: 0; max-width: 760px; display: flex; flex-direction: column; gap: 48px">
+
+<section id="sekilas" aria-labelledby="h-sekilas" style="display: flex; flex-direction: column; gap: 14px">
+<h2 id="h-sekilas" style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 28px; font-weight: 700">Sekilas</h2>
+<dl style="margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr)); border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden">
+<sc-for list="{{glance}}" as="g" hint-placeholder-count="4">
+<div style="padding: 16px 18px; display: flex; flex-direction: column-reverse; gap: 2px; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; background: #ffffff"><dt style="font-size: 14px; color: #475569">{{g.label}}</dt><dd style="margin: 0; font-size: 20px; font-weight: 700; line-height: 1.3">{{g.value}}</dd></div>
+</sc-for>
+</dl>
+<div role="note" style="display: flex; gap: 12px; padding: 14px 16px; border-radius: 12px; background: #fff7ed; border: 1px solid #fed7aa; color: #7c2d12; font-size: 15px; line-height: 1.55"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 3px"><path d="M12 3l10 18H2zM12 10v4M12 17h.01"></path></svg><span><strong>Contoh konten untuk desain.</strong> Nominal dan durasi ditandai [ ] karena harus diambil dari sumber resmi saat artikel ditulis di AWCMS.</span></div>
+</section>
+
+<section id="syarat" aria-labelledby="h-syarat" style="display: flex; flex-direction: column; gap: 14px">
+<h2 id="h-syarat" style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 28px; font-weight: 700">Syarat dan dokumen</h2>
+<p style="margin: 0; color: #334155">Centang saat dokumen sudah siap. Daftar ini tersimpan hanya di layar Anda dan hilang saat halaman ditutup.</p>
+<ul style="list-style: none; margin: 0; padding: 0; border: 1px solid #e2e8f0; border-radius: 14px">
+<sc-for list="{{reqs}}" as="r" hint-placeholder-count="5">
+<li style="border-bottom: 1px solid #eef2f6"><label class="req" style="display: flex; gap: 14px; align-items: flex-start; padding: 14px 18px; cursor: pointer"><input type="checkbox" style="margin: 4px 0 0; width: 20px; height: 20px; accent-color: #0369a1; flex: none"><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-weight: 600">{{r.t}}</span><span style="font-size: 15px; color: #475569">{{r.d}}</span></span></label></li>
+</sc-for>
+</ul>
+</section>
+
+<section id="langkah" aria-labelledby="h-langkah" style="display: flex; flex-direction: column; gap: 16px">
+<h2 id="h-langkah" style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 28px; font-weight: 700">Langkah di lokasi</h2>
+<ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column">
+<sc-for list="{{steps}}" as="s" hint-placeholder-count="6">
+<li style="display: flex; gap: 18px">
+<div style="display: flex; flex-direction: column; align-items: center"><span aria-hidden="true" style="width: 36px; height: 36px; border-radius: 999px; background: #0369a1; color: #ffffff; display: grid; place-items: center; font-weight: 700; font-size: 15px; flex: none">{{s.n}}</span><span aria-hidden="true" style="width: 2px; flex: 1; background: {{s.line}}; min-height: 16px"></span></div>
+<div style="display: flex; flex-direction: column; gap: 4px; padding: 5px 0 24px"><h3 style="margin: 0; font-size: 19px; font-weight: 700">{{s.t}}</h3><p style="margin: 0; color: #334155">{{s.d}}</p></div>
+</li>
+</sc-for>
+</ol>
+</section>
+
+<section id="biaya" aria-labelledby="h-biaya" style="display: flex; flex-direction: column; gap: 14px">
+<h2 id="h-biaya" style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 28px; font-weight: 700">Rincian biaya</h2>
+<div style="border: 1px solid #e2e8f0; border-radius: 14px; overflow-x: auto">
+<table style="width: 100%; min-width: 600px; border-collapse: collapse; font-size: 15px">
+<thead><tr style="background: #f4f7fa; text-align: left">
+<th style="padding: 12px 16px; font-size: 14px; font-weight: 700; color: #334155">Item</th>
+<th style="padding: 12px 16px; font-size: 14px; font-weight: 700; color: #334155">Kategori</th>
+<th style="padding: 12px 16px; font-size: 14px; font-weight: 700; color: #334155; text-align: right">Nominal</th>
+<th style="padding: 12px 16px; font-size: 14px; font-weight: 700; color: #334155">Dasar hukum</th>
+</tr></thead>
+<tbody>
+<sc-for list="{{fees}}" as="f" hint-placeholder-count="4">
+<tr>
+<td style="padding: 14px 16px; border-top: 1px solid #e2e8f0; font-weight: 600">{{f.item}}</td>
+<td style="padding: 14px 16px; border-top: 1px solid #e2e8f0"><span style="font-size: 13px; font-weight: 600; padding: 3px 9px; border-radius: 6px; background: {{f.bg}}; color: {{f.fg}}">{{f.cat}}</span></td>
+<td style="padding: 14px 16px; border-top: 1px solid #e2e8f0; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap">{{f.amt}}</td>
+<td style="padding: 14px 16px; border-top: 1px solid #e2e8f0; font-size: 14px; color: #334155">{{f.law}}</td>
+</tr>
+</sc-for>
+<tr style="background: #f4f7fa"><td colspan="2" style="padding: 14px 16px; border-top: 1px solid #cbd5e1; font-weight: 700">Total yang dibayar</td><td style="padding: 14px 16px; border-top: 1px solid #cbd5e1; text-align: right; font-weight: 700; white-space: nowrap">Rp [total]</td><td style="padding: 14px 16px; border-top: 1px solid #cbd5e1"></td></tr>
+</tbody>
+</table>
+</div>
+<div role="note" style="display: flex; gap: 12px; padding: 14px 16px; border-radius: 12px; background: #f1f5f9; color: #1e293b; font-size: 15px; line-height: 1.55"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0369a1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 3px"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 11v5M12 8h.01"></path></svg><span>Bayar hanya di loket atau kanal pembayaran resmi. Petugas tidak pernah meminta transfer ke rekening pribadi atau lewat tautan di pesan singkat.</span></div>
+</section>
+
+<section id="faq" aria-labelledby="h-faq" style="display: flex; flex-direction: column; gap: 14px">
+<h2 id="h-faq" style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 28px; font-weight: 700">Pertanyaan yang sering diajukan</h2>
+<div style="border-top: 1px solid #e2e8f0">
+<sc-for list="{{faq}}" as="q" hint-placeholder-count="4">
+<details style="border-bottom: 1px solid #e2e8f0">
+<summary style="display: flex; gap: 16px; align-items: center; padding: 18px 4px; font-weight: 600; font-size: 18px"><span style="flex: 1">{{q.q}}</span><svg class="caret" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0369a1" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></summary>
+<p style="margin: 0; padding: 0 4px 20px; color: #334155">{{q.a}}</p>
+</details>
+</sc-for>
+</div>
+</section>
+
+<section id="sumber" aria-labelledby="h-sumber" style="display: flex; flex-direction: column; gap: 12px; padding: 22px 24px; border-radius: 14px; border: 1px solid #e2e8f0">
+<h2 id="h-sumber" style="margin: 0; font-size: 18px; font-weight: 700">Sumber</h2>
+<ol style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 15px; color: #334155">
+<li>Undang-Undang Nomor 22 Tahun 2009 tentang Lalu Lintas dan Angkutan Jalan — masa berlaku SIM.</li>
+<li>Peraturan Pemerintah Nomor 76 Tahun 2020 tentang jenis dan tarif PNBP di lingkungan Polri — tarif penerbitan SIM.</li>
+<li>[Pengumuman resmi unit layanan setempat] — jam layanan dan lokasi.</li>
+</ol>
+<p style="margin: 0; font-size: 14px; color: #475569">Menemukan kesalahan? <a href="#">Laporkan ke redaksi</a> — koreksi dicatat di bagian "Diperbarui".</p>
+</section>
+</article>
+</div>
+
+<section aria-labelledby="terkait" style="background: #f4f7fa; border-top: 1px solid #e2e8f0">
+<div style="max-width: 1200px; margin: 0 auto; padding: 48px clamp(16px, 4vw, 32px); display: flex; flex-direction: column; gap: 20px">
+<h2 id="terkait" style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 28px; font-weight: 700">Artikel terkait</h2>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 20px">
+<sc-for list="{{related}}" as="r" hint-placeholder-count="3">
+<a href="#" class="lk" style="display: flex; flex-direction: column; gap: 6px; padding: 20px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px"><span style="font-size: 13px; color: #475569"><span style="font-weight: 600; color: {{r.kc}}">{{r.kanal}}</span> · {{r.date}}</span><span style="font-family: 'Source Serif 4', Georgia, serif; font-size: 20px; font-weight: 600; line-height: 1.3">{{r.title}}</span></a>
+</sc-for>
+</div>
+</div>
+</section>
+</main>
+
+<footer style="background: #ffffff; border-top: 1px solid #e2e8f0; font-size: 14px; color: #475569">
+<div style="max-width: 1200px; margin: 0 auto; padding: 24px clamp(16px, 4vw, 32px) 32px; display: flex; flex-wrap: wrap; gap: 8px 24px"><span>© 2026 Info Layanan Publik. Seluruh hak cipta.</span><span style="flex: 1"></span><a href="#">Peta situs</a><a href="#">Kebijakan privasi</a><a href="#">RSS feed</a></div>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":3300}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const toc = [['#sekilas', 'Sekilas'], ['#syarat', 'Syarat dan dokumen'], ['#langkah', 'Langkah di lokasi'], ['#biaya', 'Rincian biaya'], ['#faq', 'Pertanyaan umum'], ['#sumber', 'Sumber']];
+    const steps = [
+      { t: 'Siapkan dokumen', d: 'Bawa dokumen asli dan fotokopinya sesuai daftar di atas.' },
+      { t: 'Tes kesehatan dan psikologi', d: 'Dilakukan di penyedia yang ditunjuk. Simpan surat hasilnya untuk diserahkan di loket.' },
+      { t: 'Ambil nomor antrean', d: 'Petugas memeriksa kelengkapan berkas. Berkas yang kurang dikembalikan, bukan ditahan.' },
+      { t: 'Bayar biaya penerbitan', d: 'Di loket bank atau kanal resmi di lokasi. Simpan bukti bayar.' },
+      { t: 'Foto, tanda tangan, dan sidik jari', d: 'Data biometrik direkam ulang untuk kartu baru.' },
+      { t: 'Ambil SIM baru', d: 'Periksa nama, golongan, dan tanggal berlaku sebelum meninggalkan loket.' }
+    ];
+    return {
+      toc: toc.map(([href, label], i) => ({ href, label, st: i === 0 ? 'color: #0369a1; font-weight: 700; background: #f0f9ff' : 'color: #334155' })),
+      glance: [
+        { label: 'Masa berlaku SIM baru', value: '5 tahun' },
+        { label: 'Waktu di lokasi', value: '± [durasi]' },
+        { label: 'Perkiraan total biaya', value: 'Rp [total]' },
+        { label: 'Tempat', value: 'Unit layanan SIM / layanan keliling' }
+      ],
+      reqs: [
+        { t: 'KTP elektronik asli dan fotokopi', d: 'Nama dan alamat harus sama dengan data di SIM lama.' },
+        { t: 'SIM lama yang asli', d: 'Diajukan sebelum tanggal berlaku habis.' },
+        { t: 'Surat keterangan sehat jasmani', d: 'Dari penyedia yang ditunjuk; berlaku sesuai tanggal di surat.' },
+        { t: 'Surat hasil tes psikologi', d: 'Dari penyedia yang ditunjuk.' },
+        { t: '[Dokumen tambahan sesuai aturan setempat]', d: 'Diisi redaksi bila ada syarat daerah.' }
+      ],
+      steps: steps.map((s, i) => Object.assign({ n: String(i + 1), line: i === steps.length - 1 ? 'transparent' : '#cbd5e1' }, s)),
+      fees: [
+        { item: 'Penerbitan perpanjangan SIM', cat: 'PNBP', bg: '#eff6ff', fg: '#1e40af', amt: 'Rp [nominal]', law: 'PP No. 76 Tahun 2020' },
+        { item: 'Tes kesehatan jasmani', cat: 'Lainnya', bg: '#f1f5f9', fg: '#334155', amt: 'Rp [nominal]', law: '[tarif penyedia]' },
+        { item: 'Tes psikologi', cat: 'Lainnya', bg: '#f1f5f9', fg: '#334155', amt: 'Rp [nominal]', law: '[tarif penyedia]' },
+        { item: 'Asuransi pengemudi (opsional)', cat: 'Asuransi', bg: '#ecfdf5', fg: '#047857', amt: 'Rp [nominal]', law: '[penyelenggara]' }
+      ],
+      faq: [
+        { q: 'Bagaimana jika SIM saya sudah lewat masa berlaku?', a: '[Jawaban redaksi berdasarkan aturan yang berlaku di daerah ini, dengan rujukan.]' },
+        { q: 'Bisakah diwakilkan?', a: 'Tidak. Perekaman foto, tanda tangan, dan sidik jari harus dilakukan pemilik SIM.' },
+        { q: 'Apakah bisa di layanan keliling?', a: 'Bisa untuk perpanjangan selama SIM masih berlaku. Lihat jadwal di kanal Layanan.' },
+        { q: 'Berapa lama sampai kartu jadi?', a: '[Durasi menurut unit layanan setempat.]' }
+      ],
+      related: [
+        { kanal: 'Panduan', kc: '#0369a1', date: '12 Okt 2026', title: 'Menyiapkan dokumen sebelum datang ke loket' },
+        { kanal: 'Layanan', kc: '#047857', date: '09 Okt 2026', title: 'Layanan keliling: lokasi dan jadwal bulan ini' },
+        { kanal: 'Informasi', kc: '#9a3412', date: '22 Okt 2026', title: 'Waspada calo dan tautan pembayaran palsu' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
