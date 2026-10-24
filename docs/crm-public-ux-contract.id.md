@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](crm-public-ux-contract.md)
 
-<!-- i18n-source-hash: sha256:7557843d82fa4278734338020bc548ca2f4ffd0845c3568a4b798ac77ffbb698 -->
+<!-- i18n-source-hash: sha256:3cb83a9a692f898e0352ec29b00f85ec764b34f141a9fa73d4f761f3d6e12dd9 -->
 
 # AWCMS-Astro — UI/UX form lead publik, consent dan konsumen real-time v1.0
 
@@ -44,3 +44,52 @@ AWCMS upstream mengonfirmasi validasi form, kepemilikan tenant/domain, CSRF/anti
 
 ## 5. Acceptance dan dependensi
 **AT-W1** keyboard/mobile 360px, error/retry; **AT-W2** consent terpisah dan dapat dicabut; **AT-W3** 2 tenant/cross-site form ditolak; **AT-W4** Web Push browser ditutup bukan WebSocket; **AT-W5** SEO/sitemap/robots/CSP dan batas admin USER; **AT-W6** ikon sosial bukan koneksi API; **AT-W7** pengujian pada Bun 1.4.4 yang dipin, tanpa Node runtime. Pengujian bun test, bun run check, bun run build, bun run audit:translation, asset/SEO dan dokumentasi. Persyaratan producer mengikuti AWCMS #1168/#1166. **PR dokumentasi tidak membuat route atau API baru.**
+
+## 6. Batas kepemilikan frontend dan penggunaan ulang (OMES Control Center vs repo ini)
+
+**Dokumentasi usulan, 24 Oktober 2026** · [issue #136](https://github.com/ahliweb/awcms-astro/issues/136). Menurut issue #136, keputusan kepemilikan lintas repo ada di OMES [#350](https://github.com/ahliweb/omes/issues/350) (Opsi A, kepemilikan lima repo) dan sisi situs OMES di [omes-web#21](https://github.com/ahliweb/omes-web/issues/21). Bagian ini hanya menyatakan artinya bagi repo **ini**; tidak mengulang atau mengubah apa yang dilakukan `awcms` atau OMES. Setiap klaim tentang repo-repo itu di bawah berbunyi "menurut issue #136 / OMES #350", bukan sesuatu yang diverifikasi dari sini.
+
+Mengapa perlu ditulis: menunjuk template ini sebagai rujukan situs OMES bisa terbaca sebagai "salin juga adminnya". Itu tidak boleh. Repo ini adalah frontend konten publik Astro dengan admin USER opsional yang dinyatakan ([ADR-0034](adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.id.md), `permukaanAdmin` di `src/config/site.ts`); admin SYSTEM ada di `awcms`.
+
+### 6.1 Matriks kepemilikan permukaan
+
+| Permukaan | Berada di | Hubungan dengan repo ini |
+| --- | --- | --- |
+| Situs web OMES — landing publik Astro | OMES-Web (`ahliweb/omes-web`), situs mandiri turunan situs `landing` AWCMS-One (menurut issue #136) | Boleh **mengadopsi** pola dan kontrak repo ini (di bawah). Tanpa dependensi kode atau runtime ke repo ini; dideploy mandiri |
+| CMS OMES — Control Center SYSTEM | `awcms`, rute `/admin/omes`, kanonik menurut issue #136 / OMES #350 | **Bukan di sini, selamanya.** Repo ini tidak mengimplementasikan, mencerminkan, atau mem-proxy-nya |
+| Host native OMES / Hermes (poll worker, runtime kirim provider) | repo `omes` (menurut OMES #350) | **Bukan di sini, selamanya.** Tanpa poll-worker host, tanpa runtime kirim provider, tanpa kredensial keduanya |
+| Halaman publik situs dari template ini | repo ini dan situs turunannya | Fungsi utama ([ADR-0034](adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.id.md)) |
+| Admin USER opsional satu situs | repo ini, hanya bila dinyatakan di `permukaanAdmin` | Kondisi sekarang: **belum ada yang dinyatakan** |
+
+**Tidak ada rute `/admin/omes` ganda di luar `awcms`.** File rute di sini di bawah `/admin/omes` (atau layar SYSTEM `omes` dengan nama lain) akan menjadi salinan kedua Control Center. `tests/peran-situs.test.mjs` sudah menolak rute on-demand yang prefiksnya tidak dinyatakan, dan `owner` ditolak di `permukaanAdmin.peran`; bagian ini menambah aturannya hanya dalam prosa dan **tidak menambah gerbang baru** — tidak diperiksa mesin di luar kedua itu.
+
+### 6.2 Yang dipertahankan dan yang dihindari
+
+Dipertahankan di repo ini: halaman publik `output: 'static'`, SEO (canonical, sitemap, data terstruktur), CSP ketat dan header lain yang hanya diputuskan di [`server/penyaji.mjs`](../server/penyaji.mjs) ([ADR-0016](adr/0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.id.md), [ADR-0019](adr/0019-csp-ketat-dikirim-penyaji.id.md)), komponen branding dan kontak yang aksesibel menurut target WCAG, serta admin USER opsional lewat `permukaanAdmin`.
+
+Tidak diimplementasikan di sini: admin SYSTEM OMES, kredensial host atau provider, poll-worker host, runtime kirim provider, maupun layar lintas tenant.
+
+### 6.3 Adopsi oleh OMES-Web dan primitif generik
+
+OMES-Web boleh mengadopsi pola dan kontrak ini (token, komponen kontak/branding aksesibel, sikap SEO dan CSP) dengan **menyalin atau mengimplementasikan ulang di repo-nya sendiri**, bukan mengimpor dari sini: tiap situs dideploy mandiri, sehingga dependensi ke `awcms-astro` mengikat dua siklus rilis. Primitif visual yang ditambahkan di sini harus tetap generik — dapat dipakai tanpa nama, tema, atau teks OMES di dalamnya; identitas situs berasal dari `src/config/site.ts` dan `.env`, sebagaimana sudah diwajibkan AGENTS.md.
+
+### 6.4 Aksesibilitas, SEO, BFF dan CSP
+
+- **A11y/SEO.** Batas bawah sama dengan §3 di atas: keyboard, fokus terlihat, reduced motion, 360px; permukaan terautentikasi menarget WCAG 2.2 AA. Konten publik tetap dapat diindeks.
+- **Peran BFF dan batas tenant.** BFF portal Jualanku ([ADR-0014](adr/0014-rendering-campuran-dan-bff-portal.id.md)) menyusun panggilan `awcms` untuk layar situs ini sendiri dan tidak memutuskan apa pun yang berkonsekuensi bisnis; tenant berasal dari kredensial mesin, bukan dari browser. Ini bukan control plane OMES dan tidak boleh menjadi itu.
+- **CSP `connect-src`.** Bila suatu permukaan yang dinyatakan kelak perlu koneksi (misalnya badge SSE di Web-F4), allowlist dilonggarkan di `server/penyaji.mjs` dan tidak di tempat lain, dibuktikan oleh `tests/penyaji.test.mjs`.
+- **Runtime.** Hanya Bun; tidak ada runtime Node yang masuk kembali ke repo ini ([ADR-0050](adr/0050-bun-is-this-repos-only-runtime-and-a-gate-finally-says-so.id.md)).
+
+### 6.5 Status rute sekarang vs rencana
+
+| Butir | Kondisi |
+| --- | --- |
+| Rute on-demand (`prerender = false`) | **Belum ada satu pun.** Adapter terpasang hanya untuk menyajikan keluaran build |
+| BFF portal Jualanku (`/penjual/**`, `/_portal-api/**`) | RENCANA, belum diimplementasikan (ADR-0014) |
+| Admin USER lewat `permukaanAdmin` | Diizinkan ADR-0034, **nol yang dinyatakan** di template ini |
+| `/admin/omes` | **Tidak pernah** direncanakan di sini; hanya `awcms` |
+| Landing OMES-Web | Dilacak di omes-web#21; di luar repo ini |
+
+### 6.6 Penerimaan untuk bagian ini
+
+Hanya dokumentasi dan penyelarasan istilah (sumber EN plus cerminan ID): issue #136 **tidak menambah UI aplikasi, rute, kode control-plane, dependensi OMES yang ditanam, maupun kontrak eksternal baru**.
