@@ -582,8 +582,8 @@ const MAX_STALE_FILES = 40;
  */
 const GENERATED_README = "knowledge/generated/README.md";
 
-/** Path prefixes that are never staleness candidates, regardless of `.graphifyignore`: the graph's own output directory (a rebuild changing its own artefacts must never count as the source drifting away from the graph that describes it) and the two directories this workflow's own tooling writes into. */
-const STALENESS_OUT_OF_SCOPE_PREFIXES = ["graphify-out/", ".changesets/", "knowledge/generated/"];
+/** Path prefixes that are never staleness candidates, regardless of `.graphifyignore`: the graph's own output directory (a rebuild changing its own artefacts must never count as the source drifting away from the graph that describes it), the two directories this workflow's own tooling writes into, and `design/` (design proposals, listed in `.graphifyignore`). */
+const STALENESS_OUT_OF_SCOPE_PREFIXES = ["graphify-out/", ".changesets/", "knowledge/generated/", "design/"];
 
 /** The file-extension vocabulary `manifest.json` already contains, lower-cased — see `scripts/lib/graf-staleness.mjs`'s docblock for why this, rather than reimplementing graphify's own file classification, decides what is a staleness candidate. */
 function ekstensiManifest(manifest) {
