@@ -32,6 +32,24 @@ The word **must** in this document means that breaking it fails a quality gate, 
 | `@astrojs/node` | `^11.1.4` | `^11.1.9` | The same as above, raised in the same pull request |
 | `typescript` | `^7.0.2` | `^6.0.3` | **Deliberately different, and binding.** The 6.x pin here is the condition for the `astro check` gate being alive — see [ADR-0037](../adr/0037-pin-typescript-6-adalah-syarat-hidupnya-gerbang-astro-check.md) |
 
+### Dependency inventory, 24 October 2026 (issue #126)
+
+A hand-written snapshot, taken with `bun outdated` and `bun audit --audit-level=low` on Bun `1.4.4`; it can go stale, and `bun.lock` is the live record. **Result: nothing is outdated within its declared range, so no dependency changed.**
+
+| Package | Declared | Locked before | Locked after | Latest | Action |
+| --- | --- | --- | --- | --- | --- |
+| `astro` | `^7.4.2` | `7.4.2` | `7.4.2` | `7.4.2` | none, current |
+| `@astrojs/node` | `^11.1.9` | `11.1.9` | `11.1.9` | `11.1.9` | none, current; peer `astro ^7.2.1` is met |
+| `@astrojs/sitemap` | `^3.7.4` | `3.7.4` | `3.7.4` | `3.7.4` | none, current |
+| `@astrojs/check` | `^0.9.12` | `0.9.12` | `0.9.12` | `0.9.12` | none, current; peer `typescript ^5 \|\| ^6` |
+| `compression` | `^1.8.2` | `1.8.2` | `1.8.2` | `1.8.2` | none, current |
+| `@types/bun` | `^1.4.4` | `1.4.4` | `1.4.4` | `1.4.4` | none, current; equals the pinned Bun |
+| `typescript` | `^6.0.3` | `6.0.3` | `6.0.3` | `7.0.2` | **held back (major)** — `@astrojs/check@0.9.12`, the latest, still declares `typescript ^5 \|\| ^6`, so 7.x would break the `astro check` gate ([ADR-0037](../adr/0037-pin-typescript-6-adalah-syarat-hidupnya-gerbang-astro-check.md)); Dependabot ignores `>=7` for the same reason. `6.0.3` is the newest 6.x |
+
+- **Bun:** pinned `1.4.4` in the five values; the npm registry's latest is also `1.4.4`, so nothing to raise. The `Dockerfile` digest for `oven/bun:1.4.4-alpine` was compared against the registry's index digest and matches.
+- **Audit:** `bun audit --audit-level=low` reports no vulnerabilities across 355 packages. The two `overrides` (`fast-uri`, `nanoid`) are left as they are.
+- **Rollback:** this change moves no version. Were a later bump to misbehave, revert its commit and run `bun install --frozen-lockfile`; `bun run check:lockfile` confirms the lock again matches `package.json`.
+
 ## The mandatory structure
 
 ```
