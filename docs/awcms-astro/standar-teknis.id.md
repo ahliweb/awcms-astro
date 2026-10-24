@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](standar-teknis.md)
 
-<!-- i18n-source-hash: sha256:4043782e84c542cd919e2c424591478a18dd216e662826d2bf7a39b14dba613e -->
+<!-- i18n-source-hash: sha256:2b751054159eeae1910057cdb52e1ef283bc977f9f8fb2a2df799b925b5cfbcf -->
 
 # awcms-astro — Standar Teknis
 
@@ -30,8 +30,8 @@ Kata **wajib** di dokumen ini berarti pelanggarannya menggagalkan gerbang mutu, 
 | Nilai | `awcms` | repo ini | Keadaannya |
 | --- | --- | --- | --- |
 | Bun | `1.3.14` | `1.4.2` | Repo ini menaikkan pin-nya pada 5 September 2026; kolom `awcms` tidak berubah dan kini tertinggal — dijaga `tests/versi-toolchain.test.mjs` atas lima nilai di sini |
-| `astro` | `^7.2.4` | `^7.2.9` | **Repo ini lima patch DI DEPAN sejak 2 September 2026**, dan arahnya yang baru: sejak 23 Agustus ia cocok persis dengan `awcms`, dan yang memisahkannya adalah Dependabot yang menaikkan repo ini sendirian. Tidak ada apa pun di sini yang bergantung pada keduanya sepakat — rentang patch `astro` tidak membawa kontrak lintas-repo — jadi selisihnya dicatat alih-alih ditutup dengan menahan patch yang bisa saja relevan bagi keamanan. `awcms` akan menutupnya lewat bump-nya sendiri. Kolom ketiga yang punya pemeriksa; **kolom ini ditulis tangan dan dibaca dari `ahliweb/awcms` pada 2 September 2026**, jadi perlakukan ia sebagai catatan yang bisa basi |
-| `@astrojs/node` | `^11.1.4` | `^11.1.4` | Sama seperti di atas, dinaikkan di pull request yang sama |
+| `astro` | `^7.2.4` | `^7.4.2` | **Repo ini DI DEPAN sejak 2 September 2026** — lima patch waktu itu, dan dua minor pada bump keamanan Oktober 2026 yang menaikkannya ke `^7.4.2` — dan arahnya yang baru: sejak 23 Agustus ia cocok persis dengan `awcms`, dan yang memisahkannya adalah Dependabot yang menaikkan repo ini sendirian. Tidak ada apa pun di sini yang bergantung pada keduanya sepakat — rentang patch `astro` tidak membawa kontrak lintas-repo — jadi selisihnya dicatat alih-alih ditutup dengan menahan patch yang bisa saja relevan bagi keamanan. `awcms` akan menutupnya lewat bump-nya sendiri. Kolom ketiga yang punya pemeriksa; **kolom ini ditulis tangan dan dibaca dari `ahliweb/awcms` pada 2 September 2026**, jadi perlakukan ia sebagai catatan yang bisa basi |
+| `@astrojs/node` | `^11.1.4` | `^11.1.9` | Sama seperti di atas, dinaikkan di pull request yang sama |
 | `typescript` | `^7.0.2` | `^6.0.3` | **Sengaja berbeda, dan mengikat.** Pin 6.x di sini adalah syarat hidupnya gerbang `astro check` — lihat [ADR-0037](../adr/0037-pin-typescript-6-adalah-syarat-hidupnya-gerbang-astro-check.md) |
 
 ## Struktur wajib
