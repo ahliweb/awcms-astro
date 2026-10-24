@@ -6,224 +6,236 @@
     "component": {
       "type": "application",
       "name": "awcms-astro",
-      "version": "0.6.0",
-      "purl": "pkg:npm/awcms-astro@0.6.0"
+      "version": "0.6.1",
+      "purl": "pkg:npm/awcms-astro@0.6.1"
     }
   },
   "components": [
     {
       "type": "library",
-      "name": "@astrojs/check",
-      "version": "0.9.10",
-      "purl": "pkg:npm/%40astrojs/check@0.9.10",
+      "name": "@astrojs/astro2tsx",
+      "version": "0.1.3",
+      "purl": "pkg:npm/%40astrojs/astro2tsx@0.1.3",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "ce0c7f510328cdd8ce6b76cec6381e08576da44ddcf6b457eb11f06bed905efcbccfc02489fbb602db9b1f2bffcf30b6ce73bc765f1f1562f82be05af644bc1d"
+          "content": "18c0c2ec4a349b205403f40b065d2ef8e71e809f0b88185c726359477e0a9a9ad034ff204142655a538e65652cc4d036acd4ba1ae3d87060f22e83e78e69f8fd"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@astrojs/check",
+      "version": "0.9.12",
+      "purl": "pkg:npm/%40astrojs/check@0.9.12",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "85ace9ab121f6568f6561c8fc91d2938443f22114333fda7200a4bf7accc5c005d0fc36b50a6039a1c53cbb87e76b4c397d3101bf49dd444ffe1a99a75525450"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@astrojs/compiler-binding-android-arm64",
+      "version": "0.5.2",
+      "purl": "pkg:npm/%40astrojs/compiler-binding-android-arm64@0.5.2",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "91c908c689fa466fc1c7387d9863d8a5146a51b4e8510a07a6d0a6a4c984f98b745ee9aaf02aab29489dc9886b06cac754eedbc6e473cd6514aafa5ffa261c79"
         }
       ]
     },
     {
       "type": "library",
       "name": "@astrojs/compiler-binding-darwin-arm64",
-      "version": "0.4.0",
-      "purl": "pkg:npm/%40astrojs/compiler-binding-darwin-arm64@0.4.0",
+      "version": "0.5.2",
+      "purl": "pkg:npm/%40astrojs/compiler-binding-darwin-arm64@0.5.2",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "6555301ee9dd690c8536313aba86b4bac682d163828ad0c22d2ff899d6f8ace8895f0554b8a24133123958ccd72d699a9ac5ed2bf67ffe27cb5ef57961e8781f"
+          "content": "d591b902bddd0fc1eda1d5fd5c7d66466134a815d996f8d85d215fa60170a1ca9f5a7be116eaad19436c78bf3081f226891333b488e942a96881015042d8226a"
         }
       ]
     },
     {
       "type": "library",
       "name": "@astrojs/compiler-binding-darwin-x64",
-      "version": "0.4.0",
-      "purl": "pkg:npm/%40astrojs/compiler-binding-darwin-x64@0.4.0",
+      "version": "0.5.2",
+      "purl": "pkg:npm/%40astrojs/compiler-binding-darwin-x64@0.5.2",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "148e86f0063cbba7d1d5223f411479c86330b6f6703f7e020e66696791f02466b9d143355484932e1aa4855e1ae3bea99a0776e57d40babd9dab0ea1527ae528"
+          "content": "fa4977e52ee188727671bedeba3c04b0f15862e4a0135d6e104d99db494027eba776982e94c716fb0790a853ce49265c7042873a22c863e9101e46f87b8d3ddb"
         }
       ]
     },
     {
       "type": "library",
       "name": "@astrojs/compiler-binding-linux-arm64-gnu",
-      "version": "0.4.0",
-      "purl": "pkg:npm/%40astrojs/compiler-binding-linux-arm64-gnu@0.4.0",
+      "version": "0.5.2",
+      "purl": "pkg:npm/%40astrojs/compiler-binding-linux-arm64-gnu@0.5.2",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "941f602c524aee6f361278da53c9e544111f73018d78789d5b7b128ce0d352330d6a87b056e533f5fc30758e4ce238925c8a962c7df297a4d7f054c3280ef84b"
+          "content": "06a951d041cd40b3cbc202fdfb1a208ec01cef319fd1c1e1a3608f761bf43f5caa6d533019568602aac034fe956005c2a920b8dc01780b37317369fea2a75eb2"
         }
       ]
     },
     {
       "type": "library",
       "name": "@astrojs/compiler-binding-linux-arm64-musl",
-      "version": "0.4.0",
-      "purl": "pkg:npm/%40astrojs/compiler-binding-linux-arm64-musl@0.4.0",
+      "version": "0.5.2",
+      "purl": "pkg:npm/%40astrojs/compiler-binding-linux-arm64-musl@0.5.2",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "1cf6ef5aa6f1171c9aa102612f109a4a3b58071f4a068ec9195cc41590a6325f7af1ad8fb121f451f88e0d88183d7a1f4ce22c207d9aa0272b1d730bd080378a"
+          "content": "1911b26f2dc0656c3977a250ce2772c4fcaf1a01d6b12bacae980ac855690d329cb40045ecbdcf77957571125b577ebfadcbbe121dbddbfc0bee917b32498691"
         }
       ]
     },
     {
       "type": "library",
       "name": "@astrojs/compiler-binding-linux-x64-gnu",
-      "version": "0.4.0",
-      "purl": "pkg:npm/%40astrojs/compiler-binding-linux-x64-gnu@0.4.0",
+      "version": "0.5.2",
+      "purl": "pkg:npm/%40astrojs/compiler-binding-linux-x64-gnu@0.5.2",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "b502a894cc6827ffb40262d69b53e627f8becf78b5d195356cdb958c40ee9427f8f1acc432d50d8d36601c9e4c3eda5844d73b765113afc42e8d47ddbb3a02ed"
+          "content": "f5702a19331002d22c94cb232b7c5dc98e8e23d779f4e66a70b041ea9bc3fc372847475a62cc1facac766b37431110d8e00a809d63c2ee8755335066c58bf757"
         }
       ]
     },
     {
       "type": "library",
       "name": "@astrojs/compiler-binding-linux-x64-musl",
-      "version": "0.4.0",
-      "purl": "pkg:npm/%40astrojs/compiler-binding-linux-x64-musl@0.4.0",
+      "version": "0.5.2",
+      "purl": "pkg:npm/%40astrojs/compiler-binding-linux-x64-musl@0.5.2",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "e6fe58ca6b9db31307a773412c24bc05496ee4246a78bb560fd70a4bfe272212041c26e9cfda2499557a2341d6aa60403e15987036b7bf0fef96d60face4024c"
+          "content": "8ce5627b019e4e1f5b49f4bcbcaef6102c68cb6caf980f8f77f65c12f048e5cefeec871f1f0679a80e0bf5f458b8e852ac089fbd0d9d578be6d5702d96869607"
         }
       ]
     },
     {
       "type": "library",
       "name": "@astrojs/compiler-binding-wasm32-wasi",
-      "version": "0.4.0",
-      "purl": "pkg:npm/%40astrojs/compiler-binding-wasm32-wasi@0.4.0",
+      "version": "0.5.2",
+      "purl": "pkg:npm/%40astrojs/compiler-binding-wasm32-wasi@0.5.2",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "9bfa61b87df1dcf444befd4e9e4338e0da0f87831ab5469d8b1d5f075bb94af30b0b20d3519ca40c96ca9d67f57239d898776507c1dc8d38e5e89ac2a8021773"
+          "content": "67ba7ae1da1aaf5baf4790bd5ecea3d4257d94694f5505fb390d9a02d67fc4a0b96864ba181d779f273651f4174d02ef66bbd5c2cc9a7e54d0cbace263905e93"
         }
       ]
     },
     {
       "type": "library",
       "name": "@astrojs/compiler-binding-win32-arm64-msvc",
-      "version": "0.4.0",
-      "purl": "pkg:npm/%40astrojs/compiler-binding-win32-arm64-msvc@0.4.0",
+      "version": "0.5.2",
+      "purl": "pkg:npm/%40astrojs/compiler-binding-win32-arm64-msvc@0.5.2",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "07dcd87f7a24118f3790cf20c9d9691f60473f4d30e227f13ea958956ae04f0b83eb09e4ac90c2c01960cb5ab7d5c1118c22515cdd65ac4d959a42ef163bffea"
+          "content": "4ebd776e1f9a8535ac8d78f372d2bba45a5657e75453816d05f113951ee03beb9e7b1d05f910dc87b791af461f2b2b1a46193db569b5e25b02279b96c853cd1d"
         }
       ]
     },
     {
       "type": "library",
       "name": "@astrojs/compiler-binding-win32-x64-msvc",
-      "version": "0.4.0",
-      "purl": "pkg:npm/%40astrojs/compiler-binding-win32-x64-msvc@0.4.0",
+      "version": "0.5.2",
+      "purl": "pkg:npm/%40astrojs/compiler-binding-win32-x64-msvc@0.5.2",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "cc1d0daefd1d19cd336563c60d19a61134cf84346ac998c08e4fa058c955ac95f953cf686e9077554504d59887c4e08de4b4288de2cae8ef0bfdd9e81e896f35"
+          "content": "49f2a423e8ce4182e1eb0a233ef54f5749457d09f18acc1e37d07ea82cd1bd9a7b0c702e1a27fc63459c0b93d480de236fc54acb9ecb820403b60811e3a0eed6"
         }
       ]
     },
     {
       "type": "library",
       "name": "@astrojs/compiler-binding",
-      "version": "0.4.0",
-      "purl": "pkg:npm/%40astrojs/compiler-binding@0.4.0",
+      "version": "0.5.2",
+      "purl": "pkg:npm/%40astrojs/compiler-binding@0.5.2",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "c764630d4b967f02cdb5cde68c07524489f0aa1feba9b2daafd726ff914e31b1ef998641ef27ca7b0cd27250315a3219b32a490d7bf596168fd961be3fc4cade"
+          "content": "9449fbebed0970c4394435d4d3048c589836669a6266f4942e98210b6f5c7efe28f5b86f5850db423b02b6f8e35cdf6254b150edf2f7c134762f6514d7798ff2"
         }
       ]
     },
     {
       "type": "library",
       "name": "@astrojs/compiler-rs",
-      "version": "0.4.0",
-      "purl": "pkg:npm/%40astrojs/compiler-rs@0.4.0",
+      "version": "0.5.2",
+      "purl": "pkg:npm/%40astrojs/compiler-rs@0.5.2",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "92856291ea27d64ade132fbf2732d0472defcc71d054e8f272ce1d7a0838bc5b9f280a593b0319bd2480133b5836199c4157cd56c559648e1c1207b771ec406d"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "@astrojs/compiler",
-      "version": "2.13.1",
-      "purl": "pkg:npm/%40astrojs/compiler@2.13.1",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "7f714df377761bfbf7da2a4d0a544a818bf7d289d094c657d6f09e64c8cfb0c30f975983a666e5d3e379058a384bfa1fcea2724b986fc1a704a340825439ff42"
+          "content": "22fc182c1f2dd4cf3aaca3b8a0f7418bd18fe20cd7720ad594d828723c28b358de794b84215f1df42ae7d4fbd80ffe482ad7963b1a481e899fedef22625904f9"
         }
       ]
     },
     {
       "type": "library",
       "name": "@astrojs/internal-helpers",
-      "version": "0.11.0",
-      "purl": "pkg:npm/%40astrojs/internal-helpers@0.11.0",
+      "version": "0.13.0",
+      "purl": "pkg:npm/%40astrojs/internal-helpers@0.13.0",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "debcf127ec5ba34fbc632a8eccbce220ddf6c26b077428c4573dac18ea51c49f817a7fca88ba61e08b71072d5a6c42fe13c7e4473aa3834adf5e6687246c3d24"
+          "content": "db48f142a9d29a9b24706c9a77b37997a5dfd60cf45026ba94d75ee386c405d6971a99dc1187c0649d78dabd9983305a1b8754cb31a686a656bf520d5367a21d"
         }
       ]
     },
     {
       "type": "library",
       "name": "@astrojs/language-server",
-      "version": "2.16.16",
-      "purl": "pkg:npm/%40astrojs/language-server@2.16.16",
+      "version": "2.17.3",
+      "purl": "pkg:npm/%40astrojs/language-server@2.17.3",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "2ae4b5ec038ea87fcce661d73e62afb69f0bf8d36d780442ed78dfdfde7ef51f5db493819dda9d4adc14e15f8e2b3619a6067e865895d77927cf1fe832d165ed"
+          "content": "408005bb57bfe2ab893133dd9813a6f993d7739343199138fd8423811dc48238462e5fed76275a5890ebe5698eda57ac55cf815b5a8dff13415119ae78f0c6d8"
         }
       ]
     },
     {
       "type": "library",
       "name": "@astrojs/markdown-satteri",
-      "version": "0.4.0",
-      "purl": "pkg:npm/%40astrojs/markdown-satteri@0.4.0",
+      "version": "0.4.5",
+      "purl": "pkg:npm/%40astrojs/markdown-satteri@0.4.5",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "c3290e396f4ab1455c67078ea58fc2797a5d29c08a672e9f41b75cb5e585b88ef9fac4028aac5833b54ab066b96fe68697771842c705637eebb1b6f26a5e4c47"
+          "content": "d0878676815bbf47fee38d8a261612e385a0f05dccb87991b3120462e172aa48d1b9b73a74f04567b6b3a2be6de007972d0a13e40e61f47c9588aa5def40e5f7"
         }
       ]
     },
     {
       "type": "library",
       "name": "@astrojs/node",
-      "version": "11.1.5",
-      "purl": "pkg:npm/%40astrojs/node@11.1.5",
+      "version": "11.1.9",
+      "purl": "pkg:npm/%40astrojs/node@11.1.9",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "0a003e2e61b8516a87c60fd575ce4c7718e324d6528ca610431e2e114c276e3fb5643d8262e989237396836b70b15763d85958b01e72be6082e7845ef8e2be51"
+          "content": "7e65b008835121fd20c856653a561a246667a1e07924901726f517947a2b8617a63b191fb6b39c31a9703c8c8d1b64372a19dc46f60c889f27187b16addb6ba6"
         }
       ]
     },
     {
       "type": "library",
       "name": "@astrojs/prism",
-      "version": "4.0.2",
-      "purl": "pkg:npm/%40astrojs/prism@4.0.2",
+      "version": "4.1.1",
+      "purl": "pkg:npm/%40astrojs/prism@4.1.1",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "2938afa669f3ea50ec0baa3d1f8f83366d92ac4fc61f3c3c70d02f109c00bd44fe7a86849e7ff836d6c335f4516b16891dda75e607feb5f1c05a25d1e3007704"
+          "content": "b179405c95fab7841fb8b83e0ae083ce983b368c567326f8a5a169ae0b45a692de8ac0819a1f77e61fad2790965dfb171285b6203cbf8a16d132d8aedbc0a18f"
         }
       ]
     },
@@ -242,12 +254,12 @@
     {
       "type": "library",
       "name": "@astrojs/telemetry",
-      "version": "3.3.3",
-      "purl": "pkg:npm/%40astrojs/telemetry@3.3.3",
+      "version": "3.4.1",
+      "purl": "pkg:npm/%40astrojs/telemetry@3.4.1",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "0b54cb9f9b0f26bd31e2f939ea988758a6e7aa5101f012b2b5ee58e39574d94f83ec118ee5e32a6431f968f8e791741626082f9ac4d7c47d3740c67d36058bcd"
+          "content": "48c92f32c18ea4cd05300a13e69ce1808dcb642d0948f59fec4bf0a29f9f67737a524bac3ccee523eb0e26330d239389ad5a227a2d7f006a35718eec8a44dce4"
         }
       ]
     },
@@ -266,12 +278,12 @@
     {
       "type": "library",
       "name": "@babel/helper-string-parser",
-      "version": "7.29.7",
-      "purl": "pkg:npm/%40babel/helper-string-parser@7.29.7",
+      "version": "7.29.11",
+      "purl": "pkg:npm/%40babel/helper-string-parser@7.29.11",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "3dbe628cfad9f3d1831fcdb6dcbe143fc8ba400a56c6cd3845b3d02537960d5d3f91e476137e8c78a9f2afa2d899452fa91448f88bfced2b85d56e84ac837363"
+          "content": "b2765b3bb3040cea1ffa1bcd6bdec48c463ba83ee1da4c2f42be40242dd9850b9d296e5d9de8fa93790ff4d415f3c849c1a4bcbc3a912c5a3dae2bcb12195eda"
         }
       ]
     },
@@ -290,24 +302,24 @@
     {
       "type": "library",
       "name": "@babel/parser",
-      "version": "7.29.8",
-      "purl": "pkg:npm/%40babel/parser@7.29.8",
+      "version": "7.29.11",
+      "purl": "pkg:npm/%40babel/parser@7.29.11",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "13c953018341d4a5be147f95189b993358a8031d84ea8565bd0151adfe4ff19666b222576000fdbd3155ef2c84511373821d5d16a319b8eead53070045ba8508"
+          "content": "399ebea1a2bb18cca0dc87c2a63f093a69fc9fec36ac96c34f42cb7d50d32dbd5915e2838770223442e008c530d7be482474a42e5ef8846d0cd152ecbf1fa06a"
         }
       ]
     },
     {
       "type": "library",
       "name": "@babel/types",
-      "version": "7.29.8",
-      "purl": "pkg:npm/%40babel/types@7.29.8",
+      "version": "7.29.11",
+      "purl": "pkg:npm/%40babel/types@7.29.11",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "563d6317770f7f183b3807e823b42754a2e820b966d8917da67547ad7f2ac7b0073226164fe343000ee30a194d8114b85932dcfdf0f59572e63e2c65ba3fb71a"
+          "content": "582b1e996e340a973a828b82d52ad8e8f05a67ea0b46511563d5c1bd9048ee297f1f252b6f69c9e74e70135307105c8364d9eb58312ecb88cbe745951df4d349"
         }
       ]
     },
@@ -434,24 +446,24 @@
     {
       "type": "library",
       "name": "@clack/core",
-      "version": "1.4.3",
-      "purl": "pkg:npm/%40clack/core@1.4.3",
+      "version": "1.5.1",
+      "purl": "pkg:npm/%40clack/core@1.5.1",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "fe4af751636d7497f166d3e00ea50e986da9bf096670b1a179ec79ca264a7706f3649c6157e1cc351f50366c98e5c1b04cd57a2eb47b26da7e2a385400fd6a05"
+          "content": "8874eb1c0f0cb55b8b9764df6724a670abf5a8ed8fa320bd67ba5f483a3312e579bed637ff070e3ca25796a2793aad82c790c3190180315c7a1d97d14685446d"
         }
       ]
     },
     {
       "type": "library",
       "name": "@clack/prompts",
-      "version": "1.7.0",
-      "purl": "pkg:npm/%40clack/prompts@1.7.0",
+      "version": "1.8.1",
+      "purl": "pkg:npm/%40clack/prompts@1.8.1",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "cbbff2bd9d933c09d1f7e8e7734d2496f34d2e42625c516b400fe194b09cc40f5ad80e334083a29b2150f577f060a8860f57dbe4663cbdb2882203bc7794dbd8"
+          "content": "7654f59b97bfd3250bd2444d7109fbc862d54e19206c1d066bfd4099f0c30bff2293a0088927f640b40edb33d8bde7ec1cfd1a160c4ef777152c209f0e9ee4cd"
         }
       ]
     },
@@ -553,6 +565,18 @@
     },
     {
       "type": "library",
+      "name": "@emnapi/core",
+      "version": "1.11.3",
+      "purl": "pkg:npm/%40emnapi/core@1.11.3",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "ccba52e5ab2311bee5abc8d82eadfb37a5ca684e350c87b1958d6b17fcf8fed225df0a35dd2aa6dbc7d1c9f22c2990fe359f263394682a4a56feb05cba84994a"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "@emnapi/runtime",
       "version": "1.11.1",
       "purl": "pkg:npm/%40emnapi/runtime@1.11.1",
@@ -589,313 +613,13 @@
     },
     {
       "type": "library",
-      "name": "@esbuild/aix-ppc64",
-      "version": "0.28.2",
-      "purl": "pkg:npm/%40esbuild/aix-ppc64@0.28.2",
+      "name": "@emnapi/wasi-threads",
+      "version": "1.2.3",
+      "purl": "pkg:npm/%40emnapi/wasi-threads@1.2.3",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "5c4c5c3be76f2cabd5b4d4e26d24c17a3d4d0806da1a15a7f56c3564fc7cd2ab1a8613c57bff238163f421c84d7b41771f0914ee7f1e8e11fc6e3a27aa1b7c99"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "@esbuild/android-arm",
-      "version": "0.28.2",
-      "purl": "pkg:npm/%40esbuild/android-arm@0.28.2",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "9175e888f55519072721818e79aa2fc0e511a678830694aae00d37aa443e04c42ab461ba1d86a9df19def42d4ed72a384d1deac65097e48aaa997e9f168d8baa"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "@esbuild/android-arm64",
-      "version": "0.28.2",
-      "purl": "pkg:npm/%40esbuild/android-arm64@0.28.2",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "e587ca79e23ca967c16485febb6c590b76656f73acfe02d2dac6c428cf88e1939cb169874b658bcac09c4190c0151b250d45393a2ab8e207fa3d8375bc6c06e4"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "@esbuild/android-x64",
-      "version": "0.28.2",
-      "purl": "pkg:npm/%40esbuild/android-x64@0.28.2",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "3b7f3b8ad7bb4b353209ccb72505f83f86cbb4403b6cb2e4c7e7acbdee491e7c987cd4f1715a57668f6385d07495328de38833b442d3754ee74bc36bd7a16cd5"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "@esbuild/darwin-arm64",
-      "version": "0.28.2",
-      "purl": "pkg:npm/%40esbuild/darwin-arm64@0.28.2",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "9f82aa90e42badac4725c82333546fc1b8a07d028828956933bc69f8ab318b2512ad17485e7b7bdd586b3c0c747d5e388607e62152a3c4c37d275b798f249593"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "@esbuild/darwin-x64",
-      "version": "0.28.2",
-      "purl": "pkg:npm/%40esbuild/darwin-x64@0.28.2",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "baaeacb885983f7eeacc675d04a3f0e501103e2e8788b1ac3bb5269297f2698350dc3fab37ac3a59fc07fa7baa7065d6bdac06c31384ae83b86069c587de5acf"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "@esbuild/freebsd-arm64",
-      "version": "0.28.2",
-      "purl": "pkg:npm/%40esbuild/freebsd-arm64@0.28.2",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "9fe234053491228cbe77a44f2a7115c2a979530049a25cadbd8e2600e204268aca96a80f208f22c7ab25555adf6794e78fb825219be5a3295b07f1093cc5845f"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "@esbuild/freebsd-x64",
-      "version": "0.28.2",
-      "purl": "pkg:npm/%40esbuild/freebsd-x64@0.28.2",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "efc5c94c992f3ecd24cf6c3ad77d353c98d797883bab726a898319fccff2548ef710706b0914e0921bbda2a1bbbcfaaaf9aff269d116f1a0fe6a02a5939c6b9a"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "@esbuild/linux-arm",
-      "version": "0.28.2",
-      "purl": "pkg:npm/%40esbuild/linux-arm@0.28.2",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "5e50e7bb6ab9ca8a9e9acfb16b2eb0480720f430c3ecaf512ca64404e3199b7724369241bce5f6d2d49f6f2f0a7ebae120d0f2bfd57661564a63f4a9a06248f3"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "@esbuild/linux-arm64",
-      "version": "0.28.2",
-      "purl": "pkg:npm/%40esbuild/linux-arm64@0.28.2",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "a56e000b43f78adf1cedda3d315338a79d45cc7cdd33f4d9adeaeeae045c1c9d964dad55435088ab5f319dc7e9049c38a23922659aca5b6c8805604ff768fa52"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "@esbuild/linux-ia32",
-      "version": "0.28.2",
-      "purl": "pkg:npm/%40esbuild/linux-ia32@0.28.2",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "0986e78fbf07b08780f8386050a80509fbcdb131c584c32b8a752b319a435c95ca37c4f75d589367ffb0b47795c44598f1ec12cd314dfa74664b03b6b5968b51"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "@esbuild/linux-loong64",
-      "version": "0.28.2",
-      "purl": "pkg:npm/%40esbuild/linux-loong64@0.28.2",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "6eec2477c9eca61e11f9a8d1bf0d2a3391e36bf4d7428c37a6dcd63b611b1bf72a70890796846b76506d425b21c98193345bdf91f279b693cb5646380edb0f7d"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "@esbuild/linux-mips64el",
-      "version": "0.28.2",
-      "purl": "pkg:npm/%40esbuild/linux-mips64el@0.28.2",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "655ca46c3ca4ef9d7d57088d6fd2dc8fd9bc5cceafe55f6e28fbeb10c92411e7557b07fed22b6485a869e070e98044578702d1a56172a6c19b1bf27cb3442324"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "@esbuild/linux-ppc64",
-      "version": "0.28.2",
-      "purl": "pkg:npm/%40esbuild/linux-ppc64@0.28.2",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "0805e5f83b5df5452e25df2928a77087a30b9b7314322a8c3e6859ded4d25cfa9fc90def0e5e91e6165d67f918a232b8a1f5ed75f4afd6d16af17cd6c7785e35"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "@esbuild/linux-riscv64",
-      "version": "0.28.2",
-      "purl": "pkg:npm/%40esbuild/linux-riscv64@0.28.2",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "19e5c27a3e0842d53507e4250d5f16fd146f6f32373bf4adb2cfbf6c25efe25665b3958646dbb66bedc9900de2e2a21494c5e970779b5a917c024261013a30b8"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "@esbuild/linux-s390x",
-      "version": "0.28.2",
-      "purl": "pkg:npm/%40esbuild/linux-s390x@0.28.2",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "dc7d707936193f1b7f58e841caccd06726d2f70e652b3527d450ccb2010285b1d64301d841045f071802719bcf8631df2b22632227afbcc98451ac09add63d0e"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "@esbuild/linux-x64",
-      "version": "0.28.2",
-      "purl": "pkg:npm/%40esbuild/linux-x64@0.28.2",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "e314d9af5154992a105b85c85a68addedcd0ad44d933e3773f45d5f3144e298179d177c8ef178ef74fb56d9bcdc3122e7d0f610d0551247e588603d517c03f1d"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "@esbuild/netbsd-arm64",
-      "version": "0.28.2",
-      "purl": "pkg:npm/%40esbuild/netbsd-arm64@0.28.2",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "b120134633de0c1837a5d807a107e8601a1bd752a4d4519af65ba2e51207642a029096bd40a96f977fef2b3daeb02998623b3bca6251ff6367b2a7be1e3b799f"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "@esbuild/netbsd-x64",
-      "version": "0.28.2",
-      "purl": "pkg:npm/%40esbuild/netbsd-x64@0.28.2",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "96a9f3095fa633480800368a8a188283a89f81f5362f7879137deb35004dd58e0c6951a7cebcb39afbdfed41f1a6ba50744f21a6a2e8949f5197e4a42110e9cb"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "@esbuild/openbsd-arm64",
-      "version": "0.28.2",
-      "purl": "pkg:npm/%40esbuild/openbsd-arm64@0.28.2",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "00bdaa2482c7ee5363ac3982403bddc4c7c0508bfc28c3593afaf0010f22f3ffe7b4bf457e584ec8c27c39948c05bf3f0165dedffe6fe52db4cb7cc2a1958aa1"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "@esbuild/openbsd-x64",
-      "version": "0.28.2",
-      "purl": "pkg:npm/%40esbuild/openbsd-x64@0.28.2",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "42d8ae3f2b5c851c82e2bc142a17b125d40abc3b99ea15a5a22de282a3d03542424b5feff4488edd44ce5d1e80dc5a0ca387e700a6d625da9a23084ece1f2a13"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "@esbuild/openharmony-arm64",
-      "version": "0.28.2",
-      "purl": "pkg:npm/%40esbuild/openharmony-arm64@0.28.2",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "5a48580e6a538cbbc6952700d6bc234549a197893ca174777086eda969842e053f7457871e51259710ef75670d255f6b6f309ec41e6fcfc82d35ec162e0093ed"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "@esbuild/sunos-x64",
-      "version": "0.28.2",
-      "purl": "pkg:npm/%40esbuild/sunos-x64@0.28.2",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "18f3129133ad327bf653617c8317b8228eaa995b3e60aca9f37d84b6aab1af48459e0997437af3c32b5e966dc6227ed3e15be245495fdec3a004e89376f69fee"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "@esbuild/win32-arm64",
-      "version": "0.28.2",
-      "purl": "pkg:npm/%40esbuild/win32-arm64@0.28.2",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "3c886112413db8f06579106b404269527ecc06789b6736c6cd858f998df1f98a1583ff79cdb8c1e02c4f3ce43c979b5860ce2631a0ad845f3fd4321f05043259"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "@esbuild/win32-ia32",
-      "version": "0.28.2",
-      "purl": "pkg:npm/%40esbuild/win32-ia32@0.28.2",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "62625b7d396f53b49d9fd041fb83d1112e2807aa71812dfb30038d8fe841aff7295d2d5a04f297c4d9c36eef900963e3d28f5d832c5eabbf60e9ce4ff0a7ae60"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "@esbuild/win32-x64",
-      "version": "0.28.2",
-      "purl": "pkg:npm/%40esbuild/win32-x64@0.28.2",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "e5e6e9c6bde758cceb2ffae7508ef9e4992e79ed1b1cbfc6ab459317d96f729bfbdf0029e5ebbc31f0548162bd6e15af6638fbc97f1eb5fffcb48f0d7b2ebde6"
+          "content": "10b1017bc3ec2efbc9e9032bd332edf1f7ef3875bf75cd66dc213334c83b68952fddb31aa03b70d935f20c0c24601baba31c6e1c4c214532c949ee6cc9ae78ee"
         }
       ]
     },
@@ -914,312 +638,312 @@
     {
       "type": "library",
       "name": "@img/sharp-darwin-arm64",
-      "version": "0.35.4",
-      "purl": "pkg:npm/%40img/sharp-darwin-arm64@0.35.4",
+      "version": "0.35.5",
+      "purl": "pkg:npm/%40img/sharp-darwin-arm64@0.35.5",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "5217e5e15e2584fda76d4545f7e8721f5fa5ba3f3a7f581415ea3c00b63116850ba14f86f3b0f8dc17de30ff171ec93d6e8c409c263f6dfd841f0840eccb86b0"
+          "content": "411525150d16c6f756caaa86fd6b48de2ba97c3e6b0739821d749d3ec63dd6c02d56d4e8ed0e1c6facce71c67782a12a92bd1fd40b357a12ea984a43b117fe96"
         }
       ]
     },
     {
       "type": "library",
       "name": "@img/sharp-darwin-x64",
-      "version": "0.35.4",
-      "purl": "pkg:npm/%40img/sharp-darwin-x64@0.35.4",
+      "version": "0.35.5",
+      "purl": "pkg:npm/%40img/sharp-darwin-x64@0.35.5",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "8569e25d8ddb1b9a8aa642ab0303dee32f954cf99fd3ce984009e4c5687bb80d58ae5468b9619ad0cd0cc63dd98e75c592feff4c3d5b4f2f651942b6eaf46f5b"
+          "content": "f81476e794610e5a72814a4e73f25db759d3e834375c6fc4468e706dc74e7f9437db474ab4f08a3cb4752c9b3d5465d168c6bc975b946b4b6408d397880c5953"
         }
       ]
     },
     {
       "type": "library",
       "name": "@img/sharp-freebsd-wasm32",
-      "version": "0.35.4",
-      "purl": "pkg:npm/%40img/sharp-freebsd-wasm32@0.35.4",
+      "version": "0.35.5",
+      "purl": "pkg:npm/%40img/sharp-freebsd-wasm32@0.35.5",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "948b0ac3f054fa48c1e1e663c6b62b666c0e2588b7023aefeba8809419943f229cdc7a679687af075837c31183f4fff905b4356eb04697ae55451ac2bd00c4a8"
+          "content": "63fcfdd67119e2e2015f95f79df4e8be353d94734a1586cbda5a4708b54d99740ad3754866f5c106dd0ac5b3c6a7649d19217eda6414e1efa141a58eb7cea203"
         }
       ]
     },
     {
       "type": "library",
       "name": "@img/sharp-libvips-darwin-arm64",
-      "version": "1.3.3",
-      "purl": "pkg:npm/%40img/sharp-libvips-darwin-arm64@1.3.3",
+      "version": "1.3.4",
+      "purl": "pkg:npm/%40img/sharp-libvips-darwin-arm64@1.3.4",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "b2e4c13d30c6ac8f56a1d71c683770648b5349a0580129419353527c49521eb51fceedeccc6ea5bc8179f3e5a216f9dfcee2bc641152e73134d0fc6ac674623e"
+          "content": "e51f3d9c162245d5254962713e13be195b5a5f35d2c4a9d1bbfc6a327dca4c0dcbf4407d3b2fcff8d9f67f6be584fb94772fd9bac6f60daadbc93a4609f103bb"
         }
       ]
     },
     {
       "type": "library",
       "name": "@img/sharp-libvips-darwin-x64",
-      "version": "1.3.3",
-      "purl": "pkg:npm/%40img/sharp-libvips-darwin-x64@1.3.3",
+      "version": "1.3.4",
+      "purl": "pkg:npm/%40img/sharp-libvips-darwin-x64@1.3.4",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "155259e662133286e65c8cff84f0d3c341229ed4d6e47dd67ebc702ea12a8e2222865bbe8554721ab150eb4c65d0bc67ec1b77cdda5ebcf6908b41c4ceacfd7f"
+          "content": "891d8e287f34ca2d14f9d529972877ff176916fa6ce98902c2c5de9c8271ab1475bfda3ec6d29319b4bd1fb729b3ed95c6373c0758fdea9ef93664c68c886da5"
         }
       ]
     },
     {
       "type": "library",
       "name": "@img/sharp-libvips-linux-arm",
-      "version": "1.3.3",
-      "purl": "pkg:npm/%40img/sharp-libvips-linux-arm@1.3.3",
+      "version": "1.3.4",
+      "purl": "pkg:npm/%40img/sharp-libvips-linux-arm@1.3.4",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "deb6d4e2fa975dcde163f3a25dd979db166f4f4175c849e059fbeab9db4f260fca93289a430d8346c16b373a662ef7dabdbc0eab7a979f7e863fca1b1d150b40"
+          "content": "2e646d4ec387baf336fb094ed836f7eddc7932266107416f4ae9dc8b0e3c62374e919cfd2808916e6f2e8de30e03520daa67a2e4d6a91716042b50f565289d9b"
         }
       ]
     },
     {
       "type": "library",
       "name": "@img/sharp-libvips-linux-arm64",
-      "version": "1.3.3",
-      "purl": "pkg:npm/%40img/sharp-libvips-linux-arm64@1.3.3",
+      "version": "1.3.4",
+      "purl": "pkg:npm/%40img/sharp-libvips-linux-arm64@1.3.4",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "d0368bd00e97bbab104901707b88950ab2965367024c8b6746c62c09dc40326f4d17ab70000f412a7a2acb886acf8f9acd0d091ee036eaa8942ac7f55c9fefe4"
+          "content": "6377605ffea513642141bf86c72d166717e0f4c126fc90636a66694b622494fef1210a0a378873026eca70c546b5a543b779de13d38a042eef01fa2703f2ebd4"
         }
       ]
     },
     {
       "type": "library",
       "name": "@img/sharp-libvips-linux-ppc64",
-      "version": "1.3.3",
-      "purl": "pkg:npm/%40img/sharp-libvips-linux-ppc64@1.3.3",
+      "version": "1.3.4",
+      "purl": "pkg:npm/%40img/sharp-libvips-linux-ppc64@1.3.4",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "71d9f53af501c2c5e16c2d334b32673737f9319fe64eba1b6b00ef357053c5ef15b6a2809b4b11b8463612fce8bdbff0f49324e13bd1c6ab7599e912b89cfae3"
+          "content": "2dee9ba01f136a2d0d8acfa02312292b1ebc50355522a751f138a7e587f5cf62c92502c326f08346a46efa30b6a82a03f9e2289a89e63b0078b26051c5f56961"
         }
       ]
     },
     {
       "type": "library",
       "name": "@img/sharp-libvips-linux-riscv64",
-      "version": "1.3.3",
-      "purl": "pkg:npm/%40img/sharp-libvips-linux-riscv64@1.3.3",
+      "version": "1.3.4",
+      "purl": "pkg:npm/%40img/sharp-libvips-linux-riscv64@1.3.4",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "1e33d5c7bc8acfed25a9d843953c35b6df74c1a981a318625e9be5d5766924b8871f8442279c834ea1fe56560fbf67f016cf3d245c3873521ec5839c4148b821"
+          "content": "6879242041cf45d4047a024ddb430b986b71603f51db042bdc2c2975d9eee7e60a32de94cdac7b4bd879829653a3cc32ac6b994a57d0eb739ebcbe664f2382ed"
         }
       ]
     },
     {
       "type": "library",
       "name": "@img/sharp-libvips-linux-s390x",
-      "version": "1.3.3",
-      "purl": "pkg:npm/%40img/sharp-libvips-linux-s390x@1.3.3",
+      "version": "1.3.4",
+      "purl": "pkg:npm/%40img/sharp-libvips-linux-s390x@1.3.4",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "9de58b87edf208d4e1c677f2ddce016d505e1a0b7d69fb67a3e5db4f9ea22b6f1181e0ecdd43855af88b5a552ed1b02b6156096850caf9146885b89c50d0a6f1"
+          "content": "adafe607a32290448350eed883e322f796c505bf46b0e6d446e8673afdceaa49e319ef6c66b1bcb427bdab4c52206aed2e0be0c3480a9c559c2b86e54a040eb9"
         }
       ]
     },
     {
       "type": "library",
       "name": "@img/sharp-libvips-linux-x64",
-      "version": "1.3.3",
-      "purl": "pkg:npm/%40img/sharp-libvips-linux-x64@1.3.3",
+      "version": "1.3.4",
+      "purl": "pkg:npm/%40img/sharp-libvips-linux-x64@1.3.4",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "e2f2a6bc0b2df67ae8c1caaab8a140c992540e8954688a7cb9188dd2658582e275229942f7fa62b57b659e7954e1a6bf789c3727b8baed5fa9c142fec1919db0"
+          "content": "189fff4925db9f04837acd36ba60779c324b15c433c3c6b5f15f1fca1aabead579d79b4e10c7489a38f18f502869f311cf9e85dcf1e07ed9e3d5010a494d7393"
         }
       ]
     },
     {
       "type": "library",
       "name": "@img/sharp-libvips-linuxmusl-arm64",
-      "version": "1.3.3",
-      "purl": "pkg:npm/%40img/sharp-libvips-linuxmusl-arm64@1.3.3",
+      "version": "1.3.4",
+      "purl": "pkg:npm/%40img/sharp-libvips-linuxmusl-arm64@1.3.4",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "63d91068b32e3680746cf60e39d71931ab1e36b1693e874859632bc7e099cb275fdb19faf23f5661ceac59646b0f0364cc24232987dcebc2fb8ca8c69473226f"
+          "content": "86fba5170b6351c6a0b22b3a041c47c061705a83598e062650b195ad97327cd6e303c84a20b6d1c46835e7fef0e470f25c75d4a2cfe3e9b6805aa9c2c90d8358"
         }
       ]
     },
     {
       "type": "library",
       "name": "@img/sharp-libvips-linuxmusl-x64",
-      "version": "1.3.3",
-      "purl": "pkg:npm/%40img/sharp-libvips-linuxmusl-x64@1.3.3",
+      "version": "1.3.4",
+      "purl": "pkg:npm/%40img/sharp-libvips-linuxmusl-x64@1.3.4",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "7e3f0cbf41c77c3d51afee08ebcfb76a02729f10d6b4116089c4db48e6fd0647baa48c3319c27e457ff21e39a210614c09abd8fddc6f7a6eccc8d68917ec038b"
+          "content": "eb35ca784fe9dfd2350260377091b7e5ec8118da8d75d2e75178e1c019ec1a314f5aa7f954a903044a9a1243c3a1312d931c22dafbfc4dcaf6983c8fe12a3b16"
         }
       ]
     },
     {
       "type": "library",
       "name": "@img/sharp-linux-arm",
-      "version": "0.35.4",
-      "purl": "pkg:npm/%40img/sharp-linux-arm@0.35.4",
+      "version": "0.35.5",
+      "purl": "pkg:npm/%40img/sharp-linux-arm@0.35.5",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "ece012f2023411178a1953761ecb0794ceae989831179548df1374a7d140f75a7f60efa8bb986236084b759e41107cedc1a68ae7e6cb2917fcc7fa362f69e4f4"
+          "content": "2c46972b659d5d52b9ca4730d1bb96c8f32c98b2cbdafa472c3eb2acd496f891842f70593c0e2da4a37a89a31ce00c534c0a1a5ffb14d6b38be7595c233e3c65"
         }
       ]
     },
     {
       "type": "library",
       "name": "@img/sharp-linux-arm64",
-      "version": "0.35.4",
-      "purl": "pkg:npm/%40img/sharp-linux-arm64@0.35.4",
+      "version": "0.35.5",
+      "purl": "pkg:npm/%40img/sharp-linux-arm64@0.35.5",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "0dee23a449c053c1dde684f48f51b7b8be19bd3ba2a55327ed80babcf689872ebfec4c0469ed12540a01ad431841b90b1839bce6d6955b0b8f7356b8e0b4f309"
+          "content": "2d8571e494ec38cd820739b1ade87e9e5eb8ff71fa5dbd3d8922e49ea1f8ef3d93d83145c437852cfe72e1d2707ba1fbb864251cfc8412d22aca8dc362c47075"
         }
       ]
     },
     {
       "type": "library",
       "name": "@img/sharp-linux-ppc64",
-      "version": "0.35.4",
-      "purl": "pkg:npm/%40img/sharp-linux-ppc64@0.35.4",
+      "version": "0.35.5",
+      "purl": "pkg:npm/%40img/sharp-linux-ppc64@0.35.5",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "da861925e225e2409c306938a2e6558e7902b45ae940594d12d27a19bc7384741c8701f4347fea11bf729263a5dbd76ac0cabe26115d667fb56a4d852a123d7d"
+          "content": "415c4002af1ebd5448f626b6bea830ae65ae727e437eff89756ce3ef9a43f289872cf48fedff29db43bc8f1ce309cb8211010eb583995265f5864899d2475ebc"
         }
       ]
     },
     {
       "type": "library",
       "name": "@img/sharp-linux-riscv64",
-      "version": "0.35.4",
-      "purl": "pkg:npm/%40img/sharp-linux-riscv64@0.35.4",
+      "version": "0.35.5",
+      "purl": "pkg:npm/%40img/sharp-linux-riscv64@0.35.5",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "70f6cd0a1a1151101675e6c320749e9f1469804772ec990fc9d4a7531466f55bca0fb9b4ff155a47ff05ce5bbcd699399c712f1c7f3b519500edc4edc276c948"
+          "content": "2ed76b79782e69abca3833c87f327891f7f1ed436dd689b0b4ad2b721e0405b6d24d73e7c5699849ac9774b270d1f27343dee41edd602ffca1e2dbd4fa70b245"
         }
       ]
     },
     {
       "type": "library",
       "name": "@img/sharp-linux-s390x",
-      "version": "0.35.4",
-      "purl": "pkg:npm/%40img/sharp-linux-s390x@0.35.4",
+      "version": "0.35.5",
+      "purl": "pkg:npm/%40img/sharp-linux-s390x@0.35.5",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "458d09158f0577a4689c206d1f3f83bda75a3e45c3488d40527eb258bf538a9aa4675bd8f30f1ebea760c83167926e3f2b5bded53bd989a78f3f9a12778f9655"
+          "content": "5196ac4ce162633a2d4ec18e0aee3605f5333fa4eee83a3ff78ee2466d51b0b2af965971c06727e11376ecb89b19671e8b1e18f8f9b0de3b274dc0902205a3a8"
         }
       ]
     },
     {
       "type": "library",
       "name": "@img/sharp-linux-x64",
-      "version": "0.35.4",
-      "purl": "pkg:npm/%40img/sharp-linux-x64@0.35.4",
+      "version": "0.35.5",
+      "purl": "pkg:npm/%40img/sharp-linux-x64@0.35.5",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "f6abef100ba4f24f3d4df594a17da1b568db00c5fca7e3710a9a63a5c83993ac4cb2384140f4eca08877ea1f5075ee1646e1a925e6273a3768b039ff727bfe38"
+          "content": "4b116d2d378922784003d43cdfa92ec76bd935e381404c7ae7caaf6dba1949caf4c08011ca6dc8706996ecaa550f9b1b560d0e8f2fae74541d6b2608672a0da2"
         }
       ]
     },
     {
       "type": "library",
       "name": "@img/sharp-linuxmusl-arm64",
-      "version": "0.35.4",
-      "purl": "pkg:npm/%40img/sharp-linuxmusl-arm64@0.35.4",
+      "version": "0.35.5",
+      "purl": "pkg:npm/%40img/sharp-linuxmusl-arm64@0.35.5",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "281e63c697d6413af49dcdf1747b560a175b89f1eb046b1dd9233ad84cb1ae5f1a7e2926f9fe6a18153be522486414ff4b5302f17c9a71d95704c496aba39444"
+          "content": "f476cc725988d7394d90546cdf3f7f781b438df0f4b0696b5f5cfa6f5ab09a2158e449432e1e010b42cf05d569ef3d435c588a9487339dff9996cb99ccbc50aa"
         }
       ]
     },
     {
       "type": "library",
       "name": "@img/sharp-linuxmusl-x64",
-      "version": "0.35.4",
-      "purl": "pkg:npm/%40img/sharp-linuxmusl-x64@0.35.4",
+      "version": "0.35.5",
+      "purl": "pkg:npm/%40img/sharp-linuxmusl-x64@0.35.5",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "7fe79925921034411ddba44f496fbbe9c87039fd57b40d98fcefb9a1c5722e588791e8a1ddefa384b54174d4dddab4b721b3572bcfae83ddd57f9657b45e4bc6"
+          "content": "e0a3a986a074df91eb55da8b65f0a0333cc446b4249333b04619783809113b560295d6da163c925cc68ae77e0ca3457e2e776794993eb1b5322de53450bc83d4"
         }
       ]
     },
     {
       "type": "library",
       "name": "@img/sharp-wasm32",
-      "version": "0.35.4",
-      "purl": "pkg:npm/%40img/sharp-wasm32@0.35.4",
+      "version": "0.35.5",
+      "purl": "pkg:npm/%40img/sharp-wasm32@0.35.5",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "cd09e5e0ac29ed0e8d1ec10db54d93ff4d198bec37010370cf7f94693c95072d85a57af35f31a39dda4aeb5a278598d1b51a505f10937aac35f5b5725ce87b8c"
+          "content": "3edb206b5b2ee2d431f8b2c5d44092f54ea7cf9926ad72a8e9755bb51e3c29edd9471c6069606eec80ed11ed6aba8f218aea709ba585ab15655da49fec820d19"
         }
       ]
     },
     {
       "type": "library",
       "name": "@img/sharp-webcontainers-wasm32",
-      "version": "0.35.4",
-      "purl": "pkg:npm/%40img/sharp-webcontainers-wasm32@0.35.4",
+      "version": "0.35.5",
+      "purl": "pkg:npm/%40img/sharp-webcontainers-wasm32@0.35.5",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "1127cd932c2609f3cdc9a663c68a1d74942243e97f9d3a4610e1ad87188b9c81d70bf0a67018b19dfc1495e5fd982cfda2fad452f28c6a9fe99bc4586f37f068"
+          "content": "85f845fc59a84324d4900d1b20a14eb70e77e8141278131ee8117a4325a5acfc53ef9e3e4c52da67bb0a2937efbccd322602a06984f09c508867f1ae0f0e5250"
         }
       ]
     },
     {
       "type": "library",
       "name": "@img/sharp-win32-arm64",
-      "version": "0.35.4",
-      "purl": "pkg:npm/%40img/sharp-win32-arm64@0.35.4",
+      "version": "0.35.5",
+      "purl": "pkg:npm/%40img/sharp-win32-arm64@0.35.5",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "88d765057f602d5bea7b6237b8825220a4eaeb07243ff0d8c59b5cab19b4f71e468b6e039c50663c05999abeb467260c1b4c65ce8ea0a06dfaef46abf915ef47"
+          "content": "5f8b7b83eed90390ca6e50811171a352aa9e9a3e2f73320d1bfe6f885c002fc878377a987b28f0742bd12c78b811d39423ed99ed4165a7554cfa9fc0b84b66e9"
         }
       ]
     },
     {
       "type": "library",
       "name": "@img/sharp-win32-ia32",
-      "version": "0.35.4",
-      "purl": "pkg:npm/%40img/sharp-win32-ia32@0.35.4",
+      "version": "0.35.5",
+      "purl": "pkg:npm/%40img/sharp-win32-ia32@0.35.5",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "92a46c6da6b9092e8a1e5a719cded6844eaf000ba05f2641bada5176f0d67ad96fe90bf837d59372b5b317bb577c1f53eccb2869da9d23c866c0baba5252efb7"
+          "content": "e599bcd8ba01738de78703726d9946ed8d4a3bffd986c9f7d3a7d0976f593ae4ad1cb193a370562fcdeaddcce75f4a68c5200cb982f53a7fc11c1c6405e2abe8"
         }
       ]
     },
     {
       "type": "library",
       "name": "@img/sharp-win32-x64",
-      "version": "0.35.4",
-      "purl": "pkg:npm/%40img/sharp-win32-x64@0.35.4",
+      "version": "0.35.5",
+      "purl": "pkg:npm/%40img/sharp-win32-x64@0.35.5",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "5ed9a762105cace46c2785c99e0cb3aff1163f485164b019445680a5d2aebe2caa17bf3eca5c61db2d3a666b542c030e9ce6c9dee72937401cc125a7328c1346"
+          "content": "c7be9e1f4bc488795c310bbc63c21e9e7b5a002b5d7694fa5b4c265ed5ab9ca727288ecc1390dd82a8400fa48458e125d6fdb30ef9190e1140f4a9d4470a5faa"
         }
       ]
     },
@@ -1238,12 +962,24 @@
     {
       "type": "library",
       "name": "@napi-rs/wasm-runtime",
-      "version": "1.2.3",
-      "purl": "pkg:npm/%40napi-rs/wasm-runtime@1.2.3",
+      "version": "1.2.4",
+      "purl": "pkg:npm/%40napi-rs/wasm-runtime@1.2.4",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "50c76e31ba8ee6ce7317636435a70c4ffc8ae58e5088abd6af6fb9d1bcc8231143c15276878f5bfa8ca368218f849c5ddbf802db1dfd107bff80756ebb7eb1d9"
+          "content": "009c68503dbfd791121dbbe97328d4dbbe27b003cbb8eb4f1c2934bca24ce698fffc583f0751573568cf9d74d3f4fca60986221e8e333e3d19a265c12a1a32ee"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@napi-rs/wasm-runtime",
+      "version": "1.2.5",
+      "purl": "pkg:npm/%40napi-rs/wasm-runtime@1.2.5",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "1ec852bd7ce6071373a9e8ddde4fca7a6810de1751114605451ae0c4e67e80f9630c8b0ed920d9ad564c77867f1ecc6e7506c4eb6395c95144f33f410aeadf8c"
         }
       ]
     },
@@ -1262,192 +998,192 @@
     {
       "type": "library",
       "name": "@oxc-project/types",
-      "version": "0.148.0",
-      "purl": "pkg:npm/%40oxc-project/types@0.148.0",
+      "version": "0.155.0",
+      "purl": "pkg:npm/%40oxc-project/types@0.155.0",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "366e2cfe307ee05a45b0f8561840b887baf392c7ac9ad9cc5e89a8eab08c720fdbf332d0b8ece24609024b57f10c25ce94907fe90f28001399fce3fa4483e3f4"
+          "content": "49e13c24fc16d71b35b4778dc9c8d4b5405d868ad16bca388e5be3c24e3d47bfd9dbdd62fb80d06bb2492203a6fd3698419c7e42b3d06d527ff5cf1d30864df1"
         }
       ]
     },
     {
       "type": "library",
       "name": "@rolldown/binding-android-arm-eabi",
-      "version": "1.2.7",
-      "purl": "pkg:npm/%40rolldown/binding-android-arm-eabi@1.2.7",
+      "version": "1.2.15",
+      "purl": "pkg:npm/%40rolldown/binding-android-arm-eabi@1.2.15",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "132a73827602c32558e0d0c72b31a63494f96fe5da404067887c6c31d78840b07fb5c0b366786aaf31e96456d7f626b1c7ee51881f1c6804c1b5fbd93fbcd5c5"
+          "content": "68b7202bd808277611bebaed7d205b45adbb1795aba624da3ee967169b073f1a541e01654a09d4e3ce78307c2844610185f4490d6092d9643b9488ec904f4e97"
         }
       ]
     },
     {
       "type": "library",
       "name": "@rolldown/binding-android-arm64",
-      "version": "1.2.7",
-      "purl": "pkg:npm/%40rolldown/binding-android-arm64@1.2.7",
+      "version": "1.2.15",
+      "purl": "pkg:npm/%40rolldown/binding-android-arm64@1.2.15",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "975ec713d1307966aa25986e52e34137f17333adb1c3e0c40959c9caf32cc67f2f2450062f2e507cb0e860072ba2790037c5712991decc3a6e9470cfc7de6f17"
+          "content": "c43ec37590ab6d384abb1360ee8a109afa74ef2b3827fa674843131b7fce74e5a5e9d682ebb9bf4387cbefcb111ccc531ff3787c651b62170f334305e5614792"
         }
       ]
     },
     {
       "type": "library",
       "name": "@rolldown/binding-darwin-arm64",
-      "version": "1.2.7",
-      "purl": "pkg:npm/%40rolldown/binding-darwin-arm64@1.2.7",
+      "version": "1.2.15",
+      "purl": "pkg:npm/%40rolldown/binding-darwin-arm64@1.2.15",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "f040fc10b16f1d773a382113227e205ce6cf89a47a6dc90cfe2a57b5bce53d50d13017c41a308a80ef7417d62d7dda436ad571fd9430eda675bd431fffe4f733"
+          "content": "9b65ae43aaf4078393631c8fa4d2ed5da3116d10d46c6f18415d90dca4dd4922bc4e1e8a1c29c2f2354226df1bbd87920795a2be490d6dcf3998a69d69274ec4"
         }
       ]
     },
     {
       "type": "library",
       "name": "@rolldown/binding-darwin-x64",
-      "version": "1.2.7",
-      "purl": "pkg:npm/%40rolldown/binding-darwin-x64@1.2.7",
+      "version": "1.2.15",
+      "purl": "pkg:npm/%40rolldown/binding-darwin-x64@1.2.15",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "fd63eb8a98ed880219dad598edd7628ce453d148e0f3bc31596fea72815508a0165433e1b58d31afb0e3d0cdc6c8d1b3eb48c6c1312586ba3f9a417d753edd0d"
+          "content": "e51b67b07337ea7a1d33d59b332fb38a9d0b192fc6fb2e70ae8e511eba4e96be1a736e3ed734a2f64895d8c3f59b265e67f89f1077ee9507168e7017cdcd82d8"
         }
       ]
     },
     {
       "type": "library",
       "name": "@rolldown/binding-freebsd-x64",
-      "version": "1.2.7",
-      "purl": "pkg:npm/%40rolldown/binding-freebsd-x64@1.2.7",
+      "version": "1.2.15",
+      "purl": "pkg:npm/%40rolldown/binding-freebsd-x64@1.2.15",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "d780c8e0d72aa6f6c80b14a718bc773e6b43696a913ff2864866fa0be24b2d53de65197a74a7476dade91aca93defa5d4ea8446083c6d0c310f1cd3162aa09c4"
+          "content": "837974f69c85aa1bbed77e492a46e4c22286426c14e6150c50f27855d0400efbaa47c777dcbe87e7bf2b87c9bbaedc5b769f95997ffe9f323b9ef852665ce951"
         }
       ]
     },
     {
       "type": "library",
       "name": "@rolldown/binding-linux-arm-gnueabihf",
-      "version": "1.2.7",
-      "purl": "pkg:npm/%40rolldown/binding-linux-arm-gnueabihf@1.2.7",
+      "version": "1.2.15",
+      "purl": "pkg:npm/%40rolldown/binding-linux-arm-gnueabihf@1.2.15",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "6f1ad6211bc7590bdb2708be54889efe40c9990c5c344eb1c56c1976a17f1315408a0b4792fe785932d03dbf90b19767172d7c7e0ec93df5862f4447eafc0895"
+          "content": "9c87b756e808f7b9c642db293f10ea038b17314a5e8a870a20ffc2aa963fbbfbe06d3f9a957f9c571bb50bfa1504f2a0e1f78d4e6628bc4f75bf80e05ef5cdc1"
         }
       ]
     },
     {
       "type": "library",
       "name": "@rolldown/binding-linux-arm64-gnu",
-      "version": "1.2.7",
-      "purl": "pkg:npm/%40rolldown/binding-linux-arm64-gnu@1.2.7",
+      "version": "1.2.15",
+      "purl": "pkg:npm/%40rolldown/binding-linux-arm64-gnu@1.2.15",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "b68398d810a1059caec54ece617e939f7f3d762e08cc0a8f4f271571c8b43bb1527c1ab3441dd1667f8ae48b3a00d7f8b6681177f2b5c994ec3535db917b272e"
+          "content": "8930635f1f81e504af808f3d9497e6aa1e304e1f0d69b47561920837784dc78cd21b41157d5aa43af2ee94da46e36e75a5b77afc802667f2de7d5935638acf87"
         }
       ]
     },
     {
       "type": "library",
       "name": "@rolldown/binding-linux-arm64-musl",
-      "version": "1.2.7",
-      "purl": "pkg:npm/%40rolldown/binding-linux-arm64-musl@1.2.7",
+      "version": "1.2.15",
+      "purl": "pkg:npm/%40rolldown/binding-linux-arm64-musl@1.2.15",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "9402174c7fda88b44bc6c4e042f7e18e8e0ad72756229d34f95d2fa0eafd6de6fff599a4505ad221bd3775734546030dbe413aa06b05d748a843a52c23ebd2e5"
+          "content": "b8ddba5ce9d547baea42ea46dd5f68006d841866ad5a37091ce7833875050a1e1305698fdad1d316854dd776986f07e6d1a1ea240126730840bbab28a088dfa9"
         }
       ]
     },
     {
       "type": "library",
       "name": "@rolldown/binding-linux-ppc64-gnu",
-      "version": "1.2.7",
-      "purl": "pkg:npm/%40rolldown/binding-linux-ppc64-gnu@1.2.7",
+      "version": "1.2.15",
+      "purl": "pkg:npm/%40rolldown/binding-linux-ppc64-gnu@1.2.15",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "91d9f04b6f0f91e9e9fe664c4708d75d7c3143ba48b26f9b17dd7d2d42bddc13b285c2ecad529d3f6a7d7f1a623cd3c06cdb9c87cca942dd299b63f62d80801a"
+          "content": "f675a471d77e1fe5e1680ddf408c291e7288adfc7f3d0eab3b4a62bebefc3a0d3bb5795495cb41049a0460b3df85398247f431115767eae3e31d5e52ca63e177"
         }
       ]
     },
     {
       "type": "library",
       "name": "@rolldown/binding-linux-s390x-gnu",
-      "version": "1.2.7",
-      "purl": "pkg:npm/%40rolldown/binding-linux-s390x-gnu@1.2.7",
+      "version": "1.2.15",
+      "purl": "pkg:npm/%40rolldown/binding-linux-s390x-gnu@1.2.15",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "e75e8e76cc8b76be44eb9a5a177c81179e6df267e6f7e826b42b0adf123b5ca5c84fb11f4651e1c4bf0afcd47a1eef01592805e7ed70ef89532f4fa7c5c73c43"
+          "content": "1a08747221632f022eb0b48bcfb2d96046867713805095c8f90bb92426e13c924712df2f3fe2234404d32617a226c773cd36205221d48b0dd7d446b766930174"
         }
       ]
     },
     {
       "type": "library",
       "name": "@rolldown/binding-linux-x64-gnu",
-      "version": "1.2.7",
-      "purl": "pkg:npm/%40rolldown/binding-linux-x64-gnu@1.2.7",
+      "version": "1.2.15",
+      "purl": "pkg:npm/%40rolldown/binding-linux-x64-gnu@1.2.15",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "afcff3f27ec615a611967df198fd42c72d071ff1cb334b8150f904b925447ca18303cf4cd05b194592514b07bfb498d1c7e7e91ff823a2b7e107cb6611b4852c"
+          "content": "14783ad2b4ba0c178f01867d5fd17aef1f8939b15d9a09fab6ea40d42fdadc1f82b9f1664c3e265fe7bc33be6d0a200eddfa11ffac70541234290888eec9ffaf"
         }
       ]
     },
     {
       "type": "library",
       "name": "@rolldown/binding-linux-x64-musl",
-      "version": "1.2.7",
-      "purl": "pkg:npm/%40rolldown/binding-linux-x64-musl@1.2.7",
+      "version": "1.2.15",
+      "purl": "pkg:npm/%40rolldown/binding-linux-x64-musl@1.2.15",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "a40b04f22883c54835c41a9d86b4df838e405435698ab8f3d34b1b94460294634d70c9c36fe7bc6de420a88030e8bbdab97fc03ef831527c2b82e9ff61818187"
+          "content": "fdcbd5ffbbf9546cff9a88b3d172918f6744f03cec2b2848bb52a93af2463e3472c20df2b1c38df3cf541af01ef337e224b1eea7b54b8c176ea065a2dc7bac59"
         }
       ]
     },
     {
       "type": "library",
       "name": "@rolldown/binding-openharmony-arm64",
-      "version": "1.2.7",
-      "purl": "pkg:npm/%40rolldown/binding-openharmony-arm64@1.2.7",
+      "version": "1.2.15",
+      "purl": "pkg:npm/%40rolldown/binding-openharmony-arm64@1.2.15",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "9537086269a741003c3abff60dab52ea84aa71d2c7bde9dd8d2fb32eef85c204e8ca758c45299076933ae5f4c03498084b89a36cc3a8e4a4f69674fd4806fdeb"
+          "content": "332cc2e47aeffec9be67b4d218a3ff8fcd34d513b6c509b5ccea423552f88f4718fd584166f8a5b9d03660543b8b8947e99017c509b495c31d07333ef7d984ef"
         }
       ]
     },
     {
       "type": "library",
       "name": "@rolldown/binding-win32-arm64-msvc",
-      "version": "1.2.7",
-      "purl": "pkg:npm/%40rolldown/binding-win32-arm64-msvc@1.2.7",
+      "version": "1.2.15",
+      "purl": "pkg:npm/%40rolldown/binding-win32-arm64-msvc@1.2.15",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "7b71aedd6c5b364fd4a90871a94ed82183bef5906f58dcf753e87fa91168b2c70c1737513db5d849a4968129e496fd9fcf54e0cc14dcb62db3df973fee2aec1f"
+          "content": "f8f818892f801f9a26cba2f8e592f1c9b6ac6ae25a8f733c6eea13f370fe9f33e609ac97971515f61c9d85c882295c8883407fbf406d5cf0c4d6e1aa37008fa6"
         }
       ]
     },
     {
       "type": "library",
       "name": "@rolldown/binding-win32-x64-msvc",
-      "version": "1.2.7",
-      "purl": "pkg:npm/%40rolldown/binding-win32-x64-msvc@1.2.7",
+      "version": "1.2.15",
+      "purl": "pkg:npm/%40rolldown/binding-win32-x64-msvc@1.2.15",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "5bf8e0e6aa114aa8ec12fd3e7598b87baf3b99c1ea995b94d0fe1f2baa92ff18deb56d8699cd56f23fffcf99c078d702f13b66d21578e888dc61eb95c1886e8b"
+          "content": "1c565dd90350627d496c88be1e977b1feaff9645b171f22edbc9e2ad9e9e0a7d8b69fbaf984c4c95bfcff7a49fc79b5fee93c0af0dfd21d866085f2f995f8d85"
         }
       ]
     },
@@ -1466,120 +1202,120 @@
     {
       "type": "library",
       "name": "@shikijs/core",
-      "version": "4.4.3",
-      "purl": "pkg:npm/%40shikijs/core@4.4.3",
+      "version": "4.5.0",
+      "purl": "pkg:npm/%40shikijs/core@4.5.0",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "402478ab664efc82c912ec2204c7a5e3075c4c36f5246c1f8ca4f13c317ac7c8b139a96e3eb56a227d3a0bdf407113e1998941479e9dfc56fe18de7c1b3131a6"
+          "content": "e82220c2af9bb76259dce4a36ff9c1924c047ff09fa4771b6a6f8c8393e595ca3b1c0191436fc416166bac9b5bc8d4e02b09277d54be965b171b28220c6c095b"
         }
       ]
     },
     {
       "type": "library",
       "name": "@shikijs/engine-javascript",
-      "version": "4.4.3",
-      "purl": "pkg:npm/%40shikijs/engine-javascript@4.4.3",
+      "version": "4.5.0",
+      "purl": "pkg:npm/%40shikijs/engine-javascript@4.5.0",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "15b3a3149a7d54b768d567afb35d0106d5718935b034ba998791a486381d6bf8a82f5e583a079297d9fee9731adea4653d0cdf84535eeb8d52af29c51d81b49d"
+          "content": "11de947448fce0bc989309f13390af48c5800fe89df44c5362b8b4ffec78d54f73ae03627cf492f65666d09a813f455f608f32afcb58e676cdabdfa9f51d2414"
         }
       ]
     },
     {
       "type": "library",
       "name": "@shikijs/engine-oniguruma",
-      "version": "4.4.3",
-      "purl": "pkg:npm/%40shikijs/engine-oniguruma@4.4.3",
+      "version": "4.5.0",
+      "purl": "pkg:npm/%40shikijs/engine-oniguruma@4.5.0",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "11c390931771190adcd51a30fdc0b673debfbf575b66a1a7115bb5a93b93fcc266a7af9c5c2bd0bacb28c15982bf94eaaf72ae63773b21b33a1d35b72c9d64f7"
+          "content": "74a5666c979c55d07dade725f1afc25388dda4d5f28c942b21c7ac224a52ef4b391d2d36a21a67092a4c51ba2d3e7114cdb01c2d0f92e21c1961b9010624dc27"
         }
       ]
     },
     {
       "type": "library",
       "name": "@shikijs/langs",
-      "version": "4.4.3",
-      "purl": "pkg:npm/%40shikijs/langs@4.4.3",
+      "version": "4.5.0",
+      "purl": "pkg:npm/%40shikijs/langs@4.5.0",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "78f89cd327c0246385f370f9c011caff4d048caeb9a1a841631164e5ea60ab7dd646fed7f54bb12c457c3ed474b330b4cfc765ec8348a48a1d07df49445951f8"
+          "content": "c30053ab076e5d2cf45f8bfd41ad8459e15a609130d5c9429dc5a3a1135045b543bb748f453456b9c9e8b986a92a3ddbf10fac93fe3555b73807973c9ee6332c"
         }
       ]
     },
     {
       "type": "library",
       "name": "@shikijs/primitive",
-      "version": "4.4.3",
-      "purl": "pkg:npm/%40shikijs/primitive@4.4.3",
+      "version": "4.5.0",
+      "purl": "pkg:npm/%40shikijs/primitive@4.5.0",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "9b4c0178b0d00de23145d526ac23dd42a7ee51a983c112f98ac09f61b82e283e8d89a2a955bb2ffb727cd43c882a0356e61e1600822bf13e0492042b041c6f69"
+          "content": "50ced286503ca33d0e5b12cb3bc0663bd229e9f56a764b7cc85d041fb9ce0aa1dfaf1d5e100cc5d195152bb2fe23c34481ebb53c4592465c5a88f3de09be220e"
         }
       ]
     },
     {
       "type": "library",
       "name": "@shikijs/themes",
-      "version": "4.4.3",
-      "purl": "pkg:npm/%40shikijs/themes@4.4.3",
+      "version": "4.5.0",
+      "purl": "pkg:npm/%40shikijs/themes@4.5.0",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "c3c5078de527211f7ae4a31624750f5ce73698d2549cadefa552d82efc392185369a74d327cf44db83ab24304d8890d0d2acdbd2d73897b9ab217c79705788cb"
+          "content": "cc66fcec7dd405ba6e238ca8879520b81d576d4fb604353791f94ced47d9f82cb6856a3d941b6a8d254adb48262d8eae918974e34840ca9197320b9df6fba5f1"
         }
       ]
     },
     {
       "type": "library",
       "name": "@shikijs/types",
-      "version": "4.4.3",
-      "purl": "pkg:npm/%40shikijs/types@4.4.3",
+      "version": "4.5.0",
+      "purl": "pkg:npm/%40shikijs/types@4.5.0",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "50427199147ef8c00647a86e827d2f8154b65bfea5580b6cf381454ab9e51fdb0fd0b36897b139f8d43bf76a47f25896521c8cca3853812507de4ee20fbb5ce6"
+          "content": "76bb4faed0fc3740c43720f6732b7a023cbe216b2208b80cc4e0f02d3a6f1f552c37a6bd8dff74b4d4cf8eac07bc0fb42f3bbd7b4b7193c0e37ea1f5a7d50947"
         }
       ]
     },
     {
       "type": "library",
       "name": "@shikijs/vscode-textmate",
-      "version": "10.0.2",
-      "purl": "pkg:npm/%40shikijs/vscode-textmate@10.0.2",
+      "version": "10.1.0",
+      "purl": "pkg:npm/%40shikijs/vscode-textmate@10.1.0",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "f37c9e821676c718a7dcd8fccf534c77f342b9c6be82c617b30cb00f2e5b1efc2558bf2da53426cc6794b8777d142dc4fd204432fcc94705843b3e6019eb3d42"
+          "content": "71506e84342305968d313c01aae61f3f276b50ff84de113aa1819ab31f21e99ace0c833bfebfa0c4b0d775debaa2ccdbae08191c49ed744ea3fb9818215c8c59"
         }
       ]
     },
     {
       "type": "library",
       "name": "@tybys/wasm-util",
-      "version": "0.10.3",
-      "purl": "pkg:npm/%40tybys/wasm-util@0.10.3",
+      "version": "0.10.4",
+      "purl": "pkg:npm/%40tybys/wasm-util@0.10.4",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "1777e8d4c62b44960bdf3111d0e50e9a4bad8ebd55a76de6eceb12829ee7ab848fe8ea97e82ff9e971483c09796eddf3681463996ed21b3deeffa2f016961c3a"
+          "content": "5b77388118a0152d13fcc6b8a88605dc60c07390107476f5c8be739c94f566fd58683f4a8adc7ae7ac018efaf5f6a6e2a2c9994fc9560cce4110cca752a5fae4"
         }
       ]
     },
     {
       "type": "library",
       "name": "@types/bun",
-      "version": "1.4.1",
-      "purl": "pkg:npm/%40types/bun@1.4.1",
+      "version": "1.4.4",
+      "purl": "pkg:npm/%40types/bun@1.4.4",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "d005468935c66a37f5ae02a89b737e7392fb081c6ea32cafd62e383349d7e140cad06fdf9d100c8ab8bdde71ee54f21be36f4a2ad0208fb1dab559a63a37902c"
+          "content": "f709110d75172b5db8a449c0bad13a9ff975f23fa2f460b92001caf13997ff69e5c921139a4cb4394eb22f953ca56d40a0a87ef8037d6ae0c2afae3b05fbab8d"
         }
       ]
     },
@@ -1646,24 +1382,12 @@
     {
       "type": "library",
       "name": "@types/node",
-      "version": "24.13.3",
-      "purl": "pkg:npm/%40types/node@24.13.3",
+      "version": "24.19.2",
+      "purl": "pkg:npm/%40types/node@24.19.2",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "0e1f2f02c577ea2839c1af4e5f8a57bcc73d0f755e89b7f0db08b1d0253060e0cb0fc9e48fd52c2e3012af8f673e0fb678acf184157ebfb2fca57bd3e1eeb7f5"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "@types/node",
-      "version": "26.4.1",
-      "purl": "pkg:npm/%40types/node@26.4.1",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "93dec436f656b6f03acaacf9fc54ba6bb76e0e038f11e39039cda2292fe763a997eaa2542ad2e75b3412f978fab57c1eca3e9971300ad9079c7ad9ef8bd9c22c"
+          "content": "f77778f700962640b237ceccc4ba4d37a2973c2c05c3b6d5520efd986515d4e4b8d09196c150abf27eb50d7092ab3ec257afd57cf91bef179ceee3f633e40759"
         }
       ]
     },
@@ -1706,72 +1430,72 @@
     {
       "type": "library",
       "name": "@volar/kit",
-      "version": "2.4.28",
-      "purl": "pkg:npm/%40volar/kit@2.4.28",
+      "version": "2.4.30",
+      "purl": "pkg:npm/%40volar/kit@2.4.30",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "70a5f8bcaf5db59bc345a0337a851d6802447b0e887711cd091adda792af725eb364ea9bea34ce7e4de45e42241b74fba1315782e10cb79fbda6dcaa611f383e"
+          "content": "56870bb6e99f5e7aa73d011673d631eee0b5b8e87d8328d5365ae7dbee99c7fcfd68ceb24cb84f2bc952a8cf4896ef355d16b8f08d3495c60958b8b604bc71f1"
         }
       ]
     },
     {
       "type": "library",
       "name": "@volar/language-core",
-      "version": "2.4.28",
-      "purl": "pkg:npm/%40volar/language-core@2.4.28",
+      "version": "2.4.30",
+      "purl": "pkg:npm/%40volar/language-core@2.4.30",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "c38aa1209f194a2b602c09156b2e806dc9c2ee03f782560cddf630295decae3f26e3de04df1b6b0afe84f9b5af8a22bff21b3a7bab758a3d6cd849ddaa5eefcd"
+          "content": "ef77e3c0457cc1ab7a68e67a53fcbf86ab44df4a1cac85840a0ebb6f4b7119ccce30dc3e31f7cb9af2797e715f37d76b5541186732dd68da3a540cba1ba6af33"
         }
       ]
     },
     {
       "type": "library",
       "name": "@volar/language-server",
-      "version": "2.4.28",
-      "purl": "pkg:npm/%40volar/language-server@2.4.28",
+      "version": "2.4.30",
+      "purl": "pkg:npm/%40volar/language-server@2.4.30",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "36a70b9c4e601112ae4b83d41709613317fabea628ee15ed6cc15b5625dc6d591b67dd390085568674a8d193410b6575dbb1f5ff6ccfed1bd53959f221315f07"
+          "content": "b5c3fd7f3cd405bb0b2051e1827454e277108cc9fd1bd55ac747df91099d0ab5d5118a91ae851ea66c82e405608a3bb96c288b0fa6b9e6a7a7e6239340791bde"
         }
       ]
     },
     {
       "type": "library",
       "name": "@volar/language-service",
-      "version": "2.4.28",
-      "purl": "pkg:npm/%40volar/language-service@2.4.28",
+      "version": "2.4.30",
+      "purl": "pkg:npm/%40volar/language-service@2.4.30",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "461ff0602649ac8e6f0b0324f71cb0fd9f8cb16c65258d6b98c64fb3152824a7f32118d2fcd1753669ee11cacc6c45468dad34695a42b089c97e2c504cc76f2f"
+          "content": "c3fc43b004a2a82ef582008e9bbb130d70cd93f97bd97129b6875e442ebcb606747b940ce21337cc0a81182ee605cb6f86ba58c0a7cc1beb7dc5c528da1105b4"
         }
       ]
     },
     {
       "type": "library",
       "name": "@volar/source-map",
-      "version": "2.4.28",
-      "purl": "pkg:npm/%40volar/source-map@2.4.28",
+      "version": "2.4.30",
+      "purl": "pkg:npm/%40volar/source-map@2.4.30",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "c97d810c1a899115df2b0f26cbc55aad3ca3bf8f10c31749b6f460529344e5eac2b20114748d83b0b6e96beace41500962c858f7db3311c4439b21db175d2081"
+          "content": "cf29b5a1bfcac030f237ed23195b71c1bc4949146752fbf91eca42b73df211f5557421b8fddcf1264b4c18f0207a6a91b95b3cd4ed28ff2d2adea39412b47c92"
         }
       ]
     },
     {
       "type": "library",
       "name": "@volar/typescript",
-      "version": "2.4.28",
-      "purl": "pkg:npm/%40volar/typescript@2.4.28",
+      "version": "2.4.30",
+      "purl": "pkg:npm/%40volar/typescript@2.4.30",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "25aeb2bd6adb8acd90b4de029402ab79e5193d560c0110d8665f4b304bf5890d5075ea41eb09f48d347103d31fb589986b80d0e24fc369266914f51fc65f208b"
+          "content": "fc3800e6d81814f7eb2c5b928c83173061e4d4b42fdbe3fc7a7cbaf8184637314910b5885bb51995ce7a64b2111612ec3e931f205c4cf3f1ef38f06082b8d366"
         }
       ]
     },
@@ -1838,24 +1562,24 @@
     {
       "type": "library",
       "name": "am-i-vibing",
-      "version": "0.4.0",
-      "purl": "pkg:npm/am-i-vibing@0.4.0",
+      "version": "0.5.0",
+      "purl": "pkg:npm/am-i-vibing@0.5.0",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "3314f85d92fba732c7a6ebe10ca74c6901cc1869090cb96e2812ec6ecb67fbcc2ff6c59c153ea1fb4bdef6a92697de5a9954d9b5957cde041eda163ea238072e"
+          "content": "28b72c0e1a9fd5746b26626bfbd23f0b4117d8afac1ab00664582499df3873c4c93bdcc906efbf9052278daceed4a7c95858560ca7515a4a41cc4b3bb37e4354"
         }
       ]
     },
     {
       "type": "library",
       "name": "ansi-regex",
-      "version": "6.3.0",
-      "purl": "pkg:npm/ansi-regex@6.3.0",
+      "version": "6.4.0",
+      "purl": "pkg:npm/ansi-regex@6.4.0",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "5a90df2fb34eea3eed1fcf080c13557542710e1f67982b5e0155bd76c7a9f38e977701789da0812befed18b5f728981ca603115c21654ccda1286a0af45b1dad"
+          "content": "2b34d5936b425801ed62bbefbda3fc6c9289ab6a558a784b70611076d2c860f6e634637261ef10c0d693518429d89effbc8b142ade500aa01f5246321bd0e43b"
         }
       ]
     },
@@ -1897,18 +1621,6 @@
     },
     {
       "type": "library",
-      "name": "argparse",
-      "version": "2.0.1",
-      "purl": "pkg:npm/argparse@2.0.1",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "f3ef56a9e6db173a57f4e47e59ae8edbd6ac22881e44ccdc1ad00835da4c1c7c80835d1fd3969215505b704a867ff3d7c35123019faadbf6c4060dc3beeacadd"
-        }
-      ]
-    },
-    {
-      "type": "library",
       "name": "aria-query",
       "version": "5.3.2",
       "purl": "pkg:npm/aria-query@5.3.2",
@@ -1922,12 +1634,12 @@
     {
       "type": "library",
       "name": "astro",
-      "version": "7.3.1",
-      "purl": "pkg:npm/astro@7.3.1",
+      "version": "7.4.2",
+      "purl": "pkg:npm/astro@7.4.2",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "03f6c9607b5cea7d1401d44e63d5bde3c7d6ea55f4a67500f8958a5be2060974720c818dd8cb170b43a54bca27646263afeb2ff21b5e9b039cf56e4f0515c293"
+          "content": "1401f871d0e515a5674068daccb4c4202e6f26a1a5a395c035cd7021bcd01c8a808c94e597f4564d4b3e48f356d4975ecc6e181b1319965684e40e354f693384"
         }
       ]
     },
@@ -1970,12 +1682,12 @@
     {
       "type": "library",
       "name": "bun-types",
-      "version": "1.4.1",
-      "purl": "pkg:npm/bun-types@1.4.1",
+      "version": "1.4.4",
+      "purl": "pkg:npm/bun-types@1.4.4",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "9682ae56b00564a7c4bfe26f5a41d14bd196e48a8bb8b46355737da7ebd9bc137ce8ee617ffa41650e614a8ca2a6cacc99639b6410ef5a79662af8ca4ccd0f74"
+          "content": "ca3ac9879a065fb98c3ca19dd7d617c888e612e8f81b8ccd0b7d1bb3b3ccf40cfb350de7745de3ea16de45dbc94d1404849fc5610c16d1ada6a307848b684cc5"
         }
       ]
     },
@@ -2024,18 +1736,6 @@
         {
           "alg": "SHA-512",
           "content": "4693e9d1ab13ffab9f466fff009570a558996c633f3248d017125c710447988485ff6d8d06db07a805a62fefe99a43d6a08509756c9e565793975c3274701355"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "chokidar",
-      "version": "4.0.3",
-      "purl": "pkg:npm/chokidar@4.0.3",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "420ceef247c1be8f9c038f7ada39cfd4a912e83a29e4d4ba83b4792c5609af86fc51bf783cf417524b02c3d3ef5e87973d145d751342e42d4941447648c1ad9c"
         }
       ]
     },
@@ -2138,12 +1838,12 @@
     {
       "type": "library",
       "name": "compression",
-      "version": "1.8.1",
-      "purl": "pkg:npm/compression@1.8.1",
+      "version": "1.8.2",
+      "purl": "pkg:npm/compression@1.8.2",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "f6602a18f1cb6a48422de372c4f90ae31568ef8eb343f7332c7d4acbebe48ad32759f599a6cf2bd2a5eec21c22cda80246db6c2f895f1b8a483af6962e900fd3"
+          "content": "a3cbc8e5113903a11554e77da38d632a9e35689a26f904c43bf071f0c60d8dec4ca3f06fd963a351f66bf9a2f45a7612832994cbacde82ea8b4ec22157480cbd"
         }
       ]
     },
@@ -2317,6 +2017,18 @@
     },
     {
       "type": "library",
+      "name": "destroy",
+      "version": "1.2.0",
+      "purl": "pkg:npm/destroy@1.2.0",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "dac246253697208691d70e22252368374867318ec6a5cfe7f03e2a482270f10a855977fb72e0209c41f1069c1e69570f7af0b69772a98d80b1dcdca941081a26"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "detect-libc",
       "version": "2.1.2",
       "purl": "pkg:npm/detect-libc@2.1.2",
@@ -2330,12 +2042,12 @@
     {
       "type": "library",
       "name": "devalue",
-      "version": "5.9.2",
-      "purl": "pkg:npm/devalue@5.9.2",
+      "version": "6.0.3",
+      "purl": "pkg:npm/devalue@6.0.3",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "a68e0f018e5ce77b70e573287129dff00ff938785b6d47eda6bf7768437a041a00767b5498aeefbbbc0e013aafb7b7173bb9b50a5e203159faa7b9fa9f89a3d3"
+          "content": "df0a0c1084dfb46d7029e3bfe1dfd05c7d4354a72d4d2660de33463e98e9f6136be47a2cf0c08517931c4cc2f966d80a0ce6e6d91e7dd41d2ca51a762157ab9c"
         }
       ]
     },
@@ -2486,24 +2198,12 @@
     {
       "type": "library",
       "name": "es-module-lexer",
-      "version": "2.3.2",
-      "purl": "pkg:npm/es-module-lexer@2.3.2",
+      "version": "3.0.4",
+      "purl": "pkg:npm/es-module-lexer@3.0.4",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "a681c6a4e4400688c926e72757d29b39abc44d6f250559e98645bbec4479fc1439173ee85d2a0235e93b207def4799d18ddb04cfddba89b1585fc2ad2d099dcb"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "esbuild",
-      "version": "0.28.2",
-      "purl": "pkg:npm/esbuild@0.28.2",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "1ca54b4bc76f208fb1a0a5bd926ab16d12ab9d61177c926bfc56618499a2a880747b4e7740d605a8e068b9330efe4e6c203e0cbc28940afbfc6fd338877db020"
+          "content": "06574d6399b0915bbe710e589a7ddeea107d4b1f171f1e197af59b894c996df2b127160edbb1dfd307f393121a0f908024c68697762ca4a10b8f47dfffb9c230"
         }
       ]
     },
@@ -2606,12 +2306,12 @@
     {
       "type": "library",
       "name": "fast-uri",
-      "version": "3.1.7",
-      "purl": "pkg:npm/fast-uri@3.1.7",
+      "version": "3.1.9",
+      "purl": "pkg:npm/fast-uri@3.1.9",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "74ebd95738dd65dcfba6177dbfa8c26f0c6b056ddf2ba9fc45cd02b5d98ce1bba6ccc9f1cb005886ea61e89f35f51470fe4bbeacb6de9707ccba792dbb35551e"
+          "content": "852ff45addd86b4e37a0a5ecd2c231acca4a4084d784c2c8ad500a2978b8828cc60bdbfb6115959d7219ce334f4ced3633d05dc4b096a8ad7245780dce257225"
         }
       ]
     },
@@ -2641,18 +2341,6 @@
     },
     {
       "type": "library",
-      "name": "find-proc",
-      "version": "0.1.0",
-      "purl": "pkg:npm/find-proc@0.1.0",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "39a3a9118bf63e243b490e4b22b97e75e0355da59cc448e7a4ce95b965d352f9feb5e217c5e1532c39aed7cff30d0a45987378a37a03057f814f4006c0485e9a"
-        }
-      ]
-    },
-    {
-      "type": "library",
       "name": "flattie",
       "version": "1.1.1",
       "purl": "pkg:npm/flattie@1.1.1",
@@ -2660,6 +2348,18 @@
         {
           "alg": "SHA-512",
           "content": "f546da0fa5dd00bf7bfa4fe7f8dec9c17e3a2bf33a65ce8a70562c92b60bf306c157f53293409300c634553faa88ae4f33b00873d693598b6aeb953b4fe68235"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "fnv1a-64",
+      "version": "0.1.2",
+      "purl": "pkg:npm/fnv1a-64@0.1.2",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "9896dc20b4cfc9b011d6374ec2dfe556ff0dd9c7df7891453fe8156d20302c4c75ba35c7dbb4693ddf11a2479cfca5fd73be9460807a0a8f87e25433c4f9c97c"
         }
       ]
     },
@@ -2726,24 +2426,24 @@
     {
       "type": "library",
       "name": "get-east-asian-width",
-      "version": "1.6.0",
-      "purl": "pkg:npm/get-east-asian-width@1.6.0",
+      "version": "1.7.0",
+      "purl": "pkg:npm/get-east-asian-width@1.7.0",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "4116ef0c86f1e9892551ee91c5e4de95e311d32bf77181fa3ec3d91dc9d59fbc6fef33b504737caf45c44eef27e987b743e6a1b526ab7375a0b4d5a67a12017c"
+          "content": "5e31f50040b17f48222f6575694f2f2b2451da9a5151be5cd04bd3ef3b894e8910ef86cda39db33ad821a9d588aab8540fbf5fa37c7459f29974eab117a2c6d5"
         }
       ]
     },
     {
       "type": "library",
       "name": "get-tsconfig",
-      "version": "5.0.0-beta.4",
-      "purl": "pkg:npm/get-tsconfig@5.0.0-beta.4",
+      "version": "5.0.0-beta.6",
+      "purl": "pkg:npm/get-tsconfig@5.0.0-beta.6",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "ee717b0bd7c83c510c1e010c11f80894ef700dd67c0b21f0dbbad67221597c7bc70d178888f86c62eccf457b1fbc10aa172d65f11472c9657b40b33e661509b1"
+          "content": "5fa7c10b4a662260bbd20bd7db39b9ea0a3d871d0cca8195746d2d502920fc3f979e1e5326c399ee20db39d2373ef9adac3c67bb561d0ee7e92b64095f531eab"
         }
       ]
     },
@@ -2822,12 +2522,12 @@
     {
       "type": "library",
       "name": "http-cache-semantics",
-      "version": "4.2.0",
-      "purl": "pkg:npm/http-cache-semantics@4.2.0",
+      "version": "4.3.0",
+      "purl": "pkg:npm/http-cache-semantics@4.3.0",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "753c5cbcf5ea3ef5c1429ab9754afa9843095f8a08105bfa6f0a26dc50f02910ecb888e324600daa106ea009fd73545024874029abf7dc40fae44db2b3ef3b41"
+          "content": "339b792e52694b5507323bf045055d147bcf21219e2c0c4d72b5ae2647868742b1b2a0876753b7357654ffcc7b703d010dc196f246a9c4c293bf096aacd90790"
         }
       ]
     },
@@ -2888,18 +2588,6 @@
         {
           "alg": "SHA-512",
           "content": "f8f822faf32e50d909c84c62301b792251683322a7af9ce127852ca73e7c58e841179428219905c8d1c86c102d1f0cd502093946d9dd54db0344deb5fe6983aa"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "js-yaml",
-      "version": "4.3.2",
-      "purl": "pkg:npm/js-yaml@4.3.2",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "48534ebd227e0e07fff409fdd38631f828129483c2908a5aa38aa8e7596979edb94c845e8dd1f7ae1478119306a0dc77fd33f73bec335ae893165e2ca9b96dcc"
         }
       ]
     },
@@ -3098,36 +2786,36 @@
     {
       "type": "library",
       "name": "lru-cache",
-      "version": "11.5.2",
-      "purl": "pkg:npm/lru-cache@11.5.2",
+      "version": "11.5.3",
+      "purl": "pkg:npm/lru-cache@11.5.3",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "e297ccd457f4c79d28d2d4306f9b9cc3f4733720f4fd824c13a215712b5a959b8c5b176ddec47786e4ad4edc73e0f526bd97d182ebc37a36acbd0da489f475d6"
+          "content": "53837c160ce65b173c935547f0aafa950835f14ec58ef6f2eb05c75515ff659ec8c166d1320ad16cfd16adbe6ae4d5629ebca9e1241a9a91ca76fb5e708b7152"
         }
       ]
     },
     {
       "type": "library",
       "name": "magic-string",
-      "version": "1.2.3",
-      "purl": "pkg:npm/magic-string@1.2.3",
+      "version": "1.4.3",
+      "purl": "pkg:npm/magic-string@1.4.3",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "0696f45b64db2ca399eef2673949d5446ab758bda9f88495dbd33a8583cbd40142a72299a5daf9cad897a13492c5156183c616edfeb9fba81b1bc586e8f09afe"
+          "content": "cf5d8ec6668f184d05e3196919d8ee0147248a92e94254c0b809b21a13680fb383a58533bc37efb7151b8ccfe3c339f23f5efca23bbf2837728b6db4c0d27445"
         }
       ]
     },
     {
       "type": "library",
       "name": "magicast",
-      "version": "0.5.4",
-      "purl": "pkg:npm/magicast@0.5.4",
+      "version": "0.5.5",
+      "purl": "pkg:npm/magicast@0.5.5",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "9650448569b549a72847080752840962dc29e0f04b1787da422e530a9206c86b3d9f8cb9fa3b88d2d0e0c8a21fa6ac5c9111da1f3a2e504a61dd31e4956874df"
+          "content": "52271d5cdf3343724797156afb6f1a7cc5cfaf5cfb58d63afbb1099f34dd41691302530b1797cd0822b1247050c0668d191d75e7cd44890990cf1ef7f8cbeccc"
         }
       ]
     },
@@ -3218,12 +2906,12 @@
     {
       "type": "library",
       "name": "micromark-util-types",
-      "version": "2.0.2",
-      "purl": "pkg:npm/micromark-util-types@2.0.2",
+      "version": "2.0.3",
+      "purl": "pkg:npm/micromark-util-types@2.0.3",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "630d04092a49a15885d6a4d4e030ba370b42e1a586b75124cda401f0a3cfc82451f33f5359e5741db1051933be658d70076db39b19c9aa13f24e93950a97874c"
+          "content": "a31076224d37848d20bfe54d9fdb67875b756047bd3033e9b558801207dd7f76101ec9f4a7319380276548225773086a9bca61684b8cef3784bb7410cd506b3e"
         }
       ]
     },
@@ -3302,12 +2990,12 @@
     {
       "type": "library",
       "name": "nanoid",
-      "version": "3.3.18",
-      "purl": "pkg:npm/nanoid@3.3.18",
+      "version": "3.3.20",
+      "purl": "pkg:npm/nanoid@3.3.20",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "0d38383096c631691f8ba55915d36ddbf71a31b432e0ebbe3a9fe1250bc611672755fa00d5003ec7344a033c3d8c3ebe19538e798aff98872e0d276e83a17afb"
+          "content": "b8a760d86dc63422909fd6f260ea716c6aab4f67c63b9291b7927ff1bde9a24f2b4faab119617a871332262118b407fe155c98b83f6145a0ea5f9b8f15827865"
         }
       ]
     },
@@ -3398,12 +3086,12 @@
     {
       "type": "library",
       "name": "obug",
-      "version": "2.1.4",
-      "purl": "pkg:npm/obug@2.1.4",
+      "version": "3.0.0",
+      "purl": "pkg:npm/obug@3.0.0",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "e1af8eb18bfd524b4e24a13e9750383ae7c381d445f4f89f5a3fad2671d4468fcff963b1a46e06cd414bf6a09a96659ab9aa3aa20886f90be70a8bf03e8c8058"
+          "content": "e6fbc1e7e5bb78fbfea77baac62f91716d570332d6d3f871b77ff85f82dce2a1ee7733a1981881c0e63a0d1a1be169da9c0106bcd70b8c5f8a34eb9fad4a0443"
         }
       ]
     },
@@ -3421,25 +3109,13 @@
     },
     {
       "type": "library",
-      "name": "ohash",
-      "version": "2.0.12",
-      "purl": "pkg:npm/ohash@2.0.12",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "eb94bfe6093d612b1a4637327fb35f6ba87f77713cff582c9695df2385bb0f19ffa1aa7c20a46e353e555e42d0d5814a2048386a9458e0f8fa6a2c05ceb0dd9b"
-        }
-      ]
-    },
-    {
-      "type": "library",
       "name": "on-finished",
-      "version": "2.4.1",
-      "purl": "pkg:npm/on-finished@2.4.1",
+      "version": "2.4.2",
+      "purl": "pkg:npm/on-finished@2.4.2",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "a15973920dc4340842936cddbfb209c1dfd0503e33d91c51c2991c198f29b0255c09864dab8c189d55802c733e6ebb6e26378f5a2605fc2966b83afc0a1e7e92"
+          "content": "013594bf7f3b8be9cb0f8f44883a0e7ede6c71fdf656c773de4b6b4091bd6e2ee344599a5d3b2cbf2be3d4499e295560bdeb1ba94b6f410bda4b64e94ee90065"
         }
       ]
     },
@@ -3482,48 +3158,48 @@
     {
       "type": "library",
       "name": "p-limit",
-      "version": "7.3.2",
-      "purl": "pkg:npm/p-limit@7.3.2",
+      "version": "7.3.3",
+      "purl": "pkg:npm/p-limit@7.3.3",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "2e5d30ddf536e2f6295e86668e364879ee9b2500e01b4a00ca8d4f76615823c503c0925d75a1c0ca9c481fd6af52efadfa54ac030295b1bd630c23082028658b"
+          "content": "48a815bc35394cd231438af7d14ef904d2c2e9afba18e1239e0ae4ff2b0ce7e66ede826e935482e40a7323363fecf8c2123a153cc589d33868ff841488407b4d"
         }
       ]
     },
     {
       "type": "library",
       "name": "p-queue",
-      "version": "9.3.3",
-      "purl": "pkg:npm/p-queue@9.3.3",
+      "version": "9.3.5",
+      "purl": "pkg:npm/p-queue@9.3.5",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "35700e76711ee45b1925f4f8a0af38944d58e5c145756951b8ea39b70c3c0f234cc72457c27dfd7c8914b4d2caa6970f0be51853f6d7ba33425060efd35cbb08"
+          "content": "2e48bfce15c55660e17ac0549ffc8744b5bd06d7bb984ef1a051f34d1f2c228995edadb3f8bc5800f906bdd7e274d8aee1f2927e3b5ac22c71487719722e5071"
         }
       ]
     },
     {
       "type": "library",
       "name": "p-timeout",
-      "version": "7.0.1",
-      "purl": "pkg:npm/p-timeout@7.0.1",
+      "version": "7.0.2",
+      "purl": "pkg:npm/p-timeout@7.0.2",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "0314ccdb00c63911c61243c2b7ccaac4e4cc8297db107a85e757ffe5f2429b0142dc2ff335c193eb74b2987dadb4e01a888c2cdb3560e3e8b34028eb6a47301e"
+          "content": "a6b6d7e19dd8b33ac53601fe316e59a1eab76da5eb32d3ff3109c57844fdd1407f1ad19c18343952c83d382cba1138d34e7b4ec3548bdb3f5f30f529a4ddc6bb"
         }
       ]
     },
     {
       "type": "library",
       "name": "package-manager-detector",
-      "version": "1.8.0",
-      "purl": "pkg:npm/package-manager-detector@1.8.0",
+      "version": "1.9.0",
+      "purl": "pkg:npm/package-manager-detector@1.9.0",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "c900381f5f4098f12831479abcf30321ed618a0c9297f807ff2690ae44ffb34ed0a7eee9a76858cf7d0ddf3da5e4192356417d3b0ea8d308c96a69b6cbb4a7d0"
+          "content": "cc031f6ed6bd9cf03c00a900e167663404fc47cb3a0e4d3fc703eca8d9d189d30570ba356242ee3c34e0b367fae177734bcbdb2cd9e827eb9422481bcfba111c"
         }
       ]
     },
@@ -3590,24 +3266,24 @@
     {
       "type": "library",
       "name": "postcss",
-      "version": "8.5.28",
-      "purl": "pkg:npm/postcss@8.5.28",
+      "version": "8.5.31",
+      "purl": "pkg:npm/postcss@8.5.31",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "451bb3a83b6de58f61deabb3e615a12be4cf9ec995b3a5b0494e8b90931e6381ecb54103b984c6f1425275ac0c4739b302d57e284a06f0ddd0836a8bcb9bccfc"
+          "content": "6146d6602804af09cc01592352761af8a94c0731a91f0888b7f0c4edfd06df702e5f62c7f5471393a2a05b1777cd153ea4ddeefc2f9797712730b3381de6bb4a"
         }
       ]
     },
     {
       "type": "library",
       "name": "prettier",
-      "version": "3.9.6",
-      "purl": "pkg:npm/prettier@3.9.6",
+      "version": "3.9.10",
+      "purl": "pkg:npm/prettier@3.9.10",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "3a9374cf355d89a880871a6eba3e5e7e9212e2c63d8fb6d8eae4799a78f9c8fcc691d92334a4897944e13dbeb4270dbd42e019800e28fbf881e3d90589a057ea"
+          "content": "b241874c7d586fd42f6930b88569d14f3118b42a40a45d143013f3fadff464fccff2285e7e8fdbb4a77e400ee9504d1f13003549b4bf36687211cb2d75738874"
         }
       ]
     },
@@ -3668,18 +3344,6 @@
         {
           "alg": "SHA-512",
           "content": "85e9369854293ee2381350412ab4ada3e054ddedf1e31b9aaec6e2c2bdfe95fee9e388eebc5315d171564003f7c54caa5c0e11ad72c8a1a49419b4add39e9933"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "readdirp",
-      "version": "4.1.2",
-      "purl": "pkg:npm/readdirp@4.1.2",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "18387090b7f2c162f6b3abc48f286b8be79799f1fa8f52fb244dbb5a1a8b798ce887f0370c16981848f61ff1c56429ff90c7e29bbdc55f11094f0d3a5adc50c2"
         }
       ]
     },
@@ -3794,12 +3458,12 @@
     {
       "type": "library",
       "name": "rolldown",
-      "version": "1.2.7",
-      "purl": "pkg:npm/rolldown@1.2.7",
+      "version": "1.2.15",
+      "purl": "pkg:npm/rolldown@1.2.15",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "83412d2ef0634d407b8e1c95d12fd30aea77bff5d2565e39bd42066ce194e103e2ca34de9c27b898ab85bd6f5f1206264b6168e36014b2c46636e33389776b8a"
+          "content": "ea874d0fe7de979cd5c3723861cd9eebd82f82e0e75f408000688d0d94aae2293959471a2eb903d862eea20d1770e0dba2bdf5859e5ac843205439e8f8a3d5e6"
         }
       ]
     },
@@ -3890,24 +3554,24 @@
     {
       "type": "library",
       "name": "sharp",
-      "version": "0.35.4",
-      "purl": "pkg:npm/sharp@0.35.4",
+      "version": "0.35.5",
+      "purl": "pkg:npm/sharp@0.35.5",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "9fefbc5d6723fa308eaf620e97b87c2db2a71810d8e1a3db9a9acc38d04d15d9f42265eaa4656fe739620ecd15f476e66c240ba5bba8d9e8fdac0a0e413bcc0c"
+          "content": "6309f83a7cc6ba4a7b08332ba74f11439d182a6bb01b8edbad980854f4ef05a6807d095197282b46a4abc5d0a22fd33e2e5ccb06227af0847542abf31f28c2ee"
         }
       ]
     },
     {
       "type": "library",
       "name": "shiki",
-      "version": "4.4.3",
-      "purl": "pkg:npm/shiki@4.4.3",
+      "version": "4.5.0",
+      "purl": "pkg:npm/shiki@4.5.0",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "31bfc6bd73c70405dd80621c9df5392f795da67d57731ac690f1f0aa0471d7bfc8d9745faa514a936bc6907588367d64757bf32597ae3b78ace88f4a2cf166d2"
+          "content": "39c456ef69e042f73e312556051228bc2fc14d6e7cf62504fd5c5abfb55e33845c63d3148ea07e211e882c6d64f67b96e8b886fe772df6e99ae3f301b6765b99"
         }
       ]
     },
@@ -3938,24 +3602,24 @@
     {
       "type": "library",
       "name": "smol-toml",
-      "version": "1.8.0",
-      "purl": "pkg:npm/smol-toml@1.8.0",
+      "version": "1.9.1",
+      "purl": "pkg:npm/smol-toml@1.9.1",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "90266bd95ddc87d8b4d31f335d186350d55c8c6f628c44b9743b9d917bd45424f942524d416125489759ab23de99f7c7a0b35463039ca2ed05cbea23374b8749"
+          "content": "8fb5b23dd7f4089a2eb4cccca0f2c5fdb5571ed299213f516f87867846d6c3c5f6b79a22ae33e0a4bf8ea5a10d66b20b61a5ea6309d51feaa053055b97ea5425"
         }
       ]
     },
     {
       "type": "library",
       "name": "source-map-js",
-      "version": "1.2.1",
-      "purl": "pkg:npm/source-map-js@1.2.1",
+      "version": "1.2.2",
+      "purl": "pkg:npm/source-map-js@1.2.2",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "51758c2a12cec1529bef6f0852d40f5f17d853ebac7726ed52b2bff2e184f0240cbeb84ea70bf30c1c23d108522fb31073bbc8b084811bc550f3e203431a5f40"
+          "content": "2868fff18e37c77e5a6550edb7e27898ad61a0b18750b3187d290e0c93508cd0c2de85b53ea3e8c4cc28d292d4b1633f5041b338dfcdc5e1f2c047cd5cd3f757"
         }
       ]
     },
@@ -3985,6 +3649,18 @@
     },
     {
       "type": "library",
+      "name": "std-env",
+      "version": "4.3.0",
+      "purl": "pkg:npm/std-env@4.3.0",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "3ad53f1204359089b92b0a90a410ba644317ad946e8b5d70f3381f4d6a7c71d3bd07c39a3ec6c0f1b4c73b63fe1cda3556551318c541c0f87276eea9a1e5e26a"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "string-width",
       "version": "7.2.0",
       "purl": "pkg:npm/string-width@7.2.0",
@@ -3998,12 +3674,12 @@
     {
       "type": "library",
       "name": "string-width",
-      "version": "8.2.2",
-      "purl": "pkg:npm/string-width@8.2.2",
+      "version": "8.3.0",
+      "purl": "pkg:npm/string-width@8.3.0",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "19a3d487981f76b633a9e54d66f51f4f6def618c57cca62275472732d260ff7af1455eb7105672de4eb17ca9667de243d35efa967515fd4b2bdd77304af173a6"
+          "content": "65b9993342428a140df757569f1a22a53d8a384c87a84c9f4575328ee4615bc6ffc67a8f0e8ab88161150294d56bd75bdb037c9a6a229201416e387bd7e70679"
         }
       ]
     },
@@ -4058,12 +3734,12 @@
     {
       "type": "library",
       "name": "tinyclip",
-      "version": "0.1.15",
-      "purl": "pkg:npm/tinyclip@0.1.15",
+      "version": "1.0.3",
+      "purl": "pkg:npm/tinyclip@1.0.3",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "ba8df769b1fe032b34c58683caca01b78f781dbde1b04733329702d0cc0597bef7a5acce471e1f9af2a1725851d70a2751b07abefa51b2f54cc2785fa9e31cf8"
+          "content": "9d3bf6ada285333186e89269d25a4d0ec44f75f144e941e5bb6ad51235e8f2f931d594b72d6d82557a8868bbbcc5996efbab5b16cf55e7c41cfc99a4fc88bbc0"
         }
       ]
     },
@@ -4088,6 +3764,18 @@
         {
           "alg": "SHA-512",
           "content": "c1747f758a5ca8a99f5a911d66388a24ec023459dd0f40cc9eb5bf7188d51adb449017d581c2c51e836b963e3b9a339589cf72c8dbbae5a96c805e0d4324dada"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tinyps",
+      "version": "0.5.1",
+      "purl": "pkg:npm/tinyps@0.5.1",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "07a62489fe477e50b701d0e44b866cb7fda6b9855f797a15332f8aa2ba87f34b3fd71e2fba720e469372487ebcd57edf8e3f9d14cf4c0ca0fafc7b1c7236fced"
         }
       ]
     },
@@ -4214,36 +3902,24 @@
     {
       "type": "library",
       "name": "undici-types",
-      "version": "7.18.2",
-      "purl": "pkg:npm/undici-types@7.18.2",
+      "version": "7.24.6",
+      "purl": "pkg:npm/undici-types@7.24.6",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "02cb82cdf7c61c9c9b49a46b9abe5e1ebf359b0254de48f0e8cfaea6b5af09788d78df52386c10dc99fc8dbf26dd9ea2cd58249e7d51d054c21003f642b2d8ff"
-        }
-      ]
-    },
-    {
-      "type": "library",
-      "name": "undici-types",
-      "version": "8.3.0",
-      "purl": "pkg:npm/undici-types@8.3.0",
-      "hashes": [
-        {
-          "alg": "SHA-512",
-          "content": "8f7ef949c57ad1da26f9890f1487d32dc3a23f190dfdbb87cf91a86e32e18b116e00d68db370bd9781a6ad6a9e8e05d627b05b25c158a53114912d467bc6e965"
+          "content": "591356fac2608f9381378ff42691c5aadab38696e75741ae07e3a8cc0f6008bedaf7ddd2994fb5241642ccb37162c6cc7c87832fe953b29843e6337937e9f4ce"
         }
       ]
     },
     {
       "type": "library",
       "name": "undici",
-      "version": "8.10.2",
-      "purl": "pkg:npm/undici@8.10.2",
+      "version": "8.12.3",
+      "purl": "pkg:npm/undici@8.12.3",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "ff2e3f6c7f58354e618bd348ae93aebc65c5731ae3dc232b57efc0629a300184e91e7f205ff5cf163372efae853e8618d2689085d5bdefb24558a18d841770c9"
+          "content": "f9f7677544f004ff3a7158e2853a76d61647a3b77aa23d5cff8ed73c0de52fc98cd171ecf82e0491c8e6811b059c59367ff50e3460f2f48b4122d997b0b3901f"
         }
       ]
     },
@@ -4262,12 +3938,12 @@
     {
       "type": "library",
       "name": "unifont",
-      "version": "0.7.5",
-      "purl": "pkg:npm/unifont@0.7.5",
+      "version": "1.0.3",
+      "purl": "pkg:npm/unifont@1.0.3",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "50b7bf0acf9922cabe75c1687cd921aa27a50ab5099dbe66afe61ce0404cd9594bfba39947af9c8ed236993d5b26f441ad59dca8701b2d447198f2dc097cd632"
+          "content": "5c69c4c23e6c59d09b8815f4d6658b4819dc4b4c8c4639cbca06aedc87dd3a57e331a70d210bd3196e151fba5606afa019602b7d279ffc27a7b0c2e332622bfc"
         }
       ]
     },
@@ -4334,12 +4010,12 @@
     {
       "type": "library",
       "name": "unstorage",
-      "version": "1.17.5",
-      "purl": "pkg:npm/unstorage@1.17.5",
+      "version": "1.17.6",
+      "purl": "pkg:npm/unstorage@1.17.6",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "d22de2aaf45fc76f6190d9ed1f242f253a5fe56f5d43d65a752a1153cfb1565855b53ee3017e7b7dacd83bd107bdc4427c10b28b9611c9aed70833ac6d38243e"
+          "content": "8232ad7269ff2b066e2593bda36b1cd1eb004278664f0d0bbe20c7c1ebd35db24c62cd1d453a7c6441165c7534bd3a736cdddc034cb19537b25ecb0ca77cc3ab"
         }
       ]
     },
@@ -4352,6 +4028,18 @@
         {
           "alg": "SHA-512",
           "content": "04d19b58b7ddd1e50f69b8645d4566d23f2ebaf444c93879a2f45afddca8c3f06a01b649c82fb97d4f88cd03b39802b362a6110084a8461750af778867f3d7aa"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "verkit",
+      "version": "0.5.0",
+      "purl": "pkg:npm/verkit@0.5.0",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "bb827586be98f82fe18addf81b02f77887147f7c27813f139585232bbb64d23c7274a2c0ab7b18be27e37530c0e94dca08a45c40240319ffecae3c5f645de5ee"
         }
       ]
     },
@@ -4382,12 +4070,12 @@
     {
       "type": "library",
       "name": "vite",
-      "version": "8.2.2",
-      "purl": "pkg:npm/vite@8.2.2",
+      "version": "8.3.5",
+      "purl": "pkg:npm/vite@8.3.5",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "70528b57f3d18005252119b95a332327cea3adfb73a6a7201fe52cf834bc988dc20cd887df45a1af3f2e1cbdfe30e2cf020a9b30102a59d00702984e00cfb3fd"
+          "content": "cf56298e2789f60d1e6d3990a4b06ffe8abd13717d10894e7beecb6a15bc4ab1372d3886dee7414545d03a56173fd6fe202daada9847795c63f711a5c37e0e11"
         }
       ]
     },
@@ -4550,12 +4238,12 @@
     {
       "type": "library",
       "name": "vscode-languageserver-textdocument",
-      "version": "1.0.14",
-      "purl": "pkg:npm/vscode-languageserver-textdocument@1.0.14",
+      "version": "1.0.16",
+      "purl": "pkg:npm/vscode-languageserver-textdocument@1.0.16",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "110caa24c8b9e761386537f8ea2cd0e058fa5eabaac42c924772796520f54a2b0c7fa45fa5e3961f118113c1abe95d3fdc61c819d0330e7f05f3ed674c60a7a1"
+          "content": "a9e344b8e8bd6b7aa4a917fb19f7b3d962f65709414cb08d7a41c118ef64c4f554a7d5ee635e727d327d8f0bcec0a2342363215147d9abde4d4a9f8b2b508b42"
         }
       ]
     },
@@ -4669,6 +4357,18 @@
     },
     {
       "type": "library",
+      "name": "yaml",
+      "version": "2.9.1",
+      "purl": "pkg:npm/yaml@2.9.1",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "dcdc4df3eefc39dcdb4fb0bf5a31acc9f3c0b4968ddc5343b16c6fed8ee6703b13fe83a6816f01a72410145067bd91378fd63649dcf550b14b7b32fb11bdb217"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "yargs-parser",
       "version": "22.0.0",
       "purl": "pkg:npm/yargs-parser@22.0.0",
@@ -4682,12 +4382,12 @@
     {
       "type": "library",
       "name": "yargs",
-      "version": "18.1.0",
-      "purl": "pkg:npm/yargs@18.1.0",
+      "version": "18.2.0",
+      "purl": "pkg:npm/yargs@18.2.0",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "dab02044abb9e15b0792a234fed6249a5b865c70f8296ef2668c9cbaa0d0d7940e4e77365557f2d2737fd5e3219d02ced3403e770b4adb4c6e0a7735606794ca"
+          "content": "f4ea4a38b79aa0d15e704a7b3fa8986f3cdeff90aa5a81fb37748cb3feb2d571789ccbc532ca44199cc9eae162f4c990c17872cea62848428ededbc0dd9fe8db"
         }
       ]
     },
@@ -4706,12 +4406,12 @@
     {
       "type": "library",
       "name": "zod",
-      "version": "4.5.4",
-      "purl": "pkg:npm/zod@4.5.4",
+      "version": "4.6.7",
+      "purl": "pkg:npm/zod@4.6.7",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "b02f79b53e621c71fd82da63e80f35921f8d11a44050537eaa550f0d46d17ce32f35fe50081aac6f75a0be7a55b4ae58fb851f03a2aab9fa2db93bcc1a24e5b0"
+          "content": "83c5b60f6914e9af2e9ed734e777d7d6e5412b333bcaa0315bfdf3c24f37fba472176f9228eb95f9cd30043854c335753da19aa66647fab99c5333dffb7086c2"
         }
       ]
     },
