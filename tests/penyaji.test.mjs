@@ -54,14 +54,29 @@ import {
 } from "../server/penyaji.mjs";
 import { NAMA_BERKAS_FEED } from "../src/lib/feed.ts";
 
-/** Menyalakan `buatServer` pada port ephemeral, memanggilnya, lalu menutupnya. */
+/**
+ * Menyalakan `buatServer` pada port ephemeral, memanggilnya, lalu menutupnya.
+ *
+ * Badan respons dibaca habis SEBELUM server ditutup, lalu dikembalikan sebagai
+ * `Response` yang sudah di-buffer. `server.close()` menunggu setiap koneksi
+ * selesai; badan yang belum dibaca menahan koneksinya terbuka, dan tes yang
+ * hanya memeriksa header (mis. gerbang `Vary`) menggantung sampai batas 5 detik.
+ * Sejak `compression` 1.8.2 itu terjadi pada sebagian besar run, bukan sesekali.
+ */
 async function lewatServer(handler, jalur, init = {}) {
   const server = buatServer(handler);
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   const { port } = server.address();
 
   try {
-    return await fetch(`http://127.0.0.1:${port}${jalur}`, init);
+    const res = await fetch(`http://127.0.0.1:${port}${jalur}`, init);
+    const badan = await res.arrayBuffer();
+    const tanpaBadan = [101, 204, 205, 304].includes(res.status);
+    return new Response(tanpaBadan ? null : badan, {
+      status: res.status,
+      statusText: res.statusText,
+      headers: res.headers
+    });
   } finally {
     await new Promise((resolve) => server.close(resolve));
   }
