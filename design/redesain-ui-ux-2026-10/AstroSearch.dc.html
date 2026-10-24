@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>awcms-astro · Pencarian</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&amp;display=swap">
+<style>
+@font-face{font-family:"Public Sans";font-style:normal;font-weight:300 800;font-display:swap;src:url("assets/fonts/public-sans-latin.woff2") format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Public Sans";font-style:normal;font-weight:300 800;font-display:swap;src:url("assets/fonts/public-sans-latin-ext.woff2") format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+body{margin:0}
+a{color:#0369a1}a:hover{color:#075985}
+.lk{text-decoration:none;color:#0f172a}.lk:hover{color:#0369a1;text-decoration:underline;text-underline-offset:3px}
+.more:hover{background:#f0f9ff}
+mark{background:#fef3c7;color:inherit;padding:0 2px;border-radius:3px}
+</style>
+</helmet>
+<div style="background: #ffffff; color: #0f172a; font-family: 'Public Sans', system-ui, sans-serif; font-size: 16px; line-height: 1.6">
+<header style="border-bottom: 1px solid #e2e8f0">
+<div style="max-width: 1200px; margin: 0 auto; padding: 16px clamp(16px, 4vw, 32px); display: flex; flex-wrap: wrap; align-items: center; gap: 16px 32px">
+<a href="AstroHome.dc.html" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: #0f172a"><img src="../../public/favicon.svg" alt="" width="44" height="44" style="width: 44px; height: 44px; flex: none"><span style="display: flex; flex-direction: column; line-height: 1.25"><span style="font-family: 'Source Serif 4', Georgia, serif; font-weight: 700; font-size: 20px">Info Layanan Publik</span><span style="font-size: 13px; color: #475569">Informasi publik yang bisa dipercaya</span></span></a>
+<nav aria-label="Navigasi utama" style="display: flex; flex-wrap: wrap; gap: 4px 24px; flex: 1; font-weight: 600; font-size: 15px">
+<a href="#" style="color: #0f172a; text-decoration: none; padding: 8px 0">Panduan</a>
+<a href="#" style="color: #0f172a; text-decoration: none; padding: 8px 0">Layanan</a>
+<a href="AstroArchive.dc.html" style="color: #0f172a; text-decoration: none; padding: 8px 0">Informasi</a>
+<a href="#" style="color: #0f172a; text-decoration: none; padding: 8px 0">Peta situs</a>
+</nav>
+</div>
+</header>
+
+<main>
+<div style="background: #f4f7fa; border-bottom: 1px solid #e2e8f0">
+<div style="max-width: 1200px; margin: 0 auto; padding: 32px clamp(16px, 4vw, 32px) 28px; display: flex; flex-direction: column; gap: 14px">
+<h1 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 40px; font-weight: 700">Pencarian</h1>
+<form role="search" style="display: flex; flex-direction: column; gap: 6px; max-width: 760px">
+<label for="qs" style="font-weight: 600; font-size: 15px">Kata kunci</label>
+<div style="display: flex; gap: 8px; flex-wrap: wrap"><input id="qs" type="search" value="{{q}}" onChange="{{onQ}}" placeholder="Ketik kata kunci…" style="flex: 1 1 260px; min-width: 0; height: 54px; padding: 0 16px; border: 1.5px solid #64748b; border-radius: 12px; font: inherit; font-size: 18px; background: #ffffff"><button type="button" style="height: 54px; padding: 0 24px; border: 0; border-radius: 12px; background: #0369a1; color: #ffffff; font: inherit; font-weight: 700; cursor: pointer">Cari</button></div>
+</form>
+<div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 14px">
+<sc-if value="{{hasActive}}" hint-placeholder-val="{{ false }}"><span style="color: #475569">Disaring:</span></sc-if>
+<sc-for list="{{activeChips}}" as="c" hint-placeholder-count="2"><button type="button" onClick="{{c.off}}" style="display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid #0369a1; background: #e0f2fe; color: #075985; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer">{{c.label}} <span aria-hidden="true">×</span><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0)">hapus saringan</span></button></sc-for>
+</div>
+</div>
+</div>
+
+<div style="max-width: 1200px; margin: 0 auto; padding: 32px clamp(16px, 4vw, 32px) 56px; display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start">
+<aside aria-label="Saring hasil" style="flex: 1 1 240px; min-width: 0; display: flex; flex-direction: column; gap: 22px">
+<sc-for list="{{facets}}" as="f" hint-placeholder-count="5">
+<fieldset style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px">
+<legend style="font-weight: 700; font-size: 15px; padding: 0 0 6px">{{f.label}}</legend>
+<sc-for list="{{f.opts}}" as="o" hint-placeholder-count="3">
+<label style="display: flex; align-items: center; gap: 10px; min-height: 36px; font-size: 15px; cursor: pointer"><input type="checkbox" checked="{{o.on}}" onChange="{{o.toggle}}" style="margin: 0; width: 18px; height: 18px; accent-color: #0369a1"><span style="flex: 1">{{o.label}}</span><span style="font-size: 13px; color: #475569">{{o.count}}</span></label>
+</sc-for>
+</fieldset>
+</sc-for>
+</aside>
+
+<section aria-label="Hasil pencarian" style="flex: 999 1 620px; min-width: 0; display: flex; flex-direction: column">
+<p role="status" aria-live="polite" style="margin: 0 0 4px; font-size: 15px; color: #334155">{{statusText}}</p>
+<sc-if value="{{empty}}" hint-placeholder-val="{{ false }}">
+<div style="padding: 28px 0; display: flex; flex-direction: column; gap: 8px"><strong style="font-size: 18px">Tidak ada artikel yang cocok.</strong><span style="color: #475569">Coba kata lain, kurangi saringan, atau telusuri lewat <a href="#">kategori dan tag</a>.</span></div>
+</sc-if>
+<ol style="list-style: none; margin: 0; padding: 0">
+<sc-for list="{{shown}}" as="r" hint-placeholder-count="10">
+<li style="padding: 18px 0; border-bottom: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 13px; color: #475569"><span style="font-weight: 600; color: {{r.kc}}">{{r.kanal}}</span> · {{r.jenis}} · {{r.date}}</span>
+<a href="AstroArticle.dc.html" class="lk" style="font-family: 'Source Serif 4', Georgia, serif; font-size: 21px; font-weight: 600; line-height: 1.3">{{r.t1}}<mark>{{r.t2}}</mark>{{r.t3}}</a>
+<p style="margin: 0; color: #334155; font-size: 15px">{{r.x}}</p>
+<span style="font-size: 13px; color: #475569">{{r.topik}} · {{r.instansi}} · {{r.wilayah}}</span>
+</li>
+</sc-for>
+</ol>
+<sc-if value="{{canMore}}" hint-placeholder-val="{{ true }}">
+<button type="button" class="more" onClick="{{more}}" style="align-self: center; margin-top: 24px; height: 48px; padding: 0 24px; border-radius: 10px; border: 1.5px solid #0369a1; background: #ffffff; color: #0369a1; font: inherit; font-weight: 700; cursor: pointer">Muat lebih banyak</button>
+</sc-if>
+<p style="margin: 24px 0 0; padding: 14px 16px; border-radius: 10px; background: #f1f5f9; font-size: 14px; color: #334155">Pencarian membutuhkan JavaScript. Tanpa JavaScript, halaman ini menampilkan arahan ke kategori dan tag — semua arsip tetap bisa dijelajahi lewat paging bernomor.</p>
+</section>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2000}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { q: 'SIM', shown: 20, sel: {} };
+  }
+  renderVals() {
+    const KC = { Panduan: '#0369a1', Layanan: '#047857', Informasi: '#9a3412' };
+    const BASE = [
+      ['Perpanjangan SIM A dan C: syarat, langkah, dan biaya', 'Layanan', 'Apa yang perlu dibawa, urutan di loket, dan rincian biaya beserta dasar hukumnya.'],
+      ['Menyiapkan dokumen SIM sebelum datang ke loket', 'Panduan', 'Daftar periksa dokumen agar berkas tidak dikembalikan.'],
+      ['SIM hilang atau rusak: cara mengurus penggantinya', 'Layanan', 'Langkah, syarat surat keterangan, dan perkiraan waktu.'],
+      ['Jadwal layanan SIM keliling bulan ini', 'Informasi', 'Lokasi dan jam layanan per kecamatan.'],
+      ['Tes kesehatan dan psikologi untuk SIM', 'Panduan', 'Di mana tes dilakukan dan apa yang perlu disiapkan.'],
+      ['Waspada calo pengurusan SIM', 'Informasi', 'Ciri tawaran tidak resmi dan cara melapor.'],
+      ['Golongan SIM dan kendaraan yang boleh dikemudikan', 'Panduan', 'Perbedaan tiap golongan secara ringkas.'],
+      ['Pembayaran biaya penerbitan SIM lewat kanal resmi', 'Panduan', 'Kanal pembayaran yang sah dan bukti yang harus disimpan.'],
+      ['Balik nama kendaraan bermotor', 'Layanan', 'Syarat, langkah, dan rincian biaya balik nama.'],
+      ['Jam layanan berubah selama libur nasional', 'Informasi', 'Penyesuaian jam buka loket.']
+    ];
+    const TOP = ['Surat izin mengemudi', 'Dokumen kendaraan', 'Pembayaran'];
+    const INS = ['Unit layanan SIM', 'Unit registrasi kendaraan', 'Bapenda'];
+    const WIL = ['Kota', 'Kabupaten A', 'Kabupaten B'];
+    const DATES = ['20 Okt 2026', '12 Okt 2026', '30 Sep 2026', '22 Sep 2026', '11 Sep 2026', '29 Agu 2026'];
+    const all = [];
+    for (let i = 0; i < 52; i++) {
+      const b = BASE[i % BASE.length];
+      const suffix = i < BASE.length ? '' : (i < 30 ? ' — pembaruan ' + (i - 9) : ' (versi ringkas ' + (i - 29) + ')');
+      all.push({ id: i, t: b[0] + suffix, kanal: b[1], x: b[2], jenis: i % 6 === 5 ? 'Halaman' : 'Artikel', topik: TOP[i % 3], instansi: INS[(i + 1) % 3], wilayah: WIL[(i * 2) % 3], date: DATES[i % DATES.length] });
+    }
+    const s = this.state;
+    const q = s.q.trim().toLowerCase();
+    const FKEYS = [['jenis', 'Jenis konten'], ['kanal', 'Kanal'], ['topik', 'Topik'], ['instansi', 'Instansi'], ['wilayah', 'Wilayah']];
+    const passFacets = (r, skip) => FKEYS.every(([k]) => { if (k === skip) return true; const on = Object.keys(s.sel).filter((key) => key.indexOf(k + ':') === 0 && s.sel[key]); return on.length === 0 || on.indexOf(k + ':' + r[k]) >= 0; });
+    const matchQ = (r) => !q || (r.t + ' ' + r.x).toLowerCase().indexOf(q) >= 0;
+    const matched = all.filter((r) => matchQ(r) && passFacets(r, null));
+    const toggle = (key) => () => { const sel = Object.assign({}, this.state.sel); sel[key] = !sel[key]; this.setState({ sel, shown: 20 }); };
+    const facets = FKEYS.map(([k, label]) => {
+      const pool = all.filter((r) => matchQ(r) && passFacets(r, k));
+      const vals = Array.from(new Set(all.map((r) => r[k])));
+      return { label, opts: vals.map((v) => ({ label: v, count: String(pool.filter((r) => r[k] === v).length), on: !!s.sel[k + ':' + v], toggle: toggle(k + ':' + v) })) };
+    });
+    const hl = (t) => { const i = q ? t.toLowerCase().indexOf(q) : -1; return i < 0 ? { t1: t, t2: '', t3: '' } : { t1: t.slice(0, i), t2: t.slice(i, i + q.length), t3: t.slice(i + q.length) }; };
+    const shown = matched.slice(0, s.shown).map((r) => Object.assign({}, r, hl(r.t), { kc: KC[r.kanal] }));
+    const activeKeys = Object.keys(s.sel).filter((k) => s.sel[k]);
+    return {
+      q: s.q,
+      onQ: (e) => this.setState({ q: e.target.value, shown: 20 }),
+      facets,
+      shown,
+      empty: q.length > 0 && matched.length === 0,
+      statusText: !q ? 'Ketik kata kunci untuk mulai mencari.' : (matched.length === 0 ? '' : shown.length + ' hasil ditampilkan dari ' + matched.length + ' untuk "' + s.q.trim() + '".'),
+      canMore: shown.length < matched.length,
+      more: () => this.setState({ shown: this.state.shown + 20 }),
+      hasActive: activeKeys.length > 0,
+      activeChips: activeKeys.map((k) => ({ label: k.split(':')[1], off: toggle(k) }))
+    };
+  }
+}
+</script>
+</body>
+</html>

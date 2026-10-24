@@ -30,6 +30,15 @@ layout.
 | [`Main.dc.html`](Main.dc.html)                 | 00 · Analysis of awcms, awcms-one, omes and awcms-astro                                                                             | no                                |
 | [`AstroHome.dc.html`](AstroHome.dc.html)       | Home: search in the hero, popular topics, latest panel, channel cards, highlights, principles, optional newsletter, footer          | no                                |
 | [`AstroArticle.dc.html`](AstroArticle.dc.html) | Service page: at-a-glance card, table of contents, requirements checklist, numbered steps, fee table with legal basis, FAQ, sources | native checkboxes and `<details>` |
+| [`PolaData.dc.html`](PolaData.dc.html)         | Data-page pattern shared by the family, including the two public variants below                                                     | no                                |
+| [`AstroSpec.dc.html`](AstroSpec.dc.html)       | Per-route spec of the public site: search, filters/facets, order and paging for every route                                         | search, filter, paging            |
+| [`AstroArchive.dc.html`](AstroArchive.dc.html) | Channel archive page 2 of 9: in-channel search, category chips, numbered paging at 12 per page (`/informasi/halaman/2/`), RSS       | no (works without JavaScript)     |
+| [`AstroSearch.dc.html`](AstroSearch.dc.html)   | Search: keyword, facets (content type, channel, topic, institution, region) with counts, highlighted matches, "load more" by 20     | search, facets, load more         |
+
+[`spec-astro.json`](spec-astro.json) is the data behind the spec screen. The
+archive follows `src/lib/paginasi.ts` (page 1 stays at `/{tab}/`, every page
+canonical to itself, `SITE_POSTS_PER_PAGE` default 12); the search page uses the
+strings and facets already in `src/locales/id/messages.po`.
 
 ## Assets used
 
