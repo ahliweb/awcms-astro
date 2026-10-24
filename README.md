@@ -418,3 +418,7 @@ documents still awaiting one. This document's mirror is
 ## Licence
 
 [MIT](LICENSE).
+
+## Public CRM lead and consent UX
+
+[**Astro public CRM lead/consent UX v1.0**](docs/crm-public-ux-contract.md) maps existing public Astro navigation/SEO and **proposed** lead forms, channel-specific opt-in, notification settings and approved Bun realtime client state. It neither sends provider campaigns nor adds system-admin routes. [Issue #127](https://github.com/ahliweb/awcms-astro/issues/127).
