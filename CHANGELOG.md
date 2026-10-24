@@ -8,6 +8,176 @@ Berkas ini diisi `bun run release` dengan melipat seluruh changeset di [`.change
 
 Sejak [ADR-0040](docs/adr/0040-changeset-menyatakan-bump-semver.md) setiap changeset menyatakan `bump: major | minor | patch`, dan versi berikutnya adalah bump TERBESAR di antara yang menunggu — jadi besar sebuah rilis adalah akibat dari isinya, bukan keputusan terpisah yang diambil saat merilis.
 
+## [0.6.1] — 2026-10-24
+
+> **Build integrasi tidak berjalan pada rilis ini.** `AWCMS_API_URL` kosong,
+> yang normal untuk repo template ini sendiri — jadi `bun run build`,
+> `bun run audit:konten`, dan lapis penyaji/CSP di `bun test` DILEWATI, bukan
+> lulus. Sebuah situs yang dibangun dari template ini mengisi variabel itu dan
+> menjalankan ketiganya.
+
+### GitHub Releases become part of the release convention, with a checker
+
+ADR-0031's rejected-alternatives list claimed "this repo's
+releases are annotated git tags, not GitHub Release objects" — and the
+v0.5.x `CHANGELOG.md` entry absorbing `awcms` ADR-0119 restated the same
+claim. It was false, and had been for a while: seven GitHub Releases already
+existed (`v0.2.0` through `v0.6.0`), created by hand, and once drifted three
+versions behind the tags with every other gate green, because nothing in
+this repo read `.changesets/`, `git ls-remote`, or the GitHub Releases API
+for anything Release-shaped. Per ADR-0030 ("a written rule gets its
+checker"), the repo owner decided GitHub Releases are this repo's
+convention rather than a human habit, and the convention now brings its
+checker: [ADR-0052](docs/adr/0052-github-releases-are-part-of-this-repos-release-convention.md).
+
+- `scripts/rilis.mjs` now prints a ready `gh release create --verify-tag
+  --latest --title "…" --notes-file <path>` command as the next step after
+  `git push`, reading release notes from a temp file it writes alongside the
+  folded `CHANGELOG.md` entry. It still never pushes and never runs the
+  command itself.
+- `scripts/audit-rilis.mjs` gains a fourth check: every `vX.Y.Z` tag on the
+  remote must have a matching GitHub Release, compared via
+  `scripts/lib/tag-rilis.mjs`'s pure `tagRilisSah`/`tagTanpaRilis` (16 new
+  tests, `tests/tag-rilis.test.mjs`). It fails closed on any git or network
+  trouble — a note, never a false pass and never a violation — and carries
+  no floor, since all seven existing tags already comply.
+- This changes no public surface of a derived site, so it is a `patch`; it
+  is filed `struktur` because it changes this repo's own release tooling and
+  its documented convention, not an article, section, or piece of prose a
+  reader would notice.
+
+Documents updated in the same change: `AGENTS.md`/`.id.md` (Definition of
+Done gains an `audit:rilis` line naming the Release check),
+`docs/awcms-astro/standar-teknis.md`/`.id.md` (the gates table and the
+Versioning section now describe the real four-part `audit:rilis` and the
+real release flow), `.claude/skills/awcms-astro-gerbang/SKILL.md`/`.id.md`
+(the `audit:rilis` row, and the gate-file count moving 44 → 45),
+`docs/awcms-astro/checklist-repo-baru.md`/`.id.md` and `README.md`/`.id.md`
+(same count), `docs/adr/README.md`/`.id.md` (the new ADR-0052 row), and a
+one-line pointer at the now-superseded bullet of ADR-0031 itself — its SBOM
+decision is untouched and stays `Accepted`.
+
+### Bun moves from 1.4.2 to 1.4.4 in every place that pins it
+
+The Bun pin is one value written in five places (ADR-0015, gated by
+`tests/versi-toolchain.test.mjs`), and a stale pin never fails anything: it
+only makes local runs, CI and the production image disagree about the runtime.
+Bun 1.4.4 was the current release, and 1.4.2 predated the two patch releases
+that followed it.
+
+- `packageManager` in `package.json` and both `bun-version` entries in
+  `.github/workflows/ci.yml` are `1.4.4`.
+- Both `Dockerfile` stages are `oven/bun:1.4.4-alpine@sha256:4cf82f56...`. The
+  digest is the manifest-list (index) digest Docker Hub reports for the
+  `1.4.4-alpine` tag, read from the registry API rather than copied from an
+  issue: when a tag and a digest are both present the digest wins, so changing
+  only the tag would announce 1.4.4 and build 1.4.2.
+- `@types/bun` is raised to `^1.4.4` to follow the runtime it types.
+- The Bun row of the version table in `docs/awcms-astro/standar-teknis.md`
+  and its `.id.md` mirror reports `1.4.4`.
+- `bun.lock` was regenerated in full with Bun 1.4.4, as the repo rule requires,
+  and the diff is more than a version bump. This Bun records a `libc` field
+  (`glibc`/`musl`) on native optional packages and `hasInstallScript` on
+  `fsevents`, and it resolves the `*` range of `bun-types` differently: the
+  hoisted `@types/node` is now `24.19.2` (the version `sitemap` already
+  required) instead of `26.6.5`, with `undici-types` and the
+  `vscode-languageserver` helpers re-hoisted to match. No direct dependency
+  and no advisory is affected (`bun audit` stays at zero).
+- Historical prose (earlier `CHANGELOG.md` entries, the account of the 1.3.14
+  to 1.4.2 lockfile-format trap in `docs/deploy-coolify.md`) is left as written:
+  it describes what happened on those dates.
+
+### `github/codeql-action` pins move from v4.37.9 to v4.38.2
+
+The scheduled CodeQL workflow pins `github/codeql-action/init` and
+`github/codeql-action/analyze` to a commit SHA with a `# vX.Y.Z` comment that
+Dependabot reads (ADR-0030). Dependabot proposed the bump as two separate pull
+requests, one per action (#120 and #121), but the two actions are one product
+released together, and a workflow that initialises CodeQL at one version and
+analyses at another is a mismatch no gate here would notice. They move in a
+single commit.
+
+- Both pins now point at `2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2`, the commit
+  the `v4.38.2` tag peels to (checked with `git ls-remote` on the action's
+  repository, not only copied from the Dependabot diff).
+- No change to the CodeQL configuration, the languages, or the paths excluded.
+
+### Dependencies raised to clear 29 advisories, and `bun audit` is zero again
+
+`bun audit --audit-level=low` was red on `main` and on every PR, so nothing
+could be merged on a green check. Twenty-nine advisories across eleven packages
+were open, eleven of them high. The Dependabot group PR that would have raised
+the direct pins (#122) had gone stale and could not land as it stood: its
+version bumps were not mirrored into the `standar-teknis` version table, which
+`tests/versi-toolchain.test.mjs` compares against `package.json`.
+
+- Direct ranges raised: `astro` `^7.2.9` to `^7.4.2`, `@astrojs/node`
+  `^11.1.4` to `^11.1.9`, `@astrojs/sitemap` `^3.7.3` to `^3.7.4`,
+  `@astrojs/check` `^0.9.10` to `^0.9.12`, `compression` `^1.8.1` to `^1.8.2`
+  (GHSA-vc2v-76pw-4v95, a denial of service through a memory leak when the
+  response closes early, which the production server's Brotli negotiation
+  runs in), `@types/bun` `^1.4.0` to `^1.4.2`.
+- `astro` itself carries GHSA-98hj-9722-w3j8 (XSS through unescaped
+  `<script>`/`<style>` content in JSX/MDX rendering, fixed in 7.3.2) and
+  GHSA-mpr7-6m5w-76rw (CSS injection in View Transitions, fixed after 7.3.2).
+  Neither is reachable in this template, which uses neither MDX nor View
+  Transitions, but the audit gate does not distinguish reachable from present.
+- Transitive advisories cleared by the same regeneration: `devalue` (seven
+  GHSAs, resolves to 6.0.3 through `astro`'s own range), `sharp`,
+  `http-cache-semantics`, `source-map-js`, `undici`, `vite`, `zod` and
+  `smol-toml`, all of them moved by the new `astro` range with no override.
+- `overrides."fast-uri"` raised from `^3.1.7` to `^3.1.9`, the repo's documented
+  path for an advisory in the `@astrojs/check` chain that no package in the
+  chain can be raised to close. It stays on 3.x for the reason the earlier
+  entries gave: a major jump on a URI parser is a new risk for a problem 3.x
+  already solves. It clears five `fast-uri` advisories (one fixed in 3.1.8, four in 3.1.9).
+- `bun.lock` was regenerated in full (`rm -rf node_modules bun.lock && bun
+  install`) rather than edited, per the repo rule.
+- `docs/awcms-astro/standar-teknis.md` and its `.id.md` mirror now report
+  `astro` `^7.4.2` and `@astrojs/node` `^11.1.9`, which is what
+  `tests/versi-toolchain.test.mjs` demands.
+- `typescript` stays on `^6.0.3` (ADR-0037): `@astrojs/check@0.9.12` still
+  declares `typescript: ^5.0.0 || ^6.0.0`.
+- `astro` 7.4 adds only opt-in features (`--timings`, font provider callbacks,
+  `experimental.redirectPage`, parallel prerendering) and, in 7.4.2, raises the
+  minimum Node.js it supports, which this Bun-only repo does not use. Nothing in
+  its notes touches static output or the CSP hashing this repo relies on.
+- `tests/penyaji.test.mjs`: `lewatServer` now reads the response body before
+  closing its server and returns a buffered `Response`. `server.close()` waits
+  for every connection, and a body left unread kept one open, so the
+  header-only tests (the `Vary` gate, the compression check) hung to the 5 s
+  limit. On `main` that was an occasional flake; with `compression` 1.8.2 it
+  failed most runs, locally and in CI. No assertion changed.
+
+### `awcms` ADR-0125 through ADR-0146 get their verdicts
+
+`bun run audit:serapan` went red on every PR and on `main` because
+`ahliweb/awcms` published twenty-two decisions (ADR-0125, 29 September 2026,
+through ADR-0146, 20 October 2026) that nothing in this repo had read. The
+freshness check is the only one that can catch "`awcms` shipped a decision and
+nobody looked", and it did.
+
+All twenty-two were read in full against `awcms` at `5e29084`, and all are
+`diperiksa`: none changes the static build path, and the verdicts say why.
+
+- **The consumer contract is untouched.** The frozen consumer-contract fixture
+  in `awcms` (the one ADR-0065 there guards) has no commit since ADR-0125, and
+  none of the twenty-two touches a path this repo calls.
+- **Two were checked against this repo's code rather than assumed.** `awcms`
+  ADR-0129 and ADR-0145 change `Idempotency-Key` handling; nothing in `src/`, `server/`
+  or `scripts/` sends that header, and the anonymous newsletter POSTs carry
+  `content-type` only.
+- **Two name this repo and are recorded with a trigger to re-read.** ADR-0127
+  lists `awcms-astro` as a possible tax "consumer adapter" (this template
+  computes no tax), and ADR-0146 is still **Proposed** and says Astro keeps the
+  public web and the USER admin surface here, with no Lynx workspace without a
+  separate ADR.
+- The Indonesian mirror's stated ledger peak moves from ADR-0124 to ADR-0146,
+  and a stray blank line that split the ledger table in two after the ADR-0116
+  row (an `awcms` decision) is removed so the rows render as one table.
+
+`belum` stays at zero; the ledger peak is now `awcms` ADR-0146.
+
 ## [0.6.0] — 2026-09-24
 
 > **Build integrasi tidak berjalan pada rilis ini.** `AWCMS_API_URL` kosong,
