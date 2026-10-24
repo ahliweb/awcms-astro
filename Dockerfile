@@ -47,7 +47,7 @@
 #
 # Menaikkan versi Bun berarti menaikkan tag DAN digest bersama. Digest baru:
 #   docker manifest inspect oven/bun:<versi>-alpine   (atau registry API)
-FROM oven/bun:1.4.2-alpine@sha256:d888c0ae6c86d7866ff10c5aafdd9077b36aee6455b33dd270fb93c0dd5cef6f AS build
+FROM oven/bun:1.4.4-alpine@sha256:4cf82f5686b196504fe119db3fcd9185b191f82ece82c40680e597228ec6070a AS build
 WORKDIR /app
 
 # Lapisan dependency dipisah dari lapisan sumber supaya perubahan konten atau
@@ -135,7 +135,7 @@ RUN bun run audit:konten
 # Permissions-Policy sejak ADR-0019 — dan kompresi ikut pindah ke
 # `server/penyaji.mjs` dan dijaga
 # `tests/penyaji.test.mjs`.
-FROM oven/bun:1.4.2-alpine@sha256:d888c0ae6c86d7866ff10c5aafdd9077b36aee6455b33dd270fb93c0dd5cef6f AS runtime
+FROM oven/bun:1.4.4-alpine@sha256:4cf82f5686b196504fe119db3fcd9185b191f82ece82c40680e597228ec6070a AS runtime
 WORKDIR /app
 
 ENV NODE_ENV=production \
