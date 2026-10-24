@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:6c40cd96e5dce7486666b2f218f1fd3619b92c21cc1da3221bbab856f8270c03 -->
+<!-- i18n-source-hash: sha256:629fba8ff7fedfd0cde990d96658f1735570943fe7023ae88b6b7f9a04277a57 -->
 
 # awcms-astro
 
@@ -423,3 +423,7 @@ dokumen yang masih menunggu cerminnya. Sumber berkas ini
 ## Batas klien real-time Bun
 
 [Kontrak klien real-time Bun-only](docs/bun-realtime-client-boundary.id.md) masih berupa **dokumen usulan**, bukan fitur SSE/WebSocket yang sudah aktif. Antrean provider dan runtime Bun tetap milik AWCMS; Astro USER admin hanya mengonsumsi status yang diizinkan. [Issue #123](https://github.com/ahliweb/awcms-astro/issues/123), upstream [AWCMS #1168](https://github.com/ahliweb/awcms/issues/1168).
+
+## UI/UX lead dan consent publik
+
+[**UX publik Astro untuk CRM dan consent v1.0**](docs/crm-public-ux-contract.id.md) menjelaskan halaman publik Astro/SEO yang sudah ada dan **rencana** form lead, opt-in per kanal, preferensi notifikasi serta status klien realtime Bun. Tidak menambahkan pengirim campaign atau admin SYSTEM. [Issue #127](https://github.com/ahliweb/awcms-astro/issues/127).
