@@ -5,7 +5,7 @@
 > **Status: documentation/design only**. [Issue #123](https://github.com/ahliweb/awcms-astro/issues/123) · upstream realtime ADR [AWCMS #1168](https://github.com/ahliweb/awcms/issues/1168) · 24 October 2026. No new realtime route or WebSocket server is implied.
 
 ## What already exists
-This repository is a Bun-hosted Astro public site and optional USER admin/BFF. `package.json` currently pins **`bun@1.4.2`**, `bun run serve` executes the Bun-bundled server, and ADR-0050 rules out the **Node runtime** even if `node:*` modules or `@astrojs/node` running on Bun are present. `ahliweb/awcms` remains the backend/system of record and SYSTEM admin. This frontend has **no verified WebSocket server nor provider broadcast engine today**.
+This repository is a Bun-hosted Astro public site and optional USER admin/BFF. `package.json` currently pins **`bun@1.4.4`**, `bun run serve` executes the Bun-bundled server, and ADR-0050 rules out the **Node runtime** even if `node:*` modules or `@astrojs/node` running on Bun are present. `ahliweb/awcms` remains the backend/system of record and SYSTEM admin. This frontend has **no verified WebSocket server nor provider broadcast engine today**.
 
 ## Future interface contract
 

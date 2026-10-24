@@ -1,13 +1,13 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](bun-realtime-client-boundary.md)
 
-<!-- i18n-source-hash: sha256:2832e13646d4c1c49891e5e5b50340ea189ff0f798d625eb779c01c8cfe12aec -->
+<!-- i18n-source-hash: sha256:fd399b2135c2571717b55e8248dd4e0cfd159c651bda2640969508c1850c0a64 -->
 
 # Batas konsumen real-time Bun-only untuk AWCMS-Astro (usulan)
 
 > **Hanya rancangan dan dokumentasi.** [Issue #123](https://github.com/ahliweb/awcms-astro/issues/123) · ADR realtime upstream [AWCMS #1168](https://github.com/ahliweb/awcms/issues/1168) · 24 Oktober 2026. Tidak berarti rute realtime atau server WebSocket sudah ada.
 
 ## Kondisi yang sudah berjalan
-Repo ini merupakan situs publik Astro dan USER admin/BFF opsional dengan runtime Bun. `package.json` memin `bun@1.4.2`, `bun run serve` menjalankan server ter-bundle Bun, dan ADR-0050 melarang **runtime Node.js** meski kode kompatibel Bun memakai `node:*` atau `@astrojs/node` di atas Bun. `ahliweb/awcms` tetap menjadi backend sumber kebenaran serta SYSTEM admin. **Belum terverifikasi adanya server WebSocket atau engine broadcast provider di frontend ini.**
+Repo ini merupakan situs publik Astro dan USER admin/BFF opsional dengan runtime Bun. `package.json` memin `bun@1.4.4`, `bun run serve` menjalankan server ter-bundle Bun, dan ADR-0050 melarang **runtime Node.js** meski kode kompatibel Bun memakai `node:*` atau `@astrojs/node` di atas Bun. `ahliweb/awcms` tetap menjadi backend sumber kebenaran serta SYSTEM admin. **Belum terverifikasi adanya server WebSocket atau engine broadcast provider di frontend ini.**
 
 ## Kontrak integrasi ke depan
 
