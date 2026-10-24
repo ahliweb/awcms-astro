@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:881e3045b1996330f54bb44b47c38114d931e1789c80e1b070b0b34a70d6b1e2 -->
+<!-- i18n-source-hash: sha256:e3f537ab83a28c2d99e7aaf3a7bcb3a119527ab102fe4e7c6c0ff606857be98d -->
 
 # awcms-astro
 
@@ -419,3 +419,7 @@ dokumen yang masih menunggu cerminnya. Sumber berkas ini
 ## Lisensi
 
 [MIT](LICENSE).
+
+## UI/UX lead dan consent publik
+
+[**UX publik Astro untuk CRM dan consent v1.0**](docs/crm-public-ux-contract.id.md) menjelaskan halaman publik Astro/SEO yang sudah ada dan **rencana** form lead, opt-in per kanal, preferensi notifikasi serta status klien realtime Bun. Tidak menambahkan pengirim campaign atau admin SYSTEM. [Issue #127](https://github.com/ahliweb/awcms-astro/issues/127).
