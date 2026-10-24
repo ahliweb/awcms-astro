@@ -418,3 +418,7 @@ documents still awaiting one. This document's mirror is
 ## Licence
 
 [MIT](LICENSE).
+
+## Bun realtime client boundary
+
+The [Bun-only realtime client contract](docs/bun-realtime-client-boundary.md) is **proposed documentation**, not a shipped SSE/WebSocket feature. It preserves upstream AWCMS provider queues and Bun execution, optional Astro USER admin and approved status stream consumption. [Issue #123](https://github.com/ahliweb/awcms-astro/issues/123), upstream [AWCMS #1168](https://github.com/ahliweb/awcms/issues/1168).
