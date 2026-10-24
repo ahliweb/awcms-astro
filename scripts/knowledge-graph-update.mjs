@@ -119,6 +119,7 @@ console.log(`After:  ${formatCounts(after)}`);
 console.log(
   `knowledge:graph:update OK — graphify-out/graph.json rebuilt (code-only, 0 tokens). ` +
     `Review graphify-out/GRAPH_REPORT.md for any community still named by its hub filename — ` +
-    "bun run audit:graf rejects one; give it a chosen name and re-run `graphify cluster-only .` " +
-    "(see knowledge/README.md)."
+    "bun run audit:graf rejects one; give it a chosen name in graphify-out/.graphify_labels.json " +
+    "and run `bun run knowledge:graph:label` — NOT `graphify cluster-only .`, which re-partitions " +
+    "the graph you just named (see knowledge/README.md)."
 );
