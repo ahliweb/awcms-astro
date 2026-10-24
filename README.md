@@ -419,6 +419,10 @@ documents still awaiting one. This document's mirror is
 
 [MIT](LICENSE).
 
+## Bun realtime client boundary
+
+The [Bun-only realtime client contract](docs/bun-realtime-client-boundary.md) is **proposed documentation**, not a shipped SSE/WebSocket feature. It preserves upstream AWCMS provider queues and Bun execution, optional Astro USER admin and approved status stream consumption. [Issue #123](https://github.com/ahliweb/awcms-astro/issues/123), upstream [AWCMS #1168](https://github.com/ahliweb/awcms/issues/1168).
+
 ## Public CRM lead and consent UX
 
 [**Astro public CRM lead/consent UX v1.0**](docs/crm-public-ux-contract.md) maps existing public Astro navigation/SEO and **proposed** lead forms, channel-specific opt-in, notification settings and approved Bun realtime client state. It neither sends provider campaigns nor adds system-admin routes. [Issue #127](https://github.com/ahliweb/awcms-astro/issues/127).

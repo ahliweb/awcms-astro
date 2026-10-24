@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:e3f537ab83a28c2d99e7aaf3a7bcb3a119527ab102fe4e7c6c0ff606857be98d -->
+<!-- i18n-source-hash: sha256:629fba8ff7fedfd0cde990d96658f1735570943fe7023ae88b6b7f9a04277a57 -->
 
 # awcms-astro
 
@@ -419,6 +419,10 @@ dokumen yang masih menunggu cerminnya. Sumber berkas ini
 ## Lisensi
 
 [MIT](LICENSE).
+
+## Batas klien real-time Bun
+
+[Kontrak klien real-time Bun-only](docs/bun-realtime-client-boundary.id.md) masih berupa **dokumen usulan**, bukan fitur SSE/WebSocket yang sudah aktif. Antrean provider dan runtime Bun tetap milik AWCMS; Astro USER admin hanya mengonsumsi status yang diizinkan. [Issue #123](https://github.com/ahliweb/awcms-astro/issues/123), upstream [AWCMS #1168](https://github.com/ahliweb/awcms/issues/1168).
 
 ## UI/UX lead dan consent publik
 

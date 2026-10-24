@@ -15,7 +15,7 @@
 | Consent preferences / customer Web Push | PLANNED per derived product; AWCMS-One #430–#432 | Opt-in UI only when API/Service Worker registration is available |
 | Campaign/progress SSE/WS client | PLANNED after upstream AWCMS #1168/#1171 | Bun server connection only through authorized API; polling fallback |
 | Email/WhatsApp/Telegram/social send worker | NOT OWNED HERE | Never ship; use upstream AWCMS Bun channel ports/queue |
-| Bun runtime | Current pin bun@1.4.2, latest verified stable 1.4.4 | Upgrade issue [#125](https://github.com/ahliweb/awcms-astro/issues/125), library freshness [#126](https://github.com/ahliweb/awcms-astro/issues/126) |
+| Bun runtime | Pinned at bun@1.4.4 (`packageManager`; upgrade [#125](https://github.com/ahliweb/awcms-astro/issues/125) closed) | Dependency and library freshness [#126](https://github.com/ahliweb/awcms-astro/issues/126) |
 
 ## 2. UX navigation and wireframes
 
@@ -40,4 +40,4 @@ Reuse Astro components and current design tokens rather than importing a new adm
 AWCMS upstream validates form input, CSRF/anti-bot/abuse, tenant/domain ownership, lead idempotency and consent source; browser never infers customer match across social handles. No source UTM or contact PII in unauthenticated analytics. TLS, CSP connect-src allowlist, redirect allowlist, safe URL scheme and sanitized error notices. Do not put provider API key, token, personal conversation or secret in client bundle, initial HTML or browser localStorage.
 
 ## 5. Acceptance and issue dependency
-AT-W1 keyboard/mobile 360px input and valid/error/retry; AT-W2 anonymized opt-in/opt-out with purpose separation; AT-W3 synthetic two tenants and cross-site form submission rejected; AT-W4 Web Push closed-browser behavior distinguished from realtime connection; AT-W5 SSG SEO/sitemap/robots/CSP and optional USER admin constraints; AT-W6 provider link does not imply API connection; AT-W7 Bun 1.4.4 upgrade staged separately, Bun build/tests and no Node runtime. Repo commands: bun test, bun run check, bun run build, bun run audit:translation and documentation/asset gates. Client/producer contracts follow AWCMS #1168 and #1166. **No new public route or API is shipped in this docs-only issue.**
+AT-W1 keyboard/mobile 360px input and valid/error/retry; AT-W2 anonymized opt-in/opt-out with purpose separation; AT-W3 synthetic two tenants and cross-site form submission rejected; AT-W4 Web Push closed-browser behavior distinguished from realtime connection; AT-W5 SSG SEO/sitemap/robots/CSP and optional USER admin constraints; AT-W6 provider link does not imply API connection; AT-W7 Bun build/tests on the pinned Bun 1.4.4 and no Node runtime. Repo commands: bun test, bun run check, bun run build, bun run audit:translation and documentation/asset gates. Client/producer contracts follow AWCMS #1168 and #1166. **No new public route or API is shipped in this docs-only issue.**

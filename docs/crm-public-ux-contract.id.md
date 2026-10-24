@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](crm-public-ux-contract.md)
 
-<!-- i18n-source-hash: sha256:3c561da21740638f2aba7db2604ab2ca1efd7a31ea5b2eb0f531b9c6f4f57541 -->
+<!-- i18n-source-hash: sha256:7557843d82fa4278734338020bc548ca2f4ffd0845c3568a4b798ac77ffbb698 -->
 
 # AWCMS-Astro — UI/UX form lead publik, consent dan konsumen real-time v1.0
 
@@ -17,7 +17,7 @@
 | Preferensi consent dan Web Push customer | RENCANA sesuai produk, One #430–#432 | Baru aktif bila endpoint dan Service Worker siap |
 | Klien progres SSE/WS | RENCANA setelah AWCMS #1168/#1171 | SSE Bun satu arah lebih diutamakan, polling fallback |
 | Worker broadcast email/WA/Telegram/sosial | BUKAN MILIK REPO INI | Backend AWCMS dan worker Bun upstream |
-| Runtime | Saat ini bun@1.4.2, terbaru terverifikasi 1.4.4 | Upgrade atomic [#125](https://github.com/ahliweb/awcms-astro/issues/125), audit library [#126](https://github.com/ahliweb/awcms-astro/issues/126) |
+| Runtime | Dipin pada bun@1.4.4 (`packageManager`; upgrade [#125](https://github.com/ahliweb/awcms-astro/issues/125) sudah ditutup) | Audit kesegaran dependensi dan library [#126](https://github.com/ahliweb/awcms-astro/issues/126) |
 
 ## 2. Alur UI dan wireframe
 
@@ -43,4 +43,4 @@ Gunakan komponen/token Astro yang sudah dipakai: InputField, ConsentCheckbox, Pr
 AWCMS upstream mengonfirmasi validasi form, kepemilikan tenant/domain, CSRF/antibot/rate limit, idempotensi lead serta asal persetujuan. Browser tidak melakukan pencocokan identitas sosial lintas akun. Jangan mengirim PII kontak lewat analitik publik/UTM tanpa dasar yang sah, tidak menaruh secret di bundle, HTML, localStorage atau log. Gunakan HTTPS dan validasi URL redirect/outbound. Pengirim email/WA/Web Push tetap backend.
 
 ## 5. Acceptance dan dependensi
-**AT-W1** keyboard/mobile 360px, error/retry; **AT-W2** consent terpisah dan dapat dicabut; **AT-W3** 2 tenant/cross-site form ditolak; **AT-W4** Web Push browser ditutup bukan WebSocket; **AT-W5** SEO/sitemap/robots/CSP dan batas admin USER; **AT-W6** ikon sosial bukan koneksi API; **AT-W7** upgrade Bun stabil melalui staging, tanpa Node runtime. Pengujian bun test, bun run check, bun run build, bun run audit:translation, asset/SEO dan dokumentasi. Persyaratan producer mengikuti AWCMS #1168/#1166. **PR dokumentasi tidak membuat route atau API baru.**
+**AT-W1** keyboard/mobile 360px, error/retry; **AT-W2** consent terpisah dan dapat dicabut; **AT-W3** 2 tenant/cross-site form ditolak; **AT-W4** Web Push browser ditutup bukan WebSocket; **AT-W5** SEO/sitemap/robots/CSP dan batas admin USER; **AT-W6** ikon sosial bukan koneksi API; **AT-W7** pengujian pada Bun 1.4.4 yang dipin, tanpa Node runtime. Pengujian bun test, bun run check, bun run build, bun run audit:translation, asset/SEO dan dokumentasi. Persyaratan producer mengikuti AWCMS #1168/#1166. **PR dokumentasi tidak membuat route atau API baru.**
