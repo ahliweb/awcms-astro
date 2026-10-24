@@ -8,6 +8,80 @@ Berkas ini diisi `bun run release` dengan melipat seluruh changeset di [`.change
 
 Sejak [ADR-0040](docs/adr/0040-changeset-menyatakan-bump-semver.md) setiap changeset menyatakan `bump: major | minor | patch`, dan versi berikutnya adalah bump TERBESAR di antara yang menunggu — jadi besar sebuah rilis adalah akibat dari isinya, bukan keputusan terpisah yang diambil saat merilis.
 
+## [0.6.2] — 2026-10-24
+
+> **Build integrasi tidak berjalan pada rilis ini.** `AWCMS_API_URL` kosong,
+> yang normal untuk repo template ini sendiri — jadi `bun run build`,
+> `bun run audit:konten`, dan lapis penyaji/CSP di `bun test` DILEWATI, bukan
+> lulus. Sebuah situs yang dibangun dari template ini mengisi variabel itu dan
+> menjalankan ketiganya.
+
+### Batas kepemilikan frontend Astro vs Control Center OMES didokumentasikan
+
+Menambah bagian 6 di [`docs/crm-public-ux-contract.md`](docs/crm-public-ux-contract.md) (dengan cerminan Indonesia): matriks permukaan antara landing publik Astro OMES-Web, Control Center SYSTEM OMES di `awcms` (`/admin/omes`), dan host native/Hermes di repo `omes`, beserta status rute sekarang vs rencana. Hanya dokumentasi; tidak ada rute, UI, kode control-plane, atau kontrak eksternal baru (issue #136, OMES #350, omes-web#21).
+
+Alasannya: menunjuk template ini sebagai rujukan situs OMES bisa terbaca sebagai "salin juga adminnya", padahal admin SYSTEM hanya hidup di `awcms`.
+
+- Pembaca situs tidak melihat perubahan apa pun.
+- Pengembang mendapat batas tegas: tidak ada rute `/admin/omes` di repo ini, dan OMES-Web mengadopsi pola tanpa dependensi kode ke repo ini.
+
+### Batas konsumen realtime Bun-only didokumentasikan
+
+Menambah [`docs/bun-realtime-client-boundary.md`](docs/bun-realtime-client-boundary.md) (dengan cerminan Indonesia) dan menautkannya dari README: kontrak calon konsumen SSE/WebSocket Bun untuk situs ini. Ini **usulan dokumentasi**, bukan fitur yang dikirim — repo ini belum punya server WebSocket maupun mesin siaran penyedia, dan antrean pengirim tetap di `awcms`.
+
+Alasannya: keputusan realtime di `awcms` (#1168) sedang disusun, dan tanpa batas tertulis, sebuah rute streaming BFF bisa muncul di sini lebih dulu dengan runtime, tenant, atau kredensial yang salah.
+
+- Pembaca situs tidak melihat perubahan apa pun.
+- Pengembang mendapat daftar syarat (Bun yang dipin, bukan Node.js; izin tenant diperiksa server; tiket berumur pendek) sebelum merancang rute streaming.
+
+### Proposal desain halaman publik di `design/`
+
+Menambahkan `design/redesain-ui-ux-2026-10/`: beranda berbasis tugas (kotak cari
+di hero, topik populer, kanal, sorotan, prinsip) dan halaman layanan (ringkasan
+sekilas, daftar isi, checklist syarat, langkah bernomor, tabel biaya dengan dasar
+hukum, FAQ), beserta analisis keluarga AWCMS. Tujuannya agar arah tipografi dan
+susunan halaman bisa dibahas sebelum komponen apa pun diubah.
+
+- Halaman memakai `public/favicon.svg` repo ini dan salinan font Public Sans /
+  JetBrains Mono di `design/redesain-ui-ux-2026-10/assets/fonts/` (OFL); build
+  situs tidak membaca folder ini.
+- `design/` masuk `.graphifyignore` dan `STALENESS_OUT_OF_SCOPE_PREFIXES` di
+  `scripts/audit-graf.mjs`: proposal desain bukan pengetahuan tentang kode situs,
+  dan tanpa itu lima berkas barunya mendorong `audit:graf` dari 38 ke 43 berkas
+  yang berubah, melewati batas 40. Batasnya sendiri tidak diubah; graf tetap perlu
+  dibangun ulang (`bun run knowledge:graph:update` lalu penamaan komunitas) sebelum
+  PR berikutnya yang menambah tiga berkas terindeks.
+
+### Inventaris dependensi frontend dicatat (issue #126)
+
+Menambah bagian inventaris dependensi di [`docs/awcms-astro/standar-teknis.md`](docs/awcms-astro/standar-teknis.md) (dengan cerminan Indonesia): paket, rentang yang dinyatakan, versi terkunci sebelum/sesudah, versi terbaru, tindakan, hasil `bun audit`, dan catatan rollback. **Tidak ada dependensi yang berubah** — `bun outdated` menunjukkan semua paket langsung sudah di versi terbaru dalam rentangnya, dan `bun audit --audit-level=low` bersih.
+
+Alasannya: baseline di issue sudah basi (Bun 1.4.2), dan satu-satunya selisih dari "terbaru" — `typescript` 7.0.2 — memang ditahan: `@astrojs/check@0.9.12` belum menerima TypeScript 7, jadi menaikkannya mematikan gerbang `astro check` (ADR-0037). Mencatat alasannya mencegah selisih itu ditemukan ulang sebagai temuan.
+
+- Pembaca situs tidak melihat perubahan apa pun.
+- Pengembang mendapat satu tempat untuk melihat status dependensi dan alasan penahanan major.
+
+### Graf pengetahuan disegarkan dan 55 komunitasnya diberi nama dari anggotanya
+
+`graphify-out/` dibangun ulang dengan `bun run knowledge:graph:update` (graphify 0.9.35, hanya `--code-only`, tanpa LLM dan tanpa kunci API): 1.444 node / 2.753 edge / 95 komunitas menjadi 1.458 / 2.774 / 94. Setelah `design/` dikeluarkan dari cakupan (#138), `bun run audit:graf` berada di 39 dari 40 berkas basi dan satu PR yang menambah dua berkas terindeks akan memerahkannya — batas `MAX_STALE_FILES = 40` memang ada supaya peta tidak membusuk diam-diam, jadi yang benar adalah membangun ulang, bukan menaikkan batasnya.
+
+Partisi baru mengembalikan 48 komunitas ke nama-hub (nama berkas), yang ditolak `audit:graf`. Nama-nama itu tidak dibawa balik membabi buta: setiap komunitas dibaca anggotanya satu per satu, dan nama lama hanya dipakai ulang bila keanggotaannya memang masih sama. Tujuh nama-hub lain yang lolos gerbang tetapi tidak menjelaskan apa pun (`scripts`, `dependencies`, `bun`, `ADR-0028`, `compilerOptions`, `overrides`, `repository`) ikut diganti. Nama diterapkan dengan `bun run knowledge:graph:label`, tanpa memanggil `graphify` lagi, sehingga partisi yang dinamai tidak bergeser.
+
+Staleness turun dari 39 ke 30, bukan ke nol, dan itu batas yang jujur: 30 berkas yang tersisa adalah dokumen Markdown dan YAML yang hanya bisa disegarkan oleh ekstraksi semantik (LLM), yang sengaja tidak pernah dijalankan skrip repo ini. Tidak ada batas, cakupan, atau aturan yang dilonggarkan.
+
+- Pesan penutup `knowledge:graph:update` tidak lagi menyuruh menjalankan ulang `graphify cluster-only .` untuk menerapkan nama — langkah itu mempartisi ulang graf (terbukti lagi di PR ini: 94 → 96 komunitas, 77 kembali bernama hub, tanpa satu berkas kode pun berubah). Pesannya kini menunjuk `bun run knowledge:graph:label`, selaras dengan ADR-0051 dan `knowledge/README.md`.
+- Pembaca situs tidak melihat perubahan apa pun.
+- Pengembang mendapat peta yang kembali sesuai pohon kode, dengan 94 nama komunitas yang berbeda dan bermakna.
+
+### Kontrak UX publik untuk lead dan consent CRM didokumentasikan
+
+Menambah [`docs/crm-public-ux-contract.md`](docs/crm-public-ux-contract.md) (dengan cerminan Indonesia) dan menautkannya dari README: peta antara yang **sudah ada** di situs publik Astro ini dan yang baru **direncanakan** — form lead, opt-in per kanal, preferensi notifikasi, dan status klien realtime Bun. Ini usulan dokumentasi; tidak ada rute, API, atau pengirim kampanye yang dikirim.
+
+Alasannya: tanpa label status yang jujur, "direncanakan" mudah terbaca sebagai "sudah ada", dan sebuah situs turunan bisa mengklaim inbox sosial terhubung hanya karena ada tautan profil.
+
+- Pembaca situs tidak melihat perubahan apa pun.
+- Pengembang mendapat batas tegas: pengiriman email/WhatsApp/Telegram tetap milik `awcms`, dan admin SYSTEM tidak pernah hidup di repo ini.
+
 ## [0.6.1] — 2026-10-24
 
 > **Build integrasi tidak berjalan pada rilis ini.** `AWCMS_API_URL` kosong,
