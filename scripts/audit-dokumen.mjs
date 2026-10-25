@@ -297,6 +297,29 @@ function auditSatuIndeks(indeks, berkasAdr, statusBerkas, dirAdr) {
     baris.set(cocok[2].trim(), { nomor: cocok[1], status: cocok[4].trim() });
   }
 
+  // 0. Tiap baris ADR berada DI DALAM tabel: blok baris `|` yang bersambung dan
+  // memuat baris pemisah header. Regex di atas mencocokkan baris di mana pun
+  // dalam berkas, jadi baris ADR-0053 yang ditempel sesudah blockquote penutup
+  // lolos dua arah sementara pembaca tidak pernah melihatnya di tabel — tanpa
+  // header, markdown merendernya sebagai teks biasa.
+  const barisIndeks = isiIndeks.split("\n");
+  barisIndeks.forEach((isi, i) => {
+    const cocok = isi.match(/^\|\s*\[(\d{4})\]\(/);
+    if (!cocok) return;
+    let awal = i;
+    while (awal > 0 && barisIndeks[awal - 1].startsWith("|")) awal--;
+    const adaPemisah = barisIndeks
+      .slice(awal, i)
+      .some((b) => /^\|\s*:?-{3,}/.test(b));
+    if (!adaPemisah) {
+      langgar(
+        "indeks-adr",
+        indeks,
+        `baris ${cocok[1]} berada di luar tabel (baris ${i + 1}) — tanpa header, ia dirender sebagai teks biasa`
+      );
+    }
+  });
+
   // Arah 1: tiap baris tabel menunjuk berkas yang ada, dan nomornya cocok.
   for (const [target, { nomor }] of baris) {
     if (!berkasAdr.includes(target)) {
