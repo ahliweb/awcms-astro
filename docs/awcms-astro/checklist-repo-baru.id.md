@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](checklist-repo-baru.md)
 
-<!-- i18n-source-hash: sha256:3cd096d6cac2706d7eee35c063c2a705dad6e1b49863b3a4acd8a517173b6bb5 -->
+<!-- i18n-source-hash: sha256:8d83f4e42b7bb5b14944eac0961625bd43c3fe45224e4906dbe8c2efff2c230a -->
 
 # Memulai Situs Baru di Atas awcms-astro
 
@@ -182,6 +182,12 @@ Tampilan dikerjakan terakhir karena ia satu-satunya lapisan yang murah diubah.
       menanggung akibatnya layanan lain, yang pemiliknya tidak ikut memutuskan.
       Tambahkan hanya bila kamu sudah memeriksa bahwa semuanya HTTPS, di
       `server/penyaji.mjs`, lalu perbarui `tests/penyaji.test.mjs`.
+
+### Pagari `main` sebelum merge pertama
+
+- [ ] **Terapkan ruleset repositori pada branch bawaan yang setara dengan milik template** ([ADR-0053](../adr/0053-main-is-fenced-by-a-ruleset-that-no-gate-can-see.id.md)): batasi penghapusan, blokir force push, wajibkan pull request, wajibkan pemeriksaan status dengan "up to date" dicentang, **tanpa bypass actor**, dan centang "automatically delete head branches". Repo turunan mulai **tanpa** ruleset — "Use this template" menyalin berkas, bukan pengaturan.
+- [ ] **Periksa ulang nama konteks milik Anda sendiri.** Salin dari daftar pemeriksaan pull request sungguhan, bukan dari template ini: konteks wajib yang tak dilaporkan workflow mana pun membuat setiap pull request menunggu selamanya, dan job yang diganti nama melakukan hal yang sama. Jangan wajibkan pemeriksaan yang difilter path atau tidak berjalan pada pull request.
+- [ ] Approval wajib `0` tepat untuk akun User dengan satu maintainer (tak bisa menyetujui pull request-nya sendiri); dengan maintainer kedua, putuskan secara sadar. Tag tidak dicakup ruleset branch. Tak ada apa pun di repo Anda yang akan menyadari ruleset dicabut — verifikasi dengan `gh api repos/<owner>/<repo>/rules/branches/main`.
 
 ## 8. Rilis pertama
 

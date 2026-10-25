@@ -57,13 +57,13 @@ bun run dev           # http://localhost:4321
 ## The contribution flow
 
 1. **Start from an issue** with a clear scope. If the change touches a base standard, write an [ADR](docs/adr/README.md) first — the list of triggers is in [`GOVERNANCE.md`](GOVERNANCE.md#when-a-change-needs-an-adr).
-2. **Branch from `main` before touching any file.** Do not commit directly to `main`.
+2. **Branch from `main` before touching any file.** Do not commit directly to `main` — the `main-protection` ruleset rejects it (`GH013: Repository rule violations`), force pushes included, and it has no bypass actor ([ADR-0053](docs/adr/0053-main-is-fenced-by-a-ruleset-that-no-gate-can-see.md)).
 3. **One iteration = one atomic scope.** Finish and validate it before moving on. Do not stack several unrelated changes on one branch.
 4. **Before writing any value specific to one site, ask what happens when the next site uses it.** Names, marks, regions, and the list of tabs are inputs — not constants.
 5. **Update the documentation** when behaviour, workflow, structure, or configuration changes — in the same iteration. In this repo the documentation is part of the product.
 6. **Write a changeset** in [`.changesets/`](.changesets/README.md) in the same iteration, not batched up at the end.
 7. **Run `bun run build` and `bun test`**; both must be clean.
-8. **Open a Pull Request** with `Closes #<issue>`. Merge after review and a green CI, then delete the branch.
+8. **Open a Pull Request** with `Closes #<issue>`. A pull request is the only way into `main`: `Check`, `Build` and `Analyze (javascript-typescript)` must be green and the branch up to date with `main` (rebase or merge `main` in when GitHub says it is behind). No approval count is required — a single maintainer cannot approve their own pull request — so review is a matter of practice, not enforced. A merged branch is deleted automatically. Note that `Build` has `needs: Check`: when `Check` fails, `Build` is skipped and counts as satisfied, so the block comes from `Check`; and in this template `Build` skips its integration steps while `vars.AWCMS_API_URL` is empty, so green does not mean the integration build ran.
 
 ### Branch naming
 

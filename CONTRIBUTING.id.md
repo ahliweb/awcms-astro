@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](CONTRIBUTING.md)
 
-<!-- i18n-source-hash: sha256:cb2422b035c5710f3f4148fbca56017e3c245a32bda342d200a69a55ff1c30cb -->
+<!-- i18n-source-hash: sha256:a1ae463f40a1794f907bd3eac8788571d608908775ad41e7fa6fafd57617e6f8 -->
 
 # Panduan Kontribusi
 
@@ -59,13 +59,13 @@ bun run dev           # http://localhost:4321
 ## Alur kontribusi
 
 1. **Mulai dari issue** yang jelas scope-nya. Bila perubahan menyentuh standar dasar, tulis [ADR](docs/adr/README.md) lebih dulu — daftar pemicunya di [`GOVERNANCE.md`](GOVERNANCE.md#when-a-change-needs-an-adr).
-2. **Buat branch dari `main` sebelum menyentuh berkas apa pun.** Jangan commit langsung ke `main`.
+2. **Buat branch dari `main` sebelum menyentuh berkas apa pun.** Jangan commit langsung ke `main` — ruleset `main-protection` menolaknya (`GH013: Repository rule violations`), force push termasuk, dan tanpa bypass actor ([ADR-0053](docs/adr/0053-main-is-fenced-by-a-ruleset-that-no-gate-can-see.id.md)).
 3. **Satu iterasi = satu scope atomic.** Selesaikan dan validasi sebelum pindah. Jangan menumpuk beberapa perubahan tak-berkaitan di satu branch.
 4. **Sebelum menulis nilai apa pun yang khas satu situs, tanyakan apa yang terjadi bila situs berikutnya memakainya.** Nama, lambang, wilayah, dan daftar tab adalah input — bukan konstanta.
 5. **Perbarui dokumentasi** bila perilaku, workflow, struktur, atau konfigurasi berubah — pada iterasi yang sama. Di repo ini dokumentasi adalah bagian dari produk.
 6. **Tulis changeset** di [`.changesets/`](.changesets/README.md) pada iterasi yang sama, bukan dirapel di akhir.
 7. **Jalankan `bun run build` dan `bun test`**; keduanya harus bersih.
-8. **Buka Pull Request** dengan `Closes #<issue>`. Merge setelah review dan CI hijau, lalu hapus branch-nya.
+8. **Buka Pull Request** dengan `Closes #<issue>`. Pull request adalah satu-satunya jalan masuk ke `main`: `Check`, `Build`, dan `Analyze (javascript-typescript)` harus hijau dan branch harus mutakhir terhadap `main` (rebase atau merge `main` bila GitHub menyatakan tertinggal). Tidak ada jumlah approval yang diwajibkan — satu maintainer tak bisa menyetujui pull request-nya sendiri — jadi review adalah soal praktik, tidak ditegakkan. Branch yang sudah di-merge dihapus otomatis. Perhatikan bahwa `Build` memiliki `needs: Check`: saat `Check` gagal, `Build` di-skip dan dianggap terpenuhi, jadi pemblokirannya datang dari `Check`; dan di template ini `Build` melewati langkah integrasinya selama `vars.AWCMS_API_URL` kosong, jadi hijau tidak berarti build integrasi berjalan.
 
 ### Penamaan branch
 

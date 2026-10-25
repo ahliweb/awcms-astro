@@ -164,10 +164,10 @@ controls are outside a template's scope.
 
 | Practice | State |
 | --- | --- |
-| PS.1 Protect all forms of code | Met — branch protection + review; no direct commits to `main` |
+| PS.1 Protect all forms of code | Partly met — since 26 October 2026 the `main-protection` ruleset refuses direct pushes, force pushes and deletion, with no bypass actor ([ADR-0053](../adr/0053-main-is-fenced-by-a-ruleset-that-no-gate-can-see.md)). Before that this row read "Met" while `main` was unprotected. **Not covered: tags. Not machine-gated:** the ruleset lives in GitHub settings, so removing it turns nothing red; it is verified by hand with `gh api repos/ahliweb/awcms-astro/rules/branches/main` |
 | PS.2 Provide a mechanism for verifying release integrity | Met — a deterministic CycloneDX SBOM travels in every tag since [ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md); regenerating on the same tag produces identical bytes, so its SBOM can be **verified** rather than merely trusted |
 | PW.4 Use secure third-party components | Met — the lockfile committed, installs frozen, an audit in CI |
-| PW.7 Review code | Met — a PR + a mandatory green CI |
+| PW.7 Review code | Partly met — a PR and a green `Check` are enforced by the ruleset, but required approvals are `0` (a single-maintainer User account cannot approve its own PR), so **human review is practice, not enforced** ([ADR-0053](../adr/0053-main-is-fenced-by-a-ruleset-that-no-gate-can-see.md)) |
 | PW.8 Test executable code | Met — six gates, and every gate that **skips itself says so** |
 | RV.1 Identify vulnerabilities on an ongoing basis | Met — Dependabot + `bun audit` + scheduled CodeQL over the JS/TS surface since [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md), with its coverage (and its `.astro` limit) stated in every run summary |
 

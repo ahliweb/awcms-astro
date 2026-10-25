@@ -92,3 +92,4 @@ styling, adding tests.
 > while by [ADR-0021](0021-tahan-pengembangan-menunggu-fondasi-awcms.md), then
 > landed once [ADR-0023](0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md)
 > narrowed that hold to work which genuinely needs `awcms`.
+| [0053](0053-main-is-fenced-by-a-ruleset-that-no-gate-can-see.md) | `main` is fenced by a repository ruleset (`main-protection`: no deletion, no force push, pull request required with 0 approvals, strict required checks `Check`, `Build`, `Analyze (javascript-typescript)`, no bypass actor) — and no gate in this repo can detect it being removed, so it is verified manually; tags are not covered, and `Build` is not an independent fence | Accepted |

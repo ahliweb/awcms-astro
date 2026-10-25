@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](standar-performa-dan-keamanan.md)
 
-<!-- i18n-source-hash: sha256:793e6a1a6e047c99b8d32e9123455679d6c1fb45f1ec162896d14b53e95ea9f0 -->
+<!-- i18n-source-hash: sha256:e5b9f91e345c6e58745f2fc991ddb8af151787d230e164189be10d5c08afbb8a -->
 
 # awcms-astro — Standar Performa dan Keamanan
 
@@ -168,10 +168,10 @@ fisik di luar cakupan sebuah template.
 
 | Praktik | Keadaan |
 | --- | --- |
-| PS.1 Lindungi seluruh bentuk kode | Terpenuhi — branch protection + review; tidak ada commit langsung ke `main` |
+| PS.1 Lindungi seluruh bentuk kode | Terpenuhi sebagian — sejak 26 Oktober 2026 ruleset `main-protection` menolak push langsung, force push, dan penghapusan, tanpa bypass actor ([ADR-0053](../adr/0053-main-is-fenced-by-a-ruleset-that-no-gate-can-see.id.md)). Sebelumnya baris ini berbunyi "Terpenuhi" padahal `main` tak terlindungi. **Tidak tercakup: tag. Tidak digerbangi mesin:** ruleset hidup di pengaturan GitHub, jadi mencabutnya tidak memerahkan apa pun; ia diverifikasi manual dengan `gh api repos/ahliweb/awcms-astro/rules/branches/main` |
 | PS.2 Sediakan mekanisme verifikasi integritas rilis | Terpenuhi — SBOM CycloneDX deterministik ikut di setiap tag sejak [ADR-0031](../adr/0031-sbom-cyclonedx-dari-lockfile-pada-rilis.md); regenerasi pada tag yang sama menghasilkan byte identik, jadi SBOM-nya bisa **diverifikasi**, bukan hanya dipercaya |
 | PW.4 Gunakan komponen pihak ketiga yang aman | Terpenuhi — lockfile di-commit, install ter-freeze, audit di CI |
-| PW.7 Review kode | Terpenuhi — PR + CI wajib hijau |
+| PW.7 Review kode | Terpenuhi sebagian — PR dan `Check` hijau ditegakkan ruleset, tetapi approval wajib `0` (akun User dengan satu maintainer tak bisa menyetujui PR-nya sendiri), jadi **review manusia adalah praktik, bukan penegakan** ([ADR-0053](../adr/0053-main-is-fenced-by-a-ruleset-that-no-gate-can-see.id.md)) |
 | PW.8 Uji kode yang dieksekusi | Terpenuhi — enam gerbang, dan tiap gerbang yang **melewati dirinya mengatakannya** |
 | RV.1 Identifikasi kerentanan secara berkelanjutan | Terpenuhi — Dependabot + `bun audit` + CodeQL terjadwal atas permukaan JS/TS sejak [ADR-0032](../adr/0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md), dengan cakupannya (dan batas `.astro`-nya) dinyatakan di tiap ringkasan run |
 

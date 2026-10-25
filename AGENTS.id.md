@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](AGENTS.md)
 
-<!-- i18n-source-hash: sha256:bda5c5f08495391ba345a72fac00298177d28610a57592b8d6ac64f0135322fb -->
+<!-- i18n-source-hash: sha256:d090e6ce0680d47dd68bde87460cd999d15dac602a054c20a35aa7fef11852f4 -->
 
 # AGENTS.md — kontrak kerja `awcms-astro`
 
@@ -323,7 +323,13 @@ yang [ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.m
 
 1. Satu iterasi = satu scope atomic. Selesaikan dan validasi sebelum pindah.
 2. Buat branch dari `main` sebelum menyentuh kode. Jangan commit langsung ke
-   `main`.
+   `main` — sejak 26 Oktober 2026 ruleset `main-protection` menolaknya, juga
+   force push dan penghapusan, dan sebuah perubahan sampai ke `main` hanya lewat
+   pull request dengan `Check`, `Build`, dan `Analyze (javascript-typescript)`
+   hijau pada branch yang mutakhir. Ruleset itu hidup di pengaturan GitHub,
+   jadi **tak ada gerbang di sini yang bisa mendeteksi pencabutannya**; ia
+   diverifikasi manual, dan tag tidak dicakupnya
+   ([ADR-0053](docs/adr/0053-main-is-fenced-by-a-ruleset-that-no-gate-can-see.id.md)).
 3. `bun run build` harus bersih sebelum pekerjaan dinyatakan selesai. `build`
    sudah mencakup `astro check`; melewatinya adalah penyebab tersering "hijau
    lokal, merah di CI".

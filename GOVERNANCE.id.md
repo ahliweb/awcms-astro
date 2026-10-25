@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](GOVERNANCE.md)
 
-<!-- i18n-source-hash: sha256:9835cdd3e32691d376af6355f3aa3fb3886debd17354417963177b3e2f4bb981 -->
+<!-- i18n-source-hash: sha256:32322a1a1a0599dc5ae84bfd4dbd36c77fac090626f7440d1bb063a6d988df7a -->
 
 # Tata Kelola
 
@@ -72,6 +72,10 @@ Berikut selalu butuh keputusan maintainer tercatat, tidak peduli sekecil apa pun
 - Membuka jalur HTML mentah dari CMS, dalam bentuk apa pun.
 - Menambahkan nilai bawaan yang khas satu situs ke `src/config/site.ts`.
 - Melonggarkan sebuah gerbang agar CI hijau. Bila aturannya memang salah, ubah aturannya secara sadar beserta alasannya — jangan tumpulkan pemeriksanya.
+
+## Bagaimana perubahan sampai ke `main`
+
+Wewenang maintainer bukan jalan memutari ruleset repositori. `main` dipagari `main-protection` ([ADR-0053](docs/adr/0053-main-is-fenced-by-a-ruleset-that-no-gate-can-see.id.md)): tanpa penghapusan, tanpa force push, pull request wajib, dan `Check`, `Build`, serta `Analyze (javascript-typescript)` harus lulus pada branch yang mutakhir. **Tidak ada bypass actor — admin termasuk.** Approval wajib `0` karena akun User dengan satu maintainer tak bisa menyetujui pull request-nya sendiri; pagarnya adalah pull request, pemeriksaan, dan ketiadaan bypass, bukan peninjau kedua. Tidak tercakup: tag, dan tak ada apa pun di repo ini yang bisa mendeteksi ruleset dicabut — ia diverifikasi manual (`gh api repos/ahliweb/awcms-astro/rules/branches/main`).
 
 ## Rilis
 
