@@ -152,6 +152,22 @@ describe("indeks ADR", () => {
     expect(keluaran).toContain("0002-dua.md");
   });
 
+  test("baris yang ditempel sesudah tabel MERAH — cacat ADR-0053, 26 Oktober 2026", () => {
+    // Lolos dua arah (berkasnya ada, barisnya ada), tetapi tanpa header ia
+    // dirender sebagai teks biasa: pembaca tidak pernah melihatnya di tabel.
+    const akar = pohon({
+      "docs/adr/0001-satu.md": adr("0001"),
+      "docs/adr/0002-dua.md": adr("0002"),
+      "docs/adr/README.md":
+        indeks("| [0001](0001-satu.md) | Satu | Diterima |") +
+        "\n> Catatan penutup.\n| [0002](0002-dua.md) | Dua | Diterima |\n"
+    });
+    const { kode, keluaran } = jalankan(akar);
+
+    expect(kode).toBe(1);
+    expect(keluaran).toContain("baris 0002 berada di luar tabel");
+  });
+
   test("baris tabel yang berkasnya tak pernah ada MERAH — arah kedua", () => {
     const akar = pohon({
       "docs/adr/0001-satu.md": adr("0001"),

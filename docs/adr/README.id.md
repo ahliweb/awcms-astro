@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:be47194faf0fd7a77fb4cc516c83d4394810be869366524cabae3fa6fcb4baed -->
+<!-- i18n-source-hash: sha256:87ca3ef105726d1480b3796fb067f6cc239331ad190e9137403ff873089b86c9 -->
 
 # Architecture Decision Records
 
@@ -59,6 +59,7 @@ menyesuaikan gaya, menambah tes.
 | [0050](0050-bun-is-this-repos-only-runtime-and-a-gate-finally-says-so.md) | Bun adalah satu-satunya runtime repo ini — sudah benar di scripts `package.json`, CI, `Dockerfile`, dan shebang `server/penyaji.mjs`, dan sampai kini tak terjaga; `tests/runtime-bun.test.mjs` menggerbangi ketiadaannya dari ujung ke ujung, sementara bawaan `node:*` (implementasi Bun sendiri) dan `@astrojs/node`/`compression` (keduanya dijalankan OLEH Bun, dipertahankan untuk resolusi path URL dan negosiasi Brotli) dinyatakan sebagai keputusan mempertahankan yang disengaja, bukan kealpaan | Diterima |
 | [0051](0051-a-knowledge-tree-points-at-the-code-and-owns-none-of-it.md) | Pohon pengetahuan Graphify + Obsidian, di-porting dari desain `awcms-one` dan berdivergensi darinya di titik-titik yang bentuknya tak cocok di sini — `knowledge/generated/` diabaikan git alih-alih dilacak, basi konten berbatas pada `MAX_STALE_FILES = 40`, persis tiga skrip `knowledge:*` tanpa `knowledge:graph:check` yang redundan, dan `knowledge/**` ditulis dalam Bahasa Inggris tanpa cermin `.id.md` | Diterima |
 | [0052](0052-github-releases-are-part-of-this-repos-release-convention.md) | GitHub Release MEMANG konvensi rilis repo ini, bukan pemanis opsional — tujuh sudah ada, dibuat dengan tangan, dan pernah hanyut tiga versi di belakang tag dengan setiap gerbang hijau; `scripts/rilis.mjs` kini mencetak (tak pernah menjalankan) perintah `gh release create`, dan `audit:rilis` mendapat pemeriksaan keempat yang bergantung jaringan dan gagal tertutup bahwa setiap tag remote punya Release yang cocok | Diterima |
+| [0053](0053-main-is-fenced-by-a-ruleset-that-no-gate-can-see.md) | `main` dipagari ruleset repositori (`main-protection`: tanpa penghapusan, tanpa force push, pull request wajib dengan 0 approval, pemeriksaan wajib ketat `Check`, `Build`, `Analyze (javascript-typescript)`, tanpa bypass actor) — dan tak ada gerbang di repo ini yang bisa mendeteksi pencabutannya, jadi diverifikasi manual; tag tidak tercakup, dan `Build` bukan pagar yang berdiri sendiri | Diterima |
 
 > **Kenapa penomoran mulai dari 0014.** ADR di repo ini melanjutkan urutan repo
 > rujukan yang identitasnya dilepas di [#11](https://github.com/ahliweb/awcms-astro/pull/11);
@@ -91,4 +92,3 @@ menyesuaikan gaya, menambah tes.
 > ditahan [ADR-0021](0021-tahan-pengembangan-menunggu-fondasi-awcms.md), lalu
 > mendarat begitu [ADR-0023](0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md)
 > menyempitkan penahanan itu ke pekerjaan yang benar-benar membutuhkan `awcms`.
-| [0053](0053-main-is-fenced-by-a-ruleset-that-no-gate-can-see.md) | `main` dipagari ruleset repositori (`main-protection`: tanpa penghapusan, tanpa force push, pull request wajib dengan 0 approval, pemeriksaan wajib ketat `Check`, `Build`, `Analyze (javascript-typescript)`, tanpa bypass actor) — dan tak ada gerbang di repo ini yang bisa mendeteksi pencabutannya, jadi diverifikasi manual; tag tidak tercakup, dan `Build` bukan pagar yang berdiri sendiri | Diterima |
