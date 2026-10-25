@@ -8,6 +8,89 @@ Berkas ini diisi `bun run release` dengan melipat seluruh changeset di [`.change
 
 Sejak [ADR-0040](docs/adr/0040-changeset-menyatakan-bump-semver.md) setiap changeset menyatakan `bump: major | minor | patch`, dan versi berikutnya adalah bump TERBESAR di antara yang menunggu — jadi besar sebuah rilis adalah akibat dari isinya, bukan keputusan terpisah yang diambil saat merilis.
 
+## [0.6.3] — 2026-10-26
+
+> **Build integrasi tidak berjalan pada rilis ini.** `AWCMS_API_URL` kosong,
+> yang normal untuk repo template ini sendiri — jadi `bun run build`,
+> `bun run audit:konten`, dan lapis penyaji/CSP di `bun test` DILEWATI, bukan
+> lulus. Sebuah situs yang dibangun dari template ini mengisi variabel itu dan
+> menjalankan ketiganya.
+
+### Graf pengetahuan diekstrak ulang secara semantik, dan staleness `audit:graf` turun ke 0/40 (#139)
+
+#142 membangun ulang graf hanya dari kode, sehingga staleness tertahan di 30/40,
+lalu naik lagi ke 33/40 karena PR sesudahnya. Sisanya berkas Markdown dan YAML
+yang hanya disegarkan ekstraksi semantik, dan skrip repo ini sengaja tidak
+pernah menjalankannya. Kali ini ekstraksi itu dijalankan tangan lewat skill
+graphify (`/graphify . --update`) dengan subagen sesi sebagai LLM, sesuai opsi 1
+di komentar #139.
+
+- 32 dokumen diekstrak ulang. Setiap berkas dibaca sampai baris terakhirnya,
+  termasuk CHANGELOG yang dibagi dua menurut rentang baris. Putaran pertama
+  dibuang karena subagennya hanya membaca bagian awal berkas, dan menerimanya
+  akan mencap berkas itu "sudah diekstrak" padahal isinya hilang.
+- Graf kini 1923 node, 3249 edge, dan 152 komunitas. 36 komunitas yang
+  keanggotaannya tidak berubah memakai kembali nama kurasi lama. 116 lainnya
+  dinamai baru, lalu diterapkan dengan `bun run knowledge:graph:label`, bukan
+  `cluster-only`.
+- `audit:graf` menunjukkan staleness 0/40 dan graf dibangun dari HEAD. Tidak ada
+  batas, cakupan, atau hash manifest yang disunting tangan.
+- Pembaca situs tidak melihat perubahan apa pun.
+
+### Baris ADR-0053 masuk ke tabel indeks, dan `audit:dokumen` kini menolak baris di luar tabel
+
+PR #145 menambahkan baris ADR-0053 di akhir `docs/adr/README.md` dan cerminnya,
+sesudah blockquote penutup, bukan di dalam tabel. Tanpa header, markdown
+merender baris itu sebagai teks biasa, jadi pembaca indeks tidak pernah melihat
+ADR-0053 di tabel. `audit:dokumen` tetap hijau karena regex-nya mencocokkan baris
+di mana pun dalam berkas: berkasnya ada dan barisnya ada, jadi kedua arah lolos.
+Cacat ini ditemukan saat graf pengetahuan disegarkan (#139).
+
+- Baris ADR-0053 dipindah ke tempatnya, tepat sesudah ADR-0052, di kedua bahasa.
+- `audit:dokumen` menuntut setiap baris ADR berada dalam blok tabel yang memuat
+  baris pemisah header. Gerbangnya dibuktikan merah atas indeks lama (baris 95)
+  dan hijau atas indeks yang diperbaiki, dengan satu test baru.
+- Pembaca situs tidak melihat perubahan apa pun.
+
+### `main` dipagari ruleset repositori, dan dokumen berhenti mengklaim lebih dari itu (#137)
+
+Audit 24 Oktober 2026 menemukan `main` tidak terlindungi sama sekali, padahal baris SSDF PS.1 di dokumen standar berbunyi "Terpenuhi — branch protection + review" dan `AGENTS.md` hanya mengandalkan kebiasaan. Pada 26 Oktober 2026 ruleset `main-protection` diterapkan di pengaturan GitHub dan diverifikasi: penghapusan dan force push ditolak, pull request wajib, `Check`, `Build`, dan `Analyze (javascript-typescript)` wajib hijau pada branch yang mutakhir, tanpa bypass actor (admin termasuk), dan branch yang sudah di-merge dihapus otomatis. Push langsung dan force push ke `main` sama-sama ditolak `GH013`, dan PR uji dengan tes yang sengaja gagal tidak bisa di-merge.
+
+Yang berubah di repo ini hanya dokumentasi: ADR-0053 mencatat keputusannya beserta alasan approval wajib `0` (akun User dengan satu maintainer tak bisa menyetujui PR-nya sendiri, dan bypass actor akan membuka kembali push langsung). ADR itu juga menyatakan terang-terangan apa yang tidak dicakup: tag tidak dilindungi; ruleset hidup di pengaturan GitHub sehingga tak ada gerbang yang memerahkan bila ia dicabut, jadi ia diverifikasi manual dengan `gh api repos/ahliweb/awcms-astro/rules/branches/main`; `Build` memiliki `needs: Check` sehingga bukan pagar yang berdiri sendiri, dan di template ini ia melewati langkah integrasinya saat `vars.AWCMS_API_URL` kosong.
+
+- `AGENTS.md`, `CONTRIBUTING.md`, dan `GOVERNANCE.md` menjelaskan jalur sebenarnya sebuah perubahan sampai ke `main`.
+- Baris SSDF PS.1 dan PW.7 diturunkan menjadi "Terpenuhi sebagian" dengan alasannya, karena review manusia tidak ditegakkan.
+- `checklist-repo-baru.md` meminta situs turunan menerapkan ruleset setara dan memeriksa ulang nama konteks pemeriksaannya sendiri.
+- Pembaca situs tidak melihat perubahan apa pun.
+
+### ADR-0147 dan ADR-0148 `awcms` mendapat vonisnya
+
+`bun run audit:serapan` merah karena `ahliweb/awcms` menerbitkan dua keputusan
+lagi yang belum dibaca siapa pun di repo ini, keduanya 24 Oktober 2026:
+ADR-0147 dan ADR-0148.
+
+- **ADR-0147 divonis `diperiksa`.** Akrual komisi yang dipicu event masuk lewat
+  antrean intake milik `hr_commission` yang diposting job ber-peran
+  `awcms_app`; `awcms_worker` hanya mendapat `INSERT` pada antrean itu dan
+  tidak ada hak apa pun pada payroll. Ini desain grant basis data dan job di
+  dalam modul HR/payroll `awcms`: tidak ada rute yang dipanggil repo ini yang
+  berubah, dan repo ini tidak punya basis data, worker, maupun permukaan
+  payroll.
+
+- **ADR-0148 divonis `diperiksa`.** Fondasi omnichannel adalah lima kapabilitas
+  yang digerbang terpisah, dengan kapabilitas penyedia gagal-tertutup per akun.
+  Hanya dokumentasi dan tata kelola, jadi tidak ada modul, rute, jalur OpenAPI,
+  atau dependensi baru, dan tidak ada yang menyentuh build statis. Tautan
+  berbagi biasa di repo ini tidak terdampak. Barisnya mencatat kapan harus
+  dibaca ulang: saat `awcms` #1153 (penangkapan lead situs dan widget kontak
+  tersemat opsional) mendarat. Memasang salah satunya di situs dari template
+  ini berbenturan dengan larangan skrip pihak ketiga dan larangan
+  mengumpulkan data pribadi pembaca, jadi butuh ADR sendiri di sini lebih
+  dulu.
+
+Puncak buku besar naik dari ADR-0146 milik `awcms` ke ADR-0148 milik `awcms`;
+`belum` tetap nol.
+
 ## [0.6.2] — 2026-10-24
 
 > **Build integrasi tidak berjalan pada rilis ini.** `AWCMS_API_URL` kosong,
