@@ -70,6 +70,10 @@ The following always need a recorded maintainer decision, however small the chan
 - Adding a default value specific to one site to `src/config/site.ts`.
 - Loosening a gate to make CI green. If the rule really is wrong, change the rule deliberately and with its reasoning — do not blunt its checker.
 
+## How a change reaches `main`
+
+A maintainer's authority is not a way around the repository ruleset. `main` is fenced by `main-protection` ([ADR-0053](docs/adr/0053-main-is-fenced-by-a-ruleset-that-no-gate-can-see.md)): no deletion, no force push, a pull request required, and `Check`, `Build` and `Analyze (javascript-typescript)` must pass on an up-to-date branch. **There is no bypass actor — administrators included.** Required approvals are `0` because a single-maintainer User account cannot approve its own pull request; the fence is the pull request, the checks and the absence of a bypass, not a second reviewer. Not covered: tags, and nothing in this repo can detect the ruleset being removed — it is verified manually (`gh api repos/ahliweb/awcms-astro/rules/branches/main`).
+
 ## Releases
 
 A maintainer's authority, run through `bun run release <level>` (see [`scripts/rilis.mjs`](scripts/rilis.mjs)). What each version level means and the tag format: [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`docs/awcms-astro/standar-teknis.md`](docs/awcms-astro/standar-teknis.md#versioning).

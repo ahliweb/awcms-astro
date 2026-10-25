@@ -314,7 +314,13 @@ exactly what
 ## The mandatory workflow
 
 1. One iteration = one atomic scope. Finish and validate before moving on.
-2. Branch from `main` before touching code. Do not commit straight to `main`.
+2. Branch from `main` before touching code. Do not commit straight to `main` —
+   since 26 October 2026 the `main-protection` ruleset refuses it, along with
+   force pushes and deletion, and a change reaches `main` only through a pull
+   request with `Check`, `Build` and `Analyze (javascript-typescript)` green on
+   an up-to-date branch. The ruleset lives in GitHub settings, so **no gate here
+   can detect it being removed**; it is verified by hand, and tags are not
+   covered by it ([ADR-0053](docs/adr/0053-main-is-fenced-by-a-ruleset-that-no-gate-can-see.md)).
 3. `bun run build` must be clean before work is called done. `build` already
    includes `astro check`; skipping it is the most common cause of "green
    locally, red in CI".

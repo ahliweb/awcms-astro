@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:19e9ff9e196653d4f78c17466ab67180a2bd4c75434f09cea9c944de7a96bdb1 -->
+<!-- i18n-source-hash: sha256:be47194faf0fd7a77fb4cc516c83d4394810be869366524cabae3fa6fcb4baed -->
 
 # Architecture Decision Records
 
@@ -91,3 +91,4 @@ menyesuaikan gaya, menambah tes.
 > ditahan [ADR-0021](0021-tahan-pengembangan-menunggu-fondasi-awcms.md), lalu
 > mendarat begitu [ADR-0023](0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md)
 > menyempitkan penahanan itu ke pekerjaan yang benar-benar membutuhkan `awcms`.
+| [0053](0053-main-is-fenced-by-a-ruleset-that-no-gate-can-see.md) | `main` dipagari ruleset repositori (`main-protection`: tanpa penghapusan, tanpa force push, pull request wajib dengan 0 approval, pemeriksaan wajib ketat `Check`, `Build`, `Analyze (javascript-typescript)`, tanpa bypass actor) — dan tak ada gerbang di repo ini yang bisa mendeteksi pencabutannya, jadi diverifikasi manual; tag tidak tercakup, dan `Build` bukan pagar yang berdiri sendiri | Diterima |

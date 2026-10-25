@@ -179,6 +179,12 @@ Presentation comes last because it is the only layer that is cheap to change.
       decision. Add it only once you have checked they are all HTTPS, in
       `server/penyaji.mjs`, then update `tests/penyaji.test.mjs`.
 
+### Fence `main` before the first merge
+
+- [ ] **Apply a repository ruleset on the default branch equivalent to the template's** ([ADR-0053](../adr/0053-main-is-fenced-by-a-ruleset-that-no-gate-can-see.md)): restrict deletion, block force pushes, require a pull request, require status checks with "up to date" ticked, **no bypass actors**, and tick "automatically delete head branches". Derived repos start with **no** ruleset — "Use this template" copies files, not settings.
+- [ ] **Re-check your own context names.** Copy them from a real pull request's checks list, not from this template: a required context that no workflow reports leaves every pull request waiting forever, and a renamed job does the same. Do not require a check that is path-filtered or not run on pull requests.
+- [ ] Required approvals `0` is right for a single-maintainer User account (it cannot approve its own pull request); with a second maintainer, decide it deliberately. Tags are not covered by a branch ruleset. Nothing in your repo will notice the ruleset being removed — verify with `gh api repos/<owner>/<repo>/rules/branches/main`.
+
 ## 8. The first release
 
 ```bash
