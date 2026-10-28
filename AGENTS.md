@@ -936,6 +936,29 @@ Three things to read before touching that area:
   the presence of controls, forms, and focus that moves. Every other rule in
   this document still applies in full.
 
+## Orchestrator & agent (AI models)
+
+> Cross-portfolio standard from [`ahliweb/personal-coding`](https://github.com/ahliweb/personal-coding/blob/main/docs/tingkatan-model-ai-claude-openai.md) (docs/tingkatan-model-ai-claude-openai.md, snapshot 2026-10-28). Prices, effort, and the model lineup are maintained there — do not copy them into this repo.
+
+Work that must be split across several agents follows the **orchestrator → agent** pattern. The orchestrator splits the work, assigns tasks, orders dependencies, then reviews and merges the results; an agent does one bounded part.
+
+| Role | Claude Code | Codex / OpenAI |
+| --- | --- | --- |
+| Orchestrator | Opus 5.5, effort `high` | GPT-6.1 Sol, `high` |
+| Complex agent — cross-component, security, integration, regression risk | Sonnet 5.5, `medium` (subagent `pelaksana-kompleks`) | GPT-6.1 Sol or Terra, `medium` |
+| Simple agent — mechanical, well-defined, low risk | Haiku 5.5, `low` (subagent `pelaksana-sederhana`) | GPT-6 Luna or Terra, `low` |
+
+Critical work (architecture, security, large migrations): orchestrator Fable 5.1 `high`–`xhigh`, complex agent Opus 5.5 `high`.
+
+Rules:
+
+1. **Do not split small tasks.** Try one strong model (Opus 5.5 / GPT-6.1 Sol) at low effort first.
+2. **Escalate, do not guess.** A simple agent that meets ambiguity, risk, or an architectural touch stops and hands the task back to the orchestrator, who moves it to a complex agent.
+3. **Parallel agents are isolated.** They must not touch the same files or modules; dependent tasks run sequentially.
+4. **Verification stays with the orchestrator.** Diffs, tests, and numbers are checked directly before use; an agent's report is not evidence.
+5. **An agent stays in its scope.** It does not change architecture, re-delegate, or touch areas outside the task.
+6. **This repo's rules still apply** to every agent — workflow, gates, security guardrails, commit conventions.
+
 ## Language
 
 English at the bare path is the authoritative source; Indonesian at
