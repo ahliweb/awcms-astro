@@ -327,6 +327,17 @@ exactly what
 4. Conventional Commits (`feat:`, `fix:`, `docs:`, `refactor:`, `chore:`).
 5. A change that changes behaviour must update the document that explains that
    behaviour — in this repo documentation is part of the product, not a garnish.
+6. Product work follows the portfolio's 18-step development flow v2.0.0
+   ([`ahliweb/personal-coding`, alur-pengembangan-produk](https://github.com/ahliweb/personal-coding/blob/main/docs/alur-pengembangan-produk.md),
+   adopted by `awcms` in [ADR-0156](https://github.com/ahliweb/awcms/blob/main/docs/adr/0156-adopt-development-flow-v2-validated-ux-before-data-model-frontend-backend-integration-per-slice.md)).
+   For this repo that means: a screen is visualised and usability-tested
+   (step 4) before the data model and contract it needs; step 11 runs per slice
+   as **11.1 frontend here, built against the `awcms` OpenAPI contract and a
+   mock generated from it → 11.2 backend, delivered as a PR in `awcms` (ADR-0038)
+   → 11.3 integration** (contract tests such as `tests/kontrak-awcms.test.mjs`,
+   then E2E). A screen with no data source in the contract is not ready to
+   build. Authorisation is never enforced only here: `awcms` and its database
+   decide, this repo reflects.
 
 ## Rules that cannot be broken
 

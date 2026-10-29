@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](AGENTS.md)
 
-<!-- i18n-source-hash: sha256:4e8f2778ca524941dce0e3558b296c0e6fc7f4575728c5ee571493f46a821868 -->
+<!-- i18n-source-hash: sha256:799e3a6af1d8a3d4d7e6a4859875a9c1fb9ab4b97968d1cb4280b2e23506118e -->
 
 # AGENTS.md — kontrak kerja `awcms-astro`
 
@@ -337,6 +337,17 @@ yang [ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.m
 5. Perubahan yang mengubah perilaku wajib memperbarui dokumen yang menjelaskan
    perilaku itu — di repo ini dokumentasi adalah bagian dari produk, bukan
    pelengkap.
+6. Pekerjaan produk mengikuti alur pengembangan 18 langkah v2.0.0 milik
+   portofolio ([`ahliweb/personal-coding`, alur-pengembangan-produk](https://github.com/ahliweb/personal-coding/blob/main/docs/alur-pengembangan-produk.md),
+   diadopsi `awcms` lewat [ADR-0156](https://github.com/ahliweb/awcms/blob/main/docs/adr/0156-adopt-development-flow-v2-validated-ux-before-data-model-frontend-backend-integration-per-slice.id.md)).
+   Untuk repo ini artinya: sebuah layar divisualisasikan dan diuji usabilitasnya
+   (langkah 4) sebelum model data dan kontrak yang dibutuhkannya; langkah 11
+   berjalan per slice sebagai **11.1 frontend di sini, dibangun terhadap kontrak
+   OpenAPI `awcms` dan mock yang dihasilkan darinya → 11.2 backend, dikirim
+   sebagai PR di `awcms` (ADR-0038) → 11.3 integrasi** (uji kontrak seperti
+   `tests/kontrak-awcms.test.mjs`, lalu E2E). Layar tanpa sumber data di kontrak
+   belum siap dibangun. Otorisasi tidak pernah ditegakkan hanya di sini: `awcms`
+   dan basis datanya yang memutuskan, repo ini mencerminkan.
 
 ## Aturan yang tidak bisa dilanggar
 
