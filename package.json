@@ -50,7 +50,7 @@
     "@astrojs/check": "^0.9.12",
     "@astrojs/node": "^11.1.9",
     "@astrojs/sitemap": "^3.7.4",
-    "astro": "^7.4.2",
+    "astro": "^7.4.4",
     "compression": "^1.8.2",
     "typescript": "^6.0.3"
   },
