@@ -328,7 +328,7 @@ exactly what
 5. A change that changes behaviour must update the document that explains that
    behaviour — in this repo documentation is part of the product, not a garnish.
 6. Product work follows the portfolio's 18-step development flow v2.0.0
-   ([`ahliweb/personal-coding`, alur-pengembangan-produk](https://github.com/ahliweb/personal-coding/blob/main/docs/alur-pengembangan-produk.md),
+   (the owner's internal cross-portfolio standard,
    adopted by `awcms` in [ADR-0156](https://github.com/ahliweb/awcms/blob/main/docs/adr/0156-adopt-development-flow-v2-validated-ux-before-data-model-frontend-backend-integration-per-slice.md)).
    For this repo that means: a screen is visualised and usability-tested
    (step 4) before the data model and contract it needs; step 11 runs per slice
@@ -949,7 +949,7 @@ Three things to read before touching that area:
 
 ## Orchestrator & agent (AI models)
 
-> Cross-portfolio standard from [`ahliweb/personal-coding`](https://github.com/ahliweb/personal-coding/blob/main/docs/tingkatan-model-ai-claude-openai.md) (docs/tingkatan-model-ai-claude-openai.md, snapshot 2026-10-28). Prices, effort, and the model lineup are maintained there — do not copy them into this repo.
+> Internal cross-portfolio standard on AI model tiers (snapshot 2026-10-28). Prices, effort, and the model lineup are maintained in that standard — do not copy them into this repo.
 
 Work that must be split across several agents follows the **orchestrator → agent** pattern. The orchestrator splits the work, assigns tasks, orders dependencies, then reviews and merges the results; an agent does one bounded part.
 
