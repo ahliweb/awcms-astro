@@ -1,7 +1,24 @@
+# Laporan bug. Mengikuti standar roadmap dan issue lintas-portofolio internal (DL-041).
 name: Laporan bug
 description: Template error, hasil build salah, tampilan rusak, atau tautan mati
-labels: ["bug"]
+title: "[Fase/SEQ] fix: ringkasan"
+labels: ["jenis:fix"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        **Repo ini publik.** Jangan menempelkan rahasia, token, data pribadi, atau log yang memuatnya; samarkan dulu.
+        Kerentanan keamanan dilaporkan lewat jalur privat di `SECURITY.md`, bukan lewat issue ini.
+        Pekerjaan di luar roadmap memakai fase `F0` pada judul.
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Versi atau commit, dampaknya, dan siapa yang terkena (pembaca situs atau pengembang template).
+    validations:
+      required: true
+
   - type: input
     id: halaman
     attributes:
@@ -12,16 +29,28 @@ body:
       required: true
 
   - type: textarea
-    id: gejala
+    id: repro
     attributes:
-      label: Apa yang terjadi
+      label: Langkah mereproduksi
+      placeholder: |
+        1. ...
+        2. ...
     validations:
       required: true
 
   - type: textarea
     id: harapan
     attributes:
-      label: Apa yang seharusnya terjadi
+      label: Hasil yang diharapkan
+      description: Apa yang seharusnya terjadi.
+    validations:
+      required: true
+
+  - type: textarea
+    id: gejala
+    attributes:
+      label: Hasil yang terjadi
+      description: Apa yang terjadi.
     validations:
       required: true
 
@@ -42,3 +71,58 @@ body:
         - Tablet (480-1024px)
         - Desktop (di atas 1024px)
         - Tidak yakin
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: Termasuk uji regresi yang membuktikan bug tidak kembali.
+      value: |
+        - [ ] Bug tidak lagi bisa direproduksi
+        - [ ] Ada uji atau gerbang yang gagal sebelum perbaikan dan lolos sesudahnya
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope-out
+    attributes:
+      label: Scope - Out
+      description: Temuan lain di sekitar bug ini dicatat sebagai issue terpisah.
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Path berkas, dokumen, ADR, atau issue terkait.
+
+  - type: dropdown
+    id: size
+    attributes:
+      label: Size
+      description: Ukuran L tidak diterima. Pecah menjadi sub-issue S atau M.
+      options:
+        - S
+        - M
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Prioritas yang diusulkan
+      description: Triase menetapkan label akhir.
+      options:
+        - P0
+        - P1
+        - P2
+        - P3
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Pemeriksaan keamanan isi
+      options:
+        - label: Issue ini tidak memuat rahasia, data pribadi, atau nama repo privat
+          required: true
