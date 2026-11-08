@@ -87,6 +87,17 @@ Example scopes: `konten`, `i18n`, `seo`, `share`, `gambar`, `deploy`, `runtime`,
 
 The commit body explains **why**, rather than repeating the diff.
 
+## Issues, labels, and the roadmap
+
+Issues are created from the forms on the Issues tab (`.github/ISSUE_TEMPLATE/`) and follow the internal cross-portfolio roadmap and issue standard (DL-041):
+
+- **Title** `[Phase/SEQ] kind: summary`, for example `[F1/03A] feat: pagination for news sections`. Work outside any phase uses `F0`.
+- **Labels**: exactly one `jenis:` (`feat`, `fix`, `docs`, `test`, `ci`, `chore`, `refactor`, `riset`), exactly one `prioritas:` (`P0` to `P3`) and exactly one `ukuran:` (`S` or `M`); zero or more `area:`. Triage sets the final labels. The older labels (`bug`, `enhancement`, `documentation`, ...) are not removed.
+- **There is no size L.** Work of size L is split into an epic with S or M sub-issues (the Epic form; GitHub's sub-issue feature).
+- **The issue body** has nine parts: Context, Goal, Scope (In and Out), Steps, Acceptance Criteria, Definition of Done, Dependencies, References and Size. This repo is public: an issue carries no secrets, personal data or private repository names.
+- **The roadmap** is [`docs/roadmap.md`](docs/roadmap.md): phases, exit criteria and status. It is not a promise of dates, and its statuses apply once the owner has confirmed them.
+- A pull request closes its issue with `Closes #<issue>` (the pull request template already has the line).
+
 ## Rules that are not negotiable
 
 The full detail and the reasoning for each is in [`AGENTS.md`](AGENTS.md). The ones most often broken without noticing — all of them because breaking them **never fails**:
