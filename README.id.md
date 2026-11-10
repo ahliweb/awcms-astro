@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:629fba8ff7fedfd0cde990d96658f1735570943fe7023ae88b6b7f9a04277a57 -->
+<!-- i18n-source-hash: sha256:c8b498304c9bdcc14e1fb6fd193666bbd7c0cb6c11fa362e2fe1a57e02356202 -->
 
 # awcms-astro
 
@@ -427,3 +427,7 @@ dokumen yang masih menunggu cerminnya. Sumber berkas ini
 ## UI/UX lead dan consent publik
 
 [**UX publik Astro untuk CRM dan consent v1.0**](docs/crm-public-ux-contract.id.md) menjelaskan halaman publik Astro/SEO yang sudah ada dan **rencana** form lead, opt-in per kanal, preferensi notifikasi serta status klien realtime Bun. Tidak menambahkan pengirim campaign atau admin SYSTEM. [Issue #127](https://github.com/ahliweb/awcms-astro/issues/127).
+
+## Referensi arsitektur percakapan CarikBot (riset saja)
+
+[Kajian konsep CarikBot](docs/carikbot-conversation-reference.id.md) dan [English source](docs/carikbot-conversation-reference.md) menjelaskan desain flow/menu/form, batas fitur yang sudah ada dengan usulan, keamanan, pengujian, dan kepemilikan. Belum ada engine chatbot atau API produksi baru yang diimplementasikan.

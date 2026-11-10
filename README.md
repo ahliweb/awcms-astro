@@ -426,3 +426,7 @@ The [Bun-only realtime client contract](docs/bun-realtime-client-boundary.md) is
 ## Public CRM lead and consent UX
 
 [**Astro public CRM lead/consent UX v1.0**](docs/crm-public-ux-contract.md) maps existing public Astro navigation/SEO and **proposed** lead forms, channel-specific opt-in, notification settings and approved Bun realtime client state. It neither sends provider campaigns nor adds system-admin routes. [Issue #127](https://github.com/ahliweb/awcms-astro/issues/127).
+
+## CarikBot conversation architecture reference (research only)
+
+[CarikBot concept evaluation](docs/carikbot-conversation-reference.md) and [Bahasa Indonesia](docs/carikbot-conversation-reference.id.md) document flow/menu/form ideas, current-versus-proposed status, provider boundaries, privacy risks, tests and cross-repository ownership. No chatbot engine or production API is added by this documentation.
