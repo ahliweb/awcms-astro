@@ -5,7 +5,7 @@ description: Kontrak integrasi awcms-astro ↔ awcms — tenant dari token mesin
 
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](SKILL.md)
 
-<!-- i18n-source-hash: sha256:df9e495c8151f95860766ca6499b1b89d6892a8cb44677ec11c1ff041ccb6952 -->
+<!-- i18n-source-hash: sha256:d3d175644ebafa3cfc1a70691326bdfe0554db463eb1009c3c518fa0dadde74f -->
 
 # awcms-astro — kontrak integrasi dengan `awcms`
 
@@ -342,7 +342,7 @@ dan sengaja TIDAK diduplikasi di sini: dua salinan data yang digerbangi adalah
 dua salinan yang boleh menyimpang, dan yang menyimpang selalu yang tidak dibaca
 mesin. Yang ada di sini penjelasannya; yang ada di sana buku besarnya.
 
-Ringkasannya: **lantai ADR-0049**, puncaknya ADR-0159, **nol** bervonis `belum`.
+Ringkasannya: **lantai ADR-0049**, puncaknya ADR-0161, **nol** bervonis `belum`.
 Jumlah persisnya sengaja TIDAK ditulis di sini lagi — ia berbunyi "68 ADR" sampai
 2 September 2026 sementara gerbangnya menghitung 70, dan sebuah angka dalam prosa
 yang tidak dibaca pemeriksa mana pun akan hanyut lagi persis seperti itu
