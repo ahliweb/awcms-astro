@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](AGENTS.md)
 
-<!-- i18n-source-hash: sha256:32422492c2382ea38e570e5d299399d8849fec2cb087983c9a11477129b5a2af -->
+<!-- i18n-source-hash: sha256:6ac1cd592531bd6a06b1d96551a3adb9b8c5fae4bdd20ccb411988820efdc2ed -->
 
 # AGENTS.md — kontrak kerja `awcms-astro`
 
@@ -338,7 +338,7 @@ yang [ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.m
    perilaku itu — di repo ini dokumentasi adalah bagian dari produk, bukan
    pelengkap.
 6. Pekerjaan produk mengikuti alur pengembangan 18 langkah v2.0.0 milik
-   portofolio ([`ahliweb/personal-coding`, alur-pengembangan-produk](https://github.com/ahliweb/personal-coding/blob/main/docs/alur-pengembangan-produk.md),
+   portofolio (standar lintas-portofolio internal pemilik,
    diadopsi `awcms` lewat [ADR-0156](https://github.com/ahliweb/awcms/blob/main/docs/adr/0156-adopt-development-flow-v2-validated-ux-before-data-model-frontend-backend-integration-per-slice.id.md)).
    Untuk repo ini artinya: sebuah layar divisualisasikan dan diuji usabilitasnya
    (langkah 4) sebelum model data dan kontrak yang dibutuhkannya; langkah 11
@@ -979,7 +979,7 @@ Tiga hal yang perlu dibaca sebelum menyentuh area itu:
 
 ## Orchestrator & Agent (model AI)
 
-> Standar lintas-portofolio dari [`ahliweb/personal-coding`](https://github.com/ahliweb/personal-coding/blob/main/docs/tingkatan-model-ai-claude-openai.md) (docs/tingkatan-model-ai-claude-openai.md, snapshot 2026-10-28). Harga, effort, dan lini model dipelihara di sana — jangan disalin ke repo ini.
+> Standar lintas-portofolio internal tentang tingkatan model AI (snapshot 2026-10-28). Harga, effort, dan lini model dipelihara di standar internal itu — jangan disalin ke repo ini.
 
 Pekerjaan yang perlu dipecah ke beberapa agent memakai pola **orchestrator → agent**. Orchestrator memecah pekerjaan, membagi tugas, mengatur ketergantungan, lalu memeriksa dan menyatukan hasil; agent mengerjakan satu bagian yang sudah dibatasi.
 
