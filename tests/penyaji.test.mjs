@@ -38,6 +38,7 @@ import { join } from "node:path";
 import {
   CACHE_ASET,
   CACHE_HALAMAN,
+  SMAXAGE_HALAMAN,
   CSP,
   HEADER_KEAMANAN,
   HSTS,
@@ -278,12 +279,31 @@ describe("header pada respons sungguhan", () => {
     }
   });
 
-  test("HTML must-revalidate, aset immutable", async () => {
+  test("HTML: browser memvalidasi ulang, cache bersama dibatasi; aset immutable (ADR-0054)", async () => {
     const halaman = await lewatServer(handlerTiruan, "/panduan/");
     assert.equal(halaman.headers.get("cache-control"), CACHE_HALAMAN);
 
+    const arahan = CACHE_HALAMAN.split(",").map((a) => a.trim());
+    assert.ok(arahan.includes("public"));
+    assert.ok(arahan.includes("max-age=0"), "browser tidak boleh diberi jendela segar");
+    assert.ok(arahan.includes("must-revalidate"));
+    assert.ok(arahan.includes(`s-maxage=${SMAXAGE_HALAMAN}`));
+    assert.ok(
+      Number.isInteger(SMAXAGE_HALAMAN) && SMAXAGE_HALAMAN > 0 && SMAXAGE_HALAMAN <= 600,
+      "s-maxage HTML harus bilangan bulat positif dan konservatif (<= 600 detik)"
+    );
+    assert.doesNotMatch(CACHE_HALAMAN, /immutable|stale-while-revalidate|stale-if-error/);
+
     const aset = await lewatServer(handlerTiruan, "/_astro/BaseLayout.abc123.css");
     assert.equal(aset.headers.get("cache-control"), CACHE_ASET);
+    assert.doesNotMatch(CACHE_ASET, /s-maxage/, "aset ber-hash tetap immutable saja");
+  });
+
+  test("penyaji tidak membaca kredensial purge CDN (ADR-0054)", () => {
+    // Langkah purge berjalan di kontainer yang sama, tetapi proses yang melayani
+    // pembaca tidak punya urusan dengan token itu.
+    const isi = readFileSync("server/penyaji.mjs", "utf8");
+    assert.doesNotMatch(isi, /CLOUDFLARE_|CDN_PURGE/);
   });
 
   test("header sama pada GET dan HEAD", async () => {

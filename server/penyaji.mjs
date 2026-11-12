@@ -41,11 +41,15 @@
  * membuat GET dan HEAD menjawab hal yang sama; nilai yang dipasang adapter
  * kemudian identik, jadi keduanya tidak bisa berselisih.
  *
- * ## Kenapa HTML tidak boleh di-cache lama
+ * ## Kenapa HTML hanya boleh di-cache singkat, dan hanya oleh cache bersama
  *
  * Seluruh premis rebuild lewat webhook adalah konten baru tayang cepat. Cache
  * HTML satu jam membatalkannya tanpa ada yang menyadarinya — situs terlihat
- * "belum ter-rebuild" padahal rebuild-nya sukses. Sebaliknya aset `/_astro/`
+ * "belum ter-rebuild" padahal rebuild-nya sukses. Karena itu browser tidak
+ * pernah diberi jendela segar (`max-age=0`). Cache bersama diberi jendela
+ * pendek (`s-maxage`, ADR-0054) supaya CDN bisa menyerap pembacaan, dan setiap
+ * deploy mem-purge CDN lewat `server/purge-cdn.mjs`; jendela pendek itulah
+ * yang membatasi kebasian bila purge tidak berjalan. Sebaliknya aset `/_astro/`
  * ber-hash pada namanya, jadi ia aman di-cache selamanya dan itulah
  * satu-satunya cara rebuild tidak memaksa pembaca mengunduh ulang seluruh CSS.
  */
@@ -68,7 +72,21 @@ import { PENGALIHAN, targetPengalihan } from "../src/config/pengalihan.mjs";
 const PREFIKS_ASET = "/_astro/";
 
 export const CACHE_ASET = "public, max-age=31536000, immutable";
-export const CACHE_HALAMAN = "public, max-age=0, must-revalidate";
+
+/**
+ * Seberapa lama cache BERSAMA (CDN, Traefik) boleh menyimpan HTML, dalam detik
+ * (ADR-0054). Sengaja pendek: pada deploy purge CDN yang menjadi pembatas
+ * utama, dan angka ini hanya batas atas basi bila purge itu tidak berjalan.
+ */
+export const SMAXAGE_HALAMAN = 300;
+
+/**
+ * Dua aturan untuk dua pembaca: browser selalu memvalidasi ulang
+ * (`max-age=0`, `must-revalidate`), cache bersama boleh menyimpan
+ * `SMAXAGE_HALAMAN` detik. `stale-while-revalidate` sengaja tidak dipakai
+ * (ADR-0054): ia memanjangkan ekor basi melewati batas yang dinyatakan.
+ */
+export const CACHE_HALAMAN = `public, max-age=0, s-maxage=${SMAXAGE_HALAMAN}, must-revalidate`;
 
 /**
  * The `Vary` names a response from this server may NEVER carry (ADR-0041,

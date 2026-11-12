@@ -35,6 +35,7 @@
     "knowledge:check": "bun run audit:graf",
     "test": "bun test",
     "serve": "bun dist/server/penyaji.mjs",
+    "purge:cdn": "bun server/purge-cdn.mjs",
     "start": "bun run serve",
     "preview": "bun run serve",
     "release": "bun scripts/rilis.mjs",

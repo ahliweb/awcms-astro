@@ -305,9 +305,11 @@ curl -sI https://<domain>/ | head -1                    # 200
 curl -s  https://<domain>/sitemap-index.xml | head -3   # the sitemap was built
 curl -sI https://<domain>/_astro/<file>.css | grep -i cache-control
 #   -> public, max-age=31536000, immutable
-curl -sI https://<domain>/ | grep -i cache-control
-#   -> public, max-age=0, must-revalidate  (HTML must not be cached long,
-#      or a successful rebuild still looks like it never ran)
+curl -sI https://<domain>/ | grep -iE 'cache-control|cf-cache-status|^age:'
+#   -> public, max-age=0, s-maxage=300, must-revalidate  (ADR-0054: browsers
+#      always revalidate; a shared cache may hold HTML for at most 5 minutes)
+#   -> with a CDN in front and an HTML cache rule: cf-cache-status HIT and an
+#      age: below 300 on the second request, and age: reset after a deploy
 curl -sI https://<domain>/ | grep -iE 'x-content-type-options|x-frame-options|referrer-policy'
 #   -> nosniff / DENY / strict-origin-when-cross-origin
 curl -sI https://<domain>/ | grep -iE 'content-security-policy|permissions-policy'
@@ -316,6 +318,51 @@ curl -sI https://<domain>/ | grep -iE 'content-security-policy|permissions-polic
 curl -sI https://<domain>/tema.js | head -1             # 200 — the theme switcher is published
 curl -sI https://<domain>/tidak-ada/ | head -1          # 404, not 200
 ```
+
+### The CDN purge after a deploy (ADR-0054)
+
+HTML is sent with `s-maxage=300`, so a CDN may hold a page for up to five
+minutes. What keeps a rebuild prompt is a purge of the CDN once the new build is
+live: [`server/purge-cdn.mjs`](../server/purge-cdn.mjs), copied into the image as
+`dist/server/purge-cdn.mjs`.
+
+In Coolify, set the application's **Post-deployment command** to:
+
+```sh
+bun dist/server/purge-cdn.mjs
+```
+
+and add these as **Runtime** variables (not build variables), the first marked
+secret:
+
+| Variable | Note |
+| --- | --- |
+| `CLOUDFLARE_API_TOKEN` | **A secret.** Scope it to *Cache Purge* on this one zone, nothing else. Never commit it |
+| `CLOUDFLARE_ZONE_ID` | The zone's id |
+| `CDN_PURGE_HOSTS` | Optional. Comma-separated hostnames to purge; defaults to the host of `SITE_URL` when that is a runtime variable too |
+
+It purges by **hostname**, not the whole zone, so other sites in the same zone
+are untouched. Try it without sending anything: `bun dist/server/purge-cdn.mjs
+--dry-run` prints the request and sends nothing.
+
+What happens when it cannot do its job:
+
+- **A variable is missing** — one warning naming it, exit `0`. The deploy stays
+  green and staleness is bounded by `s-maxage`.
+- **The CDN is unreachable or rate-limited** — `429` honours `Retry-After`, `5xx`
+  and network errors retry with backoff, three attempts at most, then an error in
+  the deploy log and exit `0`. A `4xx` (wrong token, wrong zone) stops at once
+  with the CDN's own message.
+- Add `--strict` to the command if you would rather the deploy be marked failed.
+
+A CDN does not cache HTML by default. Add a cache rule in the CDN account that
+treats the site's HTML as eligible and respects the origin `Cache-Control`;
+that is account configuration and not something this repo can do.
+
+To prove a rebuild is visible, request a page twice (`cf-cache-status: HIT` and a
+growing `age:` on the second), deploy, then request it again: `age:` starts over
+and the new content is served. A `cf-cache-status: DYNAMIC` means the rule that
+makes HTML eligible is missing, not that this repo is wrong.
 
 Two CSP items worth checking by eye after a site's first deploy, because both fail
 without changing any HTTP status:
