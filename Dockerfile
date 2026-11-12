@@ -159,6 +159,12 @@ COPY --from=build /app/dist/server/penyaji.mjs ./dist/server/penyaji.mjs
 # deployment tanpa media publik tetap menuliskannya dengan `configured: false`.
 COPY --from=build /app/dist/server/asal-media.json ./dist/server/asal-media.json
 
+# Langkah purge CDN pasca-deploy (ADR-0054). Tanpa dependency dan tanpa impor,
+# jadi berkas apa adanya cukup, dan platform menjalankannya sebagai
+# post-deployment command: `bun dist/server/purge-cdn.mjs`. Ketiadaannya tidak
+# menggagalkan apa pun: HTML hanya basi selama `s-maxage`.
+COPY --from=build /app/server/purge-cdn.mjs ./dist/server/purge-cdn.mjs
+
 # Image bun sudah membawa pengguna non-root `bun`. Tidak ada alasan proses yang
 # hanya membaca berkas berjalan sebagai root.
 USER bun

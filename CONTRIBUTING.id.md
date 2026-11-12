@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](CONTRIBUTING.md)
 
-<!-- i18n-source-hash: sha256:a1ae463f40a1794f907bd3eac8788571d608908775ad41e7fa6fafd57617e6f8 -->
+<!-- i18n-source-hash: sha256:f86ff1cafd83b5cf1e9d84d610bdb3841e90bd40ecd6cd8961733fa207b5bb07 -->
 
 # Panduan Kontribusi
 
@@ -88,6 +88,17 @@ bun run dev           # http://localhost:4321
 Scope contoh: `konten`, `i18n`, `seo`, `share`, `gambar`, `deploy`, `runtime`, `lockfile`, `rilis`.
 
 Badan commit menjelaskan **kenapa**, bukan mengulang diff.
+
+## Issue, label, dan roadmap
+
+Issue dibuat dari form di tab Issues (`.github/ISSUE_TEMPLATE/`) dan mengikuti standar roadmap dan issue lintas-portofolio internal (DL-041):
+
+- **Judul** `[Fase/SEQ] jenis: ringkasan`, misalnya `[F1/03A] feat: paginasi seksi berita`. Pekerjaan di luar fase memakai `F0`.
+- **Label**: tepat satu `jenis:` (`feat`, `fix`, `docs`, `test`, `ci`, `chore`, `refactor`, `riset`), tepat satu `prioritas:` (`P0` sampai `P3`), dan tepat satu `ukuran:` (`S` atau `M`); `area:` nol atau lebih. Triase memasang label akhir. Label lama (`bug`, `enhancement`, `documentation`, dan seterusnya) tidak dihapus.
+- **Ukuran L tidak ada.** Pekerjaan L dipecah menjadi epik dengan sub-issue S atau M (form Epik; fitur sub-issue GitHub).
+- **Badan issue** terdiri dari sembilan bagian: Context, Goal, Scope (In dan Out), Steps, Acceptance Criteria, Definition of Done, Dependensi, References, dan Size. Repo ini publik: issue tidak memuat rahasia, data pribadi, atau nama repo privat.
+- **Roadmap** ada di [`docs/roadmap.md`](docs/roadmap.md): fase, kriteria keluar, dan status. Ia bukan janji tanggal, dan statusnya berlaku setelah dikonfirmasi pemilik.
+- Pull request menutup issue lewat `Closes #<issue>` (template pull request sudah memuat barisnya).
 
 ## Aturan yang tidak bisa ditawar
 

@@ -28,8 +28,8 @@ The word **must** in this document means that breaking it fails a quality gate, 
 | Value | `awcms` | this repo | Its state |
 | --- | --- | --- | --- |
 | Bun | `1.3.14` | `1.4.4` | This repo raised its pin on 5 September 2026 (to `1.4.2`) and again on 24 October 2026 (to `1.4.4`); the `awcms` column is unchanged and now lags — guarded by `tests/versi-toolchain.test.mjs` over five values here |
-| `astro` | `^7.2.4` | `^7.4.2` | **This repo is AHEAD since 2 September 2026** — five patches then, and two minors by the October 2026 security bump that raised it to `^7.4.2` — and the direction is the new part: from 23 August it matched `awcms` exactly, and it is Dependabot raising this repo alone that separated them. Nothing here depends on the two agreeing — an `astro` patch range carries no cross-repo contract — so the gap is recorded rather than closed by holding a security-relevant patch back. `awcms` will close it on its own bump. The third column is the one with a checker; **this column is hand-written and read from `ahliweb/awcms` on 2 September 2026**, so treat it as a note that can go stale |
-| `@astrojs/node` | `^11.1.4` | `^11.1.9` | The same as above, raised in the same pull request |
+| `astro` | `^7.2.4` | `^7.4.7` | **This repo is AHEAD since 2 September 2026** — five patches then, and two minors by the October 2026 security bump that raised it to `^7.4.2` — and the direction is the new part: from 23 August it matched `awcms` exactly, and it is Dependabot raising this repo alone that separated them. Nothing here depends on the two agreeing — an `astro` patch range carries no cross-repo contract — so the gap is recorded rather than closed by holding a security-relevant patch back. `awcms` will close it on its own bump. The third column is the one with a checker; **this column is hand-written and read from `ahliweb/awcms` on 2 September 2026**, so treat it as a note that can go stale |
+| `@astrojs/node` | `^11.1.4` | `^11.1.11` | The same as above, raised in the same pull request |
 | `typescript` | `^7.0.2` | `^6.0.3` | **Deliberately different, and binding.** The 6.x pin here is the condition for the `astro check` gate being alive — see [ADR-0037](../adr/0037-pin-typescript-6-adalah-syarat-hidupnya-gerbang-astro-check.md) |
 
 ### Dependency inventory, 24 October 2026 (issue #126)
@@ -38,16 +38,17 @@ A hand-written snapshot, taken with `bun outdated` and `bun audit --audit-level=
 
 | Package | Declared | Locked before | Locked after | Latest | Action |
 | --- | --- | --- | --- | --- | --- |
-| `astro` | `^7.4.2` | `7.4.2` | `7.4.2` | `7.4.2` | none, current |
-| `@astrojs/node` | `^11.1.9` | `11.1.9` | `11.1.9` | `11.1.9` | none, current; peer `astro ^7.2.1` is met |
+| `astro` | `^7.4.7` | `7.4.2` | `7.4.7` | `7.4.7` | raised 7 November 2026 (within range, no major) |
+| `@astrojs/node` | `^11.1.11` | `11.1.9` | `11.1.11` | `11.1.11` | raised 7 November 2026; peer `astro ^7.2.1` is met |
 | `@astrojs/sitemap` | `^3.7.4` | `3.7.4` | `3.7.4` | `3.7.4` | none, current |
 | `@astrojs/check` | `^0.9.12` | `0.9.12` | `0.9.12` | `0.9.12` | none, current; peer `typescript ^5 \|\| ^6` |
 | `compression` | `^1.8.2` | `1.8.2` | `1.8.2` | `1.8.2` | none, current |
 | `@types/bun` | `^1.4.4` | `1.4.4` | `1.4.4` | `1.4.4` | none, current; equals the pinned Bun |
 | `typescript` | `^6.0.3` | `6.0.3` | `6.0.3` | `7.0.2` | **held back (major)** — `@astrojs/check@0.9.12`, the latest, still declares `typescript ^5 \|\| ^6`, so 7.x would break the `astro check` gate ([ADR-0037](../adr/0037-pin-typescript-6-adalah-syarat-hidupnya-gerbang-astro-check.md)); Dependabot ignores `>=7` for the same reason. `6.0.3` is the newest 6.x |
 
+- **Update, 7 November 2026:** `astro` and `@astrojs/node` raised within their major to the rows marked above (no major taken; `typescript` stays held back). Bun `1.4.4` remains the latest and the `Dockerfile` digest is unchanged.
 - **Bun:** pinned `1.4.4` in the five values; the npm registry's latest is also `1.4.4`, so nothing to raise. The `Dockerfile` digest for `oven/bun:1.4.4-alpine` was compared against the registry's index digest and matches.
-- **Audit:** `bun audit --audit-level=low` reports no vulnerabilities across 355 packages. The two `overrides` (`fast-uri`, `nanoid`) are left as they are.
+- **Audit:** `bun audit --audit-level=low` reports no vulnerabilities across 355 packages. The `overrides` `fast-uri` and `nanoid` are left as they are. Since 7 November 2026 there are two more, `@emnapi/core` and `@emnapi/runtime` pinned to `1.11.3`: without them Bun resolves `@emnapi/runtime` to `2.0.0-beta.2` (a peer range of `@napi-rs/wasm-runtime` under `@astrojs/check`) and `astro check` crashes with `bridge.deleteEnv is not a function`; remove them once the peer range resolves to a stable release.
 - **Rollback:** this change moves no version. Were a later bump to misbehave, revert its commit and run `bun install --frozen-lockfile`; `bun run check:lockfile` confirms the lock again matches `package.json`.
 
 ## The mandatory structure
@@ -208,7 +209,7 @@ How they are achieved — and this is what binds:
 - A first-screen image is `loading="eager"` + `fetchpriority="high"`; the rest are `loading="lazy"`. Both are needed and do not substitute for each other: `eager` only means "do not defer", while an `<img>`'s default priority stays **Low** until layout proves it is in the viewport. Enforced by `bun run audit:konten` over the output, so an `<img>` that did not go through `src/components/Ilustrasi.astro` is caught too.
 - **The theme is installed by the external file `public/tema.js` loaded through a classic `<script src>`**, not an inline script. Since [ADR-0019](../adr/0019-csp-ketat-dikirim-penyaji.md) the server sends `script-src 'self'` without `'unsafe-inline'`, so an inline script is not "less tidy" — it is dead in a reader's browser. An Astro bundle is always `type="module"` and modules are always deferred, so it is not a substitute for the before-paint case.
 - Response compression is not only gzip: `compression` negotiates **Brotli** (RFC 7932) when a browser asks for it, and Brotli beats gzip by roughly 15–20% on HTML. Keeping `compression` in `dependencies` is a deliberate decision, not the Node.js runtime creeping back in — it runs entirely under Bun, and [ADR-0050](../adr/0050-bun-is-this-repos-only-runtime-and-a-gate-finally-says-so.md) gates its presence from the keep side.
-- `Cache-Control` in two rules per RFC 9111: hashed assets `immutable` for a year, HTML `max-age=0, must-revalidate` so a rebuild is immediately visible to a reader.
+- `Cache-Control` in two rules per RFC 9111: hashed assets `immutable` for a year, HTML `max-age=0, s-maxage=300, must-revalidate` — browsers always revalidate, a CDN may hold a page for five minutes, and every deploy purges the CDN so a rebuild is visible promptly ([ADR-0054](../adr/0054-html-gets-a-shared-cache-lifetime-and-every-deploy-purges-the-cdn.md)).
 - The budgets proven in the reference repo: **home ≤ 250 KB of images, content page ≤ 100 KB.** Since 4 August 2026 they are **measured** by `bun run audit:konten` over `dist/client`, per page. What is weighed is only the images this build actually publishes — `awcms` media are not there, so this figure guards local artwork rather than the whole page weight.
 - **Script and stylesheet bytes have their own ceilings**, checked by `bun run audit:aset`: 13,000 B of script and 40,000 B in total per page, plus 8,000 B for one published script file. They are measurements with headroom rather than round numbers, and the measurement is recorded in `scripts/audit-aset.mjs` beside each one. A violation names the file that grew, which is the whole reason it exists next to Lighthouse rather than inside it — a lab score cannot say which file to look at. **Where a rule LIVES is part of this budget**: `src/styles/global.css` is loaded by every page, so a rule only one component uses is bytes every other page pays for.
 

@@ -86,10 +86,12 @@ jobs:
           # Endpoint deploy Coolify, bukan /restart. `/restart` hanya membuat
           # ulang container dari image yang SUDAH ada — ia tidak menarik repo
           # dan tidak membangun ulang, sehingga konten baru tidak pernah masuk.
-          # Ini persis jebakan yang sudah terdokumentasi di
-          # ahliweb/serv-dinkesdocker docs/17-simfar-autodeploy.md.
+          #
+          # Metodenya POST. Coolify v4 versi baru menjawab GET /api/v1/deploy
+          # dengan "This endpoint has changed to a POST request." tanpa
+          # memicu apa pun; `uuid` tetap dibaca dari query string.
           kode=$(curl -sS -o /tmp/jawaban.json -w '%{http_code}' \
-            -X GET "${COOLIFY_API_URL%/}/api/v1/deploy?uuid=${COOLIFY_APP_UUID}" \
+            -X POST "${COOLIFY_API_URL%/}/api/v1/deploy?uuid=${COOLIFY_APP_UUID}" \
             -H "Authorization: Bearer ${COOLIFY_API_TOKEN}" \
             -H "Accept: application/json")
 

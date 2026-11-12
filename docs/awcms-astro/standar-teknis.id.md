@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](standar-teknis.md)
 
-<!-- i18n-source-hash: sha256:df49202d454d497a9a01ce5cb3873c1e1ec874eba55e1cecc6df8dfae511d063 -->
+<!-- i18n-source-hash: sha256:21fb074a73397fd518d425ed9782c01dd5f694d8fe2b2b7907bac9672dfede53 -->
 
 # awcms-astro — Standar Teknis
 
@@ -30,8 +30,8 @@ Kata **wajib** di dokumen ini berarti pelanggarannya menggagalkan gerbang mutu, 
 | Nilai | `awcms` | repo ini | Keadaannya |
 | --- | --- | --- | --- |
 | Bun | `1.3.14` | `1.4.4` | Repo ini menaikkan pin-nya pada 5 September 2026 (ke `1.4.2`) dan lagi pada 24 Oktober 2026 (ke `1.4.4`); kolom `awcms` tidak berubah dan kini tertinggal — dijaga `tests/versi-toolchain.test.mjs` atas lima nilai di sini |
-| `astro` | `^7.2.4` | `^7.4.2` | **Repo ini DI DEPAN sejak 2 September 2026** — lima patch waktu itu, dan dua minor pada bump keamanan Oktober 2026 yang menaikkannya ke `^7.4.2` — dan arahnya yang baru: sejak 23 Agustus ia cocok persis dengan `awcms`, dan yang memisahkannya adalah Dependabot yang menaikkan repo ini sendirian. Tidak ada apa pun di sini yang bergantung pada keduanya sepakat — rentang patch `astro` tidak membawa kontrak lintas-repo — jadi selisihnya dicatat alih-alih ditutup dengan menahan patch yang bisa saja relevan bagi keamanan. `awcms` akan menutupnya lewat bump-nya sendiri. Kolom ketiga yang punya pemeriksa; **kolom ini ditulis tangan dan dibaca dari `ahliweb/awcms` pada 2 September 2026**, jadi perlakukan ia sebagai catatan yang bisa basi |
-| `@astrojs/node` | `^11.1.4` | `^11.1.9` | Sama seperti di atas, dinaikkan di pull request yang sama |
+| `astro` | `^7.2.4` | `^7.4.7` | **Repo ini DI DEPAN sejak 2 September 2026** — lima patch waktu itu, dan dua minor pada bump keamanan Oktober 2026 yang menaikkannya ke `^7.4.2` — dan arahnya yang baru: sejak 23 Agustus ia cocok persis dengan `awcms`, dan yang memisahkannya adalah Dependabot yang menaikkan repo ini sendirian. Tidak ada apa pun di sini yang bergantung pada keduanya sepakat — rentang patch `astro` tidak membawa kontrak lintas-repo — jadi selisihnya dicatat alih-alih ditutup dengan menahan patch yang bisa saja relevan bagi keamanan. `awcms` akan menutupnya lewat bump-nya sendiri. Kolom ketiga yang punya pemeriksa; **kolom ini ditulis tangan dan dibaca dari `ahliweb/awcms` pada 2 September 2026**, jadi perlakukan ia sebagai catatan yang bisa basi |
+| `@astrojs/node` | `^11.1.4` | `^11.1.11` | Sama seperti di atas, dinaikkan di pull request yang sama |
 | `typescript` | `^7.0.2` | `^6.0.3` | **Sengaja berbeda, dan mengikat.** Pin 6.x di sini adalah syarat hidupnya gerbang `astro check` — lihat [ADR-0037](../adr/0037-pin-typescript-6-adalah-syarat-hidupnya-gerbang-astro-check.md) |
 
 ### Inventaris dependensi, 24 Oktober 2026 (issue #126)
@@ -40,16 +40,17 @@ Potret yang ditulis tangan, diambil dengan `bun outdated` dan `bun audit --audit
 
 | Paket | Dinyatakan | Terkunci sebelum | Terkunci sesudah | Terbaru | Tindakan |
 | --- | --- | --- | --- | --- | --- |
-| `astro` | `^7.4.2` | `7.4.2` | `7.4.2` | `7.4.2` | tidak ada, sudah terbaru |
-| `@astrojs/node` | `^11.1.9` | `11.1.9` | `11.1.9` | `11.1.9` | tidak ada, sudah terbaru; peer `astro ^7.2.1` terpenuhi |
+| `astro` | `^7.4.7` | `7.4.2` | `7.4.7` | `7.4.7` | dinaikkan 7 November 2026 (dalam rentang, tanpa major) |
+| `@astrojs/node` | `^11.1.11` | `11.1.9` | `11.1.11` | `11.1.11` | dinaikkan 7 November 2026; peer `astro ^7.2.1` terpenuhi |
 | `@astrojs/sitemap` | `^3.7.4` | `3.7.4` | `3.7.4` | `3.7.4` | tidak ada, sudah terbaru |
 | `@astrojs/check` | `^0.9.12` | `0.9.12` | `0.9.12` | `0.9.12` | tidak ada, sudah terbaru; peer `typescript ^5 \|\| ^6` |
 | `compression` | `^1.8.2` | `1.8.2` | `1.8.2` | `1.8.2` | tidak ada, sudah terbaru |
 | `@types/bun` | `^1.4.4` | `1.4.4` | `1.4.4` | `1.4.4` | tidak ada, sudah terbaru; sama dengan Bun yang dipin |
 | `typescript` | `^6.0.3` | `6.0.3` | `6.0.3` | `7.0.2` | **ditahan (major)** — `@astrojs/check@0.9.12`, yang terbaru, masih menyatakan `typescript ^5 \|\| ^6`, sehingga 7.x akan mematikan gerbang `astro check` ([ADR-0037](../adr/0037-pin-typescript-6-adalah-syarat-hidupnya-gerbang-astro-check.md)); Dependabot mengabaikan `>=7` karena alasan yang sama. `6.0.3` adalah 6.x terbaru |
 
+- **Pembaruan, 7 November 2026:** `astro` dan `@astrojs/node` dinaikkan dalam major yang sama ke baris yang bertanda di atas (tanpa major; `typescript` tetap ditahan). Bun `1.4.4` masih yang terbaru dan digest `Dockerfile` tidak berubah.
 - **Bun:** dipin `1.4.4` pada lima nilai; rilis terbaru di registry npm juga `1.4.4`, jadi tidak ada yang dinaikkan. Digest `Dockerfile` untuk `oven/bun:1.4.4-alpine` dibandingkan dengan digest indeks registry dan cocok.
-- **Audit:** `bun audit --audit-level=low` melaporkan tidak ada kerentanan pada 355 paket. Dua `overrides` (`fast-uri`, `nanoid`) dibiarkan.
+- **Audit:** `bun audit --audit-level=low` melaporkan tidak ada kerentanan pada 355 paket. `overrides` `fast-uri` dan `nanoid` dibiarkan. Sejak 7 November 2026 ada dua lagi, `@emnapi/core` dan `@emnapi/runtime` dipin ke `1.11.3`: tanpa keduanya Bun memilih `@emnapi/runtime` `2.0.0-beta.2` (rentang peer `@napi-rs/wasm-runtime` di bawah `@astrojs/check`) dan `astro check` jatuh dengan `bridge.deleteEnv is not a function`; hapus setelah rentang peer itu me-resolve ke rilis stabil.
 - **Rollback:** perubahan ini tidak menggeser versi apa pun. Bila bump berikutnya bermasalah, revert commit-nya lalu jalankan `bun install --frozen-lockfile`; `bun run check:lockfile` memastikan lock kembali cocok dengan `package.json`.
 
 ## Struktur wajib
@@ -209,7 +210,7 @@ Cara mencapainya — dan ini yang mengikat:
 - Gambar layar pertama `loading="eager"` + `fetchpriority="high"`; sisanya `loading="lazy"`. Keduanya dibutuhkan dan tidak saling menggantikan: `eager` hanya berarti "jangan tunda", sementara prioritas bawaan sebuah `<img>` tetap **Low** sampai layout membuktikan ia di viewport. Ditegakkan `bun run audit:konten` atas keluaran, jadi `<img>` yang tidak lewat `src/components/Ilustrasi.astro` ikut tertangkap.
 - **Tema dipasang berkas eksternal `public/tema.js` yang dimuat `<script src>` klasik**, bukan skrip inline. Sejak [ADR-0019](../adr/0019-csp-ketat-dikirim-penyaji.md) penyaji mengirim `script-src 'self'` tanpa `'unsafe-inline'`, jadi skrip inline bukan "kurang rapi" — ia mati di browser pembaca. Bundel Astro selalu `type="module"` dan modul selalu ditunda, jadi ia bukan pengganti untuk kasus sebelum-paint.
 - Kompresi respons bukan hanya gzip: `compression` menegosiasikan **Brotli** (RFC 7932) saat browser memintanya, dan Brotli mengalahkan gzip sekitar 15–20% pada HTML. Mempertahankan `compression` di `dependencies` adalah keputusan yang disengaja, bukan runtime Node.js yang menyelinap kembali — ia berjalan sepenuhnya di atas Bun, dan [ADR-0050](../adr/0050-bun-is-this-repos-only-runtime-and-a-gate-finally-says-so.md) menggerbangi keberadaannya dari sisi mempertahankan.
-- `Cache-Control` dua aturan sesuai RFC 9111: aset ber-hash `immutable` satu tahun, HTML `max-age=0, must-revalidate` sehingga rebuild langsung terlihat pembaca.
+- `Cache-Control` dua aturan sesuai RFC 9111: aset ber-hash `immutable` satu tahun, HTML `max-age=0, s-maxage=300, must-revalidate` — browser selalu memvalidasi ulang, CDN boleh menyimpan halaman lima menit, dan setiap deploy mem-purge CDN sehingga rebuild cepat terlihat ([ADR-0054](../adr/0054-html-gets-a-shared-cache-lifetime-and-every-deploy-purges-the-cdn.id.md)).
 - Anggaran yang terbukti di repo rujukan: **beranda ≤ 250 KB gambar, halaman konten ≤ 100 KB.** Sejak 4 Agustus 2026 ia **diukur** `bun run audit:konten` atas `dist/client`, per halaman. Yang ditimbang hanya gambar yang benar-benar diterbitkan build ini — media `awcms` tidak ada di sana, jadi angka ini menjaga seni lokal dan bukan seluruh berat halaman.
 - **Byte skrip dan stylesheet punya plafonnya sendiri**, diperiksa `bun run audit:aset`: 13.000 B skrip dan 40.000 B total per halaman, ditambah 8.000 B untuk satu berkas skrip terbit. Semuanya pengukuran berikut ruang di atasnya, bukan angka bulat, dan pengukurannya dicatat di `scripts/audit-aset.mjs` di sebelah masing-masing angka. Pelanggarannya menyebut berkas mana yang membesar, dan itu seluruh alasan ia berdiri di sebelah Lighthouse alih-alih di dalamnya — skor lab tidak bisa menyebut berkas mana yang harus dilihat. **Di mana sebuah aturan TINGGAL adalah bagian dari anggaran ini**: `src/styles/global.css` dimuat setiap halaman, jadi aturan yang hanya dipakai satu komponen adalah byte yang dibayar setiap halaman lain.
 

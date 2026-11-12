@@ -8,6 +8,100 @@ Berkas ini diisi `bun run release` dengan melipat seluruh changeset di [`.change
 
 Sejak [ADR-0040](docs/adr/0040-changeset-menyatakan-bump-semver.md) setiap changeset menyatakan `bump: major | minor | patch`, dan versi berikutnya adalah bump TERBESAR di antara yang menunggu — jadi besar sebuah rilis adalah akibat dari isinya, bukan keputusan terpisah yang diambil saat merilis.
 
+## [0.6.4] — 2026-11-12
+
+> **Build integrasi tidak berjalan pada rilis ini.** `AWCMS_API_URL` kosong,
+> yang normal untuk repo template ini sendiri — jadi `bun run build`,
+> `bun run audit:konten`, dan lapis penyaji/CSP di `bun test` DILEWATI, bukan
+> lulus. Sebuah situs yang dibangun dari template ini mengisi variabel itu dan
+> menjalankan ketiganya.
+
+### ADR-0149 `awcms` mendapat vonisnya
+
+`bun run audit:serapan` merah di setiap cabang karena `ahliweb/awcms`
+menggabungkan ADR-0149 (PR #1197, 28 Oktober 2026) yang belum dibaca siapa pun
+di repo ini.
+
+- **ADR-0149 divonis `diperiksa`.** Halaman data admin (pencarian, chip filter,
+  judul kolom yang bisa diurutkan, pager keyset) menjadi pola yang dirender
+  server dengan empat primitif `.astro` bersama di folder komponen admin
+  milik `awcms`, diadopsi pertama oleh `/admin/users`. Status ADR masih
+  Proposed. ADR-nya sendiri menyatakan tidak ada perubahan API, OpenAPI,
+  migrasi, izin, atau audit, jadi tidak ada rute yang dipanggil repo ini yang
+  berubah; repo ini juga tidak punya halaman `/admin/*`. Barisnya mencatat
+  kapan dibaca ulang: bila permukaan admin pengguna ditambahkan di sini, ia
+  butuh ADR sendiri, bukan mewarisi komponen `awcms`.
+
+Puncak buku besar naik dari ADR-0148 ke ADR-0149 milik `awcms`; `belum` tetap
+nol.
+
+### Standar orchestrator dan agent untuk pekerjaan multi-agent
+
+Menambahkan bagian "Orchestrator & agent (AI models)" ke `AGENTS.md` (dan
+cerminnya `AGENTS.id.md`) serta dua subagen Claude Code di `.claude/agents/`:
+`pelaksana-kompleks` (Sonnet, `medium`) dan `pelaksana-sederhana` (Haiku, `low`).
+Standarnya dipelihara di `ahliweb/personal-coding`; repo ini hanya menunjuk ke
+sana, tanpa menyalin harga atau lini model.
+
+- Hanya memengaruhi cara agen AI membagi kerja saat mengembangkan repo ini.
+- Tidak mengubah keluaran situs, dependensi, atau deployment.
+
+### Alur pengembangan produk v2: UX tervalidasi, lalu frontend → backend → integrasi
+
+Menambahkan butir 6 di §"The mandatory workflow" `AGENTS.md` (dan cerminnya
+`AGENTS.id.md`): pekerjaan produk mengikuti alur 18 langkah v2.0.0 milik
+`ahliweb/personal-coding`, yang diadopsi `awcms` lewat ADR-0156. Untuk repo ini,
+layar diuji pengguna sebelum kontrak, dan setiap slice dikerjakan sebagai 11.1
+frontend di sini terhadap mock kontrak `awcms` → 11.2 backend sebagai PR di
+`awcms` → 11.3 integrasi.
+
+- Hanya memengaruhi cara pekerjaan direncanakan dan diurutkan.
+- Tidak mengubah keluaran situs, dependensi, atau deployment.
+
+### Penyegaran versi pihak ketiga dalam major yang sama
+
+Tanpa kenaikan major dan tanpa pra-rilis.
+
+- `astro` `^7.4.2` -> `^7.4.7`, `@astrojs/node` `^11.1.9` -> `^11.1.11`; `bun.lock` diregenerasi Bun 1.4.4. Ini menggantikan PR Dependabot yang hanya sampai 7.4.4.
+- `github/codeql-action` v4.39.1 -> v4.39.3 (pin SHA).
+- Bun tetap 1.4.4 (sudah terbaru, digest `Dockerfile` tidak berubah). `typescript` tetap ditahan di 6.x (ADR-0037); 7.x adalah kandidat major.
+- Dua `overrides` baru, `@emnapi/core` dan `@emnapi/runtime` dipin `1.11.3`: setelah naik, Bun me-resolve `@emnapi/runtime` ke `2.0.0-beta.2` (pra-rilis, dari rentang peer di bawah `@astrojs/check`) dan `astro check` jatuh. Pin ini mengembalikan versi stabil yang sudah dipakai sebelumnya.
+
+### Serapan ADR 0157 dan 0158 `awcms` mendapat vonisnya
+
+Menambahkan baris serapan di blok serapan `awcms-astro-integrasi` untuk dua ADR
+milik repo `awcms`: ADR-0157 `awcms` (modul `social_publishing`) dan ADR-0158
+`awcms` (syarat adapter StarSender). `audit:serapan` hijau lagi. Keduanya
+berstatus Proposed dan dinyatakan `diperiksa`: tidak ada rute yang dipanggil
+repo ini yang berubah, dan repo ini tidak punya akun sosial, perangkat WhatsApp,
+kredensial, maupun worker.
+
+- Ringkasan di `SKILL.id.md` dinaikkan ke puncak ADR-0158 `awcms`.
+- Tidak mengubah keluaran situs, dependensi, atau deployment.
+
+### Standar roadmap dan issue lintas-portofolio internal (DL-041)
+
+Issue form diselaraskan dengan standar: laporan bug memakai judul
+`[Fase/SEQ] jenis: ringkasan` dan label `jenis:fix`, dan form tugas, riset, dan
+epik ditambahkan. `docs/roadmap.md` (EN + ID) memuat draf fase yang diturunkan
+dari backlog README dan ADR; semua status menunggu konfirmasi pemilik, dan tidak
+ada tanggal. `CONTRIBUTING.md` (dan cerminnya) menjelaskan judul, label, dan
+roadmap. Label lama tidak dihapus atau diganti nama.
+
+- Hanya memengaruhi cara issue dan rencana ditulis.
+- Tidak mengubah keluaran situs, dependensi, atau deployment.
+
+### Serapan ADR 0159 `awcms` mendapat vonisnya
+
+`awcms` menerbitkan ADR-0159 (modul `crm_follow_up`) setelah run CI hijau
+terakhir di `main`, sehingga `audit:serapan` memerahkan setiap pull request.
+Baris serapannya ditambahkan dengan vonis `diperiksa`: modul, tabel, izin, dan
+dispatcher-nya ada di `awcms`; repo ini build statis yang tidak merender lead,
+tugas, maupun notifikasi staf, dan tidak memanggil rute yang berubah.
+
+- Ringkasan di `SKILL.id.md` dinaikkan ke puncak ADR-0159 `awcms`.
+- Tidak mengubah keluaran situs, dependensi, atau deployment.
+
 ## [0.6.3] — 2026-10-26
 
 > **Build integrasi tidak berjalan pada rilis ini.** `AWCMS_API_URL` kosong,
