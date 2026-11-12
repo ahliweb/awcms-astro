@@ -1,14 +1,14 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](deploy-coolify.md)
 
-<!-- i18n-source-hash: sha256:14c8a159abc111638a86f75859e44912af8d0722560b4d381a1b45379a6bfabc -->
+<!-- i18n-source-hash: sha256:6246d63c5836768c659f579aae920f545c2ace22aa65c343913d334db9cf16ee -->
 
 # Deploy dan rebuild lewat webhook (Coolify)
 
 Cara sebuah situs dari template ini tayang, dan cara konten baru di awcms sampai
 ke pembaca tanpa siapa pun menekan tombol.
 
-Server rujukan yang dipakai di sini adalah server Coolify yang dicatat di
-[`ahliweb/serv-dinkesdocker`](https://github.com/ahliweb/serv-dinkesdocker).
+Server rujukan yang dipakai di sini adalah server Coolify yang dioperasikan
+pemelihara; catatannya disimpan di luar repo publik ini.
 Yang tetap benar dari sana adalah **polanya** — Coolify **Application**
 (git-build) di belakang Traefik — bukan daftar aplikasi yang dulu
 membuktikannya: `awcms-micro` dan `awcms-mini` adalah **arsip** sejak 2 Agustus
@@ -22,7 +22,7 @@ flowchart LR
   Redaksi["Redaksi menerbitkan post"] --> Awcms["awcms"]
   Awcms -->|"baris antrean, se-transaksi"| Antrean["antrean rebuild"]
   Antrean -->|"worker, di luar transaksi"| Coolify["Coolify"]
-  Coolify -->|"GET /api/v1/deploy?uuid=…<br/>git pull + docker build"| Build["astro build<br/>menarik konten dari awcms"]
+  Coolify -->|"POST /api/v1/deploy?uuid=…<br/>git pull + docker build"| Build["astro build<br/>menarik konten dari awcms"]
   Build --> Image["image Bun — menyajikan dist/client"]
   Image -->|"Traefik"| Pembaca["Pembaca"]
 ```
@@ -31,11 +31,12 @@ flowchart LR
 terbit — yang berubah isinya adalah awcms. Coolify membangun ulang commit yang
 sama dan menarik konten terbaru saat build, dan itu memang yang dibutuhkan.
 
-Perhatikan siapa memanggil apa: **`/api/v1/deploy`, bukan `/restart`.**
+Perhatikan siapa memanggil apa: **`POST /api/v1/deploy`, bukan `/restart`.**
 `/restart` hanya membuat ulang container dari image yang sudah ada — tidak ada
-git pull, tidak ada build, jadi konten baru tidak pernah masuk. Jebakan ini
-sudah didokumentasikan di
-[`serv-dinkesdocker` docs/17](https://github.com/ahliweb/serv-dinkesdocker/blob/main/docs/17-simfar-autodeploy.md).
+git pull, tidak ada build, jadi konten baru tidak pernah masuk. Metodenya juga
+penting: Coolify v4 versi baru menjawab `GET /api/v1/deploy` dengan "This
+endpoint has changed to a POST request." tanpa memicu apa pun. `uuid` tetap
+dibaca dari query string.
 
 ## Konten ditarik saat BUILD, bukan saat runtime
 

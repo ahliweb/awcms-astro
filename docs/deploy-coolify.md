@@ -5,8 +5,8 @@
 How a site from this template goes live, and how new content in awcms reaches
 readers without anybody pressing a button.
 
-The reference server used here is the Coolify server recorded in
-[`ahliweb/serv-dinkesdocker`](https://github.com/ahliweb/serv-dinkesdocker).
+The reference server used here is a Coolify server the maintainers operate; its
+records are kept outside this public repository.
 What stays true from there is the **pattern** — a Coolify **Application**
 (git-build) behind Traefik — not the list of applications that once proved it:
 `awcms-micro` and `awcms-mini` are **archives** since 2 August 2026
@@ -20,7 +20,7 @@ flowchart LR
   Redaksi["The editors publish a post"] --> Awcms["awcms"]
   Awcms -->|"a queue row, in the same transaction"| Antrean["the rebuild queue"]
   Antrean -->|"a worker, outside the transaction"| Coolify["Coolify"]
-  Coolify -->|"GET /api/v1/deploy?uuid=…<br/>git pull + docker build"| Build["astro build<br/>pulling content from awcms"]
+  Coolify -->|"POST /api/v1/deploy?uuid=…<br/>git pull + docker build"| Build["astro build<br/>pulling content from awcms"]
   Build --> Image["a Bun image — serving dist/client"]
   Image -->|"Traefik"| Pembaca["The reader"]
 ```
@@ -29,10 +29,11 @@ flowchart LR
 is published — what changes contents is awcms. Coolify rebuilds the same commit
 and pulls the latest content at build time, and that is exactly what is needed.
 
-Note who calls what: **`/api/v1/deploy`, not `/restart`.** `/restart` only
+Note who calls what: **`POST /api/v1/deploy`, not `/restart`.** `/restart` only
 recreates the container from an existing image — no git pull, no build, so new
-content never enters. This trap is already documented in
-[`serv-dinkesdocker` docs/17](https://github.com/ahliweb/serv-dinkesdocker/blob/main/docs/17-simfar-autodeploy.md).
+content never enters. The method matters too: current Coolify v4 answers
+`GET /api/v1/deploy` with "This endpoint has changed to a POST request." and
+triggers nothing. The `uuid` is still read from the query string.
 
 ## Content is pulled at BUILD time, not at runtime
 
