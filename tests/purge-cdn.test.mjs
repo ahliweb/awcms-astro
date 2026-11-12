@@ -117,7 +117,12 @@ describe("purgeCdn terhadap endpoint tiruan", () => {
 
     assert.equal(hasil.status, "dry-run");
     assert.equal(diterima.length, 0);
-    assert.ok(log.baris.some((b) => b.includes("contoh.example.com")));
+    const prefiksBadan = "info [purge-cdn] dry-run: body ";
+    const barisBadan = log.baris.find((b) => b.startsWith(prefiksBadan));
+    assert.ok(barisBadan, "dry-run mencetak badan permintaan");
+    assert.deepEqual(JSON.parse(barisBadan.slice(prefiksBadan.length)), {
+      hosts: ["contoh.example.com"]
+    });
     assert.ok(!log.baris.join("\n").includes(TOKEN));
   });
 
