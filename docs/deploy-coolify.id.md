@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](deploy-coolify.md)
 
-<!-- i18n-source-hash: sha256:c5691cc56e9da1cb44043ce02d233b9bf64c5ddbfbf18cb4d01690fc661af9da -->
+<!-- i18n-source-hash: sha256:14c8a159abc111638a86f75859e44912af8d0722560b4d381a1b45379a6bfabc -->
 
 # Deploy dan rebuild lewat webhook (Coolify)
 
@@ -316,9 +316,13 @@ curl -sI https://<domain>/ | head -1                    # 200
 curl -s  https://<domain>/sitemap-index.xml | head -3   # sitemap terbangun
 curl -sI https://<domain>/_astro/<berkas>.css | grep -i cache-control
 #   -> public, max-age=31536000, immutable
-curl -sI https://<domain>/ | grep -i cache-control
-#   -> public, max-age=0, must-revalidate  (HTML tidak boleh di-cache lama,
-#      atau rebuild yang sukses tetap terlihat seperti belum jalan)
+curl -sI https://<domain>/ | grep -iE 'cache-control|cf-cache-status|^age:'
+#   -> public, max-age=0, s-maxage=300, must-revalidate  (ADR-0054: browser
+#      selalu memvalidasi ulang; cache bersama boleh menyimpan HTML paling
+#      lama 5 menit)
+#   -> dengan CDN di depan dan aturan cache HTML: cf-cache-status HIT dan
+#      age: di bawah 300 pada permintaan kedua, lalu age: mulai dari awal
+#      setelah deploy
 curl -sI https://<domain>/ | grep -iE 'x-content-type-options|x-frame-options|referrer-policy'
 #   -> nosniff / DENY / strict-origin-when-cross-origin
 curl -sI https://<domain>/ | grep -iE 'content-security-policy|permissions-policy'
@@ -327,6 +331,52 @@ curl -sI https://<domain>/ | grep -iE 'content-security-policy|permissions-polic
 curl -sI https://<domain>/tema.js | head -1             # 200 — pengalih tema terbit
 curl -sI https://<domain>/tidak-ada/ | head -1          # 404, bukan 200
 ```
+
+### Purge CDN setelah deploy (ADR-0054)
+
+HTML dikirim dengan `s-maxage=300`, jadi CDN boleh menyimpan satu halaman sampai
+lima menit. Yang menjaga rebuild tetap cepat terlihat adalah purge CDN begitu
+build baru tayang: [`server/purge-cdn.mjs`](../server/purge-cdn.mjs), disalin ke
+image sebagai `dist/server/purge-cdn.mjs`.
+
+Di Coolify, isi **Post-deployment command** aplikasi dengan:
+
+```sh
+bun dist/server/purge-cdn.mjs
+```
+
+lalu tambahkan variabel berikut sebagai variabel **Runtime** (bukan build
+variable), yang pertama ditandai secret:
+
+| Variabel | Catatan |
+| --- | --- |
+| `CLOUDFLARE_API_TOKEN` | **Rahasia.** Batasi pada *Cache Purge* untuk satu zona ini saja. Jangan pernah di-commit |
+| `CLOUDFLARE_ZONE_ID` | Id zona |
+| `CDN_PURGE_HOSTS` | Opsional. Nama host yang di-purge, dipisah koma; bawaannya host dari `SITE_URL` bila itu juga variabel runtime |
+
+Purge dilakukan per **nama host**, bukan seluruh zona, sehingga situs lain di
+zona yang sama tidak tersentuh. Coba tanpa mengirim apa pun: `bun
+dist/server/purge-cdn.mjs --dry-run` mencetak permintaannya dan tidak mengirim.
+
+Bila ia tidak bisa menjalankan tugasnya:
+
+- **Ada variabel yang hilang** — satu peringatan yang menyebut namanya, exit `0`.
+  Deploy tetap hijau dan kebasian dibatasi `s-maxage`.
+- **CDN tak terjangkau atau terkena batas laju** — `429` menghormati
+  `Retry-After`, `5xx` dan galat jaringan dicoba ulang dengan jeda, paling
+  banyak tiga kali, lalu galat di log deploy dan exit `0`. `4xx` (token salah,
+  zona salah) berhenti seketika dengan pesan dari CDN.
+- Tambahkan `--strict` pada perintah bila Anda lebih suka deploy ditandai gagal.
+
+CDN tidak menyimpan HTML secara bawaan. Tambahkan aturan cache di akun CDN yang
+menjadikan HTML situs layak di-cache dan mengikuti `Cache-Control` dari origin;
+itu konfigurasi akun dan bukan hal yang bisa dikerjakan repo ini.
+
+Untuk membuktikan rebuild terlihat, minta satu halaman dua kali
+(`cf-cache-status: HIT` dan `age:` yang bertambah pada permintaan kedua), deploy,
+lalu minta lagi: `age:` mulai dari awal dan konten baru yang tersaji. Bila
+`cf-cache-status: DYNAMIC`, yang hilang adalah aturan yang menjadikan HTML layak
+di-cache, bukan kesalahan repo ini.
 
 Dua butir CSP yang layak diperiksa dengan mata setelah deploy pertama sebuah
 situs, karena keduanya gagal tanpa mengubah status HTTP apa pun:

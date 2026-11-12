@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](standar-teknis.md)
 
-<!-- i18n-source-hash: sha256:8f515470c35baa94079c6bd76a185b391421c2c3a35388979e82e34e6edebcbd -->
+<!-- i18n-source-hash: sha256:21fb074a73397fd518d425ed9782c01dd5f694d8fe2b2b7907bac9672dfede53 -->
 
 # awcms-astro — Standar Teknis
 
@@ -210,7 +210,7 @@ Cara mencapainya — dan ini yang mengikat:
 - Gambar layar pertama `loading="eager"` + `fetchpriority="high"`; sisanya `loading="lazy"`. Keduanya dibutuhkan dan tidak saling menggantikan: `eager` hanya berarti "jangan tunda", sementara prioritas bawaan sebuah `<img>` tetap **Low** sampai layout membuktikan ia di viewport. Ditegakkan `bun run audit:konten` atas keluaran, jadi `<img>` yang tidak lewat `src/components/Ilustrasi.astro` ikut tertangkap.
 - **Tema dipasang berkas eksternal `public/tema.js` yang dimuat `<script src>` klasik**, bukan skrip inline. Sejak [ADR-0019](../adr/0019-csp-ketat-dikirim-penyaji.md) penyaji mengirim `script-src 'self'` tanpa `'unsafe-inline'`, jadi skrip inline bukan "kurang rapi" — ia mati di browser pembaca. Bundel Astro selalu `type="module"` dan modul selalu ditunda, jadi ia bukan pengganti untuk kasus sebelum-paint.
 - Kompresi respons bukan hanya gzip: `compression` menegosiasikan **Brotli** (RFC 7932) saat browser memintanya, dan Brotli mengalahkan gzip sekitar 15–20% pada HTML. Mempertahankan `compression` di `dependencies` adalah keputusan yang disengaja, bukan runtime Node.js yang menyelinap kembali — ia berjalan sepenuhnya di atas Bun, dan [ADR-0050](../adr/0050-bun-is-this-repos-only-runtime-and-a-gate-finally-says-so.md) menggerbangi keberadaannya dari sisi mempertahankan.
-- `Cache-Control` dua aturan sesuai RFC 9111: aset ber-hash `immutable` satu tahun, HTML `max-age=0, must-revalidate` sehingga rebuild langsung terlihat pembaca.
+- `Cache-Control` dua aturan sesuai RFC 9111: aset ber-hash `immutable` satu tahun, HTML `max-age=0, s-maxage=300, must-revalidate` — browser selalu memvalidasi ulang, CDN boleh menyimpan halaman lima menit, dan setiap deploy mem-purge CDN sehingga rebuild cepat terlihat ([ADR-0054](../adr/0054-html-gets-a-shared-cache-lifetime-and-every-deploy-purges-the-cdn.id.md)).
 - Anggaran yang terbukti di repo rujukan: **beranda ≤ 250 KB gambar, halaman konten ≤ 100 KB.** Sejak 4 Agustus 2026 ia **diukur** `bun run audit:konten` atas `dist/client`, per halaman. Yang ditimbang hanya gambar yang benar-benar diterbitkan build ini — media `awcms` tidak ada di sana, jadi angka ini menjaga seni lokal dan bukan seluruh berat halaman.
 - **Byte skrip dan stylesheet punya plafonnya sendiri**, diperiksa `bun run audit:aset`: 13.000 B skrip dan 40.000 B total per halaman, ditambah 8.000 B untuk satu berkas skrip terbit. Semuanya pengukuran berikut ruang di atasnya, bukan angka bulat, dan pengukurannya dicatat di `scripts/audit-aset.mjs` di sebelah masing-masing angka. Pelanggarannya menyebut berkas mana yang membesar, dan itu seluruh alasan ia berdiri di sebelah Lighthouse alih-alih di dalamnya — skor lab tidak bisa menyebut berkas mana yang harus dilihat. **Di mana sebuah aturan TINGGAL adalah bagian dari anggaran ini**: `src/styles/global.css` dimuat setiap halaman, jadi aturan yang hanya dipakai satu komponen adalah byte yang dibayar setiap halaman lain.
 

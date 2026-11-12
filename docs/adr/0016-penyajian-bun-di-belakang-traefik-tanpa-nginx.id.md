@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md)
 
-<!-- i18n-source-hash: sha256:34217b9a4d7266cde48d64710393c6a4a3586c583071a9f112fd50c92c0bd572 -->
+<!-- i18n-source-hash: sha256:c3887bc133e259664a1b655a14dbc3c6d65b3a8d35a4c3e6f151b17162d6e3e5 -->
 
 # ADR-0016 — Penyajian oleh Bun di belakang Traefik/Coolify; nginx dilepas dari stack
 
@@ -8,6 +8,10 @@
 - **Tanggal:** 31 Juli 2026
 - **Mengamandemen:** [ADR-0015](0015-runtime-bun-menutup-divergence-keluarga.md) §7
   (pengecualian "stage runtime tetap nginx unprivileged selama keluarannya statis")
+- **Diamandemen oleh:** [ADR-0054](0054-html-gets-a-shared-cache-lifetime-and-every-deploy-purges-the-cdn.id.md)
+  (HTML kini juga membawa `s-maxage=300` untuk cache bersama, dengan purge CDN
+  pada setiap deploy; browser tetap memvalidasi ulang, dan `/_astro/` tidak
+  berubah)
 - **Terkait:** [ADR-0014](0014-rendering-campuran-dan-bff-portal.md) (adapter untuk
   rute on-demand), [`docs/deploy-coolify.md`](../deploy-coolify.md)
 
