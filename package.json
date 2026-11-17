@@ -59,5 +59,9 @@
   },
   "devDependencies": {
     "@types/bun": "^1.4.4"
+  },
+  "patchedDependencies": {
+    "picomatch@4.0.7": "patches/picomatch@4.0.7.patch",
+    "picomatch@2.3.2": "patches/picomatch@2.3.2.patch"
   }
 }

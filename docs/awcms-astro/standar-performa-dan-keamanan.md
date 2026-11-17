@@ -429,3 +429,15 @@ Three lines change their meaning the moment this template becomes a site:
    `permukaanAdmin` for USER admin, and all of its consequences are in
    [`permukaan-admin-user.md`](permukaan-admin-user.md). What decides is not the
    surface's name but the existence of a path carrying credentials.
+
+## Dependency-audit exceptions
+
+CI runs `bun audit --audit-level=low`. Exactly one advisory is excluded:
+
+| Advisory | Package | Mitigation | Owner | Review by |
+| --- | --- | --- | --- | --- |
+| [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf) (high, ReDoS through repeated extglobs, `<=4.0.7`) | `picomatch` 4.0.7 and 2.3.2 (transitive, build tooling only) | No patched release exists. Local patches `patches/picomatch@4.0.7.patch` and `patches/picomatch@2.3.2.patch` (declared in `patchedDependencies`) force `noextglob`, so extglob patterns are matched literally and the vulnerable path is unreachable. `tests/picomatch-local-patch.test.mjs` fails if the patch is dropped. | unggul (owner decision via dialog, 2026-11-18) | 2026-12-18 |
+
+On review: drop the `--ignore` flag, the patches, and the test once a fixed
+`picomatch` release is installed; otherwise renew the decision in writing. Other
+advisories are never added to this list and the `low` threshold is not lowered.
