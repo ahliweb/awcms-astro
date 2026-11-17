@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](deploy-coolify.md)
 
-<!-- i18n-source-hash: sha256:6246d63c5836768c659f579aae920f545c2ace22aa65c343913d334db9cf16ee -->
+<!-- i18n-source-hash: sha256:2259cafcf09b43fc0a7f52ff4637c149277aab0c2748289578cbefa335018136 -->
 
 # Deploy dan rebuild lewat webhook (Coolify)
 
@@ -330,6 +330,7 @@ curl -sI https://<domain>/ | grep -iE 'content-security-policy|permissions-polic
 #   -> default-src 'self'; script-src 'self'; … base-uri 'none'; … (ADR-0019)
 #   -> geolocation=(), camera=(), microphone=(), payment=()
 curl -sI https://<domain>/tema.js | head -1             # 200 — pengalih tema terbit
+curl -sI https://<domain>/aksesibilitas.js | head -1    # 200 — skrip awal preferensi baca terbit
 curl -sI https://<domain>/tidak-ada/ | head -1          # 404, bukan 200
 ```
 

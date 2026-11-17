@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:114033ac1affe93bd37461c21054e859db3cec25d473904f6bcf3f56960b43d4 -->
+<!-- i18n-source-hash: sha256:bf55c7d270bf89510e701a5ec07fe75326dc419101c704f059ee9332843f8b16 -->
 
 # Architecture Decision Records
 
@@ -61,6 +61,7 @@ menyesuaikan gaya, menambah tes.
 | [0052](0052-github-releases-are-part-of-this-repos-release-convention.md) | GitHub Release MEMANG konvensi rilis repo ini, bukan pemanis opsional — tujuh sudah ada, dibuat dengan tangan, dan pernah hanyut tiga versi di belakang tag dengan setiap gerbang hijau; `scripts/rilis.mjs` kini mencetak (tak pernah menjalankan) perintah `gh release create`, dan `audit:rilis` mendapat pemeriksaan keempat yang bergantung jaringan dan gagal tertutup bahwa setiap tag remote punya Release yang cocok | Diterima |
 | [0053](0053-main-is-fenced-by-a-ruleset-that-no-gate-can-see.md) | `main` dipagari ruleset repositori (`main-protection`: tanpa penghapusan, tanpa force push, pull request wajib dengan 0 approval, pemeriksaan wajib ketat `Check`, `Build`, `Analyze (javascript-typescript)`, tanpa bypass actor) — dan tak ada gerbang di repo ini yang bisa mendeteksi pencabutannya, jadi diverifikasi manual; tag tidak tercakup, dan `Build` bukan pagar yang berdiri sendiri | Diterima |
 | [0054](0054-html-gets-a-shared-cache-lifetime-and-every-deploy-purges-the-cdn.md) | HTML mendapat jendela cache bersama (`s-maxage=300`, browser tetap memvalidasi ulang dengan `max-age=0`) dan setiap deploy mem-purge CDN per nama host — mengamandemen keputusan 5 [ADR-0016](0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md); `/_astro/` tetap `immutable`, kredensial yang hilang hanya memberi peringatan dan `s-maxage` membatasi kebasian | Diterima |
+| [0055](0055-reading-preferences-are-a-native-same-origin-panel-not-an-overlay-widget.md) | Preferensi baca adalah panel native satu-origin (ukuran teks, kontras, monokrom, teks ramah disleksia, penekanan tautan, kurangi gerakan; kunci `localStorage` `awcms-a11y`, atribut `data-a11y-*` pada `<html>`), bukan widget overlay pihak ketiga — tanpa server, tanpa pelacakan, CSP tidak berubah; preferensi OS menjadi bawaan dan pembaca boleh menimpanya; anggaran aset bergeser (skrip 13.000 → 18.500 B, total 40.000 → 53.700 B); uji browser dan uji pembaca sungguhan adalah tindak lanjut | Diterima |
 
 > **Kenapa penomoran mulai dari 0014.** ADR di repo ini melanjutkan urutan repo
 > rujukan yang identitasnya dilepas di [#11](https://github.com/ahliweb/awcms-astro/pull/11);

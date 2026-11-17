@@ -503,6 +503,15 @@ exactly what
   sped up — a global `*` rule only trims duration, and a 0.01 ms animation still
   flickers. Hover feedback is also active on `:focus-visible`, so keyboard users
   do not get a poorer version.
+- **Reading preferences are display choices, never an overlay**
+  ([ADR-0055](docs/adr/0055-reading-preferences-are-a-native-same-origin-panel-not-an-overlay-widget.md)).
+  Every page has a native same-origin panel (text size, contrast, monochrome,
+  dyslexia-friendly text, link emphasis, reduced motion) whose choices live in
+  `localStorage` and become `data-a11y-*` attributes on `<html>`; nothing is sent
+  anywhere. Do not add a third-party accessibility overlay, and do not make the
+  panel claim that a page meets a standard. A feature that animates, scrolls by
+  itself or autoplays must stop under `data-a11y-motion="reduce"` and listen for
+  the `awcms-a11y-change` event on `document`.
 - **Mobile-first from 360px.** `.container`'s own padding leaves an inner width
   of exactly 320px at that floor — a grid track fixed to that same figure has
   zero margin, which is what `.grid-cards` did until it was found and wrapped
@@ -571,7 +580,7 @@ exactly what
   second is invisible in `src/` entirely:
   1. `<script is:inline>` containing code. A script that must run before first
      paint becomes a file in `public/` loaded by a classic `<script src>` — see
-     `public/tema.js`. Astro bundles are always `type="module"` and modules are
+     `public/tema.js` and `public/aksesibilitas.js`. Astro bundles are always `type="module"` and modules are
      always deferred, so that is not a substitute for this case.
   2. An ordinary `<script>` in a component, which Astro bundles and then
      **inlines back** into the HTML when its chunk is smaller than

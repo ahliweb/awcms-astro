@@ -893,7 +893,10 @@ const sorotanVisual = sorotan
 
   .prinsip-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    /* `min(15rem, 100%)`, not a bare 15rem: it is a `rem`, so the reading-
+       preferences extra-large text size (ADR-0055) scales it to 336px, which
+       is wider than the 320px inner width at the 360px floor. */
+    grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
     gap: 2rem;
     margin-top: 2rem;
   }

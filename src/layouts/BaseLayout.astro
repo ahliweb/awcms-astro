@@ -5,6 +5,7 @@ import LangSwitcher from '../components/LangSwitcher.astro';
 import ShareButtons from '../components/ShareButtons.astro';
 import BeaconKunjungan from '../components/BeaconKunjungan.astro';
 import FormBuletin from '../components/FormBuletin.astro';
+import PanelAksesibilitas from '../components/PanelAksesibilitas.astro';
 import {
   siteConfig,
   getSiteUrl,
@@ -37,6 +38,8 @@ import { daftarMenu, daftarWidget, peringatkanSekali } from '../lib/awcms/naviga
 import { menuDenganKey, pesanTerbuang, susunMenu } from '../lib/menu';
 import { indeksPost } from '../lib/content';
 import '../styles/global.css';
+// After global.css, on purpose: it overrides tokens that file defines.
+import '../styles/aksesibilitas.css';
 
 interface Props {
   title: string;
@@ -298,6 +301,12 @@ const jsonLd = {
         tidak terpasang dan tema mengikuti prefers-color-scheme lewat media
         query di global.css. */}
     <script is:inline src="/tema.js"></script>
+
+    {/* Reading preferences, early half (ADR-0055): same constraints as the
+        theme script above — a classic blocking file so the `data-a11y-*`
+        attributes exist before first paint. It must come AFTER `tema.js`: the
+        high-contrast palette keys on `data-theme`. */}
+    <script is:inline src="/aksesibilitas.js"></script>
   </head>
   <body>
     <a class="skip-link" href="#main-content">{t(locale, 'ui.skipToMain')}</a>
@@ -570,6 +579,11 @@ const jsonLd = {
         mendahului satu piksel pun; komponennya sendiri yang memutuskan apakah
         ia memancarkan sesuatu sama sekali. */}
     <BeaconKunjungan />
+
+    {/* Reading-preferences panel (ADR-0055). Rendered `hidden` and fixed, so
+        it takes no space and cannot move layout; the script reveals the
+        button. In the layout, not in a page, so every public page has it. */}
+    <PanelAksesibilitas siteName={namaSitusIni} />
   </body>
 </html>
 

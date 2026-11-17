@@ -1,0 +1,273 @@
+---
+/**
+ * The reading-preferences panel (ADR-0055).
+ *
+ * A floating button that opens a small non-modal dialog with display
+ * preferences the reader keeps on their own device: text size, high contrast,
+ * monochrome, dyslexia-friendly spacing, underlined or highlighted links, and
+ * reduced motion.
+ *
+ * ## What it is, and what it must never become
+ *
+ * A set of USER display preferences. It does not rewrite content, inject ARIA,
+ * claim that the page meets any standard, or load third-party code — the page
+ * has to meet WCAG on its own markup, and this panel is supplementary. Nothing
+ * is sent anywhere; the choices live in `localStorage` and nowhere else. The
+ * copy must keep to that: it says where the setting is stored, and makes no
+ * legal claim.
+ *
+ * ## Without JavaScript
+ *
+ * The button and the panel are rendered `hidden`; only the script reveals the
+ * button. Without script there is no control that does nothing, and the OS
+ * preferences (`prefers-contrast`, `prefers-reduced-motion`) still apply
+ * through `src/styles/aksesibilitas.css` and `global.css`.
+ *
+ * The attributes themselves are set before first paint by
+ * `public/aksesibilitas.js`; this component's script only wires the controls.
+ * The pure logic both share is in `src/lib/aksesibilitas.ts`.
+ */
+import { getLocaleFromPath } from '../config/site';
+import { t } from '../lib/po';
+
+interface Props {
+  /** The site name shown in the eyebrow line. */
+  siteName: string;
+}
+
+const { siteName } = Astro.props;
+const locale = getLocaleFromPath(Astro.url.pathname);
+
+const textSizes = [
+  { value: 'normal', label: t(locale, 'a11y.text.normal') },
+  { value: 'large', label: t(locale, 'a11y.text.large') },
+  { value: 'x-large', label: t(locale, 'a11y.text.xlarge') },
+];
+
+const switches = [
+  { key: 'contrast', label: t(locale, 'a11y.contrast.label'), desc: t(locale, 'a11y.contrast.desc') },
+  { key: 'mono', label: t(locale, 'a11y.mono.label'), desc: t(locale, 'a11y.mono.desc') },
+  { key: 'dyslexia', label: t(locale, 'a11y.dyslexia.label'), desc: t(locale, 'a11y.dyslexia.desc') },
+  { key: 'underline', label: t(locale, 'a11y.underline.label'), desc: t(locale, 'a11y.underline.desc') },
+  { key: 'highlight', label: t(locale, 'a11y.highlight.label'), desc: t(locale, 'a11y.highlight.desc') },
+  { key: 'motion', label: t(locale, 'a11y.motion.label'), desc: t(locale, 'a11y.motion.desc') },
+];
+
+const buttonLabel = t(locale, 'a11y.button');
+---
+
+<button
+  type="button"
+  class="a11y-button"
+  data-a11y-button
+  hidden
+  aria-label={buttonLabel}
+  aria-expanded="false"
+  aria-controls="a11y-panel"
+>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="4.5" r="1.8"></circle><path d="M5 8.5l7 1.2 7-1.2M12 9.7V15m0 0l-3 5.5M12 15l3 5.5"></path></svg>
+  <span class="a11y-sr">{buttonLabel}</span>
+</button>
+
+<div
+  id="a11y-panel"
+  class="a11y-panel"
+  data-a11y-panel
+  role="dialog"
+  aria-labelledby="a11y-title"
+  hidden
+>
+  <button type="button" class="a11y-close" data-a11y-close aria-label={t(locale, 'a11y.close')}>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+  </button>
+
+  <div class="a11y-head">
+    <p class="a11y-eyebrow">{siteName} · {t(locale, 'a11y.eyebrow')}</p>
+    <h2 id="a11y-title" class="a11y-title" tabindex="-1" data-a11y-title>{t(locale, 'a11y.title')}</h2>
+    <p class="a11y-desc">{t(locale, 'a11y.description')}</p>
+  </div>
+
+  <fieldset class="a11y-group">
+    <legend>{t(locale, 'a11y.text.label')}</legend>
+    <div class="a11y-seg">
+      {textSizes.map((size) => (
+        <label class="a11y-seg-item">
+          <input type="radio" class="a11y-seg-input" name="a11y-text" value={size.value} />
+          <span class="a11y-seg-text">{size.label}</span>
+        </label>
+      ))}
+    </div>
+  </fieldset>
+
+  <div class="a11y-switches">
+    {switches.map((item) => (
+      <button
+        type="button"
+        role="switch"
+        class="a11y-switch"
+        data-a11y-switch
+        data-a11y-key={item.key}
+        aria-checked="false"
+        aria-labelledby={`a11y-${item.key}-label`}
+        aria-describedby={`a11y-${item.key}-desc`}
+      >
+        <span class="a11y-switch-texts">
+          <span class="a11y-switch-label" id={`a11y-${item.key}-label`}>{item.label}</span>
+          <span class="a11y-switch-desc" id={`a11y-${item.key}-desc`}>{item.desc}</span>
+        </span>
+        <span class="a11y-track" aria-hidden="true"></span>
+      </button>
+    ))}
+  </div>
+
+  <div class="a11y-foot">
+    <button type="button" class="a11y-reset" data-a11y-reset>{t(locale, 'a11y.reset')}</button>
+    <p class="a11y-note">{t(locale, 'a11y.note')}</p>
+  </div>
+</div>
+
+<script>
+  import {
+    CHANGE_EVENT,
+    READY_ATTRIBUTE,
+    STORAGE_KEY,
+    applyAttributes,
+    clearAttributes,
+    clearPreferences,
+    readOsDefaults,
+    readPreferences,
+    resolvePreferences,
+    writePreferences,
+    type Preferences,
+    type StorageLike,
+    type SwitchKey,
+    type TextSize,
+  } from '../lib/aksesibilitas';
+
+  // Some browsers throw on merely touching `localStorage` (blocked site data),
+  // so even getting hold of it is inside a try.
+  function getStorage(): StorageLike | null {
+    try {
+      return window.localStorage;
+    } catch {
+      return null;
+    }
+  }
+
+  function osDefaults() {
+    return readOsDefaults(
+      typeof window.matchMedia === 'function' ? window.matchMedia.bind(window) : undefined
+    );
+  }
+
+  function init() {
+    const root = document.documentElement;
+    const button = document.querySelector<HTMLButtonElement>('[data-a11y-button]');
+    const panel = document.querySelector<HTMLElement>('[data-a11y-panel]');
+    if (!button || !panel) return;
+
+    const title = panel.querySelector<HTMLElement>('[data-a11y-title]');
+    const closeButton = panel.querySelector<HTMLButtonElement>('[data-a11y-close]');
+    const resetButton = panel.querySelector<HTMLButtonElement>('[data-a11y-reset]');
+    const radios = panel.querySelectorAll<HTMLInputElement>('input[name="a11y-text"]');
+    const switches = panel.querySelectorAll<HTMLButtonElement>('[data-a11y-switch]');
+
+    let prefs: Preferences = resolvePreferences(readPreferences(getStorage()), osDefaults());
+
+    // The early script normally did this already; doing it again covers the
+    // case where that file was blocked.
+    applyAttributes(root, prefs);
+    root.setAttribute(READY_ATTRIBUTE, '');
+
+    function render() {
+      radios.forEach((radio) => {
+        radio.checked = radio.value === prefs.text;
+      });
+      switches.forEach((item) => {
+        const key = item.dataset.a11yKey as SwitchKey;
+        item.setAttribute('aria-checked', String(prefs[key]));
+      });
+    }
+
+    function announce() {
+      document.dispatchEvent(new CustomEvent(CHANGE_EVENT, { detail: prefs }));
+    }
+
+    function commit(next: Preferences) {
+      prefs = next;
+      applyAttributes(root, prefs);
+      writePreferences(getStorage(), prefs);
+      render();
+      announce();
+    }
+
+    function isOpen() {
+      return !panel!.hidden;
+    }
+
+    function open() {
+      panel!.hidden = false;
+      button!.setAttribute('aria-expanded', 'true');
+      title?.focus();
+    }
+
+    function close(returnFocus: boolean) {
+      panel!.hidden = true;
+      button!.setAttribute('aria-expanded', 'false');
+      if (returnFocus) button!.focus();
+    }
+
+    button.addEventListener('click', () => (isOpen() ? close(true) : open()));
+    closeButton?.addEventListener('click', () => close(true));
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && isOpen()) close(true);
+    });
+
+    // Non-modal: a click anywhere outside closes it, without stealing focus
+    // from whatever the reader clicked.
+    document.addEventListener('click', (event) => {
+      if (!isOpen()) return;
+      const target = event.target as Node;
+      if (panel.contains(target) || button.contains(target)) return;
+      close(false);
+    });
+
+    radios.forEach((radio) => {
+      radio.addEventListener('change', () => {
+        if (radio.checked) commit({ ...prefs, text: radio.value as TextSize });
+      });
+    });
+
+    switches.forEach((item) => {
+      item.addEventListener('click', () => {
+        const key = item.dataset.a11yKey as SwitchKey;
+        commit({ ...prefs, [key]: !prefs[key] });
+      });
+    });
+
+    // Back to "nothing stored": the OS defaults apply again.
+    resetButton?.addEventListener('click', () => {
+      clearPreferences(getStorage());
+      clearAttributes(root);
+      prefs = resolvePreferences(null, osDefaults());
+      applyAttributes(root, prefs);
+      render();
+      announce();
+    });
+
+    // Another tab changed or reset the preferences.
+    window.addEventListener('storage', (event) => {
+      if (event.key !== STORAGE_KEY && event.key !== null) return;
+      prefs = resolvePreferences(readPreferences(getStorage()), osDefaults());
+      applyAttributes(root, prefs);
+      render();
+      announce();
+    });
+
+    render();
+    button.hidden = false;
+  }
+
+  init();
+</script>

@@ -564,3 +564,72 @@ msgstr "Every issue carries an unsubscribe link that works in one click, with no
 
 msgid "privasi.buletin.butir3"
 msgstr "Your address is not used for anything else, and is not shared with any third party."
+
+msgid "a11y.button"
+msgstr "Accessibility settings"
+
+msgid "a11y.close"
+msgstr "Close accessibility settings"
+
+msgid "a11y.eyebrow"
+msgstr "Reader friendly"
+
+msgid "a11y.title"
+msgstr "Accessibility settings"
+
+msgid "a11y.description"
+msgstr "Adjust the display so it is comfortable to read."
+
+msgid "a11y.text.label"
+msgstr "Text size"
+
+msgid "a11y.text.normal"
+msgstr "Normal"
+
+msgid "a11y.text.large"
+msgstr "Large"
+
+msgid "a11y.text.xlarge"
+msgstr "Extra large"
+
+msgid "a11y.contrast.label"
+msgstr "High contrast"
+
+msgid "a11y.contrast.desc"
+msgstr "Make text, lines and photos stand out more"
+
+msgid "a11y.mono.label"
+msgstr "Monochrome mode"
+
+msgid "a11y.mono.desc"
+msgstr "Show the page in black and white"
+
+msgid "a11y.dyslexia.label"
+msgstr "Dyslexia-friendly text"
+
+msgid "a11y.dyslexia.desc"
+msgstr "Clean sans-serif letters with wide spacing"
+
+msgid "a11y.underline.label"
+msgstr "Underline all links"
+
+msgid "a11y.underline.desc"
+msgstr "Links are always underlined"
+
+msgid "a11y.highlight.label"
+msgstr "Highlight links"
+
+msgid "a11y.highlight.desc"
+msgstr "Mark links with a yellow background"
+
+msgid "a11y.motion.label"
+msgstr "Reduce motion"
+
+msgid "a11y.motion.desc"
+msgstr "Stop animations and moving text"
+
+msgid "a11y.reset"
+msgstr "Reset to defaults"
+
+msgid "a11y.note"
+msgstr "Saved on this device only, never sent to the server."

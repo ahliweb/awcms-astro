@@ -51,7 +51,8 @@ async function jalankan(akar) {
 /** Registri `public/` yang lengkap — tiap kasus di bawah merusak tepat satu hal. */
 const PUBLIC_LENGKAP = {
   "public/favicon.svg": "<svg xmlns='http://www.w3.org/2000/svg'></svg>",
-  "public/tema.js": "// pemilih tema\n"
+  "public/tema.js": "// pemilih tema\n",
+  "public/aksesibilitas.js": "// preferensi baca\n"
 };
 
 /** Satu halaman terbit yang lulus. */
@@ -115,7 +116,7 @@ describe("anggaran per halaman terbit", () => {
     const akar = pohon({
       ...PUBLIC_LENGKAP,
       "dist/client/index.html": halaman({ skrip: ["/berat.js"], gaya: ["/besar.css"] }),
-      "dist/client/berat.js": "x".repeat(14000),
+      "dist/client/berat.js": "x".repeat(19000),
       "dist/client/besar.css": "y".repeat(30000)
     });
 
@@ -137,7 +138,7 @@ describe("anggaran per halaman terbit", () => {
     // ramping. Anggaran pertama gerbang ini salah persis karena ini.
     const akar = pohon({
       ...PUBLIC_LENGKAP,
-      "dist/client/index.html": halaman({ inline: "z".repeat(14000) })
+      "dist/client/index.html": halaman({ inline: "z".repeat(19000) })
     });
 
     const { kode, keluaran } = await jalankan(akar);
@@ -164,11 +165,11 @@ describe("anggaran per halaman terbit", () => {
     const akar = pohon({
       ...PUBLIC_LENGKAP,
       "dist/client/index.html": halaman({ gaya: ["/besar.css"] }),
-      "dist/client/besar.css": "y".repeat(44000)
+      "dist/client/besar.css": "y".repeat(56000)
     });
 
     const { kode, keluaran } = await jalankan(akar);
-    expect(keluaran).toContain("melampaui 40000 B");
+    expect(keluaran).toContain("melampaui 53700 B");
     expect(keluaran).not.toContain("B skrip melampaui");
     expect(kode).toBe(1);
   });
