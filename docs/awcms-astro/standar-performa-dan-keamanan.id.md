@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](standar-performa-dan-keamanan.md)
 
-<!-- i18n-source-hash: sha256:2b4743f067d0f85060a5d89a9d2aa4dda68b1dddc7ba947634e2ddc5119c98c4 -->
+<!-- i18n-source-hash: sha256:f31ad772389c34f5bf46e4816302915dad155b03fd8b1ac66bc7f11710029719 -->
 
 # awcms-astro — Standar Performa dan Keamanan
 
@@ -446,3 +446,16 @@ Tiga baris berubah artinya begitu template ini menjadi sebuah situs:
    `permukaanAdmin` untuk admin USER, dan seluruh akibatnya di
    [`permukaan-admin-user.md`](permukaan-admin-user.md). Yang menentukan bukan
    nama permukaannya melainkan adanya jalur yang membawa kredensial.
+
+## Pengecualian audit dependensi
+
+CI menjalankan `bun audit --audit-level=low`. Tepat satu advisory dikecualikan:
+
+| Advisory | Paket | Mitigasi | Pemilik | Tinjau paling lambat |
+| --- | --- | --- | --- | --- |
+| [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf) (tinggi, ReDoS lewat extglob berulang, `<=4.0.7`) | `picomatch` 4.0.7 dan 2.3.2 (transitif, hanya tooling build) | Belum ada rilis perbaikan. Tambalan lokal `patches/picomatch@4.0.7.patch` dan `patches/picomatch@2.3.2.patch` (dideklarasikan di `patchedDependencies`) memaksa `noextglob`, sehingga pola extglob dicocokkan secara harfiah dan jalur rentan tidak terjangkau. `tests/picomatch-local-patch.test.mjs` gagal bila tambalan terlepas. | unggul (owner decision via dialog, 2026-11-18) | 2026-12-18 |
+
+Saat ditinjau: hapus flag `--ignore`, tambalan, dan tes begitu rilis `picomatch`
+yang diperbaiki terpasang; bila belum, perbarui keputusan secara tertulis.
+Advisory lain tidak pernah ditambahkan ke daftar ini dan ambang `low` tidak
+diturunkan.
