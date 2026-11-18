@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:5fb414b66987fe08f9761e42955e5e110c00d43dcd8972a0cd20093e33ffe22d -->
+<!-- i18n-source-hash: sha256:97b68d90cadaca766447aefbc86f306fd134945e04677bc999ce5b1634c0f301 -->
 
 # awcms-astro
 
@@ -142,7 +142,7 @@ satu-satunya lockfile.
 | `bun run dev`            | Server pengembangan Astro (HMR), `http://localhost:4321`        |
 | `bun run check`          | Gerbang lockfile lalu `astro check`                             |
 | `bun run check:lockfile` | Hanya gerbang lockfile — murni baca berkas                      |
-| `bun test` | 47 berkas gerbang: kontrak `awcms`, peran situs, tanpa backend, tanpa runtime Node.js, kosakata `news`, feed, penyaji, versi toolchain, CSP keluaran, lantai lebar 360px, cermin terjemahan, batas keamanan ekspor knowledge/Obsidian, langkah label graf pengetahuan, langkah purge CDN, dan meta-tes atas skrip audit |
+| `bun test` | 48 berkas gerbang: kontrak `awcms`, peran situs, tanpa backend, tanpa runtime Node.js, kosakata `news`, feed, penyaji, versi toolchain, CSP keluaran, lantai lebar 360px, cermin terjemahan, batas keamanan ekspor knowledge/Obsidian, langkah label graf pengetahuan, langkah purge CDN, panel preferensi baca, dan meta-tes atas skrip audit |
 | `bun run audit:konten`   | Gerbang audit: sumber gambar, dan keluaran build bila sudah ada |
 | `bun run audit:dokumen`  | Gerbang dokumen: tautan markdown mati, indeks ADR, daftar permukaan kilau |
 | `bun run audit:graf`     | Gerbang graf: artefak `graphify-out/` yang terlacak, nama komunitasnya, apa pun yang terlacak di bawah `knowledge/generated/` atau `.obsidian/`, dan kesegaran konten berbatas melewati `MAX_STALE_FILES = 40` ([ADR-0051](docs/adr/0051-a-knowledge-tree-points-at-the-code-and-owns-none-of-it.id.md)) |
@@ -255,8 +255,8 @@ menyuntikkan markup lewat jalur mana pun, apa pun yang ia ketik.
 **CSP ketat yang benar-benar dikirim, bukan sekadar "siap CSP".** Penyaji
 memasang `default-src 'self'` dengan `script-src 'self'` dan `style-src 'self'`
 tanpa `'unsafe-inline'` (ADR-0019). Yang membuatnya mungkin: tidak ada satu pun
-gaya maupun skrip di dalam HTML keluaran — pengalih tema tinggal di
-[`public/tema.js`](public/tema.js), dan Astro dilarang menyisipkan bundel kecil
+gaya maupun skrip di dalam HTML keluaran — pengalih tema dan skrip awal preferensi baca tinggal di
+[`public/tema.js`](public/tema.js) dan [`public/aksesibilitas.js`](public/aksesibilitas.js), dan Astro dilarang menyisipkan bundel kecil
 ke halaman lewat `vite.build.assetsInlineLimit: 0`. Keduanya dijaga
 [`tests/keluaran-csp.test.mjs`](tests/keluaran-csp.test.mjs), yang juga
 membuktikan JS-nya tidak ikut hilang; kebijakannya sendiri dijaga
@@ -294,7 +294,8 @@ src/
 ├── locales/<locale>/messages.po
 ├── pages/                # locale default di root, locale lain lewat [lang]/
 └── styles/global.css     # design token + standar interaksi
-public/tema.js            # SATU-SATUNYA JS yang harus jalan sebelum paint (ADR-0019)
+public/tema.js            # JS yang harus jalan sebelum paint: tema (ADR-0019)
+public/aksesibilitas.js   # ...dan atribut preferensi baca (ADR-0055)
 server/penyaji.mjs        # penyaji produksi: header, CSP, cache, kompresi (ADR-0016/0019)
 tests/penyaji.test.mjs    # gerbang penyajian — aturan di atas dibuktikan, bukan diklaim
 tests/keluaran-csp.test.mjs # gerbang keluaran: nol gaya & skrip inline di HTML

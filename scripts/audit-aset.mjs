@@ -80,8 +80,19 @@ import { createReporter } from "./lib/reporter.mjs";
  * MELEWATKAN sebagian skrip inline. Gerbangnya sendiri yang mengoreksinya pada
  * jalan pertama — yang merupakan alasan sebuah anggaran harus diukur oleh alat
  * yang menegakkannya, bukan oleh orang yang menulisnya.
+ *
+ * ## 13.000 → 18.500, 18 November 2026 (ADR-0055)
+ *
+ * Panel preferensi baca menambah dua skrip ke SETIAP halaman: pemasang awal
+ * klasik `public/aksesibilitas.js` (2.331 B) dan bundel panel (3.418 B), total
+ * +5.749 B. Halaman pencarian tetap yang terberat untuk skrip: 10.626 B sebelum,
+ * 16.375 B sesudah, terukur atas build nyata dengan awcms tiruan. 18.500
+ * menyisakan 2.125 B, sengaja sempit seperti sebelumnya. Yang tidak dilakukan:
+ * memuat bundel panel malas saat pertama dibuka, yang akan mengeluarkannya dari
+ * angka ini tanpa mengurangi byte yang akhirnya ditarik pembaca; itu dicatat di
+ * ADR-0055 sebagai pilihan lanjutan, bukan dipakai untuk memenuhi gerbang.
  */
-const ANGGARAN_SKRIP = 13000;
+const ANGGARAN_SKRIP = 18500;
 
 /**
  * TOTAL yang ditarik satu halaman pembaca — skrip, stylesheet, dan inline.
@@ -121,8 +132,21 @@ const ANGGARAN_SKRIP = 13000;
  * 40.000 memberi ruang 1.864 B di atas halaman terberat hari ini. Sengaja
  * sempit: plafon yang dinaikkan dengan kelegaan besar berhenti menangkap akresi
  * berikutnya, dan menangkap akresi persis yang dilakukannya di sini.
+ *
+ * ## 40.000 → 53.700, 18 November 2026 (ADR-0055)
+ *
+ * Panel preferensi baca: +5.749 B skrip (lihat `ANGGARAN_SKRIP`) dan +7.957 B
+ * gaya di `BaseLayout.css` (22.587 → 30.544 B; 1.5 KB gzip) untuk panel itu
+ * sendiri, tujuh atribut preferensinya, dan paletnya yang ditulis dua kali
+ * karena CSS tidak bisa membagi satu aturan antara selektor atribut dan media
+ * query. Halaman terberat tetap `/`: 38.150 B sebelum, 51.866 B sesudah
+ * (skrip 11.742 + gaya 40.124), terukur atas build nyata dengan awcms tiruan.
+ * Gaya itu dimuat di setiap halaman karena tombolnya ada di setiap halaman, jadi
+ * ia memang berada di berkas yang tepat. 53.700 menyisakan 1.834 B, sengaja
+ * sempit. Gerbang ini TIDAK diminta lebih lunak dari yang diperlukan: kenaikan
+ * 13.716 B adalah ukuran fiturnya, bukan kelonggaran untuk akresi berikutnya.
  */
-const ANGGARAN_TOTAL = 40000;
+const ANGGARAN_TOTAL = 53700;
 
 /**
  * Satu berkas skrip TERBIT. Terbesar hari ini 4.808 B (kotak cari).
@@ -159,7 +183,11 @@ const ANGGARAN_PER_SKRIP_SUMBER = 14000;
  */
 const AUDIENS_PUBLIC = new Map([
   ["favicon.svg", "pembaca — ikon tab, ditarik sekali dan di-cache selamanya"],
-  ["tema.js", "pembaca — pemilih tema, satu-satunya skrip yang TIDAK di-bundle Astro"]
+  ["tema.js", "pembaca — pemilih tema, skrip yang TIDAK di-bundle Astro"],
+  [
+    "aksesibilitas.js",
+    "pembaca — pemasang awal preferensi baca (ADR-0055), skrip kedua yang TIDAK di-bundle Astro"
+  ]
 ]);
 
 /** Ekstensi yang dihitung sebagai unduhan pembaca. */

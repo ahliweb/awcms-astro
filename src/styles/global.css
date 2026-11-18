@@ -1325,15 +1325,21 @@ footer .buletin-tombol:focus-visible {
  * pada properti yang tidak berpindah tempat.
  *
  * Sapuan kilau punya blok `content: none` sendiri di bawah, dengan alasan yang
- * sama. */
+ * sama.
+ *
+ * (ADR-0055) This block now applies only while `data-a11y-ready` is absent:
+ * no JavaScript, or `public/aksesibilitas.js` blocked. Once that early script
+ * has run, the `data-a11y-motion` attribute is the single source of truth. Its
+ * initial value follows this same media query, but the reader can switch it off
+ * in the reading-preferences panel. */
 @media (prefers-reduced-motion: reduce) {
-  html {
+  :root:not([data-a11y-ready]) {
     scroll-behavior: auto;
   }
 
-  *,
-  *::before,
-  *::after {
+  :root:not([data-a11y-ready]) *,
+  :root:not([data-a11y-ready]) *::before,
+  :root:not([data-a11y-ready]) *::after {
     animation: none !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
@@ -1499,7 +1505,11 @@ footer .buletin-tombol:focus-visible {
 @media (max-width: 480px) {
   .share-list {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    /* Two columns at the default text size, one when larger text (the
+       reading-preferences panel, ADR-0055) no longer fits two. A bare `1fr`
+       cannot shrink below its content and a fixed `repeat(2, …)` cannot drop to
+       one, and either overflowed the 320px inner width at the 360px floor. */
+    grid-template-columns: repeat(auto-fit, minmax(min(8rem, 100%), 1fr));
   }
 
   .share-btn {

@@ -139,7 +139,7 @@ is the only lockfile.
 | `bun run dev`               | Astro development server (HMR), `http://localhost:4321`          |
 | `bun run check`             | Lockfile gate, then `astro check`                                |
 | `bun run check:lockfile`    | The lockfile gate alone — pure file reading                      |
-| `bun test` | 47 gate files: the `awcms` contract, site roles, no-backend, no Node.js runtime, the `news` vocabulary, feeds, the server, toolchain versions, output CSP, the 360px layout floor, translation mirrors, the knowledge/Obsidian export safety boundary, the knowledge-graph label step, the CDN purge step, and meta-tests over the audit scripts |
+| `bun test` | 48 gate files: the `awcms` contract, site roles, no-backend, no Node.js runtime, the `news` vocabulary, feeds, the server, toolchain versions, output CSP, the 360px layout floor, translation mirrors, the knowledge/Obsidian export safety boundary, the knowledge-graph label step, the CDN purge step, the reading-preferences panel, and meta-tests over the audit scripts |
 | `bun run audit:konten`      | Audit gate: image sources, and the build output when it exists   |
 | `bun run audit:dokumen`     | Document gate: dead markdown links, the ADR index, the shine-surface list |
 | `bun run audit:graf`        | Graph gate: the tracked `graphify-out/` artefacts, their community names, anything tracked under `knowledge/generated/` or `.obsidian/`, and bounded content staleness past `MAX_STALE_FILES = 40` ([ADR-0051](docs/adr/0051-a-knowledge-tree-points-at-the-code-and-owns-none-of-it.md)) |
@@ -253,8 +253,8 @@ cannot inject markup through any path, whatever they type.
 **A strict CSP that is actually sent, not merely "CSP-ready".** The server sets
 `default-src 'self'` with `script-src 'self'` and `style-src 'self'` and no
 `'unsafe-inline'` (ADR-0019). What makes that possible: there is not one style
-or script inside the output HTML — the theme switcher lives in
-[`public/tema.js`](public/tema.js), and Astro is forbidden from inlining small
+or script inside the output HTML — the theme switcher and the reading-preferences early script live in
+[`public/tema.js`](public/tema.js) and [`public/aksesibilitas.js`](public/aksesibilitas.js), and Astro is forbidden from inlining small
 bundles into pages by `vite.build.assetsInlineLimit: 0`. Both are guarded by
 [`tests/keluaran-csp.test.mjs`](tests/keluaran-csp.test.mjs), which also proves
 the JS did not vanish with them; the policy itself is guarded by
@@ -291,7 +291,8 @@ src/
 ├── locales/<locale>/messages.po
 ├── pages/                # default locale at the root, other locales through [lang]/
 └── styles/global.css     # design tokens + interaction standards
-public/tema.js            # the ONLY JS that must run before paint (ADR-0019)
+public/tema.js            # JS that must run before paint: the theme (ADR-0019)
+public/aksesibilitas.js   # ...and the reading-preferences attributes (ADR-0055)
 server/penyaji.mjs        # production server: headers, CSP, cache, compression (ADR-0016/0019)
 tests/penyaji.test.mjs    # the serving gate — the rules above are proven, not claimed
 tests/keluaran-csp.test.mjs # output gate: zero inline styles and scripts in the HTML

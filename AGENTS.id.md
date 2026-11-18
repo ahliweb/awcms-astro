@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](AGENTS.md)
 
-<!-- i18n-source-hash: sha256:6ac1cd592531bd6a06b1d96551a3adb9b8c5fae4bdd20ccb411988820efdc2ed -->
+<!-- i18n-source-hash: sha256:c43144dc9c58abe5ff92f71784b965e4ab48df24bab052569a82506a076bb771 -->
 
 # AGENTS.md — kontrak kerja `awcms-astro`
 
@@ -516,6 +516,16 @@ yang [ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.m
   — aturan `*` global hanya memangkas durasi, dan animasi 0,01 md tetap
   berkedip. Umpan balik hover juga aktif pada `:focus-visible`, sehingga
   pengguna keyboard tidak mendapat versi yang lebih miskin.
+- **Preferensi baca adalah pilihan tampilan, bukan overlay**
+  ([ADR-0055](docs/adr/0055-reading-preferences-are-a-native-same-origin-panel-not-an-overlay-widget.id.md)).
+  Setiap halaman punya panel native satu-origin (ukuran teks, kontras, monokrom,
+  teks ramah disleksia, penekanan tautan, kurangi gerakan) yang pilihannya
+  disimpan di `localStorage` dan menjadi atribut `data-a11y-*` pada `<html>`;
+  tidak ada yang dikirim ke mana pun. Jangan menambah overlay aksesibilitas
+  pihak ketiga, dan jangan membuat panel menyatakan bahwa sebuah halaman memenuhi
+  suatu standar. Fitur yang beranimasi, menggulir sendiri, atau memutar otomatis
+  harus berhenti di bawah `data-a11y-motion="reduce"` dan mendengarkan event
+  `awcms-a11y-change` pada `document`.
 - **Mobile-first dari 360px.** Padding `.container` sendiri menyisakan lebar
   bersih persis 320px pada lantai itu — sebuah track grid yang dipatok ke angka
   yang sama punya sisa nol, dan itu yang dilakukan `.grid-cards` sampai
@@ -585,7 +595,7 @@ yang [ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.m
   terlihat di `src/` sama sekali:
   1. `<script is:inline>` berisi kode. Skrip yang harus jalan sebelum paint
      pertama menjadi berkas di `public/` yang dimuat `<script src>` klasik —
-     lihat `public/tema.js`. Bundel Astro selalu `type="module"` dan modul
+     lihat `public/tema.js` dan `public/aksesibilitas.js`. Bundel Astro selalu `type="module"` dan modul
      selalu ditunda, jadi ia bukan pengganti untuk kasus itu.
   2. `<script>` biasa di komponen, yang Astro bundel lalu **sisipkan kembali**
      ke HTML bila chunk-nya lebih kecil dari `assetsInlineLimit`.

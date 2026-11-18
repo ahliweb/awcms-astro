@@ -317,6 +317,7 @@ curl -sI https://<domain>/ | grep -iE 'content-security-policy|permissions-polic
 #   -> default-src 'self'; script-src 'self'; … base-uri 'none'; … (ADR-0019)
 #   -> geolocation=(), camera=(), microphone=(), payment=()
 curl -sI https://<domain>/tema.js | head -1             # 200 — the theme switcher is published
+curl -sI https://<domain>/aksesibilitas.js | head -1    # 200 — the reading-preferences early script is published
 curl -sI https://<domain>/tidak-ada/ | head -1          # 404, not 200
 ```
 
