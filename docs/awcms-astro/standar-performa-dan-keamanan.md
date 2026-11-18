@@ -432,12 +432,14 @@ Three lines change their meaning the moment this template becomes a site:
 
 ## Dependency-audit exceptions
 
-CI runs `bun audit --audit-level=low`. Exactly one advisory is excluded:
+CI runs `bun audit --audit-level=low` with **no exceptions**: there is no
+`--ignore` flag and the `low` threshold is not lowered. Any advisory it reports
+fails the step and is fixed by upgrading, or renewed in writing by the owner.
 
-| Advisory | Package | Mitigation | Owner | Review by |
-| --- | --- | --- | --- | --- |
-| [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf) (high, ReDoS through repeated extglobs, `<=4.0.7`) | `picomatch` 4.0.7 and 2.3.2 (transitive, build tooling only) | No patched release exists. Local patches `patches/picomatch@4.0.7.patch` and `patches/picomatch@2.3.2.patch` (declared in `patchedDependencies`) force `noextglob`, so extglob patterns are matched literally and the vulnerable path is unreachable. `tests/picomatch-local-patch.test.mjs` fails if the patch is dropped. | unggul (owner decision via dialog, 2026-11-18) | 2026-12-18 |
-
-On review: drop the `--ignore` flag, the patches, and the test once a fixed
-`picomatch` release is installed; otherwise renew the decision in writing. Other
-advisories are never added to this list and the `low` threshold is not lowered.
+History: GHSA-fc5q-39xc-vjpf (`picomatch`, ReDoS through repeated extglobs) was
+briefly mitigated here by local patches. GitHub and OSV withdrew it on
+2026-11-18 (the maintainers say it is not a library vulnerability; see
+[picomatch#247](https://github.com/micromatch/picomatch/issues/247)), so the
+patches, the `patchedDependencies` entries, their test, and the `--ignore` flag
+were removed. NVD still lists CVE-2026-112366 as "Awaiting Analysis"; exposure
+is low because the patterns come only from configuration.
