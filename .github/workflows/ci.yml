@@ -170,15 +170,12 @@ jobs:
       # `bun audit` (dependency) dan `bun run audit:konten` adalah dua hal yang
       # berbeda dan namanya sengaja tidak dibuat mirip.
       #
-      # Satu-satunya pengecualian: GHSA-fc5q-39xc-vjpf (picomatch, ReDoS
-      # extglob, <=4.0.7, belum ada rilis perbaikan). Dimitigasi tambalan lokal
-      # `patches/picomatch@*.patch` yang mematikan extglob, dijaga
-      # `tests/picomatch-local-patch.test.mjs`. Pemilik: unggul (owner decision
-      # via dialog, 2026-11-18); tinjau ulang paling lambat 2026-12-18. Advisory
-      # lain TIDAK diabaikan dan ambang `low` tidak diturunkan. Dasar:
+      # Tanpa pengecualian: tidak ada `--ignore` dan ambang `low` tidak
+      # diturunkan. (GHSA-fc5q-39xc-vjpf, picomatch, ditarik GitHub dan OSV
+      # pada 2026-11-18; tambalan lokalnya sudah dibuang.) Dasar:
       # docs/awcms-astro/standar-performa-dan-keamanan.md.
       - name: Audit dependency
-        run: bun audit --audit-level=low --ignore GHSA-fc5q-39xc-vjpf
+        run: bun audit --audit-level=low
 
   # ---------------------------------------------------------------------------
   # Build penuh — hanya jalan bila repo ini benar-benar punya sumber konten.

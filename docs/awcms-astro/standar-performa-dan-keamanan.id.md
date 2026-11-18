@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](standar-performa-dan-keamanan.md)
 
-<!-- i18n-source-hash: sha256:f23979ede40b6135500cef4d50eaba27332e4e862d0a9d1f531c45b47f6475b4 -->
+<!-- i18n-source-hash: sha256:408f833e826bfa5601aa2059fcccb6c15a8ebda3d142f97bc9c83b9108f54aed -->
 
 # awcms-astro — Standar Performa dan Keamanan
 
@@ -449,13 +449,15 @@ Tiga baris berubah artinya begitu template ini menjadi sebuah situs:
 
 ## Pengecualian audit dependensi
 
-CI menjalankan `bun audit --audit-level=low`. Tepat satu advisory dikecualikan:
+CI menjalankan `bun audit --audit-level=low` **tanpa pengecualian**: tidak ada
+flag `--ignore` dan ambang `low` tidak diturunkan. Advisory apa pun yang
+dilaporkannya menggagalkan langkah itu dan diperbaiki dengan upgrade, atau
+diperbarui secara tertulis oleh pemilik.
 
-| Advisory | Paket | Mitigasi | Pemilik | Tinjau paling lambat |
-| --- | --- | --- | --- | --- |
-| [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf) (tinggi, ReDoS lewat extglob berulang, `<=4.0.7`) | `picomatch` 4.0.7 dan 2.3.2 (transitif, hanya tooling build) | Belum ada rilis perbaikan. Tambalan lokal `patches/picomatch@4.0.7.patch` dan `patches/picomatch@2.3.2.patch` (dideklarasikan di `patchedDependencies`) memaksa `noextglob`, sehingga pola extglob dicocokkan secara harfiah dan jalur rentan tidak terjangkau. `tests/picomatch-local-patch.test.mjs` gagal bila tambalan terlepas. | unggul (owner decision via dialog, 2026-11-18) | 2026-12-18 |
-
-Saat ditinjau: hapus flag `--ignore`, tambalan, dan tes begitu rilis `picomatch`
-yang diperbaiki terpasang; bila belum, perbarui keputusan secara tertulis.
-Advisory lain tidak pernah ditambahkan ke daftar ini dan ambang `low` tidak
-diturunkan.
+Riwayat: GHSA-fc5q-39xc-vjpf (`picomatch`, ReDoS lewat extglob berulang)
+sempat dimitigasi di sini dengan tambalan lokal. GitHub dan OSV menariknya pada
+2026-11-18 (pengelola menyatakan itu bukan kerentanan pustaka; lihat
+[picomatch#247](https://github.com/micromatch/picomatch/issues/247)), sehingga
+tambalan, entri `patchedDependencies`, tesnya, dan flag `--ignore` dibuang. NVD
+masih mencatat CVE-2026-112366 "Awaiting Analysis"; keterpaparan rendah karena
+polanya hanya berasal dari konfigurasi.
