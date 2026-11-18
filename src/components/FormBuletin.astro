@@ -36,7 +36,7 @@ const locale = getLocaleFromPath(Astro.url.pathname);
 
 {newsletterAktif && (
   <section class="buletin" data-buletin data-asal={asalPencarianSitus}>
-    <h4 class="footer-judul">{t(locale, 'buletin.judul')}</h4>
+    <h2 class="footer-judul">{t(locale, 'buletin.judul')}</h2>
     <p class="footer-teks buletin-teks">{t(locale, 'buletin.ajakan')}</p>
 
     <form class="buletin-form" data-buletin-form hidden>

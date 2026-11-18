@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](standar-teknis.md)
 
-<!-- i18n-source-hash: sha256:f19f3e5d556afa20809b37710e20021a63790a3628cb6c09a179bea9245d17fc -->
+<!-- i18n-source-hash: sha256:0115b25df9d10c66f53e260869da1a4ee7a1b8604027e1644d4220e9ea34eb50 -->
 
 # awcms-astro — Standar Teknis
 
@@ -181,7 +181,7 @@ Halaman 404 dikecualikan: `noindex, follow`, tanpa canonical dan hreflang, tanpa
 
 ## Aksesibilitas
 
-Target WCAG 2.1 AA. Yang mengikat:
+Target WCAG 2.2 AA. Yang mengikat:
 
 - Skip link ke konten utama adalah elemen pertama di dalam `<body>`, teksnya dari katalog PO.
 - Navigasi dapat dioperasikan penuh dengan keyboard; item aktif ditandai `aria-current`.

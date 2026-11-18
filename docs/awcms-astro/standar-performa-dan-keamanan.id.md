@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](standar-performa-dan-keamanan.md)
 
-<!-- i18n-source-hash: sha256:b34c062466992335971d98a4e5b3c8c1ba0a251cd57d438fd297d676478a4f65 -->
+<!-- i18n-source-hash: sha256:f23979ede40b6135500cef4d50eaba27332e4e862d0a9d1f531c45b47f6475b4 -->
 
 # awcms-astro — Standar Performa dan Keamanan
 
@@ -37,7 +37,7 @@ yang tidak bisa diverifikasi ditulis `belum diukur`, bukan `terpenuhi`.
 | ISO/IEC 25010 | 2023 | Model mutu produk (performa, kompatibilitas, keandalan) | Kompatibilitas/interoperabilitas: gerbang permukaan di §Hubungan dengan `awcms` |
 | Core Web Vitals | LCP · INP · CLS | Performa yang dirasakan pembaca | §Performa |
 | RFC 9111 (+ RFC 5861) | HTTP Caching, `stale-while-revalidate` | Semantik `Cache-Control` | [`tests/penyaji.test.mjs`](../../tests/penyaji.test.mjs) |
-| WCAG | 2.1 AA (2.2 AA untuk setiap permukaan terautentikasi: BFF Jualanku maupun admin USER) | Aksesibilitas | [`standar-teknis.md`](standar-teknis.md#accessibility) |
+| WCAG | 2.2 AA (halaman publik, BFF Jualanku, maupun admin USER) | Aksesibilitas | [`standar-teknis.md`](standar-teknis.md#accessibility) |
 
 **Daftar ini sengaja disamakan dengan penilaian `ahliweb/awcms` 4 Agustus 2026** (`docs/awcms/repo-assessment-2026-08-04.md`), yang mengukur dirinya terhadap ISO/IEC 25010, RFC 9111/5861, Core Web Vitals, OWASP Top 10 2021, OWASP API Security Top 10 2023, ASVS 4.0, dan ISO/IEC 27001:2022 Annex A. Dua di antaranya tidak ada di daftar sini sampai hari ini, dan satu (API Security Top 10) tidak berlaku di sini — ia tetap dicatat, karena baris "tidak berlaku, dan ini alasannya" adalah yang membuat dua matriks keluarga bisa dijumlahkan.
 

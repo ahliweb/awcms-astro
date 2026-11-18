@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](ui-ux-design-system.md)
 
-<!-- i18n-source-hash: sha256:482a16a9c1aef100a3b6be2bba8f82248abef982159a8293e70396d6e6ca1fe2 -->
+<!-- i18n-source-hash: sha256:06608fa01cec48424445a82f0b40f449b471efe4623e8a888cf5396233a60aa6 -->
 
 # awcms-astro — Design System
 
@@ -14,7 +14,7 @@ Prinsip AWCMS diadaptasi ke konteks situs statis publik. Yang berbeda ditandai.
 
 1. **Terbaca tanpa JavaScript.** Seluruh fungsi inti — navigasi, pengalih bahasa, accordion FAQ, dan seluruh badan artikel — bekerja tanpa JS. Berbeda dari back-office AWCMS yang boleh mengandalkan islands.
 2. **State eksplisit.** Setiap halaman punya keadaan terisi, kosong, dan fallback yang terlihat. Situs statis tidak punya loading state, tetapi punya **state fallback terjemahan** yang wajib ditandai ke pembaca.
-3. **Aksesibel.** Target WCAG 2.1 AA: kontras cukup di kedua tema, fokus terlihat, navigasi keyboard penuh.
+3. **Aksesibel.** Target WCAG 2.2 AA: kontras cukup di kedua tema, fokus terlihat, navigasi keyboard penuh.
 4. **Ringan.** Pembacanya di jaringan yang tidak dapat diandalkan. Anggaran gambar dan JavaScript diperlakukan sebagai batas, bukan saran.
 5. **Mobile-first.** Kebalikan dari back-office AWCMS yang desktop-first. Layout dirancang dari 360px ke atas.
 6. **Tidak menyamar resmi.** Tidak memakai lambang, logo, atau atribut instansi negara. Batas ini adalah **aturan desain**, bukan sekadar kepatuhan.
@@ -209,7 +209,7 @@ Gerbang yang sama lalu mencatat apa yang masih salah dan tidak diperbaiki di sin
 - `prefers-reduced-motion: reduce` dihormati, dan pembaca juga bisa mematikan (atau menyalakan kembali) gerakan di panel preferensi baca.
 - Badan konten yang jatuh ke locale default membawa atribut `lang` yang benar, supaya pembaca layar melafalkannya dengan aturan yang tepat.
 
-Targetnya **WCAG 2.1 AA** untuk permukaan publik dan **WCAG 2.2 AA** untuk setiap permukaan TERAUTENTIKASI bila ia kelak ada — bukan hanya Jualanku ([ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md)), melainkan juga permukaan admin USER yang sebuah situs nyatakan lewat `permukaanAdmin` ([ADR-0034](../adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md)). Keduanya membawa kontrol, formulir, dan fokus yang berpindah; itu yang menentukan targetnya, bukan nama permukaannya. Dua kriteria 2.2 yang paling mungkin menggigit lebih dulu di antarmuka mana pun yang membawa kontrol: **2.4.11 Focus Not Obscured** dan **2.5.8 Target Size (Minimum)** — yang kedua sudah dipenuhi di sini lewat aturan target sentuh 44px di atas, yang pertama **belum diuji di browser**, dan kini ada yang bisa diuji: tombol preferensi baca adalah elemen tetap di inline-start bawah setiap halaman (§Preferensi baca). Apakah ia bisa menutupi kontrol yang sedang fokus belum diperiksa, dan butuh uji browser yang belum dimiliki repo ini (tindak lanjut ADR-0055).
+Targetnya **WCAG 2.2 AA** untuk permukaan publik dan untuk setiap permukaan TERAUTENTIKASI bila ia kelak ada (halaman publik sebelumnya 2.1 AA, sampai 19 November 2026, issue #179) — bukan hanya Jualanku ([ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md)), melainkan juga permukaan admin USER yang sebuah situs nyatakan lewat `permukaanAdmin` ([ADR-0034](../adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md)). Keduanya membawa kontrol, formulir, dan fokus yang berpindah, itulah sebabnya kriteria 2.2 di bawah paling penting di sana. Dua kriteria 2.2 yang paling mungkin menggigit lebih dulu di antarmuka mana pun yang membawa kontrol: **2.4.11 Focus Not Obscured** dan **2.5.8 Target Size (Minimum)** — yang kedua sudah dipenuhi di sini lewat aturan target sentuh 44px di atas, yang pertama **belum diuji di browser**, dan kini ada yang bisa diuji: tombol preferensi baca adalah elemen tetap di inline-start bawah setiap halaman (§Preferensi baca). Apakah ia bisa menutupi kontrol yang sedang fokus belum diperiksa, dan butuh uji browser yang belum dimiliki repo ini (tindak lanjut ADR-0055).
 
 Kontras token warna di repo ini **belum pernah diaudit terukur** (lihat peringatan di §Gap terhadap kosakata AWCMS). Itu satu-satunya butir WCAG di dokumen ini yang tidak bisa dijawab "sudah" — dan ia ditulis begitu alih-alih dibiarkan tampak terjaga.
 

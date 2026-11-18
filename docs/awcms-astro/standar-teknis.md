@@ -180,7 +180,7 @@ The 404 page is excluded: `noindex, follow`, no canonical and no hreflang, no sh
 
 ## Accessibility
 
-The WCAG 2.1 AA target. What is binding:
+The WCAG 2.2 AA target. What is binding:
 
 - The skip link to the main content is the first element inside `<body>`, its text from the PO catalogue.
 - Navigation is fully keyboard-operable; the active item is marked with `aria-current`.

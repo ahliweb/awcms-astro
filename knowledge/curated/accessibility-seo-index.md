@@ -1,14 +1,13 @@
 # Accessibility and SEO index
 
-## Two accessibility floors, not one
+## One accessibility floor
 
-**WCAG 2.1 AA is the floor for every public page.** Sufficient contrast in
+**WCAG 2.2 AA is the floor for every public page.** Sufficient contrast in
 both themes, visible focus, full keyboard navigation,
 `prefers-reduced-motion` honoured — never a target to reach eventually.
-**Every authenticated surface targets WCAG 2.2 AA instead** — the Jualanku
+**Every authenticated surface targets the same WCAG 2.2 AA** — the Jualanku
 BFF and any declared USER admin surface alike (`AGENTS.md` §"Moving to
-SSR"). What decides which floor applies is the presence of controls, forms,
-and moving focus, not the surface's name.
+SSR"). Public pages were 2.1 AA until 19 November 2026 (issue #179).
 
 ## The 360px floor has a checker, not just a rule
 
