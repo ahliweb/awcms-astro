@@ -35,7 +35,7 @@ cannot be verified is written `not measured`, not `met`.
 | ISO/IEC 25010 | 2023 | The product quality model (performance, compatibility, reliability) | Compatibility/interoperability: the surface gate in §The relationship with `awcms` |
 | Core Web Vitals | LCP · INP · CLS | Performance as a reader feels it | §Performance |
 | RFC 9111 (+ RFC 5861) | HTTP Caching, `stale-while-revalidate` | `Cache-Control` semantics | [`tests/penyaji.test.mjs`](../../tests/penyaji.test.mjs) |
-| WCAG | 2.1 AA (2.2 AA for any authenticated surface: the Jualanku BFF and USER admin alike) | Accessibility | [`standar-teknis.md`](standar-teknis.md#accessibility) |
+| WCAG | 2.2 AA (public pages, the Jualanku BFF, and USER admin alike) | Accessibility | [`standar-teknis.md`](standar-teknis.md#accessibility) |
 
 **This list is deliberately matched to the `ahliweb/awcms` assessment of 4 August 2026** (`docs/awcms/repo-assessment-2026-08-04.md`), which measures itself against ISO/IEC 25010, RFC 9111/5861, Core Web Vitals, OWASP Top 10 2021, OWASP API Security Top 10 2023, ASVS 4.0, and ISO/IEC 27001:2022 Annex A. Two of them were absent from this list until today, and one (API Security Top 10) does not apply here — it is still recorded, because a "not applicable, and here is why" row is what makes two family matrices addable.
 

@@ -497,7 +497,7 @@ exactly what
   switcher, accordions, and the whole body of every page. Anything that
   genuinely needs JS is hidden when JS is off — a control that does nothing when
   clicked is worse than a control that is not there.
-- **WCAG 2.1 AA accessibility** is a floor, not a target: sufficient contrast in
+- **WCAG 2.2 AA accessibility** is a floor, not a target: sufficient contrast in
   both themes, visible focus, full keyboard navigation, `prefers-reduced-motion`
   honoured. Decorative animation is **switched off** when that is asked for, not
   sped up — a global `*` rule only trims duration, and a 0.01 ms animation still
@@ -950,11 +950,12 @@ Three things to read before touching that area:
 - **The BFF decides nothing with business consequences.** Ownership,
   entitlement, and status transitions are decided by `awcms`. A rule that lives
   only in this repo is a rule that does not exist.
-- **Every AUTHENTICATED surface targets WCAG 2.2 AA**, up from 2.1 AA above —
-  the Jualanku BFF (ADR-0014) and the USER admin surface a site declares through
-  `permukaanAdmin` (ADR-0034) alike. What decides is not the surface's name but
-  the presence of controls, forms, and focus that moves. Every other rule in
-  this document still applies in full.
+- **Every AUTHENTICATED surface targets WCAG 2.2 AA** — the same floor as the
+  public pages (raised from 2.1 AA on 19 November 2026, issue #179; ADR-0014
+  wrote 2.2 for authenticated surfaces first). That covers the Jualanku BFF
+  (ADR-0014) and the USER admin surface a site declares through
+  `permukaanAdmin` (ADR-0034) alike, and what those add is controls, forms, and
+  focus that moves. Every other rule in this document still applies in full.
 
 ## Orchestrator & agent (AI models)
 

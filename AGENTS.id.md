@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](AGENTS.md)
 
-<!-- i18n-source-hash: sha256:c43144dc9c58abe5ff92f71784b965e4ab48df24bab052569a82506a076bb771 -->
+<!-- i18n-source-hash: sha256:f0ab0d555594ad30184bd44f8e25e743d9b93e43fb366e4dc19738ad1a5d2729 -->
 
 # AGENTS.md — kontrak kerja `awcms-astro`
 
@@ -510,7 +510,7 @@ yang [ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.m
   accordion, dan seluruh isi halaman. Yang benar-benar butuh JS disembunyikan
   saat JS mati — kontrol yang diam saat diklik lebih buruk daripada kontrol yang
   tidak ada.
-- **Aksesibilitas WCAG 2.1 AA** adalah batas, bukan target: kontras cukup di
+- **Aksesibilitas WCAG 2.2 AA** adalah batas, bukan target: kontras cukup di
   kedua tema, fokus terlihat, navigasi keyboard penuh, `prefers-reduced-motion`
   dihormati. Animasi dekoratif **dimatikan** saat itu diminta, bukan dipercepat
   — aturan `*` global hanya memangkas durasi, dan animasi 0,01 md tetap
@@ -981,11 +981,13 @@ Tiga hal yang perlu dibaca sebelum menyentuh area itu:
 - **BFF tidak memutuskan apa pun yang punya konsekuensi bisnis.** Kepemilikan,
   entitlement, dan transisi status diputuskan `awcms`. Aturan yang hanya hidup di
   repo ini adalah aturan yang tidak ada.
-- **Setiap permukaan TERAUTENTIKASI bertarget WCAG 2.2 AA**, naik dari 2.1 AA di
-  atas — BFF Jualanku (ADR-0014) maupun permukaan admin USER yang sebuah situs
-  nyatakan lewat `permukaanAdmin` (ADR-0034). Yang menentukan bukan nama
-  permukaannya melainkan adanya kontrol, formulir, dan fokus yang berpindah.
-  Aturan lain di dokumen ini tetap berlaku penuh.
+- **Setiap permukaan TERAUTENTIKASI bertarget WCAG 2.2 AA** — batas yang sama
+  dengan halaman publik (dinaikkan dari 2.1 AA pada 19 November 2026, issue
+  #179; ADR-0014 lebih dulu menulis 2.2 untuk permukaan terautentikasi). Itu
+  mencakup BFF Jualanku (ADR-0014) maupun permukaan admin USER yang sebuah situs
+  nyatakan lewat `permukaanAdmin` (ADR-0034), dan yang mereka tambahkan adalah
+  kontrol, formulir, dan fokus yang berpindah. Aturan lain di dokumen ini tetap
+  berlaku penuh.
 
 ## Orchestrator & Agent (model AI)
 

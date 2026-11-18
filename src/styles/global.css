@@ -540,8 +540,18 @@ p {
   /* Di layar tersempit label pencarian dilepas dan ikonnya tetap — target
      sentuhnya tidak ikut mengecil karena `min-width` menggantikan lebar yang
      hilang bersama teksnya. */
+  /* Label dilepas secara VISUAL saja. `display: none` membuang namanya dari
+     pohon aksesibilitas dan tautan tersisa tanpa nama (WCAG 2.4.4 / 4.1.2). */
   .cari-tautan span {
-    display: none;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
   }
 
   .cari-tautan {
@@ -1197,6 +1207,20 @@ footer .buletin-catatan {
    sesuatu, dan itu bagian yang paling tidak boleh terlewat. */
 footer .disclaimer-footer strong {
   color: var(--gelap-teks-lembut);
+}
+
+/* Judul formulir buletin adalah <h2>, sama seperti judul kolom footer lain
+   (urutan judul, WCAG 1.3.1 / 2.4.6). `.footer-judul` di BaseLayout bersifat
+   scoped Astro dan tidak menjangkau elemen milik FormBuletin, jadi tanpa aturan
+   ini <h2> itu jatuh ke aturan global h2 (1.75rem, margin-atas 2rem, teks
+   gelap di atas latar footer gelap). Nilainya sama dengan `.footer-judul`. */
+footer .buletin .footer-judul {
+  margin: 0 0 1rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gelap-teks-redup);
 }
 
 /* Jarak sebelum pita penutup. Ia dipasang di penafian, bukan sebagai
