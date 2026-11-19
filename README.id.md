@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:97b68d90cadaca766447aefbc86f306fd134945e04677bc999ce5b1634c0f301 -->
+<!-- i18n-source-hash: sha256:48e03d90683b3da227453469761a51d0b94be5da9b8831f26d52ac92698ead00 -->
 
 # awcms-astro
 
@@ -150,6 +150,7 @@ satu-satunya lockfile.
 | `bun run audit:serapan`  | Gerbang serapan: keputusan `awcms` yang belum dibaca siapa pun di sini — satu-satunya gerbang yang melihat ke luar |
 | `bun run audit:aset`     | Gerbang aset: anggaran byte pembaca, atas sumber dan atas hasil build bila ada |
 | `bun run audit:rilis`    | Gerbang rilis: backlog changeset yang menunggu, dibatasi 12 berkas dan 14 hari ([ADR-0048](docs/adr/0048-a-release-is-cut-when-the-backlog-crosses-a-bound.id.md)), dan setiap tag rilis di remote punya GitHub Release yang cocok ([ADR-0052](docs/adr/0052-github-releases-are-part-of-this-repos-release-convention.id.md)) |
+| `bun run test:a11y`      | Gerbang aksesibilitas peramban: axe-core di Chromium sungguhan (Playwright) atas build produksi dan `awcms` tiruan; tag WCAG 2.2 AA, kedua tema, setiap mode preferensi baca, pelanggaran apa pun menggagalkan ([ADR-0056](docs/adr/0056-accessibility-is-gated-by-axe-in-a-real-browser-with-no-exceptions.id.md)). Butuh Chromium sekali: `bunx --bun playwright install chromium`; di CI berjalan di dalam `Check`, bukan di `bun test` |
 | `bun run knowledge:graph:update` | Membangun ulang graf `graphify-out/` milik repo ini (code-only, tanpa panggilan LLM), dan mengklaster ulang — pemegang PARTISI. Butuh `graphify` di `PATH`; tidak berjalan di CI |
 | `bun run knowledge:graph:label` | Menerapkan nama komunitas kuratif ke partisi yang sudah ada di disk — pemegang NAMA, dan tidak pernah memanggil `graphify`. Tidak butuh `graphify`, Python, atau jaringan; tidak berjalan di CI |
 | `bun run knowledge:obsidian:export` | Mengekspor graf ke vault Obsidian `knowledge/generated/graphify/` yang tervalidasi dan ber-allowlist. Butuh `graphify` di `PATH`; tidak berjalan di CI |

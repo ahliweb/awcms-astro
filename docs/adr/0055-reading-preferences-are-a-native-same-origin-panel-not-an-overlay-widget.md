@@ -229,7 +229,11 @@ The orchestrator decided **A**, and the owner passed gate 9 for it on 18 Novembe
 
 ## Follow-ups
 
-1. **Add Playwright and axe** to cover: open the panel on a public page, toggle each
+1. **Add Playwright and axe** (*done 19 November 2026 for the axe half, by
+   [ADR-0056](0056-accessibility-is-gated-by-axe-in-a-real-browser-with-no-exceptions.md):
+   axe runs in a real browser on every change, with the panel open and every mode
+   on, and at 360 px; focus movement and persistence after a reload remain
+   unautomated*) to cover: open the panel on a public page, toggle each
    preference, assert the attribute and persistence after a reload, Esc returns
    focus, axe finds no serious or critical violation with the panel open and with
    contrast on, and no horizontal overflow at 360 px with extra-large text. This

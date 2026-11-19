@@ -234,14 +234,25 @@ body {
   top: 1rem;
 }
 
+/* Warna tautan dasar adalah `--accent-hover`, bukan `--accent-primary`:
+   #0284c7 di atas latar terang hanya 3,91:1 untuk teks kecil (WCAG 1.4.3 minta
+   4,5:1), sedangkan #0369a1 mencapai 5,67:1. Di tema gelap `--accent-hover`
+   (#7dd3fc) lebih terang, jadi kontrasnya naik. Saat disorot, tautan beralih ke
+   warna teks utama dan bergaris bawah. */
 a {
-  color: var(--accent-primary);
+  color: var(--accent-hover);
   text-decoration: none;
   transition: color 0.25s cubic-bezier(0.4, 0, 0.2, 1), text-decoration 0.25s ease;
 }
 
 a:hover {
-  color: var(--accent-hover);
+  color: var(--text-primary);
+  text-decoration: underline;
+}
+
+/* Tautan di dalam teks mengalir tidak boleh dibedakan HANYA oleh warna
+   (WCAG 1.4.1; axe `link-in-text-block`): isi artikel bergaris bawah. */
+.content-body a:not(.btn) {
   text-decoration: underline;
 }
 
@@ -664,7 +675,10 @@ p {
 }
 
 .tab-link[aria-current="page"] {
-  color: var(--accent-primary);
+  /* `--accent-hover`, bukan `--accent-primary`: #0284c7 di atas pil #e0f2fe
+     hanya 3,56:1; #0369a1 di atasnya 4,8:1. Di tema gelap `--accent-hover`
+     lebih terang dari `--accent-primary`, jadi kontrasnya naik. */
+  color: var(--accent-hover);
   background: var(--accent-subtle);
 }
 
@@ -1196,6 +1210,11 @@ footer .disclaimer-footer,
    pembungkusnya, dan penafiannya tampil `#334155` di atas `#090d16`: ada,
    terbaca oleh gerbang mana pun, dan tidak terbaca oleh mata. */
 footer .disclaimer-footer p,
+/* `.buletin-teks` pula: `FormBuletin.astro` bukan `BaseLayout.astro`, jadi
+   `.footer-teks` scoped milik layout itu tidak menjangkaunya, dan aturan elemen
+   `p` di atas membuatnya `#334155` di atas `#090d16` (1,87:1) — ketahuan axe
+   pada situs yang menyalakan buletin. */
+footer .buletin-teks,
 footer .buletin-label,
 footer .buletin-status,
 footer .buletin-catatan {

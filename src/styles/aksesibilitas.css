@@ -223,6 +223,13 @@ html[data-a11y-highlight] a[href] {
   text-underline-offset: 0.15em;
 }
 
+/* A link whose label sits in child elements (the "Terbaru" list rows) keeps the
+   children's own colours otherwise — light text on the yellow fill, 1.16:1. The
+   children take the link's colour, so the fill and the text are chosen together. */
+html[data-a11y-highlight] a[href] * {
+  color: inherit !important;
+}
+
 html[data-a11y-highlight] a[href]:focus-visible {
   outline: 3px solid var(--border-focus);
   outline-offset: 2px;
