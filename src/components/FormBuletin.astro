@@ -144,7 +144,10 @@ const locale = getLocaleFromPath(Astro.url.pathname);
     display: block;
     margin-bottom: 0.35rem;
     font-size: 0.85rem;
-    color: var(--text-muted);
+    /* Tanpa `color`: formulir ini hanya hidup di `<footer>` (latar hampir
+       hitam), dan warnanya ditetapkan di `global.css` (`footer .buletin-label`).
+       `var(--text-muted)` di sini menang atas aturan itu karena gaya scoped
+       Astro lebih spesifik, dan memberi #64748b di atas #090d16 (4,08:1). */
   }
 
   .buletin-baris {

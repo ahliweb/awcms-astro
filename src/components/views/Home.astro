@@ -501,8 +501,12 @@ const sorotanVisual = sorotan
     transform: scale(1.03);
   }
 
+  /* Satu isian untuk KEDUA tema, dan bukan `--emerald-primary`: token itu hijau
+     terang di tema gelap (tepat untuk teks di atas hitam) sehingga teks putih
+     di atasnya hanya 2,53:1, dan di tema terang #059669 hanya 3,76:1. #047857
+     dengan teks putih 5,48:1 — di atas 4,5:1 untuk teks 12px. */
   .badge--emerald {
-    background: var(--emerald-primary);
+    background: #047857;
     color: #ffffff;
   }
 

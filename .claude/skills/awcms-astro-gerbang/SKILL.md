@@ -36,6 +36,17 @@ bun run audit:rilis       # the waiting release backlog — no build, no network
 | `audit:aset` | A source `<script>` or `public/**` file over the source ceiling, and — when `dist/client` exists — the bytes a single page really pulls, named per file (ADR-0044; `awcms` ADR-0101 is the family's other half). **Read a violation as a question about which FILE a rule is in before treating it as a ceiling to raise**: on 2 September 2026 it reddened `/cari/` over hero CSS that was sitting in `src/styles/global.css` while one component used it, and moving that block returned 1,853 B to every page. The ceilings themselves are measurements with headroom, recorded in the script beside the number |
 | `audit:rilis` | A waiting-changeset backlog over 12 files or older than 14 days, and a changeset whose name carries no usable `YYYY-MM-DD-` date — including a calendar date that does not exist and one dated more than a day ahead ([ADR-0048](../../../docs/adr/0048-a-release-is-cut-when-the-backlog-crosses-a-bound.md)); and a fourth check, needing git AND the network: **every release tag on the remote has a matching GitHub Release** ([ADR-0052](../../../docs/adr/0052-github-releases-are-part-of-this-repos-release-convention.md)) — ADR-0031's own rejected-alternatives list once claimed this repo's releases were tags only, while seven Releases already existed and had drifted three versions behind the tags with nothing reading them. Fails CLOSED (a `note()`, never a violation) when the network is unreachable, same shape as `audit:serapan`'s outward-looking check |
 
+### A tenth, outside `bun test`: `bun run test:a11y`
+
+axe-core in a real Chromium over the production build and a stand-in `awcms`
+(`e2e/awcms-tiruan.mjs`), WCAG 2.2 AA tags, every kind of public page, both themes,
+each reading-preferences mode and the open panel
+([ADR-0056](../../../docs/adr/0056-accessibility-is-gated-by-axe-in-a-real-browser-with-no-exceptions.md)).
+**Any violation fails, with no exclusions** — a finding is fixed in the code. It runs in
+CI inside `Check`, and its specs are `e2e/*.axe.mjs` so `bun test` never collects them
+(which is also why it is not in the file count above). Read a green run as "no
+automatable violation", never "accessible". The "nine" in this document predates it.
+
 ## What is NOT caught — named here so it is not taken for guarded
 
 - **The two image rules** in `AGENTS.md` (text in an image is only a topic label;

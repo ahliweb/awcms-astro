@@ -46,6 +46,12 @@ graphify-out/graph.html
 # direktori ini — satu `git add -A` yang tidak hati-hati dari masuk riwayat.
 .lighthouseci/
 
+# Keluaran lokal gerbang aksesibilitas peramban (ADR-0056): jejak dan hasil
+# Playwright dari run yang gagal. Efemeral, tidak pernah masuk riwayat.
+.playwright-hasil/
+playwright-report/
+test-results/
+
 # Ekspor kanvas Claude Design (`.dc.html`, `image-slot.js`, `support.js`, dan
 # tangkapan layar yang ditempel di bawah `uploads/`) — bahan desain, bukan
 # kode yang dijalankan situs. Repo ini tidak melacak arsip apa pun; satu zip

@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:bf55c7d270bf89510e701a5ec07fe75326dc419101c704f059ee9332843f8b16 -->
+<!-- i18n-source-hash: sha256:89e80f352a46f40a5ace444327beb713d38213cc420ddcbb8322a1189f58327a -->
 
 # Architecture Decision Records
 
@@ -62,6 +62,7 @@ menyesuaikan gaya, menambah tes.
 | [0053](0053-main-is-fenced-by-a-ruleset-that-no-gate-can-see.md) | `main` dipagari ruleset repositori (`main-protection`: tanpa penghapusan, tanpa force push, pull request wajib dengan 0 approval, pemeriksaan wajib ketat `Check`, `Build`, `Analyze (javascript-typescript)`, tanpa bypass actor) — dan tak ada gerbang di repo ini yang bisa mendeteksi pencabutannya, jadi diverifikasi manual; tag tidak tercakup, dan `Build` bukan pagar yang berdiri sendiri | Diterima |
 | [0054](0054-html-gets-a-shared-cache-lifetime-and-every-deploy-purges-the-cdn.md) | HTML mendapat jendela cache bersama (`s-maxage=300`, browser tetap memvalidasi ulang dengan `max-age=0`) dan setiap deploy mem-purge CDN per nama host — mengamandemen keputusan 5 [ADR-0016](0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md); `/_astro/` tetap `immutable`, kredensial yang hilang hanya memberi peringatan dan `s-maxage` membatasi kebasian | Diterima |
 | [0055](0055-reading-preferences-are-a-native-same-origin-panel-not-an-overlay-widget.md) | Preferensi baca adalah panel native satu-origin (ukuran teks, kontras, monokrom, teks ramah disleksia, penekanan tautan, kurangi gerakan; kunci `localStorage` `awcms-a11y`, atribut `data-a11y-*` pada `<html>`), bukan widget overlay pihak ketiga — tanpa server, tanpa pelacakan, CSP tidak berubah; preferensi OS menjadi bawaan dan pembaca boleh menimpanya; anggaran aset bergeser (skrip 13.000 → 18.500 B, total 40.000 → 53.700 B); uji browser dan uji pembaca sungguhan adalah tindak lanjut | Diterima |
+| [0056](0056-accessibility-is-gated-by-axe-in-a-real-browser-with-no-exceptions.md) | Aksesibilitas dijaga axe-core di Chromium sungguhan (Playwright) atas build produksi dan `awcms` tiruan, di job `check`; tag `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`; setiap jenis halaman publik, kedua tema, tiap mode preferensi baca, dan panel terbuka; pelanggaran apa pun menggagalkan, tanpa pengecualian; spesifikasi di `e2e/` di luar `bun test`; Playwright 1.65.0 dan `@axe-core/playwright` 4.14.0 dipin — menutup tindak lanjut 1 [ADR-0055](0055-reading-preferences-are-a-native-same-origin-panel-not-an-overlay-widget.md) | Diterima |
 
 > **Kenapa penomoran mulai dari 0014.** ADR di repo ini melanjutkan urutan repo
 > rujukan yang identitasnya dilepas di [#11](https://github.com/ahliweb/awcms-astro/pull/11);

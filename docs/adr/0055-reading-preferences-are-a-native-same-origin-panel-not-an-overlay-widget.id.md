@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](0055-reading-preferences-are-a-native-same-origin-panel-not-an-overlay-widget.md)
 
-<!-- i18n-source-hash: sha256:5216ada0a32454beb7954af926e22cbe5823fc33b4761c04c95a951af90e88a6 -->
+<!-- i18n-source-hash: sha256:d91b441affd0b6dc182e74d160a3b472b0bf2d6ed853ffc11042d11c30a9244c -->
 
 <!-- i18n-source-hash: sha256:placeholder -->
 
@@ -241,7 +241,11 @@ Orchestrator memutuskan **A**, dan pemilik meloloskan gerbang 9 untuknya pada 18
 
 ## Tindak lanjut
 
-1. **Menambah Playwright dan axe** untuk mencakup: membuka panel di halaman publik,
+1. **Menambah Playwright dan axe** (*selesai 19 November 2026 untuk bagian axe, oleh
+   [ADR-0056](0056-accessibility-is-gated-by-axe-in-a-real-browser-with-no-exceptions.id.md):
+   axe berjalan di peramban sungguhan pada setiap perubahan, dengan panel terbuka
+   dan setiap mode menyala, dan di 360 px; perpindahan fokus dan ketahanan setelah
+   muat ulang belum diotomasi*) untuk mencakup: membuka panel di halaman publik,
    menyalakan tiap preferensi, memastikan atribut dan ketahanannya setelah muat
    ulang, Esc mengembalikan fokus, axe tidak menemukan pelanggaran serius atau
    kritis dengan panel terbuka dan dengan kontras menyala, dan tidak ada gulir
