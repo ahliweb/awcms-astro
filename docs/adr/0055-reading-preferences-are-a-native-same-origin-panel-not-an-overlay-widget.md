@@ -266,3 +266,9 @@ The orchestrator decided **A**, and the owner passed gate 9 for it on 18 Novembe
 `tests/keluaran-csp.test.mjs` continues to prove that the output has no inline
 script, style or `style=""`. `tests/audit-aset.test.mjs` proves the new budgets and
 the registry entry.
+
+## Amendment (2026-11-19: usability testing moves to implementing repos)
+
+Owner decision of **2026-11-19**: the upstream repos (`awcms`, `awcms-astro`, `awcms-one`) do not run UAT; UAT (step 14 of the development flow) is run in the implementing or derived project repos, consistent with the internal cross-portfolio standard.
+
+The statements above that defer real-user usability testing to UAT before gate 15 (the gate note and follow-up 2) are **replaced** by this: usability testing of the panel with real readers, including assistive-technology users, is **not a prerequisite of gate 15 in this repo**. It is the responsibility of each site derived from this template that adopts the panel, in its own UAT. The decision itself (a native same-origin panel, not an overlay widget) is unchanged.

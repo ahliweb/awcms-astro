@@ -29,7 +29,8 @@ dan tidak mengklaim halaman memenuhi suatu standar.
 - Tiga tata letak diubah agar teks sangat besar tidak membuat halaman tergulir ke
   samping di 360 px: kisi prinsip di beranda, daftar tombol bagikan, dan lencana
   hijau pada kontras tinggi.
-- Belum dikerjakan, dicatat sebagai tindak lanjut: uji browser Playwright dan axe,
-  serta uji kegunaan dengan pembaca sungguhan pada UAT.
+- Uji browser Playwright dan axe menyusul sebagai gerbang tersendiri (ADR-0056).
+  Uji kegunaan dengan pembaca sungguhan tidak dijalankan di repo upstream ini;
+  ia milik UAT tiap situs turunan (amandemen ADR-0055, 2026-11-19).
 - Dokumen: ADR-0055 dan mirror Indonesia, indeks ADR, desain UI, standar teknis,
   standar performa dan keamanan, README, deploy-coolify, dan AGENTS diperbarui.
