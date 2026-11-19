@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](0056-accessibility-is-gated-by-axe-in-a-real-browser-with-no-exceptions.md)
 
-<!-- i18n-source-hash: sha256:9aced36c57e8abeaa21754f2341268e44bf20532dd3e9b7a6b020e894845f053 -->
+<!-- i18n-source-hash: sha256:16bbb1cd43292abdbc52bac92eddb2ac9e5897befb0ee1f5a01e1fe4c79d9470 -->
 
 <!-- i18n-source-hash: sha256:placeholder -->
 
@@ -202,3 +202,9 @@ dari 45 kasus, yang menjadi bukti ia bisa gagal. Gerbang unit tetap hijau:
 `tests/aksesibilitas-halaman.test.mjs` dan `tests/aksesibilitas.test.mjs` tetap
 membuktikan yang mereka buktikan, dan `tests/documented-counts.test.mjs` tidak
 terpengaruh karena `e2e/` di luar `tests/`.
+
+## Amandemen (2026-11-19: uji kegunaan pindah ke repo implementasi)
+
+Keputusan pemilik **2026-11-19**: repo upstream (`awcms`, `awcms-astro`, `awcms-one`) tidak menjalankan UAT; UAT (langkah 14 alur pengembangan) dijalankan di repo implementasi atau proyek turunan, selaras dengan standar lintas-portofolio internal.
+
+Catatan opsi E bahwa audit manual "tetap ditunda ke UAT (ADR-0055)" dan tindak lanjut 1 ("uji kegunaan dengan pembaca nyata di UAT") **diganti** oleh ini: keduanya bukan prasyarat gerbang 15 di repo ini; keduanya milik UAT tiap situs turunan yang mengadopsi template. Gerbang yang diputuskan di sini tidak berubah.

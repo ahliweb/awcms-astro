@@ -193,3 +193,9 @@ the evidence it can fail. The unit gates stay green: `tests/aksesibilitas-halama
 and `tests/aksesibilitas.test.mjs` keep proving what they proved, and
 `tests/documented-counts.test.mjs` is unaffected because `e2e/` is outside
 `tests/`.
+
+## Amendment (2026-11-19: usability testing moves to implementing repos)
+
+Owner decision of **2026-11-19**: the upstream repos (`awcms`, `awcms-astro`, `awcms-one`) do not run UAT; UAT (step 14 of the development flow) is run in the implementing or derived project repos, consistent with the internal cross-portfolio standard.
+
+Option E's note that a manual audit "stays deferred to UAT (ADR-0055)" and follow-up 1 ("real-user usability testing at UAT") are **replaced** by this: neither is a prerequisite of gate 15 in this repo; both belong to the UAT of each derived site that adopts the template. The gate decided here is unchanged.

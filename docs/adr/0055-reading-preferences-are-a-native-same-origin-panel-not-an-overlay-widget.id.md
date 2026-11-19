@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](0055-reading-preferences-are-a-native-same-origin-panel-not-an-overlay-widget.md)
 
-<!-- i18n-source-hash: sha256:d91b441affd0b6dc182e74d160a3b472b0bf2d6ed853ffc11042d11c30a9244c -->
+<!-- i18n-source-hash: sha256:fa8cc007261d1f82b44798154a27fe81b2063035869f2ed179438297cd0a9e34 -->
 
 <!-- i18n-source-hash: sha256:placeholder -->
 
@@ -281,3 +281,9 @@ Orchestrator memutuskan **A**, dan pemilik meloloskan gerbang 9 untuknya pada 18
 `tests/keluaran-csp.test.mjs` terus membuktikan bahwa keluaran tidak punya skrip,
 gaya, atau `style=""` inline. `tests/audit-aset.test.mjs` membuktikan anggaran
 baru dan entri registri.
+
+## Amandemen (2026-11-19: uji kegunaan pindah ke repo implementasi)
+
+Keputusan pemilik **2026-11-19**: repo upstream (`awcms`, `awcms-astro`, `awcms-one`) tidak menjalankan UAT; UAT (langkah 14 alur pengembangan) dijalankan di repo implementasi atau proyek turunan, selaras dengan standar lintas-portofolio internal.
+
+Pernyataan di atas yang menunda uji kegunaan dengan pembaca sungguhan ke UAT sebelum gerbang 15 (catatan gerbang dan tindak lanjut 2) **diganti** oleh ini: uji kegunaan panel dengan pembaca sungguhan, termasuk pengguna teknologi bantu, **bukan prasyarat gerbang 15 di repo ini**. Itu tanggung jawab tiap situs turunan template ini yang mengadopsi panel, dalam UAT-nya sendiri. Keputusannya sendiri (panel native satu-origin, bukan widget overlay) tidak berubah.
