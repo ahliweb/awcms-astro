@@ -6,8 +6,8 @@
     "component": {
       "type": "application",
       "name": "awcms-astro",
-      "version": "0.6.4",
-      "purl": "pkg:npm/awcms-astro@0.6.4"
+      "version": "0.7.0",
+      "purl": "pkg:npm/awcms-astro@0.7.0"
     }
   },
   "components": [
@@ -193,6 +193,18 @@
     },
     {
       "type": "library",
+      "name": "@astrojs/internal-helpers",
+      "version": "0.13.2",
+      "purl": "pkg:npm/%40astrojs/internal-helpers@0.13.2",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "49688d4be38cae1c166332443537a41d4c9408c281fad754e83e2fd59348535647876992710f1622cd09e8027c28f5e422bb3df84654ed19b60acb5f4e1c959f"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "@astrojs/language-server",
       "version": "2.17.3",
       "purl": "pkg:npm/%40astrojs/language-server@2.17.3",
@@ -218,12 +230,12 @@
     {
       "type": "library",
       "name": "@astrojs/node",
-      "version": "11.1.11",
-      "purl": "pkg:npm/%40astrojs/node@11.1.11",
+      "version": "11.1.13",
+      "purl": "pkg:npm/%40astrojs/node@11.1.13",
       "hashes": [
         {
           "alg": "SHA-512",
-          "content": "a94abaadde04c6b525d2086886f29a4995dc88d033d564a4716b9c75f6a4a5f6f9fcc920702766fb11820742c65639c1bc149fc0a4ec9f33f2e9126de85ca5e0"
+          "content": "b387cfb9d8624299121812e9ab603e1730f21980f4976010fabcfc5c5d51f048ca955bf4a81053493247d33c0e6634b73f29447ec02b0fc75e4f79275a7529ca"
         }
       ]
     },
@@ -272,6 +284,18 @@
         {
           "alg": "SHA-512",
           "content": "f2875da4e69edf9a49b173d05e14e4334ca97ca3ec915b21d9b0b146d6dfedefbf129c369d179a9056292ca8d9304afbe42b28176d373cc9c2a1ca5fcf4b3af4"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@axe-core/playwright",
+      "version": "4.14.0",
+      "purl": "pkg:npm/%40axe-core/playwright@4.14.0",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "4865211b93c81ddd9e31da60045d8fc902ce857faac834763d3e1c9a84b8424d9a93e8d7febad2becb7d9743c6bf95931e894aa5432f566a07a6be1c6607f545"
         }
       ]
     },
@@ -1009,6 +1033,18 @@
     },
     {
       "type": "library",
+      "name": "@playwright/test",
+      "version": "1.65.0",
+      "purl": "pkg:npm/%40playwright/test@1.65.0",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "8865112c6b8a0cb6a448497b3e07eff21edff972d3f95f3ad567e1cf4ce5125e67c85b8a528a5d90504f2aa4e5953529d3a68ec0fb87f22b9411bdf2a773296d"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "@rolldown/binding-android-arm-eabi",
       "version": "1.2.16",
       "purl": "pkg:npm/%40rolldown/binding-android-arm-eabi@1.2.16",
@@ -1213,6 +1249,18 @@
     },
     {
       "type": "library",
+      "name": "@shikijs/core",
+      "version": "4.6.0",
+      "purl": "pkg:npm/%40shikijs/core@4.6.0",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6df77838a82fa325d889898c46e95e03ae7a3f857b33f0eef65713977f0d826e8ab33323edbab827520667049847873de53bf951000bb58356530688f544f7c7"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "@shikijs/engine-javascript",
       "version": "4.5.0",
       "purl": "pkg:npm/%40shikijs/engine-javascript@4.5.0",
@@ -1220,6 +1268,18 @@
         {
           "alg": "SHA-512",
           "content": "11de947448fce0bc989309f13390af48c5800fe89df44c5362b8b4ffec78d54f73ae03627cf492f65666d09a813f455f608f32afcb58e676cdabdfa9f51d2414"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@shikijs/engine-javascript",
+      "version": "4.6.0",
+      "purl": "pkg:npm/%40shikijs/engine-javascript@4.6.0",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "2b4a2ac45a0bfa410c773f3d9872c53b5e53b1bbf790567a591d5c5d928cbcb49cfa8a9a334d00ea9ca06b5a92797076d9d3f4b5389202945c18168a5ac11c72"
         }
       ]
     },
@@ -1237,6 +1297,18 @@
     },
     {
       "type": "library",
+      "name": "@shikijs/engine-oniguruma",
+      "version": "4.6.0",
+      "purl": "pkg:npm/%40shikijs/engine-oniguruma@4.6.0",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6a081de90ed2b89397367b146df1b65deb31049281300c3f3c34d4a3d3f246331a68927674dac8faad02fb6e4045700af722c7025c3173da114f6bbaf18299ef"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "@shikijs/langs",
       "version": "4.5.0",
       "purl": "pkg:npm/%40shikijs/langs@4.5.0",
@@ -1244,6 +1316,18 @@
         {
           "alg": "SHA-512",
           "content": "c30053ab076e5d2cf45f8bfd41ad8459e15a609130d5c9429dc5a3a1135045b543bb748f453456b9c9e8b986a92a3ddbf10fac93fe3555b73807973c9ee6332c"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@shikijs/langs",
+      "version": "4.6.0",
+      "purl": "pkg:npm/%40shikijs/langs@4.6.0",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "d723045f7a02555e782d4abfa2f7e94640d0a180e472f8d258515afd82d40cc892a11ccc8b6bb12c961bbf8d5a853f0bbbd94531a6bb85e71ddd0dfdb6ba94ca"
         }
       ]
     },
@@ -1261,6 +1345,18 @@
     },
     {
       "type": "library",
+      "name": "@shikijs/primitive",
+      "version": "4.6.0",
+      "purl": "pkg:npm/%40shikijs/primitive@4.6.0",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "739e3e4d0128f53a2a81f2ff014f05a639d5d3df8603d39aecce513a4917b5e65fa795f3a402465e38ef6501508a824ec26ff0ffa677948cd0b2d02497c7286a"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "@shikijs/themes",
       "version": "4.5.0",
       "purl": "pkg:npm/%40shikijs/themes@4.5.0",
@@ -1273,6 +1369,18 @@
     },
     {
       "type": "library",
+      "name": "@shikijs/themes",
+      "version": "4.6.0",
+      "purl": "pkg:npm/%40shikijs/themes@4.6.0",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "a8701502cf34462183f8846e1fd1be24f0ce11cf40fe41ec9e0e04cc2502c01f5b2f35ba674cbd5844e1d98c827000c90667eb21a275269eca04d3fa147920b5"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "@shikijs/types",
       "version": "4.5.0",
       "purl": "pkg:npm/%40shikijs/types@4.5.0",
@@ -1280,6 +1388,18 @@
         {
           "alg": "SHA-512",
           "content": "76bb4faed0fc3740c43720f6732b7a023cbe216b2208b80cc4e0f02d3a6f1f552c37a6bd8dff74b4d4cf8eac07bc0fb42f3bbd7b4b7193c0e37ea1f5a7d50947"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "@shikijs/types",
+      "version": "4.6.0",
+      "purl": "pkg:npm/%40shikijs/types@4.6.0",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "f84346d5a76c2adfd7edc458c35365ec11290663ce8e643b6d1fde1a61ee3254fc82d3857f72848b9977d43258c805a15ba63a6e33f5a6553b1666b158610d17"
         }
       ]
     },
@@ -1640,6 +1760,18 @@
         {
           "alg": "SHA-512",
           "content": "7c7e7820e682919635a5a123ca02a7f023dfb89df0f27b3b3e8bab70f30be40a2e26442e4c1a8143645b6c86c186eb596e0daa9f9b1ee9897d0d8c9bcea8c2d1"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "axe-core",
+      "version": "4.14.1",
+      "purl": "pkg:npm/axe-core@4.14.1",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "1477dafa598d8d065f273d6af302aa203c02e83131707b7fa648cd41bd3d6b734f8c22a0dab86ee6a6f64b8afbe804b214d36db85a2826965edfb3a0b9d546b5"
         }
       ]
     },
@@ -2473,6 +2605,18 @@
     },
     {
       "type": "library",
+      "name": "hast-util-to-html",
+      "version": "9.0.6",
+      "purl": "pkg:npm/hast-util-to-html@9.0.6",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "d52654c423774ed24013b7b60503763011eca19d609e68bd1a808fe438b9f42496a6d21ecd2016d3dc8367255b6a76fbf15f5e0b0acaa9d42c8ed7d54f160758"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "hast-util-whitespace",
       "version": "3.0.0",
       "purl": "pkg:npm/hast-util-whitespace@3.0.0",
@@ -3241,6 +3385,30 @@
     },
     {
       "type": "library",
+      "name": "playwright-core",
+      "version": "1.65.0",
+      "purl": "pkg:npm/playwright-core@1.65.0",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "bcd48a807e98aad37b71d4ff2f7df8ce8d1af98c24ae989ccab1c995658f226fd0f8d9f64962278a5d35a13d266eef7a5381a0a11b426100fd0b3250823bbe94"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "playwright",
+      "version": "1.65.0",
+      "purl": "pkg:npm/playwright@1.65.0",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "17700c59c478e2a301b7892afba29bea65fb6e3197b2192d28538f50b77bade103e992567af8db351ab2b0feeaf8001313d91d3c464189b7b1d4162cbe956878"
+        }
+      ]
+    },
+    {
+      "type": "library",
       "name": "postcss",
       "version": "8.5.31",
       "purl": "pkg:npm/postcss@8.5.31",
@@ -3548,6 +3716,18 @@
         {
           "alg": "SHA-512",
           "content": "39c456ef69e042f73e312556051228bc2fc14d6e7cf62504fd5c5abfb55e33845c63d3148ea07e211e882c6d64f67b96e8b886fe772df6e99ae3f301b6765b99"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "shiki",
+      "version": "4.6.0",
+      "purl": "pkg:npm/shiki@4.6.0",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "8a68cbb151e03ee5a1be95373fecce7a4bcc62a9de97b4262ac142e129f47c2b80bda69a941b31c0a12cad4f0aa3905d167640e86a3ff1ad11cda852eb7e1480"
         }
       ]
     },
