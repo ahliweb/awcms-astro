@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:89e80f352a46f40a5ace444327beb713d38213cc420ddcbb8322a1189f58327a -->
+<!-- i18n-source-hash: sha256:e01fc15b65a01a4699b1c0b911589cd2d5b36079f4db42fbf1710d77f04f3a7e -->
 
 # Architecture Decision Records
 
@@ -63,6 +63,7 @@ menyesuaikan gaya, menambah tes.
 | [0054](0054-html-gets-a-shared-cache-lifetime-and-every-deploy-purges-the-cdn.md) | HTML mendapat jendela cache bersama (`s-maxage=300`, browser tetap memvalidasi ulang dengan `max-age=0`) dan setiap deploy mem-purge CDN per nama host — mengamandemen keputusan 5 [ADR-0016](0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md); `/_astro/` tetap `immutable`, kredensial yang hilang hanya memberi peringatan dan `s-maxage` membatasi kebasian | Diterima |
 | [0055](0055-reading-preferences-are-a-native-same-origin-panel-not-an-overlay-widget.md) | Preferensi baca adalah panel native satu-origin (ukuran teks, kontras, monokrom, teks ramah disleksia, penekanan tautan, kurangi gerakan; kunci `localStorage` `awcms-a11y`, atribut `data-a11y-*` pada `<html>`), bukan widget overlay pihak ketiga — tanpa server, tanpa pelacakan, CSP tidak berubah; preferensi OS menjadi bawaan dan pembaca boleh menimpanya; anggaran aset bergeser (skrip 13.000 → 18.500 B, total 40.000 → 53.700 B); uji browser dan uji pembaca sungguhan adalah tindak lanjut | Diterima |
 | [0056](0056-accessibility-is-gated-by-axe-in-a-real-browser-with-no-exceptions.md) | Aksesibilitas dijaga axe-core di Chromium sungguhan (Playwright) atas build produksi dan `awcms` tiruan, di job `check`; tag `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`; setiap jenis halaman publik, kedua tema, tiap mode preferensi baca, dan panel terbuka; pelanggaran apa pun menggagalkan, tanpa pengecualian; spesifikasi di `e2e/` di luar `bun test`; Playwright 1.65.0 dan `@axe-core/playwright` 4.14.0 dipin — menutup tindak lanjut 1 [ADR-0055](0055-reading-preferences-are-a-native-same-origin-panel-not-an-overlay-widget.md) | Diterima |
+| [0057](0057-awcms-first-orders-ownership-and-contract-not-code-and-three-gates-separate-design-mock-and-release.md) | "`awcms` dulu" mengurutkan kepemilikan dan kontrak, bukan kode: tiga gerbang (kesiapan desain, build dengan mock hasil kontrak, integrasi dan rilis) agar mock tidak pernah menggantikan backend nyata; menjernihkan ADR-0034 §4 dan ADR-0038 tanpa mengubah norma | Proposed |
 
 > **Kenapa penomoran mulai dari 0014.** ADR di repo ini melanjutkan urutan repo
 > rujukan yang identitasnya dilepas di [#11](https://github.com/ahliweb/awcms-astro/pull/11);
