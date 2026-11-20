@@ -15,7 +15,7 @@
  *
  * Jalankan dengan `bun test`.
  */
-import { test, describe, beforeEach, afterEach } from "bun:test";
+import { test, describe, beforeEach, afterEach, expect } from "bun:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
@@ -155,6 +155,10 @@ function buatPost(
     // ini sama sekali. Itu keadaan yang harus tetap terbangun, dan sebuah
     // fixture yang selalu membawa field-nya tidak akan pernah mengujinya.
     authorByline,
+    // Judul SEO editor (`seoTitle`, G-05). Seperti `authorByline`: dihilangkan
+    // bila tidak disetel, supaya fixture bawaan menirukan awcms yang tidak
+    // mengirim field ini.
+    seoTitle,
     // Seksi artikel ini, dan bagaimana ia dinyatakan.
     //
     // `kategori` bawaannya `"panduan"` sehingga setiap kasus lama di berkas ini
@@ -182,6 +186,7 @@ function buatPost(
     locale,
     ...(grup === undefined ? {} : { translationGroupId: grup }),
     ...(authorByline === undefined ? {} : { authorByline }),
+    ...(seoTitle === undefined ? {} : { seoTitle }),
     ...(termIds === undefined ? {} : { termIds }),
     publishedAt,
     updatedAt,
@@ -1916,5 +1921,114 @@ describe("plafon skala build", () => {
         return true;
       }
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Judul SEO (G-05). Keputusan pemilik 20 November 2026: `seoTitle` dikonsumsi.
+// Adaptor memetakan tiga keadaan ke SATU bentuk bagi komponen: ada (dipangkas),
+// atau `undefined`. Pilihan `<title>` ada di `judulHalamanArtikel`, diuji di
+// `tests/judul-artikel.test.mjs`.
+// ---------------------------------------------------------------------------
+describe("seoTitle artikel (G-05)", () => {
+  let getArticles;
+  let resetContentCacheForTests;
+
+  beforeEach(async () => {
+    process.env.AWCMS_API_URL = "http://awcms.uji";
+    process.env.AWCMS_API_TOKEN = TOKEN;
+    delete process.env.AWCMS_TENANT_CODE;
+    delete process.env.AWCMS_DEFAULT_TENANT_CODE;
+
+    ({ getArticles, resetContentCacheForTests } = await import("../src/lib/content.ts"));
+    resetContentCacheForTests();
+  });
+
+  afterEach(() => {
+    globalThis.fetch = fetchAsli;
+  });
+
+  test("ada: nilainya sampai ke komponen, dipangkas", async () => {
+    pasangFetchTiruan([buatPost(0, { seoTitle: "  Judul SEO  " })]);
+    const [artikel] = await getArticles("panduan", "id");
+    assert.equal(artikel.entry.data.seoTitle, "Judul SEO");
+  });
+
+  test("null, kosong, dan hanya spasi menjadi SATU keadaan: tidak ada", async () => {
+    for (const nilai of [null, "", "   "]) {
+      resetContentCacheForTests();
+      pasangFetchTiruan([buatPost(0, { seoTitle: nilai })]);
+      const [artikel] = await getArticles("panduan", "id");
+      assert.equal(artikel.entry.data.seoTitle, undefined, `nilai ${JSON.stringify(nilai)}`);
+    }
+  });
+
+  test("awcms yang tidak mengirim field ini tetap membangun artikel", async () => {
+    pasangFetchTiruan([buatPost(0)]);
+    const [artikel] = await getArticles("panduan", "id");
+    assert.equal(artikel.entry.data.seoTitle, undefined);
+    assert.equal(artikel.entry.data.title, "Artikel 0");
+  });
+
+  test("dibaca dari baris TERJEMAHAN, seperti title", async () => {
+    pasangFetchTiruan([
+      buatPost(0, { grup: "grup-1", seoTitle: "SEO sumber" }),
+      buatPost(1, { locale: "en", grup: "grup-1" })
+    ]);
+    const [artikel] = await getArticles("panduan", "en");
+    assert.equal(artikel.isFallback, false);
+    assert.equal(artikel.entry.data.seoTitle, undefined);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// `<title>` artikel memakai seoTitle (G-05): fungsi murni dan sumber layout.
+// Keluaran build diperiksa satu kali dengan `awcms` tiruan (lihat PR), tidak
+// digerbangi di sini: itu menuntut menambah berkas ke tiruan dan menggeser
+// batas staleness `audit:graf`.
+// ---------------------------------------------------------------------------
+const { judulHalamanArtikel } = await import("../src/lib/content.ts");
+
+describe("judulHalamanArtikel", () => {
+  const data = { title: "Mengurus paspor" };
+
+  test("seoTitle yang berisi dipakai apa adanya", () => {
+    expect(judulHalamanArtikel({ ...data, seoTitle: "Paspor cepat" }, "Panduan")).toBe("Paspor cepat");
+  });
+
+  test("seoTitle dipangkas", () => {
+    expect(judulHalamanArtikel({ ...data, seoTitle: "  Paspor cepat  " }, "Panduan")).toBe("Paspor cepat");
+  });
+
+  test("kosong, hanya spasi, dan null kembali ke judul + seksi", () => {
+    for (const seoTitle of ["", "   ", null]) {
+      expect(judulHalamanArtikel({ ...data, seoTitle }, "Panduan")).toBe("Mengurus paspor | Panduan");
+    }
+  });
+
+  test("tidak ada: kembali ke judul + seksi", () => {
+    expect(judulHalamanArtikel(data, "Panduan")).toBe("Mengurus paspor | Panduan");
+  });
+
+  test("mengembalikan teks polos: karakter khusus tidak di-escape di sini", () => {
+    expect(judulHalamanArtikel({ ...data, seoTitle: "A & B <i>" }, "Panduan")).toBe("A & B <i>");
+  });
+});
+
+describe("ArtikelLayout memakai judulHalamanArtikel", () => {
+  const layout = readFileSync("src/layouts/ArtikelLayout.astro", "utf8");
+
+  test("pageTitle datang dari fungsi itu, bukan dari rakitan sendiri", () => {
+    expect(layout).toMatch(/const pageTitle = judulHalamanArtikel\(data, tabName\);/);
+    expect(layout).not.toMatch(/`\$\{data\.title\} \| \$\{tabName\}`/);
+  });
+
+  test("BaseLayout menulis <title> sebagai teks yang di-escape, bukan HTML mentah", () => {
+    // `judulHalamanArtikel` mengembalikan teks polos dan escape adalah urusan
+    // templat. Menukar ini ke `set:html` membuat judul SEO dari editor menjadi
+    // jalur injeksi markup, dan CSP ketat tidak melindungi markup di `<title>`.
+    const dasar = readFileSync("src/layouts/BaseLayout.astro", "utf8");
+    expect(dasar).toMatch(/<title>\{fullTitle\}<\/title>/);
+    expect(dasar).not.toMatch(/<title[^>]*set:html/);
   });
 });
