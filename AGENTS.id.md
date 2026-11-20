@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](AGENTS.md)
 
-<!-- i18n-source-hash: sha256:f0ab0d555594ad30184bd44f8e25e743d9b93e43fb366e4dc19738ad1a5d2729 -->
+<!-- i18n-source-hash: sha256:31c2f1b542703af1da7ec4db36ab780e81ea53f35bb67135ae975ac474c1670d -->
 
 # AGENTS.md — kontrak kerja `awcms-astro`
 
@@ -348,6 +348,20 @@ yang [ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.m
    `tests/kontrak-awcms.test.mjs`, lalu E2E). Layar tanpa sumber data di kontrak
    belum siap dibangun. Otorisasi tidak pernah ditegakkan hanya di sini: `awcms`
    dan basis datanya yang memutuskan, repo ini mencerminkan.
+
+   "`awcms` dulu, selalu" (§Peran repo ini butir 4) mengurutkan **kepemilikan
+   dan kontrak**, bukan kode: tiga gerbang, bukan satu. **A, kesiapan desain** —
+   pemilik backend disebut dan kontrak disepakati di `awcms`; pekerjaan
+   frontend boleh dimulai, dan tidak ada handler, skema, atau ERD yang
+   dituntut. **B, build terhadap mock** yang dihasilkan dari kontrak itu, tidak
+   pernah ditulis tangan agar cocok dengan layar. **C, integrasi dan rilis** —
+   kapabilitas ada di `awcms`, `owner` bisa mengelolanya di sana, dan terbukti
+   terhadap backend nyata. **Mock, server tiruan, atau build hijau berbasis mock
+   tidak pernah menggantikan gerbang C**, dan tidak ada yang di sini boleh
+   menyimpan data atau jatuh kembali ke salinan saat `awcms` tidak terjangkau.
+   Ini adalah pembacaan yang diusulkan
+   [ADR-0057](docs/adr/0057-awcms-first-orders-ownership-and-contract-not-code-and-three-gates-separate-design-mock-and-release.id.md)
+   (Proposed, isu #186); ia tidak mengubah norma ADR-0034 maupun ADR-0038.
 
 ## Aturan yang tidak bisa dilanggar
 
