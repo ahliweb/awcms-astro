@@ -5,7 +5,7 @@ description: Kontrak integrasi awcms-astro ↔ awcms — tenant dari token mesin
 
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](SKILL.md)
 
-<!-- i18n-source-hash: sha256:5766362f42ed1741836bc2e3521e0c8e38c2c3a2476d130caeb3c8eb9fba6488 -->
+<!-- i18n-source-hash: sha256:568d5a033c63546043a4d83af805ef2b7155f58f879a68ba9f9311d08da2c9cd -->
 
 # awcms-astro — kontrak integrasi dengan `awcms`
 
@@ -233,6 +233,30 @@ baik-baik saja.
 `Dockerfile` **wajib** menyalin berkas itu. Tanpa itu penyaji jatuh ke
 `img-src 'self'` dan setiap gambar artikel diblokir, pada image yang build-nya
 hijau.
+
+## Urutan kerja: kepemilikan dan kontrak lebih dulu, bukan kode (ADR-0057)
+
+[ADR-0057](../../../docs/adr/0057-awcms-first-orders-ownership-and-contract-not-code-and-three-gates-separate-design-mock-and-release.id.md)
+(Diterima 20 November 2026) membaca "`awcms` lebih dulu" sebagai urutan
+**kepemilikan dan kontrak**, bukan kode. Ia tidak mengubah norma ADR-0034
+maupun ADR-0038.
+
+- **Gerbang A, kesiapan desain:** kebutuhan dan pemilik backend disebut, dan
+  operasi kontrak disepakati di `awcms`. Pekerjaan frontend boleh mulai; tidak
+  ada handler yang dituntut.
+- **Gerbang B, build terhadap mock:** mock dihasilkan dari kontrak yang
+  disepakati, tidak pernah ditulis tangan agar cocok dengan layar; setiap state
+  dijalankan.
+- **Gerbang C, integrasi dan rilis:** kapabilitas ada di `awcms`, layar `owner`
+  ada di sana, uji kontrak lolos di kedua sisi, dan ada pemeriksaan terhadap
+  backend nyata. Mock atau `awcms` tiruan tidak pernah menggantikan C.
+- **Aturan merge tahap-mock:** frontend tahap-mock boleh di-merge ke `main`
+  sebelum gerbang C **hanya bila inert**: tidak ada yang dinyatakan di
+  `permukaanAdmin` dan tidak ada permukaan baru yang dipanggil build. Bila
+  tidak, ia menunggu di branch sampai C.
+- Letak snapshot kontrak diputuskan di sisi `awcms` (opsi C′, issue
+  awcms#1379): repo ini mengonsumsi paket fixture terpatok, dilacak di
+  [#194](https://github.com/ahliweb/awcms-astro/issues/194).
 
 ## Sebelum menambah permukaan keempat
 

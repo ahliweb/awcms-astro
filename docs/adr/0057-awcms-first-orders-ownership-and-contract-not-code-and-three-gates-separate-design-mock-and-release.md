@@ -2,12 +2,12 @@
 
 # ADR-0057 — "`awcms` first" orders ownership and contract, not code, and three gates separate design, mock-based build, and release
 
-- **Status:** Proposed
-- **Date:** 20 November 2026
+- **Status:** Accepted
+- **Date:** 20 November 2026 (proposed and accepted the same day)
 - **Clarifies, without changing a norm:** [ADR-0034](0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md) §4 ("`awcms` first, always") and [ADR-0038](0038-kebutuhan-backend-menjadi-modul-di-awcms.md) §1 (a backend need becomes a MODULE in `awcms`). Neither ADR is rewritten; each keeps its text.
 - **Related:** [ADR-0014](0014-rendering-campuran-dan-bff-portal.md) (declared on-demand routes, and the BFF), [ADR-0020](0020-layar-admin-kembali-ke-awcms.md), [ADR-0030](0030-aturan-tertulis-mendapat-pemeriksanya.md) (a written rule must bring its checker), [ADR-0056](0056-accessibility-is-gated-by-axe-in-a-real-browser-with-no-exceptions.md) (the stand-in `awcms` is a markup fixture, not a contract mock), `awcms` [ADR-0065](https://github.com/ahliweb/awcms/blob/main/docs/adr/0065-awcms-astro-consumer-contract-is-frozen.md) (frozen consumer contract), `awcms` [ADR-0156](https://github.com/ahliweb/awcms/blob/main/docs/adr/0156-adopt-development-flow-v2-validated-ux-before-data-model-frontend-backend-integration-per-slice.md) (flow v2: frontend, then backend, then integration, per slice), issue #186
 
-**Docs and governance only.** This ADR adds no code, route, dependency, endpoint, database or gate change. It records how two already-accepted sentences are read together. **It is Proposed on purpose:** it moves no norm, but it fixes an interpretation that `awcms` ADR-0156 and this repo's ADR-0034/0038 both depend on, so it needs a review on both sides before it is Accepted (see §Needs a decision).
+**Docs and governance only.** This ADR adds no code, route, dependency, endpoint, database or gate change. It records how two already-accepted sentences are read together. It moves no norm, but it fixes an interpretation that `awcms` ADR-0156 and this repo's ADR-0034/0038 both depend on; it was first written as Proposed and the owner accepted it on 20 November 2026 (see §Decision record).
 
 ## Context
 
@@ -67,13 +67,15 @@ A build-time consumer for the public static site, and, only where a site declare
 - **Not gated, and written so it is not taken for guarded:** that a mock was generated from the contract; that the mock stays out of shipped code; that gate C's real-backend check was run against a real instance. The first is blocked by tooling `awcms` ADR-0156 itself lists as a gap (no generator from OpenAPI), the third by this template repo having no `awcms` instance. The reviewer carries them.
 - No change to ADR-0034 or ADR-0038 text. Their readers find this decision through the ADR index and the working contract.
 
-## Needs a decision
+## Decision record
 
-Owner-level, not decided here:
+Owner decisions, 20 November 2026 (chosen in a dialog; recorded as chosen, nothing added):
 
-1. **Accept this ADR, or amend ADR-0034 §4 in place instead.** Recommended: accept this ADR. An in-place amendment would rewrite an Accepted decision to resolve an ambiguity that was never a conflict.
-2. **May mock-stage frontend merge to `main` before gate C?** Recommended: yes, only when the feature is inert in the template by default (nothing declared in `permukaanAdmin`, no new surface called by the build), so `main` stays releasable; otherwise keep it on a branch until C. The alternative, no merge before C, keeps `main` simpler at the cost of long-lived branches.
-3. **A matching sentence on the `awcms` side** (that repo's ADR-0156 is where "per slice" is owned). This repo cannot write it.
+1. **Accept this ADR; do not amend ADR-0034 §4 in place.** Accepted on 20 November 2026. ADR-0034 and ADR-0038 keep their text.
+2. **Mock-stage frontend may merge to `main` before gate C, only when it is inert.** Inert means, as defined in this ADR's own proposal: the feature is inert in the template by default (nothing declared in `permukaanAdmin`, no new surface called by the build), so `main` stays releasable. A feature that is not inert stays on a branch until gate C. Decided on 20 November 2026.
+3. **Where the snapshot of the contract lives (G-01 of [`ui-contract-inventory.md`](../ui-contract-inventory.md)) is decided on the `awcms` side.** `awcms` chose C′: a generator inside its repo and a pinned fixture package published for consumers (`awcms` ADR for C′, issue awcms#1379; the ADR number does not exist yet). This repo consumes that package; the implementation follows through a backlog issue and waits for gate 9 and for the package. Recorded on 20 November 2026.
+
+Not decided here: a matching sentence on the `awcms` side stays that repo's call (its ADR-0156 is where "per slice" is owned).
 
 ## Relationship with `awcms`
 
