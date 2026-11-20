@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](CONTRIBUTING.md)
 
-<!-- i18n-source-hash: sha256:f86ff1cafd83b5cf1e9d84d610bdb3841e90bd40ecd6cd8961733fa207b5bb07 -->
+<!-- i18n-source-hash: sha256:0bbfc049d75b0c7c6f54b2626a5cf6bcce171b900a3ccbe1ea85c33b182a774b -->
 
 # Panduan Kontribusi
 
@@ -109,7 +109,7 @@ Rincian lengkap dan alasan tiap butir ada di [`AGENTS.md`](AGENTS.md). Yang pali
 - **Token build tidak pernah ber-prefix `PUBLIC_`.** Astro menyisipkan variabel ber-prefix itu ke keluaran klien.
 - **Identitas satu situs tidak boleh masuk kode.** Tempatnya `src/config/site.ts` dan `.env`.
 - **String antarmuka lewat katalog PO**, termasuk label yang datang dari konfigurasi. Key yang dirangkai dari konfigurasi atau data redaksi wajib dipanggil dengan argumen fallback yang layak dibaca — ujung rantai `t()` adalah NAMA KEY, dan nama key di layar bukan halaman terbaca.
-- **Setiap fungsi inti bekerja tanpa JavaScript**, dan aksesibilitas WCAG 2.1 AA adalah batas, bukan target.
+- **Setiap fungsi inti bekerja tanpa JavaScript**, dan aksesibilitas WCAG 2.2 AA adalah batas, bukan target.
 - **Jangan mengiklankan aset yang tidak diterbitkan build ini.** `og:image` dan `ImageObject` adalah klaim; klaim yang menunjuk 404 lebih buruk daripada tag yang tidak ada.
 - Dilarang: skrip pihak ketiga, pengumpulan data pribadi pembaca, lambang atau logo instansi negara (termasuk di dalam ilustrasi), dan dokumen atau antarmuka aplikasi pemerintah yang direkayasa.
 

@@ -12,7 +12,7 @@ The AWCMS principles adapted to the context of a public static site. What differ
 
 1. **Readable without JavaScript.** Every core function — navigation, the language switcher, the FAQ accordion, and the whole article body — works without JS. Different from the AWCMS back-office, which may rely on islands.
 2. **Explicit states.** Every page has a filled, an empty, and a fallback state that are visible. A static site has no loading state, but it does have a **translation fallback state**, which must be marked for the reader.
-3. **Accessible.** The WCAG 2.1 AA target: sufficient contrast in both themes, visible focus, full keyboard navigation.
+3. **Accessible.** The WCAG 2.2 AA target: sufficient contrast in both themes, visible focus, full keyboard navigation.
 4. **Light.** Its readers are on connections that cannot be relied on. Image and JavaScript budgets are treated as limits, not as advice.
 5. **Mobile-first.** The opposite of the desktop-first AWCMS back-office. Layouts are designed from 360px up.
 6. **Not impersonating officialdom.** No state institution's emblem, logo, or attributes are used. This boundary is a **design rule**, not merely compliance.
@@ -133,6 +133,7 @@ The last column shows the equivalent to aim for at integration, so a component i
 | `FaqAccordion` | A `<details>` accordion + `FAQPage` JSON-LD | Without JavaScript | Accordion |
 | `DisclaimerNote` | Three variants: footer, general, warning | The official-channel warning is mandatory on an enforcement page | `ActionBanner` |
 | `ShareButtons` | Share to social channels + copy link | **No SDK/widget/pixel** | — (specific to awcms-astro) |
+| `PanelAksesibilitas` | The reading-preferences panel: a floating button and a non-modal dialog (text size, contrast, monochrome, dyslexia-friendly text, link emphasis, reduced motion) | Rendered by `BaseLayout`, so every page has it; **display preferences kept on the reader's device, never an overlay** ([ADR-0055](../adr/0055-reading-preferences-are-a-native-same-origin-panel-not-an-overlay-widget.md)). See §Reading preferences | — (specific to awcms-astro) |
 | `Ilustrasi` | A tokenised image frame | `src: undefined` is a SUPPORTED state — it renders `.visual-placeholder`, not a zero-height frame | — (specific to awcms-astro) |
 | `LangFlag`, `TabNav`, `Breadcrumb`, `TranslationNotice` | See their own rows above | — | — |
 
@@ -194,6 +195,7 @@ The same gate then recorded what is still wrong and was not fixed here: `BaseLay
 | The whole article body — requirements, steps, fees, legal basis | Fully rendered; it is static HTML, not the result of client rendering |
 | The theme | Follows `prefers-color-scheme` |
 | The copy-link button | **Hidden** — a button that stays silent when clicked is worse than a button that is not there |
+| The reading-preferences button | **Hidden** for the same reason; the OS media queries `prefers-contrast: more` and `prefers-reduced-motion: reduce` still apply through CSS |
 
 ### Accessibility
 
@@ -202,12 +204,42 @@ The same gate then recorded what is still wrong and was not fixed here: `BaseLay
 - `aria-current` on the navigation and the language switcher.
 - A changed status is announced through `role="status"` + `aria-live="polite"`.
 - Tables use `th` with a correct `scope`.
-- `prefers-reduced-motion: reduce` is honoured.
+- `prefers-reduced-motion: reduce` is honoured, and the reader can also switch motion off (or back on) in the reading-preferences panel.
 - Content that falls back to the default locale carries the correct `lang` attribute, so a screen reader pronounces it by the right rules.
 
-The target is **WCAG 2.1 AA** for public surfaces and **WCAG 2.2 AA** for any AUTHENTICATED surface if one ever exists — not only Jualanku ([ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md)), but also a USER admin surface a site declares through `permukaanAdmin` ([ADR-0034](../adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md)). Both bring controls, forms, and moving focus; that is what settles the target, not the surface's name. The two 2.2 criteria most likely to bite first in any interface carrying controls: **2.4.11 Focus Not Obscured** and **2.5.8 Target Size (Minimum)** — the second is already met here through the 44px touch target rule above, the first has never been tested because this repo has no floating element at all.
+The target is **WCAG 2.2 AA** for public surfaces and for any AUTHENTICATED surface if one ever exists (public pages were 2.1 AA until 19 November 2026, issue #179) — not only Jualanku ([ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md)), but also a USER admin surface a site declares through `permukaanAdmin` ([ADR-0034](../adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md)). Both bring controls, forms, and moving focus, which is why the 2.2 criteria below matter most there. The two 2.2 criteria most likely to bite first in any interface carrying controls: **2.4.11 Focus Not Obscured** and **2.5.8 Target Size (Minimum)** — the second is already met here through the 44px touch target rule above, the first has **not been tested in a browser**, and it now has something to test: the reading-preferences button is a fixed element at the bottom inline-start of every page (§Reading preferences). Whether it can cover a focused control has not been checked, and needs the browser test this repo does not yet have (ADR-0055 follow-up).
 
 The contrast of this repo's colour tokens has **never been audited with measurements** (see the warning in §Gaps against the AWCMS vocabulary). It is the only WCAG item in this document that cannot be answered "done" — and it is written that way rather than left to look guarded.
+
+### Reading preferences
+
+A floating button at the bottom inline-start opens a small non-modal dialog where a reader sets display preferences that are kept **on their own device** and sent nowhere ([ADR-0055](../adr/0055-reading-preferences-are-a-native-same-origin-panel-not-an-overlay-widget.md)). It is not an accessibility overlay: it never rewrites content, injects ARIA, claims the page meets any standard, or loads third-party code. The page has to meet WCAG in its own markup; this panel is supplementary.
+
+```mermaid
+flowchart LR
+  Store["localStorage 'awcms-a11y'"] --> Early["public/aksesibilitas.js — classic file, before paint"]
+  OS["prefers-contrast / prefers-reduced-motion"] --> Early
+  Early --> Attr["data-a11y-* on <html>"]
+  Panel["PanelAksesibilitas — bundled module"] --> Attr
+  Panel --> Store
+  Attr --> CSS["src/styles/aksesibilitas.css"]
+  CSS --> UI["Every component"]
+```
+
+| Preference | Attribute on `<html>` | Effect |
+| --- | --- | --- |
+| Text size | `data-a11y-text="large"` or `"x-large"` | Root font size 120 % or 140 %; every `rem` follows |
+| High contrast | `data-a11y-contrast` | Colour tokens swapped for a palette with text at 7:1 or better, in both themes; solid borders; a solid backing on the hero. **Not applied under `forced-colors: active`** |
+| Monochrome | `data-a11y-mono` | `filter: grayscale(1)` on `<html>` only — a filter on any other element would make it the containing block of `position: fixed` descendants and the button would scroll away |
+| Dyslexia-friendly text | `data-a11y-dyslexia` | Plain system sans, WCAG 1.4.12 text spacing, no justified text. No bundled "dyslexia font": a controlled study found no reading benefit from one |
+| Underline all links / Highlight links | `data-a11y-underline` / `data-a11y-highlight` | Every `a[href]` underlined / on a yellow background with near-black text |
+| Reduce motion | `data-a11y-motion="reduce"` | Animations and transitions switched off, not sped up |
+
+- **OS preferences are the default.** With nothing stored, contrast and motion follow `prefers-contrast: more` and `prefers-reduced-motion: reduce`; a stored choice wins, including an "off".
+- **Without JavaScript** the button stays hidden. `data-a11y-ready` on `<html>` marks that the early script ran; the media queries apply by themselves only while it is absent.
+- **A new motion feature must obey the panel.** Anything that animates, scrolls on its own, or autoplays has to stop under `data-a11y-motion="reduce"` and to listen for the `awcms-a11y-change` event on `document` (`detail` is the effective preferences). This template has no such feature today.
+- **What is not proven.** The panel's focus handling (Esc, outside click, return to the button) and its contrast with the panel open are designed to WCAG 2.2 AA and were exercised **once by hand** in Chromium with axe-core (no violation on any panel node, no horizontal overflow at 360 px with extra-large text), but its **focus movement and persistence after a reload are still not automated**; usability with real readers is not run in this upstream repo (owner decision 2026-11-19, ADR-0055 amendment) but in the UAT of each derived site. The automation gap is a follow-up in ADR-0055. What **is** automated since 19 November 2026 ([ADR-0056](../adr/0056-accessibility-is-gated-by-axe-in-a-real-browser-with-no-exceptions.md)): axe-core in a real Chromium (`bun run test:a11y`, in `Check`) runs the WCAG 2.2 AA tags over every kind of public page, both themes, each mode above alone and all together, the open panel, and 360 px with everything on — any violation fails, with no exclusions. That finds only what axe can see; it is not a claim of compliance.
+- **Where it lives.** Pure logic `src/lib/aksesibilitas.ts` (unit tested), the early copy `public/aksesibilitas.js` (parity tested against it), the stylesheet `src/styles/aksesibilitas.css` (loaded after `global.css`), the component `src/components/PanelAksesibilitas.astro`, and `tests/aksesibilitas.test.mjs`.
 
 ### The hover shine — an interaction standard
 

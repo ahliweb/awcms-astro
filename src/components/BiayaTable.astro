@@ -23,6 +23,12 @@ interface Props {
 const { biaya = [], dasarHukum = [] } = Astro.props;
 const locale = getLocaleFromPath(Astro.url.pathname);
 
+// Pembungkus tabel diberi `role="region"`, nama, dan `tabindex="0"` di markup di
+// bawah: daerah yang bisa digulir harus bisa difokus papan ketik, dan bernama
+// (WCAG 2.1.1; axe `scrollable-region-focusable`, tertangkap di 360 px dengan
+// teks sangat besar). Tanpa `tabindex`, pembaca papan ketik tak bisa menggulir
+// tabel yang lebih lebar dari layarnya.
+
 /**
  * Nama kategori: katalog dulu, nilai mentahnya sebagai jaring pengaman.
  *
@@ -53,7 +59,7 @@ function getBadgeClass(jenis: string) {
     </h3>
 
     {biaya.length > 0 && (
-      <div class="table-responsive">
+      <div class="table-responsive" role="region" aria-label={t(locale, 'biaya.title')} tabindex="0">
         <table class="data-table">
           <thead>
             <tr>

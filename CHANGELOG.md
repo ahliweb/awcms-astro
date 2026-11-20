@@ -8,6 +8,258 @@ Berkas ini diisi `bun run release` dengan melipat seluruh changeset di [`.change
 
 Sejak [ADR-0040](docs/adr/0040-changeset-menyatakan-bump-semver.md) setiap changeset menyatakan `bump: major | minor | patch`, dan versi berikutnya adalah bump TERBESAR di antara yang menunggu — jadi besar sebuah rilis adalah akibat dari isinya, bukan keputusan terpisah yang diambil saat merilis.
 
+## [0.7.0] — 2026-11-19
+
+> **Build integrasi tidak berjalan pada rilis ini.** `AWCMS_API_URL` kosong,
+> yang normal untuk repo template ini sendiri — jadi `bun run build`,
+> `bun run audit:konten`, dan lapis penyaji/CSP di `bun test` DILEWATI, bukan
+> lulus. Sebuah situs yang dibangun dari template ini mengisi variabel itu dan
+> menjalankan ketiganya.
+
+### Rujukan ke standar internal pemilik dinetralkan
+
+Kutipan sumber di `AGENTS.md`, `AGENTS.id.md` dan definisi agent di `.claude/agents/` kini menyebut standar lintas-portofolio internal pemilik sebagai teks biasa, bukan path atau tautan repositori. Tidak ada perubahan perilaku.
+
+### HTML bisa di-cache CDN, dengan purge pada setiap deploy (ADR-0054)
+
+HTML kini dikirim `Cache-Control: public, max-age=0, s-maxage=300,
+must-revalidate`: browser tetap selalu memvalidasi ulang, sedangkan cache bersama
+(CDN) boleh menyimpan halaman lima menit sehingga origin tidak melayani setiap
+tampilan. `/_astro/*` tetap `immutable`. Setiap deploy mem-purge CDN per nama host
+lewat `server/purge-cdn.mjs` (post-deployment command, `--dry-run` dan `--strict`
+tersedia), jadi rebuild tetap cepat terlihat; bila kredensial tidak diatur, ia
+hanya memberi peringatan dan `s-maxage` membatasi kebasian.
+
+- Pembaca situs tidak melihat perbedaan selain halaman yang lebih cepat bila CDN
+  dikonfigurasi menyimpan HTML.
+- Operator: variabel runtime `CLOUDFLARE_API_TOKEN` (secret, hanya Cache Purge
+  satu zona), `CLOUDFLARE_ZONE_ID`, dan opsional `CDN_PURGE_HOSTS`; langkah
+  lengkap di `docs/deploy-coolify.md`.
+- Mengamandemen aturan HTML ADR-0016 (keputusan 5). Mirror Indonesia dan tabel
+  indeks ADR diperbarui.
+
+### Rebuild memicu deploy Coolify dengan POST
+
+Coolify v4 versi baru menjawab `GET /api/v1/deploy` dengan "This endpoint has
+changed to a POST request." tanpa memicu apa pun, sehingga workflow `Rebuild`
+pada situs yang mengisi `COOLIFY_API_URL` dan `COOLIFY_APP_UUID` gagal dan konten
+baru tidak pernah ter-build. Workflow kini memakai `POST`; `uuid` tetap di query
+string.
+
+- `docs/deploy-coolify.md` dan `.id.md` menyebut metodenya dan diagramnya diperbarui.
+- Rujukan ke catatan server privat dihapus dari workflow dan dokumen publik ini.
+
+### Serapan ADR 0160 dan 0161 `awcms` mendapat vonisnya
+
+`awcms` menggabungkan ADR-0161 (target kapasitas sebagai NFR terukur, jalur skala
+bertahap), sehingga `audit:serapan` memerahkan setiap pull request. Baris 0161
+divonis `diserap`: bagian repo ini sudah tercatat di ADR-0054 (HTML ber-`s-maxage`
+dan purge CDN per deploy). Nomor 0160 (inbox omnichannel) dibaca dari branch
+`awcms` sebelum mendarat di `main`, supaya buku besar tetap berurutan; vonisnya
+`diperiksa` karena sisi admin saja.
+
+- Ringkasan di `SKILL.id.md` dinaikkan ke puncak ADR-0161 `awcms`.
+- Tidak mengubah keluaran situs, dependensi, atau deployment.
+
+### Menutup advisory audit @astrojs/node 11.1.13
+
+- `@astrojs/node` dinaikkan `^11.1.11` -> `^11.1.13` (patch dalam major) untuk menutup
+  GHSA-r3h5-4585-7x3w (moderate, `<=11.1.11`); membawa `@astrojs/internal-helpers`
+  0.13.2. Tabel versi di `docs/awcms-astro/standar-teknis.md` (+ `.id.md`) diperbarui.
+- Tidak mengubah keluaran situs.
+
+### Panel preferensi baca di setiap halaman publik (ADR-0055)
+
+Setiap halaman kini punya tombol melayang "Pengaturan aksesibilitas" yang membuka
+dialog kecil non-modal: ukuran teks (normal, besar, sangat besar) dan enam
+sakelar, yaitu kontras tinggi, monokrom, teks ramah disleksia, garis bawah semua
+tautan, sorot tautan, dan kurangi gerakan, ditambah "Reset ke standar". Pilihan
+disimpan di `localStorage` (kunci `awcms-a11y`) pada perangkat pembaca dan tidak
+dikirim ke mana pun; panel bukan overlay pihak ketiga, tidak menulis ulang konten,
+dan tidak mengklaim halaman memenuhi suatu standar.
+
+- Pembaca: tombolnya muncul hanya bila JavaScript jalan. Tanpa nilai tersimpan,
+  kontras tinggi dan kurangi gerakan mengikuti `prefers-contrast: more` dan
+  `prefers-reduced-motion: reduce`; pembaca boleh menimpanya di panel. Kontras
+  tinggi tidak diterapkan di bawah `forced-colors: active`.
+- Situs turunan: skrip awal klasik baru `public/aksesibilitas.js` (dimuat
+  setelah `tema.js`), bundel panel, dan `src/styles/aksesibilitas.css`. CSP tidak
+  berubah. Fitur gerak baru wajib berhenti di bawah `data-a11y-motion="reduce"`
+  dan mendengarkan event `awcms-a11y-change`.
+- Anggaran aset `audit:aset` naik karena panel ada di setiap halaman: skrip
+  13.000 → 18.500 B dan total 40.000 → 53.700 B per halaman (terukur, tertulis di
+  `scripts/audit-aset.mjs`). Blok `prefers-reduced-motion` di `global.css` kini
+  hanya berlaku selama `data-a11y-ready` belum ada.
+- Tiga tata letak diubah agar teks sangat besar tidak membuat halaman tergulir ke
+  samping di 360 px: kisi prinsip di beranda, daftar tombol bagikan, dan lencana
+  hijau pada kontras tinggi.
+- Uji browser Playwright dan axe menyusul sebagai gerbang tersendiri (ADR-0056).
+  Uji kegunaan dengan pembaca sungguhan tidak dijalankan di repo upstream ini;
+  ia milik UAT tiap situs turunan (amandemen ADR-0055, 2026-11-19).
+- Dokumen: ADR-0055 dan mirror Indonesia, indeks ADR, desain UI, standar teknis,
+  standar performa dan keamanan, README, deploy-coolify, dan AGENTS diperbarui.
+
+### Serapan ADR 0162 sampai 0166 `awcms` mendapat vonisnya
+
+`awcms` menggabungkan ADR-0162 sampai 0166, sehingga `audit:serapan` memerahkan
+setiap pull request. Vonis: 0162 sampai 0165 `diperiksa` (penjadwalan job, persetujuan
+manusia atas usulan agen OMES, kategori templat e-mail dan WhatsApp, indeks pencarian
+di bawah RLS; semuanya di sisi `awcms`, dan 0165 menyentuh jalur pencarian pembaca
+tanpa mengubah kontraknya). 0166 `diserap`: panel preferensi baca diadopsi lokal lewat
+ADR-0055 repo ini dengan kontrak penyimpanan yang sama.
+
+- Ringkasan di `SKILL.id.md` dinaikkan ke puncak ADR-0166 `awcms`.
+- Tidak mengubah keluaran situs, dependensi, atau deployment.
+
+### Mencabut mitigasi picomatch GHSA-fc5q-39xc-vjpf
+
+GitHub dan OSV menarik advisory GHSA-fc5q-39xc-vjpf pada 2026-11-18 (pengelola
+`picomatch` menyatakan itu bukan kerentanan pustaka; PR perbaikan
+micromatch/picomatch#235 ditutup tanpa merge, dan tidak ada rilis baru). Karena
+`bun audit` kini bersih, mitigasinya menjadi beban mati dan dibuang atas
+keputusan pemilik (2026-11-19).
+
+- Tambalan lokal `picomatch@4.0.7` dan `picomatch@2.3.2`, entri
+  `patchedDependencies`, serta tesnya dihapus;
+  versi `picomatch` yang terpasang tidak berubah.
+- Langkah audit dependensi CI tidak lagi memakai `--ignore`; tanpa pengecualian.
+- Dokumen standar performa-keamanan diperbarui ke keadaan nyata. NVD masih
+  mencatat CVE-2026-112366 "Awaiting Analysis"; keterpaparan rendah karena pola
+  hanya berasal dari konfigurasi.
+- Tidak mengubah keluaran situs.
+
+### Aksesibilitas dijaga axe di peramban sungguhan pada setiap perubahan (ADR-0056)
+
+Sebelumnya klaim WCAG 2.2 AA hanya dijaga secara statis, dan axe hanya pernah dijalankan
+sekali secara manual. Kini `bun run test:a11y` menjalankan axe-core di Chromium atas build
+produksi dan `awcms` tiruan, di CI di dalam `Check`; pelanggaran apa pun menggagalkan, tanpa
+pengecualian. Run pertamanya menemukan cacat nyata, yang semuanya diperbaiki di sini.
+
+- Warna tautan dasar kini `--accent-hover` (5,67:1), bukan `--accent-primary` (3,91:1), dan
+  tautan di dalam isi artikel bergaris bawah. **Terlihat oleh pembaca di setiap halaman**;
+  situs turunan dengan palet sendiri perlu memastikan aksennya masih 4,5:1 terhadap latarnya.
+- Pil tab aktif, lencana "Sorotan", dan chip pencarian terpilih mencapai kontras 4,5:1.
+- Blok buletin di footer terbaca (sebelumnya 1,87:1 dan 4,08:1); hanya situs yang menyalakan
+  buletin yang melihatnya.
+- Chip facet pencarian memakai `aria-current`, bukan `aria-pressed` yang tidak sah pada tautan.
+- Tabel biaya yang bisa digulir kini bisa difokus papan ketik dan bernama.
+- Mode "sorot tautan" tetap terbaca pada tautan yang labelnya ada di elemen anak.
+- Untuk pengembang: `@playwright/test` 1.65.0 dan `@axe-core/playwright` 4.14.0 (devDependency,
+  dipin), spesifikasi di `e2e/*.axe.mjs` di luar `bun test`; pasang Chromium sekali dengan
+  `bunx --bun playwright install chromium`. Situs turunan yang menimpa `BiayaTable.astro`,
+  `FormBuletin.astro`, atau `HalamanCari.astro` perlu menerapkan perubahan yang sama.
+
+### Cacat aksesibilitas bawaan halaman publik ditemukan axe diperbaiki (#179)
+
+Saat panel preferensi baca dibangun, axe menemukan lima cacat yang sudah ada
+sebelum panel. Panel tetap pelengkap; markup halaman sendiri kini memenuhi WCAG
+2.2 AA untuk kelimanya, dan standar minimum dokumen dinaikkan dari 2.1 AA ke 2.2 AA.
+
+- Kontras: `.seksi-tautan` (3,91:1) dan `.prinsip-nomor` (3,56:1 terang, 4,41:1
+  gelap) kini memakai `--accent-hover` (5,67:1, 5,17:1, dan di atas 4,5:1 di tema gelap).
+- Nama tautan: `.cari-tautan` tidak punya nama di lebar sempit karena labelnya
+  `display: none`; kini labelnya disembunyikan secara visual saja.
+- Label dalam nama (2.5.3): `aria-label` pengalih bahasa kini memuat kode bahasa yang
+  terlihat ("Pilih bahasa: ID").
+- Urutan judul: judul kolom footer, termasuk judul formulir buletin, dari `<h4>` menjadi
+  `<h2>`; tampilannya tidak berubah.
+- Situs turunan: bila menimpa `LangSwitcher.astro`, `BaseLayout.astro`, atau
+  `FormBuletin.astro`, terapkan perubahan yang sama.
+
+## [0.6.4] — 2026-11-12
+
+> **Build integrasi tidak berjalan pada rilis ini.** `AWCMS_API_URL` kosong,
+> yang normal untuk repo template ini sendiri — jadi `bun run build`,
+> `bun run audit:konten`, dan lapis penyaji/CSP di `bun test` DILEWATI, bukan
+> lulus. Sebuah situs yang dibangun dari template ini mengisi variabel itu dan
+> menjalankan ketiganya.
+
+### ADR-0149 `awcms` mendapat vonisnya
+
+`bun run audit:serapan` merah di setiap cabang karena `ahliweb/awcms`
+menggabungkan ADR-0149 (PR #1197, 28 Oktober 2026) yang belum dibaca siapa pun
+di repo ini.
+
+- **ADR-0149 divonis `diperiksa`.** Halaman data admin (pencarian, chip filter,
+  judul kolom yang bisa diurutkan, pager keyset) menjadi pola yang dirender
+  server dengan empat primitif `.astro` bersama di folder komponen admin
+  milik `awcms`, diadopsi pertama oleh `/admin/users`. Status ADR masih
+  Proposed. ADR-nya sendiri menyatakan tidak ada perubahan API, OpenAPI,
+  migrasi, izin, atau audit, jadi tidak ada rute yang dipanggil repo ini yang
+  berubah; repo ini juga tidak punya halaman `/admin/*`. Barisnya mencatat
+  kapan dibaca ulang: bila permukaan admin pengguna ditambahkan di sini, ia
+  butuh ADR sendiri, bukan mewarisi komponen `awcms`.
+
+Puncak buku besar naik dari ADR-0148 ke ADR-0149 milik `awcms`; `belum` tetap
+nol.
+
+### Standar orchestrator dan agent untuk pekerjaan multi-agent
+
+Menambahkan bagian "Orchestrator & agent (AI models)" ke `AGENTS.md` (dan
+cerminnya `AGENTS.id.md`) serta dua subagen Claude Code di `.claude/agents/`:
+`pelaksana-kompleks` (Sonnet, `medium`) dan `pelaksana-sederhana` (Haiku, `low`).
+Standarnya dipelihara di `ahliweb/personal-coding`; repo ini hanya menunjuk ke
+sana, tanpa menyalin harga atau lini model.
+
+- Hanya memengaruhi cara agen AI membagi kerja saat mengembangkan repo ini.
+- Tidak mengubah keluaran situs, dependensi, atau deployment.
+
+### Alur pengembangan produk v2: UX tervalidasi, lalu frontend → backend → integrasi
+
+Menambahkan butir 6 di §"The mandatory workflow" `AGENTS.md` (dan cerminnya
+`AGENTS.id.md`): pekerjaan produk mengikuti alur 18 langkah v2.0.0 milik
+`ahliweb/personal-coding`, yang diadopsi `awcms` lewat ADR-0156. Untuk repo ini,
+layar diuji pengguna sebelum kontrak, dan setiap slice dikerjakan sebagai 11.1
+frontend di sini terhadap mock kontrak `awcms` → 11.2 backend sebagai PR di
+`awcms` → 11.3 integrasi.
+
+- Hanya memengaruhi cara pekerjaan direncanakan dan diurutkan.
+- Tidak mengubah keluaran situs, dependensi, atau deployment.
+
+### Penyegaran versi pihak ketiga dalam major yang sama
+
+Tanpa kenaikan major dan tanpa pra-rilis.
+
+- `astro` `^7.4.2` -> `^7.4.7`, `@astrojs/node` `^11.1.9` -> `^11.1.11`; `bun.lock` diregenerasi Bun 1.4.4. Ini menggantikan PR Dependabot yang hanya sampai 7.4.4.
+- `github/codeql-action` v4.39.1 -> v4.39.3 (pin SHA).
+- Bun tetap 1.4.4 (sudah terbaru, digest `Dockerfile` tidak berubah). `typescript` tetap ditahan di 6.x (ADR-0037); 7.x adalah kandidat major.
+- Dua `overrides` baru, `@emnapi/core` dan `@emnapi/runtime` dipin `1.11.3`: setelah naik, Bun me-resolve `@emnapi/runtime` ke `2.0.0-beta.2` (pra-rilis, dari rentang peer di bawah `@astrojs/check`) dan `astro check` jatuh. Pin ini mengembalikan versi stabil yang sudah dipakai sebelumnya.
+
+### Serapan ADR 0157 dan 0158 `awcms` mendapat vonisnya
+
+Menambahkan baris serapan di blok serapan `awcms-astro-integrasi` untuk dua ADR
+milik repo `awcms`: ADR-0157 `awcms` (modul `social_publishing`) dan ADR-0158
+`awcms` (syarat adapter StarSender). `audit:serapan` hijau lagi. Keduanya
+berstatus Proposed dan dinyatakan `diperiksa`: tidak ada rute yang dipanggil
+repo ini yang berubah, dan repo ini tidak punya akun sosial, perangkat WhatsApp,
+kredensial, maupun worker.
+
+- Ringkasan di `SKILL.id.md` dinaikkan ke puncak ADR-0158 `awcms`.
+- Tidak mengubah keluaran situs, dependensi, atau deployment.
+
+### Standar roadmap dan issue lintas-portofolio internal (DL-041)
+
+Issue form diselaraskan dengan standar: laporan bug memakai judul
+`[Fase/SEQ] jenis: ringkasan` dan label `jenis:fix`, dan form tugas, riset, dan
+epik ditambahkan. `docs/roadmap.md` (EN + ID) memuat draf fase yang diturunkan
+dari backlog README dan ADR; semua status menunggu konfirmasi pemilik, dan tidak
+ada tanggal. `CONTRIBUTING.md` (dan cerminnya) menjelaskan judul, label, dan
+roadmap. Label lama tidak dihapus atau diganti nama.
+
+- Hanya memengaruhi cara issue dan rencana ditulis.
+- Tidak mengubah keluaran situs, dependensi, atau deployment.
+
+### Serapan ADR 0159 `awcms` mendapat vonisnya
+
+`awcms` menerbitkan ADR-0159 (modul `crm_follow_up`) setelah run CI hijau
+terakhir di `main`, sehingga `audit:serapan` memerahkan setiap pull request.
+Baris serapannya ditambahkan dengan vonis `diperiksa`: modul, tabel, izin, dan
+dispatcher-nya ada di `awcms`; repo ini build statis yang tidak merender lead,
+tugas, maupun notifikasi staf, dan tidak memanggil rute yang berubah.
+
+- Ringkasan di `SKILL.id.md` dinaikkan ke puncak ADR-0159 `awcms`.
+- Tidak mengubah keluaran situs, dependensi, atau deployment.
+
 ## [0.6.3] — 2026-10-26
 
 > **Build integrasi tidak berjalan pada rilis ini.** `AWCMS_API_URL` kosong,

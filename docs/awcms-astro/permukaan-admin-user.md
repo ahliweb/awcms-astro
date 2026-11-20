@@ -194,7 +194,10 @@ Not bureaucracy. A feature landing here first is **a feature that for a while
 nobody can switch off** — and "a while" in practice means until somebody remembers
 it.
 
-1. Make sure the capability already has its management screen in `awcms`. The list
+1. Make sure the capability already has its management screen in `awcms` — or,
+   before it exists, that its backend owner is named and its management screen
+   is part of the contract being agreed in step 2 (see the three gates below).
+   The list
    of `/admin/*` screens available today is in
    [`integrasi-awcms.md`](integrasi-awcms.md) §The awcms `/admin/*` screens.
 2. Agree the shape of its new surface in `awcms` and freeze its contract there
@@ -202,6 +205,20 @@ it.
    that is exactly its purpose.
 3. Declare `permukaanAdmin` in your site, then build its screens.
 4. Re-examine the header, cache, and accessibility posture per §3.
+
+**What "first" orders.** Steps 1 and 2 order **ownership and contract**, not code.
+Three gates
+([ADR-0057](../adr/0057-awcms-first-orders-ownership-and-contract-not-code-and-three-gates-separate-design-mock-and-release.md),
+Proposed):
+
+| Gate | Needs | Allows |
+| --- | --- | --- |
+| **A. Design readiness** | Backend owner named, contract agreed in `awcms`, every screen state has a data source in it, `owner` management named | Frontend work may start; no handler or schema required |
+| **B. Mock build** | A mock **generated from** the agreed contract, never hand-written | Screens built and reviewed in every state |
+| **C. Integration and release** | The capability exists in `awcms`, its `owner` screen exists, both sides pass the contract test, and it is proven against the real backend | A release that exposes the feature (step 3 declares `permukaanAdmin` in a shipped site) |
+
+A mock never substitutes for gate C, holds no data this repo owns, and decides no
+permission: `awcms` still does.
 
 One thing that **cannot** be machine-verified from this repo, and is therefore
 written rather than gated: whether the capability behind your surface really has

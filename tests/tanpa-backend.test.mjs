@@ -400,3 +400,46 @@ describe("dokumen menyatakan aturan yang sama dengan kodenya", () => {
     });
   }
 });
+
+/**
+ * ADR-0057: "`awcms` first" mengurutkan kepemilikan dan kontrak, bukan kode.
+ *
+ * Penafsiran itu hanya aman selama satu kalimat tetap ada: mock tidak pernah
+ * menggantikan gerbang rilis. Tanpa kalimat itu, "frontend boleh dibangun
+ * terhadap mock" berubah diam-diam menjadi "frontend yang hijau terhadap mock
+ * boleh dirilis" — dan tidak ada gerbang lain yang melihatnya, karena build
+ * terhadap mock tidak pernah gagal.
+ *
+ * Seperti gerbang di atas, ini memeriksa BENTUK dokumen, bukan apakah sebuah PR
+ * menghormati urutannya; itu tetap penilaian reviewer (ADR-0057 §Konsekuensi).
+ */
+describe("dokumen menyatakan bahwa mock tidak menggantikan gerbang rilis (ADR-0057)", () => {
+  const kontrak = [
+    {
+      berkas: "AGENTS.md",
+      bahasa: "Inggris",
+      aturan: /never substitutes for gate C/i
+    },
+    {
+      berkas: "AGENTS.id.md",
+      bahasa: "Indonesia",
+      aturan: /tidak pernah menggantikan gerbang C/i
+    }
+  ];
+
+  for (const { berkas, bahasa, aturan } of kontrak) {
+    test(`${berkas} menyebut ADR-0057 dan bahwa mock tidak menggantikan gerbang C`, () => {
+      const isi = readFileSync(berkas, "utf8");
+
+      assert.match(isi, /ADR-0057/, `${berkas} tidak menyebut ADR-0057`);
+      assert.match(
+        isi,
+        aturan,
+        `${berkas} (${bahasa}) tidak lagi menyatakan bahwa mock, server tiruan, ` +
+          "atau build hijau berbasis mock tidak pernah menggantikan gerbang " +
+          "integrasi dan rilis. Tanpa kalimat itu, 'bangun terhadap mock' " +
+          "menjadi 'rilis terhadap mock'."
+      );
+    });
+  }
+});
