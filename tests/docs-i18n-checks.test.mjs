@@ -19,7 +19,8 @@ import {
   deriveMirrorPath,
   deriveSourcePath,
   extractRecordedHash,
-  isInScope
+  isInScope,
+  stripMarkers
 } from "../scripts/lib/docs-i18n-checks.mjs";
 import { DOCS_AWAITING_MIRROR } from "../scripts/check-docs-translation.mjs";
 
@@ -176,6 +177,34 @@ describe("checkTranslationPair — is this mirror current?", () => {
     expect(problems[0]?.message).toContain("no <!-- i18n-source-hash");
   });
 
+  test("rejects a mirror carrying two markers", () => {
+    const problems = checkTranslationPair(
+      "doc.md",
+      source,
+      "doc.id.md",
+      `<!-- i18n-source-hash: sha256:placeholder -->\n${mirror}`
+    );
+
+    expect(problems).toHaveLength(1);
+    expect(problems[0]?.file).toBe("doc.id.md");
+    expect(problems[0]?.message).toContain("2 i18n-source-hash markers");
+    expect(problems[0]?.message).toContain("docs:i18n:stamp");
+  });
+
+  test("rejects a mirror whose only marker is not sha256:<64 hex>", () => {
+    const problems = checkTranslationPair(
+      "doc.md",
+      source,
+      "doc.id.md",
+      "<!-- i18n-source-hash: sha256:placeholder -->\n\n# Judul\n"
+    );
+
+    expect(problems).toHaveLength(1);
+    expect(problems[0]?.file).toBe("doc.id.md");
+    expect(problems[0]?.message).toContain("invalid i18n-source-hash marker");
+    expect(problems[0]?.message).toContain("docs:i18n:stamp");
+  });
+
   /** Reported against the mirror: that is the file which exists to be acted on. */
   test("rejects an orphan mirror whose English source is gone", () => {
     const problems = checkTranslationPair("doc.md", null, "doc.id.md", mirror);
@@ -255,5 +284,23 @@ describe("the ledger itself", () => {
       entry.startsWith("docs/adr/0039-")
     );
     expect(adr0039).toEqual([]);
+  });
+});
+
+describe("stripMarkers — the stamp removes every marker, valid or not", () => {
+  test("drops a hand-written placeholder marker", () => {
+    const out = stripMarkers(
+      "<!-- i18n-source-hash: sha256:placeholder -->\n\n# Judul\n"
+    );
+    expect(out).not.toContain("i18n-source-hash");
+    expect(out).toContain("# Judul");
+  });
+
+  test("drops valid and invalid markers together", () => {
+    const valid = `<!-- i18n-source-hash: ${computeSourceHash("x")} -->`;
+    const out = stripMarkers(
+      `${valid}\n<!--i18n-source-hash:TODO-->\n\n# Judul\n`
+    );
+    expect(out).not.toContain("i18n-source-hash");
   });
 });
