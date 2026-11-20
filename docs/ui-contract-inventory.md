@@ -95,7 +95,7 @@ All thirteen operations were found in the spec at the `awcms` SHA above. "Gate" 
 | Jualanku portal BFF (`/penjual/**`, `/affiliate/**`, `/_portal-api/**`) | **PLANNED**, held behind the prerequisites of `docs/awcms-astro/jualanku/04-kesiapan.md`. Roadmap phase F3, status in the roadmap table, exit criteria still "to be proposed by the owner" | no `_portal-api` or BFF string in `src/`, `server/`; `docs/roadmap.md` |
 | Public lead, consent and realtime client | **PLANNED** by `docs/crm-public-ux-contract.md` and `docs/bun-realtime-client-boundary.md`, marked "proposed documentation" in them | those documents; not repeated here |
 
-No screen of §3 is a USER-admin or BFF screen, and no row claims otherwise. The ADR-0057 reading (Proposed in PR #188, not on `main` at the baseline SHA) keeps the same rule: a release of such a surface needs the real capability in `awcms`.
+No screen of §3 is a USER-admin or BFF screen, and no row claims otherwise. The ADR-0057 reading (Accepted 2026-11-20; it was Proposed at the baseline SHA) keeps the same rule: a release of such a surface needs the real capability in `awcms`.
 
 ## 7. Test inventory
 
@@ -131,11 +131,11 @@ No screen of §3 is a USER-admin or BFF screen, and no row claims otherwise. The
 
 | ID | Finding | Class | Evidence | Owner of the fix |
 | --- | --- | --- | --- | --- |
-| G-01 | No test compares consumer fixtures with the OpenAPI schemas; a renamed or removed upstream field is invisible until a real build | gap | §4, §7.2 | contract and where its snapshot lives: `awcms` (ADR-0065 owner); the check itself: here |
+| G-01 | No test compares consumer fixtures with the OpenAPI schemas; a renamed or removed upstream field is invisible until a real build | gap | §4, §7.2 | **Decided 2026-11-20 (owner):** the snapshot lives on the `awcms` side as option C′, a generator in its repo and a pinned fixture package published for consumers (`awcms` ADR for C′, issue awcms#1379; no ADR number yet). This repo consumes that package; implementation is backlog issue [#194](https://github.com/ahliweb/awcms-astro/issues/194), waiting for gate 9 and the package |
 | G-02 | Failure statuses of `awcmsGet` other than timeout and bad config are untested | gap | `src/lib/awcms/client.ts` | here |
 | G-03 | `403`/`404` fallbacks of menus and widgets are untested, terms by source text only | gap | `src/lib/awcms/navigasi.ts`, `src/lib/awcms/taksonomi.ts` | here |
 | G-04 | Search error and `429` look the same to a reader, and `reason` is unread, so "query too short" reads as "no results" | drift, low | `src/components/views/HalamanCari.astro` | here; the contract already defines both |
-| G-05 | `seoTitle` is never read: an article `<title>` is its title, a pipe and the section name, so an editor-set SEO title has no effect. Other unused post fields (`scheduledAt`, `unpublishAt`) are server-side concerns | drift | `src/layouts/ArtikelLayout.astro` (`pageTitle`), spec `seoTitle` | decision first: consume or document as ignored |
+| G-05 | `seoTitle` is never read: an article `<title>` is its title, a pipe and the section name, so an editor-set SEO title has no effect. Other unused post fields (`scheduledAt`, `unpublishAt`) are server-side concerns | drift | `src/layouts/ArtikelLayout.astro` (`pageTitle`), spec `seoTitle` | **Decided 2026-11-20 (owner): consumed.** A non-empty `seoTitle` from the API is the article `<title>`; empty or absent falls back to title plus section. Implemented in [#193](https://github.com/ahliweb/awcms-astro/issues/193) |
 | G-06 | `itemsTruncated` on menus is unread; a legacy menu over 200 items renders only the first 200 with no signal | drift, low | `src/lib/awcms/navigasi.ts` | here |
 | G-07 | The stand-in `awcms` is hand-written and covers the nine requests the build and search page make; it proves markup, not the contract (its header says so) | known limit | `e2e/awcms-tiruan.mjs` | none; noted so it is not mistaken for a mock |
 | G-08 | axe page list omits the token pages, 404, paginated pages and `/en/cari/` | gap | `e2e/a11y.axe.mjs` | here |
@@ -157,9 +157,9 @@ Backlog candidates, each S or M and non-overlapping; none is opened as an issue 
 | Client failure-status tests (`401`, `403`, `5xx`, non-JSON, `UNREACHABLE`, `CONFIG_MISSING`) | S | G-02 | nothing |
 | Behavioural `403`/`404` fallback tests for menus, widgets, terms | S | G-03 | nothing |
 | Search-states test in the existing Playwright setup, with distinct `429` text and `reason` handling | M | G-04 | a UX decision on the `429` and `reason` copy |
-| Decide and apply `seoTitle` and `itemsTruncated` | S each | G-05, G-06 | a decision per field |
+| Apply `seoTitle` (decided: consumed, #193) and decide `itemsTruncated` | S each | G-05, G-06 | a decision for `itemsTruncated` only |
 | axe page list extended | S | G-08 | stand-in routes for the missing pages |
-| Contract-versus-OpenAPI check | M | G-01 | `awcms` agrees where the snapshot lives (cross-repo); do not copy upstream code here |
+| Contract-versus-OpenAPI check | M | G-01 | Decided: pinned fixture package from `awcms` (option C′, issue awcms#1379), backlog [#194](https://github.com/ahliweb/awcms-astro/issues/194); waits for gate 9 and the package; do not copy upstream code here |
 | Fix D-01 to D-03 | S | D-01..03 | after PR #188 lands, to avoid editing the same lines |
 
 **Definition of ready for a new screen here:** its data source is a named operation in the spec; its permission is the one the spec names; it states what it shows for empty, error and unavailable-at-build; it names its test; and it is a consumer of an `awcms` capability that exists or whose contract is agreed upstream.
@@ -176,6 +176,10 @@ Backlog candidates, each S or M and non-overlapping; none is opened as an issue 
 - `awcms` ADR-0156 (flow v2: per-screen data inventory and generated mock), `awcms` ADR-0065 (frozen consumer contract)
 
 ## Changelog
+
+### 2026-11-20 - v1.1.0
+
+- Recorded owner decisions of 20 November 2026: G-01 (snapshot lives on the `awcms` side, option C′; this repo consumes the pinned fixture package, backlog #194), G-05 (`seoTitle` consumed, #193), and ADR-0057 Accepted. The findings and evidence of v1.0.0 are unchanged.
 
 ### 2026-11-20 - v1.0.0
 

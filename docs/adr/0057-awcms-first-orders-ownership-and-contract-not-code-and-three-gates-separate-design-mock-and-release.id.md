@@ -1,15 +1,15 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](0057-awcms-first-orders-ownership-and-contract-not-code-and-three-gates-separate-design-mock-and-release.md)
 
-<!-- i18n-source-hash: sha256:31cec538768e94d1000562eee7a63e593b4359e3bfc7901ec8dd29a4027eeb4f -->
+<!-- i18n-source-hash: sha256:7b61bba116e7b768ba85787925cb52287ee10e431c43de23b16fce88e95c3b3c -->
 
 # ADR-0057 — "`awcms` lebih dulu" mengurutkan kepemilikan dan kontrak, bukan kode, dan tiga gerbang memisahkan desain, build dengan mock, dan rilis
 
-- **Status:** Diusulkan (Proposed)
-- **Tanggal:** 20 November 2026
+- **Status:** Diterima (Accepted)
+- **Tanggal:** 20 November 2026 (diusulkan dan diterima pada hari yang sama)
 - **Menjernihkan, tanpa mengubah norma:** [ADR-0034](0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.id.md) §4 ("`awcms` lebih dulu, selalu") dan [ADR-0038](0038-kebutuhan-backend-menjadi-modul-di-awcms.id.md) §1 (kebutuhan backend menjadi MODUL di `awcms`). Tidak ada dari keduanya yang ditulis ulang; masing-masing mempertahankan teksnya.
 - **Terkait:** [ADR-0014](0014-rendering-campuran-dan-bff-portal.id.md) (rute on-demand yang dinyatakan, dan BFF), [ADR-0020](0020-layar-admin-kembali-ke-awcms.id.md), [ADR-0030](0030-aturan-tertulis-mendapat-pemeriksanya.id.md) (aturan tertulis wajib membawa pemeriksanya), [ADR-0056](0056-accessibility-is-gated-by-axe-in-a-real-browser-with-no-exceptions.id.md) (`awcms` tiruan adalah fixture markup, bukan mock kontrak), `awcms` [ADR-0065](https://github.com/ahliweb/awcms/blob/main/docs/adr/0065-awcms-astro-consumer-contract-is-frozen.md) (kontrak konsumen yang dibekukan), `awcms` [ADR-0156](https://github.com/ahliweb/awcms/blob/main/docs/adr/0156-adopt-development-flow-v2-validated-ux-before-data-model-frontend-backend-integration-per-slice.md) (alur v2: frontend, lalu backend, lalu integrasi, per irisan), isu #186
 
-**Hanya dokumen dan tata kelola.** ADR ini tidak menambah kode, rute, dependency, endpoint, basis data, atau perubahan gerbang. Ia mencatat bagaimana dua kalimat yang sudah diterima dibaca bersama. **Ia berstatus Proposed dengan sengaja:** ia tidak memindahkan norma, tetapi menetapkan penafsiran yang bergantung pada `awcms` ADR-0156 maupun ADR-0034/0038 repo ini, sehingga perlu ditinjau di kedua sisi sebelum Accepted (lihat §Perlu keputusan).
+**Hanya dokumen dan tata kelola.** ADR ini tidak menambah kode, rute, dependency, endpoint, basis data, atau perubahan gerbang. Ia mencatat bagaimana dua kalimat yang sudah diterima dibaca bersama. Ia tidak memindahkan norma, tetapi menetapkan penafsiran yang bergantung pada `awcms` ADR-0156 maupun ADR-0034/0038 repo ini; ia ditulis lebih dulu sebagai Proposed dan pemilik menerimanya pada 20 November 2026 (lihat §Catatan keputusan).
 
 ## Konteks
 
@@ -69,13 +69,15 @@ Konsumen saat-build untuk situs statis publik, dan, hanya bila situs menyatakan 
 - **Tidak digerbangi, dan ditulis agar tidak dikira terjaga:** bahwa mock dihasilkan dari kontrak; bahwa mock tetap di luar kode yang dikirim; bahwa pemeriksaan backend-nyata gerbang C dijalankan terhadap instance nyata. Yang pertama terhambat perkakas yang oleh `awcms` ADR-0156 sendiri dicatat sebagai celah (belum ada generator dari OpenAPI), yang ketiga karena repo template ini tidak punya instance `awcms`. Reviewer yang memikulnya.
 - Tidak ada perubahan teks ADR-0034 atau ADR-0038. Pembacanya menemukan keputusan ini lewat indeks ADR dan kontrak kerja.
 
-## Perlu keputusan
+## Catatan keputusan
 
-Tingkat pemilik, tidak diputuskan di sini:
+Keputusan pemilik, 20 November 2026 (dipilih lewat dialog; dicatat sebagaimana dipilih, tanpa tambahan):
 
-1. **Menerima ADR ini, atau mengamandemen ADR-0034 §4 di tempat.** Disarankan: menerima ADR ini. Amandemen di tempat menulis ulang keputusan yang sudah Accepted untuk menyelesaikan ambiguitas yang tidak pernah berupa konflik.
-2. **Bolehkah frontend tahap-mock di-merge ke `main` sebelum gerbang C?** Disarankan: ya, hanya bila fitur itu inert di template secara bawaan (tidak ada yang dinyatakan di `permukaanAdmin`, tidak ada permukaan baru yang dipanggil build), sehingga `main` tetap bisa dirilis; bila tidak, tahan di branch sampai C. Alternatifnya, tanpa merge sebelum C, membuat `main` lebih sederhana dengan harga branch berumur panjang.
-3. **Kalimat yang sepadan di sisi `awcms`** (ADR-0156 repo itu adalah tempat "per irisan" dimiliki). Repo ini tidak bisa menulisnya.
+1. **Menerima ADR ini; ADR-0034 §4 tidak diamandemen di tempat.** Diterima pada 20 November 2026. ADR-0034 dan ADR-0038 mempertahankan teksnya.
+2. **Frontend tahap-mock boleh di-merge ke `main` sebelum gerbang C, hanya bila inert.** Inert berarti, seperti definisi dalam usulan ADR ini sendiri: fitur itu inert di template secara bawaan (tidak ada yang dinyatakan di `permukaanAdmin`, tidak ada permukaan baru yang dipanggil build), sehingga `main` tetap bisa dirilis. Fitur yang tidak inert tetap di branch sampai gerbang C. Diputuskan 20 November 2026.
+3. **Lokasi snapshot kontrak (G-01 di [`ui-contract-inventory.id.md`](../ui-contract-inventory.id.md)) diputuskan di sisi `awcms`.** `awcms` memilih C′: generator di dalam repo-nya dan paket fixture terpatok yang diterbitkan untuk konsumen (ADR `awcms` untuk C′, issue awcms#1379; nomor ADR belum ada). Repo ini mengonsumsi paket itu; implementasinya menyusul lewat issue backlog dan menunggu gerbang 9 serta paket tersebut. Dicatat 20 November 2026.
+
+Tidak diputuskan di sini: kalimat yang sepadan di sisi `awcms` tetap menjadi wewenang repo itu (ADR-0156-nya adalah tempat "per irisan" dimiliki).
 
 ## Hubungan dengan `awcms`
 
