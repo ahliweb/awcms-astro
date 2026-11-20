@@ -112,6 +112,7 @@ What does **not** diverge and must be followed: `AGENTS.md` as the working contr
 | [`integrasi-awcms.md`](integrasi-awcms.md) | The contract for moving to dynamic management: content model, adapter, responsibility boundary |
 | [`permukaan-admin-user.md`](permukaan-admin-user.md) | This repo's second role: the shape of a USER admin surface, how to declare it, what changes the moment it is switched on, and what may never be built here |
 | [`checklist-repo-baru.md`](checklist-repo-baru.md) | The steps for starting a new site on this standard |
+| [`ui-contract-inventory.md`](../ui-contract-inventory.md) | Research report (issue #187): every screen the SSG site renders mapped to its `awcms` operation, permission, tests, and the gaps and drift found, classed VERIFIED, ASSUMED, PLANNED or DEFERRED |
 | [`jualanku/`](jualanku/README.md) | The **blueprint** for the Jualanku.info experience layer: mixed rendering, BFF, route/UI map, readiness ([ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md)) — a plan, not yet implemented |
 
 ## What makes this standard different
