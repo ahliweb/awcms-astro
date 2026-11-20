@@ -169,8 +169,49 @@ jobs:
 
       # `bun audit` (dependency) dan `bun run audit:konten` adalah dua hal yang
       # berbeda dan namanya sengaja tidak dibuat mirip.
+      #
+      # Tanpa pengecualian: tidak ada `--ignore` dan ambang `low` tidak
+      # diturunkan. (GHSA-fc5q-39xc-vjpf, picomatch, ditarik GitHub dan OSV
+      # pada 2026-11-18; tambalan lokalnya sudah dibuang.) Dasar:
+      # docs/awcms-astro/standar-performa-dan-keamanan.md.
       - name: Audit dependency
         run: bun audit --audit-level=low
+
+      # Gerbang aksesibilitas di peramban sungguhan (ADR-0056). Di job `check`,
+      # BUKAN di job `build`, dan itu keputusan: `build` dikondisikan pada
+      # `vars.AWCMS_API_URL`, jadi di repo template ia tidak jalan sama sekali —
+      # sedangkan gerbang ini sengaja memakai awcms TIRUAN (`e2e/awcms-tiruan.mjs`)
+      # justru supaya jalan di repo template juga, tempat markup ini ditinjau.
+      # Ia juga tidak menambah deklarasi `bun-version` (ADR-0015: tiga tempat
+      # yang harus bergerak bersama) dan otomatis ikut check wajib `Check`,
+      # yang ruleset `main` sudah paksa (ADR-0053).
+      #
+      # Awcms tiruan itu menjawab "markup ini aksesibel", bukan "template ini
+      # bisa bicara dengan awcms" — klaim kedua tetap hanya milik job `build`.
+      #
+      # Cache menyimpan unduhan Chromium (kunci: lockfile, yang memuat versi
+      # Playwright); `--with-deps` tetap jalan karena pustaka OS tidak ada di
+      # cache. Berkas jejak hanya diunggah bila gagal.
+      - name: Cache peramban Playwright
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+
+      - name: Pasang Chromium untuk Playwright
+        run: bunx --bun playwright install --with-deps chromium
+
+      - name: Aksesibilitas di peramban (axe, WCAG 2.2 AA)
+        run: bun run test:a11y
+
+      - name: Simpan jejak aksesibilitas bila gagal
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: jejak-a11y
+          path: .playwright-hasil
+          if-no-files-found: ignore
+          retention-days: 7
 
   # ---------------------------------------------------------------------------
   # Build penuh — hanya jalan bila repo ini benar-benar punya sumber konten.

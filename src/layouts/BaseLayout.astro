@@ -5,6 +5,7 @@ import LangSwitcher from '../components/LangSwitcher.astro';
 import ShareButtons from '../components/ShareButtons.astro';
 import BeaconKunjungan from '../components/BeaconKunjungan.astro';
 import FormBuletin from '../components/FormBuletin.astro';
+import PanelAksesibilitas from '../components/PanelAksesibilitas.astro';
 import {
   siteConfig,
   getSiteUrl,
@@ -37,6 +38,8 @@ import { daftarMenu, daftarWidget, peringatkanSekali } from '../lib/awcms/naviga
 import { menuDenganKey, pesanTerbuang, susunMenu } from '../lib/menu';
 import { indeksPost } from '../lib/content';
 import '../styles/global.css';
+// After global.css, on purpose: it overrides tokens that file defines.
+import '../styles/aksesibilitas.css';
 
 interface Props {
   title: string;
@@ -298,6 +301,12 @@ const jsonLd = {
         tidak terpasang dan tema mengikuti prefers-color-scheme lewat media
         query di global.css. */}
     <script is:inline src="/tema.js"></script>
+
+    {/* Reading preferences, early half (ADR-0055): same constraints as the
+        theme script above — a classic blocking file so the `data-a11y-*`
+        attributes exist before first paint. It must come AFTER `tema.js`: the
+        high-contrast palette keys on `data-theme`. */}
+    <script is:inline src="/aksesibilitas.js"></script>
   </head>
   <body>
     <a class="skip-link" href="#main-content">{t(locale, 'ui.skipToMain')}</a>
@@ -419,13 +428,13 @@ const jsonLd = {
       <div class="container">
         <div class="footer-grid">
           <div>
-            <h4 class="footer-judul footer-judul--utama">{t(locale, 'footer.about.title')}</h4>
+            <h2 class="footer-judul footer-judul--utama">{t(locale, 'footer.about.title')}</h2>
             <p class="footer-teks">
               {t(locale, 'footer.about.body')}
             </p>
           </div>
           <div>
-            <h4 class="footer-judul">{t(locale, 'footer.kanal.title')}</h4>
+            <h2 class="footer-judul">{t(locale, 'footer.kanal.title')}</h2>
             <ul class="footer-daftar">
               {siteConfig.tabs.map((tab) => (
                 <li>
@@ -435,7 +444,7 @@ const jsonLd = {
             </ul>
           </div>
           <div>
-            <h4 class="footer-judul">{t(locale, 'footer.more.title')}</h4>
+            <h2 class="footer-judul">{t(locale, 'footer.more.title')}</h2>
             <ul class="footer-daftar">
               <li><a href={localePath(locale, '/sitemap/')}>{t(locale, 'footer.sitemap')}</a></li>
               {/* Halaman privasi ditaut TANPA syarat, termasuk pada situs yang
@@ -464,7 +473,7 @@ const jsonLd = {
               diterjemahkan, isinya yang tidak. */}
           {hasilMenu && hasilMenu.tautan.length > 0 && (
             <div>
-              <h4 class="footer-judul">{menuFooter!.name}</h4>
+              <h2 class="footer-judul">{menuFooter!.name}</h2>
               <ul class="footer-daftar">
                 {hasilMenu.tautan.map((tautan) => (
                   <li>
@@ -485,7 +494,7 @@ const jsonLd = {
           {widgetFooter.length > 0 &&
             widgetFooter.map((widget) => (
               <div>
-                <h4 class="footer-judul">{widget.title}</h4>
+                <h2 class="footer-judul">{widget.title}</h2>
                 {widget.bodyText && <p class="footer-teks">{widget.bodyText}</p>}
               </div>
             ))}
@@ -499,7 +508,7 @@ const jsonLd = {
               situsnya. */}
           {adaKontak(profil) && (
             <div>
-              <h4 class="footer-judul">{t(locale, 'footer.contact.title')}</h4>
+              <h2 class="footer-judul">{t(locale, 'footer.contact.title')}</h2>
               <ul class="footer-daftar footer-kontak">
                 {profil.editorialAddress && (
                   <li>
@@ -529,7 +538,7 @@ const jsonLd = {
 
           {profil.socialLinks.length > 0 && (
             <div>
-              <h4 class="footer-judul">{t(locale, 'footer.social.title')}</h4>
+              <h2 class="footer-judul">{t(locale, 'footer.social.title')}</h2>
               <ul class="footer-daftar">
                 {profil.socialLinks.map((tautan) => (
                   <li>
@@ -570,6 +579,11 @@ const jsonLd = {
         mendahului satu piksel pun; komponennya sendiri yang memutuskan apakah
         ia memancarkan sesuatu sama sekali. */}
     <BeaconKunjungan />
+
+    {/* Reading-preferences panel (ADR-0055). Rendered `hidden` and fixed, so
+        it takes no space and cannot move layout; the script reveals the
+        button. In the layout, not in a page, so every public page has it. */}
+    <PanelAksesibilitas siteName={namaSitusIni} />
   </body>
 </html>
 
@@ -584,6 +598,7 @@ const jsonLd = {
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
+    margin-top: 0;
     margin-bottom: 1rem;
     color: var(--gelap-teks-redup);
   }

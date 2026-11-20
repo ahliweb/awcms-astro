@@ -139,7 +139,7 @@ is the only lockfile.
 | `bun run dev`               | Astro development server (HMR), `http://localhost:4321`          |
 | `bun run check`             | Lockfile gate, then `astro check`                                |
 | `bun run check:lockfile`    | The lockfile gate alone — pure file reading                      |
-| `bun test` | 45 gate files: the `awcms` contract, site roles, no-backend, no Node.js runtime, the `news` vocabulary, feeds, the server, toolchain versions, output CSP, the 360px layout floor, translation mirrors, the knowledge/Obsidian export safety boundary, the knowledge-graph label step, and meta-tests over the audit scripts |
+| `bun test` | 48 gate files: the `awcms` contract, site roles, no-backend, no Node.js runtime, the `news` vocabulary, feeds, the server, toolchain versions, output CSP, the 360px layout floor, translation mirrors, the knowledge/Obsidian export safety boundary, the knowledge-graph label step, the CDN purge step, the reading-preferences panel, and meta-tests over the audit scripts |
 | `bun run audit:konten`      | Audit gate: image sources, and the build output when it exists   |
 | `bun run audit:dokumen`     | Document gate: dead markdown links, the ADR index, the shine-surface list |
 | `bun run audit:graf`        | Graph gate: the tracked `graphify-out/` artefacts, their community names, anything tracked under `knowledge/generated/` or `.obsidian/`, and bounded content staleness past `MAX_STALE_FILES = 40` ([ADR-0051](docs/adr/0051-a-knowledge-tree-points-at-the-code-and-owns-none-of-it.md)) |
@@ -147,6 +147,7 @@ is the only lockfile.
 | `bun run audit:serapan`     | Absorption gate: `awcms` decisions nobody here has read yet — the one gate that looks outward |
 | `bun run audit:aset`        | Asset gate: the reader's byte budget, over the source and over the build output when it exists |
 | `bun run audit:rilis`       | Release gate: the waiting changeset backlog, bounded at 12 files and 14 days ([ADR-0048](docs/adr/0048-a-release-is-cut-when-the-backlog-crosses-a-bound.md)), and every remote release tag has a matching GitHub Release ([ADR-0052](docs/adr/0052-github-releases-are-part-of-this-repos-release-convention.md)) |
+| `bun run test:a11y`         | Browser accessibility gate: axe-core in a real Chromium (Playwright) over the production build and a stand-in `awcms`; WCAG 2.2 AA tags, both themes, every reading-preferences mode, any violation fails ([ADR-0056](docs/adr/0056-accessibility-is-gated-by-axe-in-a-real-browser-with-no-exceptions.md)). Needs Chromium once: `bunx --bun playwright install chromium`; runs in CI inside `Check`, not in `bun test` |
 | `bun run knowledge:graph:update` | Rebuilds this repo's own `graphify-out/` graph (code-only, no LLM call), and re-clusters — it owns the PARTITION. Needs `graphify` on `PATH`; not run in CI |
 | `bun run knowledge:graph:label` | Applies curated community names to whatever partition is already on disk — it owns the NAMES, and never invokes `graphify`. Needs no `graphify`, no Python, no network; not run in CI |
 | `bun run knowledge:obsidian:export` | Exports the graph to a validated, allowlisted `knowledge/generated/graphify/` Obsidian vault. Needs `graphify` on `PATH`; not run in CI |
@@ -253,8 +254,8 @@ cannot inject markup through any path, whatever they type.
 **A strict CSP that is actually sent, not merely "CSP-ready".** The server sets
 `default-src 'self'` with `script-src 'self'` and `style-src 'self'` and no
 `'unsafe-inline'` (ADR-0019). What makes that possible: there is not one style
-or script inside the output HTML — the theme switcher lives in
-[`public/tema.js`](public/tema.js), and Astro is forbidden from inlining small
+or script inside the output HTML — the theme switcher and the reading-preferences early script live in
+[`public/tema.js`](public/tema.js) and [`public/aksesibilitas.js`](public/aksesibilitas.js), and Astro is forbidden from inlining small
 bundles into pages by `vite.build.assetsInlineLimit: 0`. Both are guarded by
 [`tests/keluaran-csp.test.mjs`](tests/keluaran-csp.test.mjs), which also proves
 the JS did not vanish with them; the policy itself is guarded by
@@ -291,7 +292,8 @@ src/
 ├── locales/<locale>/messages.po
 ├── pages/                # default locale at the root, other locales through [lang]/
 └── styles/global.css     # design tokens + interaction standards
-public/tema.js            # the ONLY JS that must run before paint (ADR-0019)
+public/tema.js            # JS that must run before paint: the theme (ADR-0019)
+public/aksesibilitas.js   # ...and the reading-preferences attributes (ADR-0055)
 server/penyaji.mjs        # production server: headers, CSP, cache, compression (ADR-0016/0019)
 tests/penyaji.test.mjs    # the serving gate — the rules above are proven, not claimed
 tests/keluaran-csp.test.mjs # output gate: zero inline styles and scripts in the HTML

@@ -564,3 +564,72 @@ msgstr "Setiap kiriman memuat tautan berhenti berlangganan yang bekerja dengan s
 
 msgid "privasi.buletin.butir3"
 msgstr "Alamat Anda tidak dipakai untuk hal lain, dan tidak dibagikan ke pihak ketiga mana pun."
+
+msgid "a11y.button"
+msgstr "Pengaturan aksesibilitas"
+
+msgid "a11y.close"
+msgstr "Tutup pengaturan aksesibilitas"
+
+msgid "a11y.eyebrow"
+msgstr "Ramah baca"
+
+msgid "a11y.title"
+msgstr "Pengaturan Aksesibilitas"
+
+msgid "a11y.description"
+msgstr "Sesuaikan tampilan agar nyaman dibaca."
+
+msgid "a11y.text.label"
+msgstr "Ukuran teks"
+
+msgid "a11y.text.normal"
+msgstr "Normal"
+
+msgid "a11y.text.large"
+msgstr "Besar"
+
+msgid "a11y.text.xlarge"
+msgstr "Sangat besar"
+
+msgid "a11y.contrast.label"
+msgstr "Kontras tinggi"
+
+msgid "a11y.contrast.desc"
+msgstr "Perjelas perbedaan teks, garis, dan foto"
+
+msgid "a11y.mono.label"
+msgstr "Mode monokrom"
+
+msgid "a11y.mono.desc"
+msgstr "Tampilkan halaman dalam hitam-putih"
+
+msgid "a11y.dyslexia.label"
+msgstr "Teks ramah disleksia"
+
+msgid "a11y.dyslexia.desc"
+msgstr "Huruf sans bersih dengan spasi lebar"
+
+msgid "a11y.underline.label"
+msgstr "Garis bawah semua tautan"
+
+msgid "a11y.underline.desc"
+msgstr "Tautan selalu bergaris bawah"
+
+msgid "a11y.highlight.label"
+msgstr "Sorot tautan kontras tinggi"
+
+msgid "a11y.highlight.desc"
+msgstr "Tandai tautan dengan warna kuning"
+
+msgid "a11y.motion.label"
+msgstr "Kurangi gerakan"
+
+msgid "a11y.motion.desc"
+msgstr "Hentikan animasi dan teks berjalan"
+
+msgid "a11y.reset"
+msgstr "Reset ke standar"
+
+msgid "a11y.note"
+msgstr "Tersimpan hanya di perangkat ini, tidak dikirim ke server."

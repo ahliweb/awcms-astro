@@ -328,7 +328,7 @@ exactly what
 5. A change that changes behaviour must update the document that explains that
    behaviour — in this repo documentation is part of the product, not a garnish.
 6. Product work follows the portfolio's 18-step development flow v2.0.0
-   ([`ahliweb/personal-coding`, alur-pengembangan-produk](https://github.com/ahliweb/personal-coding/blob/main/docs/alur-pengembangan-produk.md),
+   (the owner's internal cross-portfolio standard,
    adopted by `awcms` in [ADR-0156](https://github.com/ahliweb/awcms/blob/main/docs/adr/0156-adopt-development-flow-v2-validated-ux-before-data-model-frontend-backend-integration-per-slice.md)).
    For this repo that means: a screen is visualised and usability-tested
    (step 4) before the data model and contract it needs; step 11 runs per slice
@@ -338,6 +338,19 @@ exactly what
    then E2E). A screen with no data source in the contract is not ready to
    build. Authorisation is never enforced only here: `awcms` and its database
    decide, this repo reflects.
+
+   "`awcms` first, always" (§This repo's role item 4) orders **ownership and
+   contract**, not code: three gates, not one. **A, design readiness** — the
+   backend owner is named and the contract is agreed in `awcms`; frontend work
+   may start, and no handler, schema or ERD is required. **B, build against a
+   mock** generated from that contract, never hand-written to match the screen.
+   **C, integration and release** — the capability exists in `awcms`, `owner`
+   can manage it there, and it is proven against the real backend. **A mock, the
+   stand-in server or a mock-green build never substitutes for gate C**, and
+   nothing here may hold data or fall back to a copy when `awcms` is
+   unreachable. This is the reading proposed in
+   [ADR-0057](docs/adr/0057-awcms-first-orders-ownership-and-contract-not-code-and-three-gates-separate-design-mock-and-release.md)
+   (Proposed, issue #186); it changes no norm of ADR-0034 or ADR-0038.
 
 ## Rules that cannot be broken
 
@@ -497,12 +510,21 @@ exactly what
   switcher, accordions, and the whole body of every page. Anything that
   genuinely needs JS is hidden when JS is off — a control that does nothing when
   clicked is worse than a control that is not there.
-- **WCAG 2.1 AA accessibility** is a floor, not a target: sufficient contrast in
+- **WCAG 2.2 AA accessibility** is a floor, not a target: sufficient contrast in
   both themes, visible focus, full keyboard navigation, `prefers-reduced-motion`
   honoured. Decorative animation is **switched off** when that is asked for, not
   sped up — a global `*` rule only trims duration, and a 0.01 ms animation still
   flickers. Hover feedback is also active on `:focus-visible`, so keyboard users
   do not get a poorer version.
+- **Reading preferences are display choices, never an overlay**
+  ([ADR-0055](docs/adr/0055-reading-preferences-are-a-native-same-origin-panel-not-an-overlay-widget.md)).
+  Every page has a native same-origin panel (text size, contrast, monochrome,
+  dyslexia-friendly text, link emphasis, reduced motion) whose choices live in
+  `localStorage` and become `data-a11y-*` attributes on `<html>`; nothing is sent
+  anywhere. Do not add a third-party accessibility overlay, and do not make the
+  panel claim that a page meets a standard. A feature that animates, scrolls by
+  itself or autoplays must stop under `data-a11y-motion="reduce"` and listen for
+  the `awcms-a11y-change` event on `document`.
 - **Mobile-first from 360px.** `.container`'s own padding leaves an inner width
   of exactly 320px at that floor — a grid track fixed to that same figure has
   zero margin, which is what `.grid-cards` did until it was found and wrapped
@@ -571,7 +593,7 @@ exactly what
   second is invisible in `src/` entirely:
   1. `<script is:inline>` containing code. A script that must run before first
      paint becomes a file in `public/` loaded by a classic `<script src>` — see
-     `public/tema.js`. Astro bundles are always `type="module"` and modules are
+     `public/tema.js` and `public/aksesibilitas.js`. Astro bundles are always `type="module"` and modules are
      always deferred, so that is not a substitute for this case.
   2. An ordinary `<script>` in a component, which Astro bundles and then
      **inlines back** into the HTML when its chunk is smaller than
@@ -941,15 +963,16 @@ Three things to read before touching that area:
 - **The BFF decides nothing with business consequences.** Ownership,
   entitlement, and status transitions are decided by `awcms`. A rule that lives
   only in this repo is a rule that does not exist.
-- **Every AUTHENTICATED surface targets WCAG 2.2 AA**, up from 2.1 AA above —
-  the Jualanku BFF (ADR-0014) and the USER admin surface a site declares through
-  `permukaanAdmin` (ADR-0034) alike. What decides is not the surface's name but
-  the presence of controls, forms, and focus that moves. Every other rule in
-  this document still applies in full.
+- **Every AUTHENTICATED surface targets WCAG 2.2 AA** — the same floor as the
+  public pages (raised from 2.1 AA on 19 November 2026, issue #179; ADR-0014
+  wrote 2.2 for authenticated surfaces first). That covers the Jualanku BFF
+  (ADR-0014) and the USER admin surface a site declares through
+  `permukaanAdmin` (ADR-0034) alike, and what those add is controls, forms, and
+  focus that moves. Every other rule in this document still applies in full.
 
 ## Orchestrator & agent (AI models)
 
-> Cross-portfolio standard from [`ahliweb/personal-coding`](https://github.com/ahliweb/personal-coding/blob/main/docs/tingkatan-model-ai-claude-openai.md) (docs/tingkatan-model-ai-claude-openai.md, snapshot 2026-10-28). Prices, effort, and the model lineup are maintained there — do not copy them into this repo.
+> Internal cross-portfolio standard on AI model tiers (snapshot 2026-10-28). Prices, effort, and the model lineup are maintained in that standard — do not copy them into this repo.
 
 Work that must be split across several agents follows the **orchestrator → agent** pattern. The orchestrator splits the work, assigns tasks, orders dependencies, then reviews and merges the results; an agent does one bounded part.
 

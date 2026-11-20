@@ -1,0 +1,549 @@
+/*
+ * Reading preferences (ADR-0055): the rules each `data-a11y-*` attribute on
+ * <html> switches on, plus the panel that sets them.
+ *
+ * ## Loaded after global.css, on purpose
+ *
+ * `BaseLayout.astro` imports this file right after `global.css`. The palette
+ * below overrides tokens that file defines, and a stylesheet order that depended
+ * on which component happened to import first would be a defect that no build
+ * reports.
+ *
+ * ## Everything is scoped under an attribute
+ *
+ * A reader who never opens the panel gets no changed pixel from any rule in the
+ * first half of this file. The attributes are set by `public/aksesibilitas.js`
+ * before first paint; `src/lib/aksesibilitas.ts` documents the contract.
+ *
+ * ## Two things this file deliberately does not do
+ *
+ *   - It does not touch colours under `forced-colors: active`. The reader asked
+ *     the operating system for ITS palette; a site palette on top of that is
+ *     the fight the media query exists to prevent.
+ *   - `filter: grayscale(1)` is on <html>, never on <body> or a wrapper. A
+ *     filter on any other element makes it the containing block of its
+ *     `position: fixed` descendants, and the floating button would scroll away
+ *     with the page.
+ */
+
+/* ---------------------------------------------------------------- text size */
+
+html[data-a11y-text="large"] {
+  font-size: 120%;
+}
+
+html[data-a11y-text="x-large"] {
+  font-size: 140%;
+}
+
+/* ------------------------------------------------------------ high contrast
+ *
+ * Text >= 7:1 (WCAG 1.4.6), light scheme near-black on white, dark scheme white
+ * on near-black. Only tokens change, so every component follows without a rule
+ * of its own.
+ *
+ * The same palette is written twice, and the duplication is the price of the
+ * no-script case: while `data-a11y-ready` is absent the OS media query applies
+ * it directly; once the early script has run, the attribute is the only source
+ * of truth, which is what lets a reader turn an OS-backed preference off. CSS
+ * cannot share one rule between an attribute selector and a media query.
+ */
+@media (forced-colors: none) {
+  html[data-a11y-contrast]:not([data-theme="dark"]) {
+    --bg-primary: #fff;
+    --bg-surface: #fff;
+    --bg-surface-elevated: #fff;
+    --bg-subtle: #f1f1f1;
+    --text-primary: #000;
+    --text-secondary: #000;
+    --text-muted: #1a1a1a;
+    --border-color: #000;
+    --border-focus: #000;
+    --accent-primary: #0033a0;
+    --accent-hover: #001f66;
+    --accent-subtle: #e3ecff;
+    --emerald-primary: #00573f;
+    --emerald-subtle: #e1f5ec;
+    --badge-pnbp-bg: #fff;
+    --badge-pnbp-text: #002a7a;
+    --badge-pajak-bg: #fff;
+    --badge-pajak-text: #7a0000;
+    --gelap-teks-redup: #e2e8f0;
+  }
+
+  html[data-a11y-contrast][data-theme="dark"] {
+    --bg-primary: #000;
+    --bg-surface: #000;
+    --bg-surface-elevated: #0d0d0d;
+    --bg-subtle: #171717;
+    --text-primary: #fff;
+    --text-secondary: #fff;
+    --text-muted: #e6e6e6;
+    --border-color: #fff;
+    --border-focus: #ffeb3b;
+    --accent-primary: #7fd1ff;
+    --accent-hover: #bde6ff;
+    --accent-subtle: #00325a;
+    --emerald-primary: #4ee0a8;
+    --emerald-subtle: #00382a;
+    --badge-pnbp-bg: #000;
+    --badge-pnbp-text: #cfe3ff;
+    --badge-pajak-bg: #000;
+    --badge-pajak-text: #ffd0d0;
+    --gelap-teks-redup: #e2e8f0;
+  }
+
+  /* Solid borders on boxes and fields, and a solid backing where text sits on
+     the hero's gradient and decorative layers. */
+  html[data-a11y-contrast] :is(.card, .share-box, .feature-hero, .video-berita, .blok-tak-tersedia) {
+    border: 2px solid var(--border-color);
+  }
+
+  html[data-a11y-contrast] :is(input:not([type="checkbox"], [type="radio"]), select, textarea) {
+    border: 2px solid var(--border-color) !important;
+  }
+
+  html[data-a11y-contrast] .hero-banner-grid {
+    background: var(--gelap-bg);
+  }
+
+  /* White text on a fill: `--emerald-primary` is a light green in the dark
+     palette (right for text on black), so the badge needs its own dark fill. */
+  html[data-a11y-contrast] .badge--emerald {
+    background: #00573f;
+    color: #fff;
+  }
+
+  html[data-a11y-contrast] .hero-banner-grid::before,
+  html[data-a11y-contrast] .hero-banner-grid::after {
+    display: none;
+  }
+}
+
+/* No script (or the early script blocked): follow the OS, for both the contrast
+   and the colour scheme. One corner is left out on purpose: a reader who chose
+   the dark theme on a light OS, AND whose `aksesibilitas.js` was blocked, gets
+   the light high-contrast palette. It is still high contrast, and a fourth copy
+   of the palette is not worth that corner. */
+@media (prefers-contrast: more) and (forced-colors: none) {
+  :root:not([data-a11y-ready]) {
+    --bg-primary: #fff;
+    --bg-surface: #fff;
+    --bg-surface-elevated: #fff;
+    --bg-subtle: #f1f1f1;
+    --text-primary: #000;
+    --text-secondary: #000;
+    --text-muted: #1a1a1a;
+    --border-color: #000;
+    --border-focus: #000;
+    --accent-primary: #0033a0;
+    --accent-hover: #001f66;
+    --accent-subtle: #e3ecff;
+    --emerald-primary: #00573f;
+    --emerald-subtle: #e1f5ec;
+    --badge-pnbp-bg: #fff;
+    --badge-pnbp-text: #002a7a;
+    --badge-pajak-bg: #fff;
+    --badge-pajak-text: #7a0000;
+  }
+}
+
+@media (prefers-contrast: more) and (forced-colors: none) and (prefers-color-scheme: dark) {
+  :root:not([data-a11y-ready]):not([data-theme="light"]) {
+    --bg-primary: #000;
+    --bg-surface: #000;
+    --bg-surface-elevated: #0d0d0d;
+    --bg-subtle: #171717;
+    --text-primary: #fff;
+    --text-secondary: #fff;
+    --text-muted: #e6e6e6;
+    --border-color: #fff;
+    --border-focus: #ffeb3b;
+    --accent-primary: #7fd1ff;
+    --accent-hover: #bde6ff;
+    --accent-subtle: #00325a;
+    --emerald-primary: #4ee0a8;
+    --emerald-subtle: #00382a;
+    --badge-pnbp-bg: #000;
+    --badge-pnbp-text: #cfe3ff;
+    --badge-pajak-bg: #000;
+    --badge-pajak-text: #ffd0d0;
+  }
+}
+
+/* --------------------------------------------------------------- monochrome */
+
+html[data-a11y-mono] {
+  filter: grayscale(1);
+}
+
+/* ------------------------------------------------------ dyslexia-friendly text
+ *
+ * A clean system sans with the WCAG 1.4.12 text-spacing values. There is no
+ * bundled "dyslexia font": the controlled study that compared one with an
+ * ordinary sans found no reading benefit (Wery and Diliberto, 2016), so the
+ * panel offers what is documented to help — spacing and a plain letterform —
+ * and says nothing more.
+ *
+ * `!important` on the spacing is the same thing a reader's own user stylesheet
+ * does to meet 1.4.12, and it is what lets this beat component rules that set
+ * their own line-height or letter-spacing.
+ */
+html[data-a11y-dyslexia] {
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-heading: var(--font-sans);
+}
+
+html[data-a11y-dyslexia] body,
+html[data-a11y-dyslexia] body * {
+  line-height: 1.5 !important;
+  letter-spacing: 0.12em !important;
+  word-spacing: 0.16em !important;
+}
+
+html[data-a11y-dyslexia] :is(p, li, blockquote, dd, figcaption) {
+  text-align: start;
+}
+
+html[data-a11y-dyslexia] p {
+  margin-bottom: 2em;
+}
+
+/* ------------------------------------------------------------------- links */
+
+html[data-a11y-underline] a[href] {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+html[data-a11y-highlight] a[href] {
+  background: #ffeb3b !important;
+  color: #111 !important;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+/* A link whose label sits in child elements (the "Terbaru" list rows) keeps the
+   children's own colours otherwise — light text on the yellow fill, 1.16:1. The
+   children take the link's colour, so the fill and the text are chosen together. */
+html[data-a11y-highlight] a[href] * {
+  color: inherit !important;
+}
+
+html[data-a11y-highlight] a[href]:focus-visible {
+  outline: 3px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------ reduce motion
+ *
+ * Switched off, not sped up — a 0.01 ms animation still flickers. This is the
+ * attribute half; the OS media query in `global.css` covers the no-script case
+ * and steps aside once `data-a11y-ready` is present.
+ */
+html[data-a11y-motion="reduce"] {
+  scroll-behavior: auto !important;
+}
+
+html[data-a11y-motion="reduce"] *,
+html[data-a11y-motion="reduce"] *::before,
+html[data-a11y-motion="reduce"] *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+
+/* ===========================================================================
+   THE PANEL
+   =========================================================================== */
+
+/* Fixed, so it takes no space and cannot shift layout (CLS). It is rendered
+   `hidden` and only revealed by the panel script, so a reader without script
+   never sees a control that does nothing. */
+.a11y-button {
+  position: fixed;
+  inset-inline-start: 1rem;
+  inset-block-end: 1rem;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  padding: 0;
+  border: 2px solid var(--bg-primary);
+  border-radius: 50%;
+  background: var(--accent-hover);
+  color: var(--bg-primary);
+  box-shadow: var(--shadow-lg);
+  cursor: pointer;
+}
+
+.a11y-button:hover {
+  background: var(--accent-primary);
+}
+
+/* Visually hidden, still read by assistive technology. */
+.a11y-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.a11y-button svg {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.a11y-panel {
+  position: fixed;
+  inset-inline-start: 1rem;
+  inset-block-end: 5rem;
+  z-index: 91;
+  width: min(24rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 6.5rem);
+  max-height: calc(100dvh - 6.5rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1.25rem;
+  border: 1px solid var(--text-muted);
+  border-radius: var(--radius-xl);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-lg);
+}
+
+.a11y-button:focus-visible,
+.a11y-close:focus-visible,
+.a11y-reset:focus-visible,
+.a11y-title:focus-visible {
+  outline: 3px solid var(--border-focus);
+  outline-offset: 3px;
+}
+
+.a11y-switch:focus-visible {
+  outline: 3px solid var(--border-focus);
+  outline-offset: -3px;
+}
+
+.a11y-head {
+  padding-inline-end: 2.75rem;
+}
+
+.a11y-eyebrow {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.a11y-title {
+  margin: 0.25rem 0 0.35rem;
+  font-size: 1.25rem;
+}
+
+.a11y-desc {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.a11y-close {
+  position: absolute;
+  inset-block-start: 0.5rem;
+  inset-inline-end: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.a11y-close:hover {
+  background: var(--bg-subtle);
+}
+
+.a11y-close svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.a11y-group {
+  min-width: 0;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  border: 0;
+}
+
+.a11y-group legend {
+  padding: 0;
+  font-weight: 600;
+}
+
+.a11y-seg {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+.a11y-seg-item {
+  position: relative;
+  display: block;
+}
+
+/* The native radio stays in the page and on top, invisible, so the segment is
+   a real radio for keyboards, pointers and assistive technology alike. */
+.a11y-seg-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.a11y-seg-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--text-muted);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.a11y-seg-input:checked + .a11y-seg-text {
+  border-color: var(--accent-hover);
+  background: var(--accent-hover);
+  color: var(--bg-primary);
+}
+
+.a11y-seg-input:focus-visible + .a11y-seg-text {
+  outline: 3px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.a11y-switch {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.6rem 0.25rem;
+  border: 0;
+  border-top: 1px solid var(--border-color);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.a11y-switch:hover {
+  background: var(--bg-subtle);
+}
+
+.a11y-switch-texts {
+  flex: 1;
+  min-width: 0;
+}
+
+.a11y-switch-label {
+  display: block;
+  font-weight: 600;
+}
+
+.a11y-switch-desc {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.a11y-track {
+  position: relative;
+  flex: none;
+  width: 2.75rem;
+  height: 1.5rem;
+  border: 2px solid var(--text-muted);
+  border-radius: 9999px;
+  background: var(--bg-subtle);
+}
+
+.a11y-track::after {
+  content: "";
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 0.15rem;
+  width: 0.9rem;
+  height: 0.9rem;
+  margin-top: -0.45rem;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+
+.a11y-switch[aria-checked="true"] .a11y-track {
+  border-color: var(--accent-hover);
+  background: var(--accent-hover);
+}
+
+.a11y-switch[aria-checked="true"] .a11y-track::after {
+  inset-inline-start: calc(100% - 1.05rem);
+  background: var(--bg-primary);
+}
+
+.a11y-foot {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.a11y-reset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.4rem 1rem;
+  border: 2px solid var(--text-secondary);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.a11y-reset:hover {
+  background: var(--bg-subtle);
+}
+
+.a11y-note {
+  margin: 0.75rem 0 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+@media print {
+  .a11y-button,
+  .a11y-panel {
+    display: none !important;
+  }
+}

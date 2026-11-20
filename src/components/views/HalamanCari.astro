@@ -351,8 +351,13 @@ const tipeBerlabel = ['blog_post', 'blog_page'].map((nilai) => ({
           tautan.href = jalurPencarian(dasar, berikut);
           const aktif =
             kunci === 'type' ? filter.tipe === item.value : filter.term[kunci as FacetTerm] === item.value;
-          tautan.setAttribute('aria-pressed', String(aktif));
-          if (aktif) tautan.classList.add('cari-chip-aktif');
+          // `aria-current`, bukan `aria-pressed`: chip ini adalah tautan, dan
+          // `aria-pressed` hanya sah pada tombol (ARIA 1.2) — axe menolaknya
+          // (`aria-allowed-attr`). Keadaan "sedang dipilih" tetap diumumkan.
+          if (aktif) {
+            tautan.setAttribute('aria-current', 'true');
+            tautan.classList.add('cari-chip-aktif');
+          }
 
           chipFrag.querySelector<HTMLElement>('[data-chip-label]')!.textContent = teksChip;
           chipFrag.querySelector<HTMLElement>('[data-chip-jumlah]')!.textContent = String(item.count);
@@ -534,8 +539,8 @@ const tipeBerlabel = ['blog_post', 'blog_page'].map((nilai) => ({
   }
 
   .cari-chip-aktif {
-    border-color: var(--accent-primary);
-    color: var(--accent-primary);
+    border-color: var(--accent-hover);
+    color: var(--accent-hover);
   }
 
   .cari-kartu {

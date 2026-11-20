@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](ui-ux-design-system.md)
 
-<!-- i18n-source-hash: sha256:bad883749144d514a50debf0eb25e62ed35e979f24b8c13168c08968454304f2 -->
+<!-- i18n-source-hash: sha256:c6c6163a8456d341a9b09d5a10b8df99e772fc34c152ae8e803cd7cf16d11cb6 -->
 
 # awcms-astro — Design System
 
@@ -14,7 +14,7 @@ Prinsip AWCMS diadaptasi ke konteks situs statis publik. Yang berbeda ditandai.
 
 1. **Terbaca tanpa JavaScript.** Seluruh fungsi inti — navigasi, pengalih bahasa, accordion FAQ, dan seluruh badan artikel — bekerja tanpa JS. Berbeda dari back-office AWCMS yang boleh mengandalkan islands.
 2. **State eksplisit.** Setiap halaman punya keadaan terisi, kosong, dan fallback yang terlihat. Situs statis tidak punya loading state, tetapi punya **state fallback terjemahan** yang wajib ditandai ke pembaca.
-3. **Aksesibel.** Target WCAG 2.1 AA: kontras cukup di kedua tema, fokus terlihat, navigasi keyboard penuh.
+3. **Aksesibel.** Target WCAG 2.2 AA: kontras cukup di kedua tema, fokus terlihat, navigasi keyboard penuh.
 4. **Ringan.** Pembacanya di jaringan yang tidak dapat diandalkan. Anggaran gambar dan JavaScript diperlakukan sebagai batas, bukan saran.
 5. **Mobile-first.** Kebalikan dari back-office AWCMS yang desktop-first. Layout dirancang dari 360px ke atas.
 6. **Tidak menyamar resmi.** Tidak memakai lambang, logo, atau atribut instansi negara. Batas ini adalah **aturan desain**, bukan sekadar kepatuhan.
@@ -135,6 +135,7 @@ Kolom terakhir menunjukkan padanan yang harus dituju saat integrasi, agar kompon
 | `FaqAccordion` | Accordion `<details>` + JSON-LD `FAQPage` | Tanpa JavaScript | Accordion |
 | `DisclaimerNote` | Tiga varian: footer, umum, peringatan | Peringatan kanal resmi wajib di halaman penindakan | `ActionBanner` |
 | `ShareButtons` | Bagikan ke kanal sosial + salin tautan | **Tanpa SDK/widget/piksel** | — (khas awcms-astro) |
+| `PanelAksesibilitas` | Panel preferensi baca: tombol melayang dan dialog non-modal (ukuran teks, kontras, monokrom, teks ramah disleksia, penekanan tautan, kurangi gerakan) | Dirender `BaseLayout`, jadi setiap halaman memilikinya; **pilihan tampilan yang disimpan di perangkat pembaca, bukan overlay** ([ADR-0055](../adr/0055-reading-preferences-are-a-native-same-origin-panel-not-an-overlay-widget.id.md)). Lihat §Preferensi baca | — (khas awcms-astro) |
 | `Ilustrasi` | Bingkai gambar bertoken | `src: undefined` adalah keadaan yang DIDUKUNG — ia merender `.visual-placeholder`, bukan bingkai setinggi nol | — (khas awcms-astro) |
 | `LangFlag`, `TabNav`, `Breadcrumb`, `TranslationNotice` | Lihat baris di atasnya masing-masing | — | — |
 
@@ -196,6 +197,7 @@ Gerbang yang sama lalu mencatat apa yang masih salah dan tidak diperbaiki di sin
 | Seluruh badan artikel — syarat, langkah, biaya, dasar hukum | Terender penuh; ia HTML statis, bukan hasil render klien |
 | Tema | Mengikuti `prefers-color-scheme` |
 | Tombol salin tautan | **Disembunyikan** — tombol yang diam saat diklik lebih buruk daripada tombol yang tidak ada |
+| Tombol preferensi baca | **Disembunyikan** karena alasan yang sama; media query OS `prefers-contrast: more` dan `prefers-reduced-motion: reduce` tetap berlaku lewat CSS |
 
 ### Aksesibilitas
 
@@ -204,12 +206,42 @@ Gerbang yang sama lalu mencatat apa yang masih salah dan tidak diperbaiki di sin
 - `aria-current` pada navigasi dan pengalih bahasa.
 - Status yang berubah diumumkan lewat `role="status"` + `aria-live="polite"`.
 - Tabel memakai `th` dengan `scope` benar.
-- `prefers-reduced-motion: reduce` dihormati.
+- `prefers-reduced-motion: reduce` dihormati, dan pembaca juga bisa mematikan (atau menyalakan kembali) gerakan di panel preferensi baca.
 - Badan konten yang jatuh ke locale default membawa atribut `lang` yang benar, supaya pembaca layar melafalkannya dengan aturan yang tepat.
 
-Targetnya **WCAG 2.1 AA** untuk permukaan publik dan **WCAG 2.2 AA** untuk setiap permukaan TERAUTENTIKASI bila ia kelak ada — bukan hanya Jualanku ([ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md)), melainkan juga permukaan admin USER yang sebuah situs nyatakan lewat `permukaanAdmin` ([ADR-0034](../adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md)). Keduanya membawa kontrol, formulir, dan fokus yang berpindah; itu yang menentukan targetnya, bukan nama permukaannya. Dua kriteria 2.2 yang paling mungkin menggigit lebih dulu di antarmuka mana pun yang membawa kontrol: **2.4.11 Focus Not Obscured** dan **2.5.8 Target Size (Minimum)** — yang kedua sudah dipenuhi di sini lewat aturan target sentuh 44px di atas, yang pertama belum pernah diuji karena repo ini belum punya elemen melayang mana pun.
+Targetnya **WCAG 2.2 AA** untuk permukaan publik dan untuk setiap permukaan TERAUTENTIKASI bila ia kelak ada (halaman publik sebelumnya 2.1 AA, sampai 19 November 2026, issue #179) — bukan hanya Jualanku ([ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md)), melainkan juga permukaan admin USER yang sebuah situs nyatakan lewat `permukaanAdmin` ([ADR-0034](../adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md)). Keduanya membawa kontrol, formulir, dan fokus yang berpindah, itulah sebabnya kriteria 2.2 di bawah paling penting di sana. Dua kriteria 2.2 yang paling mungkin menggigit lebih dulu di antarmuka mana pun yang membawa kontrol: **2.4.11 Focus Not Obscured** dan **2.5.8 Target Size (Minimum)** — yang kedua sudah dipenuhi di sini lewat aturan target sentuh 44px di atas, yang pertama **belum diuji di browser**, dan kini ada yang bisa diuji: tombol preferensi baca adalah elemen tetap di inline-start bawah setiap halaman (§Preferensi baca). Apakah ia bisa menutupi kontrol yang sedang fokus belum diperiksa, dan butuh uji browser yang belum dimiliki repo ini (tindak lanjut ADR-0055).
 
 Kontras token warna di repo ini **belum pernah diaudit terukur** (lihat peringatan di §Gap terhadap kosakata AWCMS). Itu satu-satunya butir WCAG di dokumen ini yang tidak bisa dijawab "sudah" — dan ia ditulis begitu alih-alih dibiarkan tampak terjaga.
+
+### Preferensi baca
+
+Tombol melayang di inline-start bawah membuka dialog kecil non-modal tempat pembaca menyetel pilihan tampilan yang disimpan **di perangkatnya sendiri** dan tidak dikirim ke mana pun ([ADR-0055](../adr/0055-reading-preferences-are-a-native-same-origin-panel-not-an-overlay-widget.id.md)). Ia bukan overlay aksesibilitas: ia tidak pernah menulis ulang konten, menyuntikkan ARIA, menyatakan halaman memenuhi suatu standar, atau memuat kode pihak ketiga. Halaman harus memenuhi WCAG lewat markup-nya sendiri; panel ini pelengkap.
+
+```mermaid
+flowchart LR
+  Store["localStorage 'awcms-a11y'"] --> Early["public/aksesibilitas.js — berkas klasik, sebelum paint"]
+  OS["prefers-contrast / prefers-reduced-motion"] --> Early
+  Early --> Attr["data-a11y-* pada <html>"]
+  Panel["PanelAksesibilitas — modul ter-bundel"] --> Attr
+  Panel --> Store
+  Attr --> CSS["src/styles/aksesibilitas.css"]
+  CSS --> UI["Setiap komponen"]
+```
+
+| Preferensi | Atribut pada `<html>` | Efek |
+| --- | --- | --- |
+| Ukuran teks | `data-a11y-text="large"` atau `"x-large"` | Ukuran font akar 120 % atau 140 %; setiap `rem` mengikuti |
+| Kontras tinggi | `data-a11y-contrast` | Token warna diganti palet dengan teks 7:1 atau lebih, di kedua tema; garis tepi pekat; latar pekat pada hero. **Tidak diterapkan di bawah `forced-colors: active`** |
+| Monokrom | `data-a11y-mono` | `filter: grayscale(1)` hanya pada `<html>` — filter pada elemen lain menjadikannya containing block bagi turunan `position: fixed` dan tombolnya ikut tergulir |
+| Teks ramah disleksia | `data-a11y-dyslexia` | Sans sistem polos, spasi teks WCAG 1.4.12, tanpa teks rata kanan-kiri. Tanpa "font disleksia" yang dibundel: studi terkontrol tidak menemukan manfaat baca darinya |
+| Garis bawah semua tautan / Sorot tautan | `data-a11y-underline` / `data-a11y-highlight` | Setiap `a[href]` bergaris bawah / berlatar kuning dengan teks nyaris hitam |
+| Kurangi gerakan | `data-a11y-motion="reduce"` | Animasi dan transisi dimatikan, bukan dipercepat |
+
+- **Preferensi OS adalah bawaannya.** Tanpa nilai tersimpan, kontras dan gerakan mengikuti `prefers-contrast: more` dan `prefers-reduced-motion: reduce`; pilihan tersimpan menang, termasuk "mati".
+- **Tanpa JavaScript** tombolnya tetap tersembunyi. `data-a11y-ready` pada `<html>` menandai skrip awal sudah jalan; media query berlaku sendiri hanya selama penanda itu belum ada.
+- **Fitur gerak baru wajib patuh pada panel.** Apa pun yang beranimasi, menggulir sendiri, atau memutar otomatis harus berhenti di bawah `data-a11y-motion="reduce"` dan mendengarkan event `awcms-a11y-change` pada `document` (`detail` berisi preferensi yang berlaku). Template ini belum punya fitur seperti itu.
+- **Yang belum terbukti.** Penanganan fokus panel (Esc, klik di luar, kembali ke tombol) dan kontrasnya saat panel terbuka dirancang untuk WCAG 2.2 AA dan dicoba **sekali secara manual** di Chromium dengan axe-core (tanpa pelanggaran pada simpul panel mana pun, tanpa gulir horizontal di 360 px dengan teks sangat besar), tetapi **perpindahan fokus dan ketahanannya setelah muat ulang belum diotomasi**; uji kegunaan dengan pembaca sungguhan tidak dijalankan di repo upstream ini (keputusan pemilik 2026-11-19, amandemen ADR-0055), melainkan di UAT tiap situs turunan. Celah otomasi itu tindak lanjut di ADR-0055. Yang **sudah** diotomasi sejak 19 November 2026 ([ADR-0056](../adr/0056-accessibility-is-gated-by-axe-in-a-real-browser-with-no-exceptions.id.md)): axe-core di Chromium sungguhan (`bun run test:a11y`, di dalam `Check`) menjalankan tag WCAG 2.2 AA atas setiap jenis halaman publik, kedua tema, tiap mode di atas sendirian dan semuanya sekaligus, panel terbuka, dan 360 px dengan semuanya menyala — pelanggaran apa pun menggagalkan, tanpa pengecualian. Itu hanya menemukan yang bisa dilihat axe; bukan klaim kepatuhan.
+- **Tempatnya.** Logika murni `src/lib/aksesibilitas.ts` (diuji unit), salinan awal `public/aksesibilitas.js` (diuji paritas terhadapnya), stylesheet `src/styles/aksesibilitas.css` (dimuat setelah `global.css`), komponen `src/components/PanelAksesibilitas.astro`, dan `tests/aksesibilitas.test.mjs`.
 
 ### Kilau hover — standar interaksi
 

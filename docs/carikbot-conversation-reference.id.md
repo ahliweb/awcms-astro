@@ -1,112 +1,93 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](carikbot-conversation-reference.md)
 
-<!-- i18n-source-hash: sha256:1973d91266838f5f20b6b4f58f23a9fb4d9cc44877b3c0becc6f862c391b99a9 -->
+<!-- i18n-source-hash: sha256:9201053da6237c039abadacfa72c068c5fad157f1ef59912492e6b4d590ec44c -->
 
-# Referensi Konsep CarikBot — Percakapan, Layanan, dan Batas Arsitektur
+# Referensi CarikBot — UI Percakapan Aman Netral-Kanal
 
-**Versi dokumen:** v1.0.0 · **Terakhir diperbarui:** 2026-11-10 · **Status:** riset F0, usulan, bukan fitur terimplementasi atau rilis.
-**Document changeset:** Adaptasi konseptual CarikBot tanpa porting kode, dilengkapi batas kewenangan, keamanan, contoh, dan syarat implementasi.
+**Versi dokumen** v1.1.0 | **Tanggal** 2026-11-20 | **Status** Referensi desain F0, riset saja; tidak menyiratkan kode runtime, API yang sudah rilis, atau paritas platform. Setiap disposisi adopsi adalah **usulan** sampai gerbang 9 lolos di repositori ini.
+**Changeset** Disegarkan terhadap `main` per 2026-11-20: admin USER dan BFF dinyatakan PLANNED, urutan diselaraskan dengan ADR-0057 (Proposed), CSP dan aksesibilitas dikaitkan ke ADR-0019 dan ADR-0056, status isu hulu dinyatakan, penempatan UAT dinyatakan.
 
-## Bukti dan riwayat teknis
-Carik memakai arsitektur chatbot berbasis intent/entity/handler dan dokumentasinya mengaitkan Carik Engine dengan SimpleBOT, SimpleAI, FastPlaz dan Free Pascal. [CarikBot/ecosystem](https://github.com/CarikBot/ecosystem) menunjukkan katalog paket, alur menu berbasis XMind/Freemind yang diubah menjadi JSON, service API dan respons teks/menu/tombol/formulir. Konsep yang dipelajari **tidak membuktikan** seluruh implementasi masih aktif atau berjalan pada penyedia kanal saat ini.
+## Rujukan terverifikasi dan batasannya
+[Ekosistem CarikBot](https://github.com/CarikBot/ecosystem) menggambarkan pohon interaksi dari mind-map ke JSON, manifes kategori/paket, dan respons generik teks/menu/tombol/formulir. [Spesifikasi API](https://github.com/CarikBot/ecosystem/blob/main/docs/api-structure.md)-nya memuat metadata kanal/pengguna, callback aksi, dan penangan formulir. [Engine Carik](https://github.com/luridarmawan/Carik) menggambarkan SimpleBOT/SimpleAI lama, FastPlaz, dan penangan Pascal. Manifes npm ekosistem menyatakan MIT, tetapi [LICENSE.txt](https://github.com/luridarmawan/Carik/blob/master/LICENSE.txt) engine tidak memberi izin eksplisit untuk memakai ulang kode engine. **Ambil ide arsitektur saja**; jangan mengimpor kode atau mengasumsikan kompatibilitas operasional. Skrip uji ekosistem hanya placeholder, sehingga tidak ada paritas kualitas yang diaudit. Fakta-fakta ini dibaca ulang terhadap repositori hulu pada 2026-11-20 dan masih berlaku; ini snapshot bertanggal, jadi periksa ulang sebelum mengandalkannya kemudian.
 
-Referensi primer:
-- [Carik Engine dan persyaratan build](https://github.com/luridarmawan/Carik/blob/master/README.md).
-- [Struktur Mind Flow](https://github.com/CarikBot/ecosystem/blob/main/docs/mindmap-structure.md) dan [registrasi paket JSON](https://github.com/CarikBot/ecosystem/blob/main/data/package.json).
-- [Kontrak API dan rich response](https://github.com/CarikBot/ecosystem/blob/main/docs/api-structure.md), [webhook](https://github.com/CarikBot/ecosystem/blob/main/docs/webhook.md) dan [push message](https://github.com/CarikBot/ecosystem/blob/main/docs/api-push-message.md).
-- [ecosystem/package.json](https://github.com/CarikBot/ecosystem/blob/main/package.json) menyebut MIT tetapi skrip test hanya placeholder gagal; [Carik/LICENSE.txt](https://github.com/luridarmawan/Carik/blob/master/LICENSE.txt) tidak memberikan izin eksplisit untuk menggunakan, memodifikasi atau mendistribusikan kode. **Dilarang menyalin source tanpa izin memadai.**
+## Kontrak kandidat, belum diimplementasikan
+- Response.kind: text | choice | typed_form | handoff | status; dapat memuat teks yang disetujui dan padanan aksesibilitasnya.
+- Sebuah choice memuat label yang terbaca manusia dan **token transisi opaque, bertanda tangan, berumur pendek**, tidak pernah perintah bot mentah atau URL provider.
+- Form digerakkan oleh JSON Schema ber-versi milik server; validasi input juga dilakukan di sisi server; consent dan pembatalan eksplisit.
+- Pemeta kapabilitas provider memilih tombol, daftar, tautan, atau fallback teks bernomor, dan tidak pernah menyatakan sebuah provider mendukung suatu elemen berdasarkan antarmuka provider lain.
+- Baca/tulis domain HARUS berupa operasi bernama yang terautentikasi lewat API backend kanonis yang sudah ada. UI klien/provider tidak dapat memberi akses, membuat mutasi pembayaran, atau mengirim kampanye sendiri.
+- Saran yang dihasilkan AI hanyalah draf tidak tepercaya. Persetujuan manusia / kebijakan risiko-rendah yang disetujui lebih dulu dan otorisasi provider+consent yang segar tetap wajib sebelum pesan keluar apa pun.
+- Semua konten di-escape, rendering HTML dibatasi, dan tautan tidak tepercaya divalidasi. Tidak ada POST ke URL callback sembarang/SSRF.
+- Tidak ada lintas-tenant, rahasia, kata sandi, SQL mentah, bearer token provider, .env, cookie sesi, atau isi percakapan tanpa masking di log, konteks alat, telemetri, atau tangkapan layar.
 
-## Keputusan dasar
-- **REUSE:** AWCMS sebagai penguasa bisnis, tenant, RBAC/ABAC/RLS, persetujuan, audit dan adapter pengiriman resmi; Hermes sebagai agent runtime/inference/channel yang benar-benar didukung; OMES sebagai pengelola dan verifikator host.
-- **ADAPT:** alur percakapan deklaratif ber-versi, katalog kapabilitas, pilihan menu, tombol/formulir bertipe, fallback dan handoff manusia yang tetap memanggil operasi domain terotorisasi.
-- **DEFER:** editor visual, marketplace plugin/partner otomatis, LLM auto-reply, dan pengenalan kanal tambahan sampai lolos uji kegunaan, risiko, legal dan Gate 9.
-- **REJECT:** migrasi ke Free Pascal/FastPlaz/legacy PHP, engine bot kedua, aplikasi konsumen yang langsung membaca database, perintah mentah pada callback, URL eksternal bebas, SQL/shell agent, serta pengiriman pesan langsung oleh LLM tanpa otorisasi bisnis.
-
-## Arsitektur konseptual
-~~~
-Event masuk yang diverifikasi oleh penyedia
- -> ikat tenant, akun, thread dan aktor dari otoritas server
- -> periksa persetujuan data, otorisasi dan workflow existing
- -> state transition menu/form/handoff terkontrol
-      |-> API domain bertipe dan diaudit, atau
-      |-> Hermes untuk saran yang disanitasi (opsional)
- -> kebijakan respons dan kemampuan kanal
- -> fallback teks jika tombol/form tidak didukung
- -> existing provider sender/outbox berizin
- -> audit metadata + correlation ID + bukti delivery
-~~~
-OMES hanya mengamankan dan mengamati host secara independen; bukan proxy yang otomatis memediasi seluruh tools Hermes.
-
-Contoh **skema kandidat, bukan endpoint yang sudah ada**:
 ~~~json
 {
-  "schema_version":"1.0.0",
-  "flow_id":"helpdesk",
-  "revision":1,
-  "status":"draft",
-  "nodes":[
-    {"id":"start","kind":"choice","text":"Pilih layanan",
-      "choices":[{"label":"Bantuan","next":"human"}]},
-    {"id":"human","kind":"handoff","queue":"support"}
-  ],
-  "policy":{"max_steps":12,"ttl_seconds":600,"default_deny":true}
+  "version":"1.0.0",
+  "response":{"kind":"choice","text":"Apa yang Anda butuhkan?",
+     "choices":[{"label":"Dukungan","transition_token":"signed-opaque-ref"}]},
+  "fallback":{"kind":"text","text":"Balas 1 untuk Dukungan"},
+  "correlation_id":"uuid"
 }
 ~~~
 
-Setiap pilihan menghasilkan token transisi opaque, ditandatangani, berbatas waktu dan terikat tenant/aktor/akun/channel/revisi. Server memvalidasi ulang seluruh izin; klik di frontend bukan bukti pemberian hak akses. Flow publikasi immutable dan memiliki riwayat revisi; pembatalan, restart, deduplikasi, dan penghentian disiapkan lebih dulu. Form menggunakan definisi field bertipe dan validasi sisi server. *Rich response* tidak menjadi proxy HTML/URL tidak tepercaya.
+## Kepemilikan, tata kelola, dan status
+**Ada:** hanya perilaku yang secara eksplisit hadir di berkas repositori saat ini dan lingkungan uji yang terverifikasi yang dianggap sudah dikirim. **Diusulkan:** kontrak respons dalam referensi ini adalah kandidat, bukan skema OpenAPI yang sudah dipublikasikan. **Eksternal:** Hermes memiliki runtime agent; AWCMS memiliki catatan tenant/kanonis, persetujuan, dan kebijakan pengirim; OMES memiliki jaminan host; aplikasi turunan tidak mengambil kepemilikan kredensial provider atau sistem data bisnis baru.
 
-## Kontrak perilaku lintas kanal
-| Kemampuan | Ketentuan |
+## Ancaman dan uji negatif yang diwajibkan
+| Ancaman | Uji/penerimaan |
 |---|---|
-| Teks | Escaping output, tanpa konten rahasia dalam halaman statis/log. |
-| Pilihan | Gunakan pilihan native hanya jika didukung; fallback ke teks bernomor yang mudah dibaca. |
-| Formulir | Field string, angka, tanggal, boolean, option dan validasi; tombol batal; consent sesuai tujuan. |
-| API bisnis | Nama operation allowlist, autentikasi terbaru, tenant scope, idempotensi, audit; bukan direct SQL. |
-| Eskalasi | Petugas manusia menerima konteks minimal dan diotorisasi. |
-| AI | Hanya saran/klasifikasi; tidak berwenang mengubah status pembayaran, akun, atau mengirim broadcast. |
-| Webhook | Signature, freshness, validasi akun, anti-replay, dedup, outbox. |
-| Provider send | Izin akun/sender, template/window, rate, opt-in diperiksa kembali saat enqueue. |
+| Markup yang disuntikkan, tautan berbahaya | Escape label/respons, blokir navigasi tidak aman atau callback jarak jauh |
+| Callback provider palsu / token dipakai ulang | Tolak transisi yang tidak valid/kedaluwarsa/tidak cocok cakupannya |
+| Tenant dan akun yang salah | Otorisasi/ABAC/RLS backend yang ada menolak operasi |
+| Consent dicabut | Aksi keluar di masa depan ditolak walau draf dibuat sebelumnya |
+| Submit form ganda | Kunci idempotensi menghasilkan satu transaksi yang diterima |
+| Alur tak berujung/terlalu dalam | Kedalaman, langkah, ukuran, TTL, dan pembatalan maksimum dibatasi |
+| Kapabilitas platform tak terduga | Fallback teks yang dapat diakses; tanpa kehilangan data |
+| Injeksi alat oleh AI | Draf tidak dapat dieksekusi; allowlist alat dan persetujuan manusia/domain yang eksplisit |
+| Gangguan jaringan | Loading/retry/pembatalan aman yang eksplisit, tidak pernah sukses palsu |
+| Pencatatan data sensitif | Hanya metadata dan correlation ID; tanpa kebocoran isi pribadi |
 
-## Threat model dan pengujian wajib
-| Ancaman | Syarat mitigasi / negative test |
-|---|---|
-| Webhook palsu | Tolak signature salah, akun tidak terdaftar dan timestamp kedaluwarsa. |
-| Replay/duplikasi | Tiga event sama menghasilkan satu side effect. |
-| IDOR/tenant bocor | Percobaan akses tenant lain ditolak oleh API dan RLS. |
-| Callback injeksi | Token palsu, berlaku untuk aktor lain, dan kedaluwarsa ditolak. |
-| SSRF/URL arbitrer | Larang mengambil alamat private/metadata IP; provider destination di-allowlist. |
-| Prompt injection | Instruksi dari pesan pengguna tidak menambah izin tools atau menghapus approval. |
-| Consent ditarik | Draf boleh tersimpan sesuai aturan, tetapi pesan tidak dikirim setelah pencabutan. |
-| Log bocor PII | Nomor telepon, chat mentah, password, token dan rekam medis absen dari log host. |
-| Alur tak berakhir | Batas langkah, durasi, ukuran payload, dan pembatalan ditegakkan. |
-| Kanal tidak kompatibel | Tampilan aman beralih ke teks, tanpa status sukses palsu. |
-| Mitra eksternal kompromi | Manifest ber-versi, digest dan grant; tanpa data tenant lain. |
+## Tujuh+ perjalanan uji
+1. FAQ publik -> jawaban yang disetujui; tidak meminta data sensitif.
+2. Menu dengan tiga pilihan -> provider mendukung tombol; semua pilihan terpetakan dengan benar.
+3. Tombol tidak didukung -> fallback teks bernomor dan pilihan yang dapat diakses.
+4. Survei bertipe -> validasi, consent, pembatalan, dan kebijakan draf tersimpan.
+5. Pencarian pesanan -> akun tidak berwenang ditolak, pengguna berwenang hanya melihat status miliknya.
+6. Handoff -> hanya meneruskan konteks bercakupan yang di-consent, tidak mengirim aksi berhak istimewa.
+7. Consent pesan dicabut -> draf ditampilkan secara privat tetapi tidak pernah dikirim.
+8. Callback berbahaya -> ditolak sebelum efek samping apa pun.
+9. Lanjut di dua perangkat -> revisi dipin dan token basi ditolak.
+10. Retry jaringan -> tidak ada mutasi domain ganda.
 
-## Setidaknya delapan penerapan praktis untuk diuji
-1. FAQ publik: jawaban bersumber konten disetujui, tanpa LLM/data pribadi.
-2. Cek status pesanan: pemilik terautentikasi memperoleh data sendiri, orang lain ditolak.
-3. Form pendaftaran: validasi dan pembatalan, draft ber-TTL, consent jelas.
-4. Keluhan Borneojek: menu layanan -> tiket -> operator, tanpa akses langsung ke data order.
-5. Mitra AWOPC: penawaran layanan, reviu manifest, approval dan revocation.
-6. Pertanyaan kesehatan: informasi umum dan eskalasi, tanpa akses RME atau diagnosis otomatis.
-7. Ringkasan AI untuk petugas: input dimasking, output berupa draf, butuh persetujuan.
-8. Tombol tidak didukung provider: teks berurutan dengan petunjuk yang dapat diakses.
-9. Webhook pembayaran palsu: ditolak dan tidak mengubah status pembayaran.
-10. Kehilangan koneksi: retry aman tanpa duplikasi atau penghilangan jejak.
+## Standar desain dan syarat hukum
+WCAG 2.2 AA untuk web dan semantik aksesibilitas yang setara pada permukaan native; OWASP ASVS/API Top 10; ISO/IEC 27001, 27002, 27005, 27034, 27701, dan 42001; ISO 20000-1 dan ISO 22301 untuk keamanan/kontinuitas operasional. ISO 27017/27018 bila pemroses PII cloud publik terlibat. ISO/IEC 15408 hanya bila target evaluasi formal terpisah didefinisikan. UU 27/2022 PDP dan PP 71/2019 PSTE berlaku sesuai peran/lingkup hukum; Perpres 95/2018 SPBE dapat berlaku untuk produk pemerintah. Jangan pernah menyimpulkan kepatuhan hukum hanya karena dokumentasi mengutip sebuah standar.
 
-## Hukum, standar dan rujukan
-UU 27/2022 Pelindungan Data Pribadi, PP 71/2019 PSTE; untuk pemerintahan pertimbangkan Perpres 95/2018 SPBE sesuai ruang lingkup. ISO/IEC 27001/27002 (ISMS dan kontrol), 27005 (analisis risiko), 27017/27018 (cloud dan PII cloud), 27034 (keamanan aplikasi), 27701 (manajemen privasi), 42001 (AI management), ISO/IEC 20000-1 (layanan dan perubahan), ISO 22301 (kontinuitas), dan ISO/IEC 15408 **hanya jika** ada penilaian Common Criteria formal. Rekomendasi validasi tambahan: OWASP ASVS, OWASP API Security Top 10, OWASP LLM Top 10, NIST AI RMF. Menyebut standar tidak sama dengan sertifikasi atau kepatuhan.
+**Gerbang rilis:** standar lintas-portofolio internal mensyaratkan perencanaan pengembangan 18 langkah, Definition of Ready lintas-spesifikasi oleh manusia (langkah 9), isu/PR atomik dan uji terverifikasi, staging, lalu Go/No-Go oleh manusia (langkah 15). UAT (langkah 14) dijalankan di repositori implementasi atau proyek turunan template ini, bukan di template hulu ini (DL-059); gerbang 15 tetap berlaku di sini. Dokumen riset saja tidak mengizinkan deploy produksi.
 
-## Pelaksanaan dan pengambilan keputusan
-Alur pengembangan internal 18 tahap tetap berlaku. Kerjakan F0 riset dan PoC tertutup; sebelum implementasi produksi wajib riset pengguna/PRD, threat model dan DPIA, UX tervalidasi, skema/ABAC/RLS, domain algorithm, OpenAPI/AsyncAPI, lalu **persetujuan manusia Definition of Ready tahap 9**. Tahap 10 issue atomik, tahap 11–14 implementasi/PR/staging/UAT, **persetujuan rilis tahap 15**, dan 16–18 deploy/validasi/monitoring. Tidak mengklaim fitur telah tersedia tanpa bukti kode, tes dan deployment.
+## Batas khusus: halaman publik Astro dan admin USER yang dinyatakan
 
+**Isu pemilik:** https://github.com/ahliweb/awcms-astro/issues/166. Konteks hulu: https://github.com/ahliweb/awcms-astro/issues/127 (desain UI) dan https://github.com/ahliweb/awcms/issues/1253 (kontrak percakapan dan alur kanonis AWCMS). Keduanya isu riset/desain yang sudah ditutup; menutup isu bukan kontrak yang diterima, jadi periksa OpenAPI AWCMS terkini sebelum mengandalkan apa pun darinya. Astro adalah pengalaman web publik; admin USER dan BFF **diizinkan** oleh ADR-0034 tetapi **PLANNED, belum terimplementasi** (`permukaanAdmin` kosong dan tidak ada rute yang menyetel `prerender = false`; lihat [ui-contract-inventory.id.md](ui-contract-inventory.id.md) §6). Hari ini satu-satunya panggilan saat permintaan adalah tiga panggilan dari peramban (pencarian, beacon kunjungan halaman, buletin), sehingga langkah terautentikasi di bawah hanya berlaku setelah sebuah situs menyatakan admin USER. Admin SYSTEM ada di AWCMS. Tidak ada pengirim provider, engine chatbot, penyimpanan data bisnis, atau agent runtime baru di sini.
 
-## Penerapan khusus: AWCMS-Astro
+### Perjalanan pengguna yang diusulkan
+- Situs publik statis menampilkan FAQ terbit yang sudah disanitasi dan titik masuk kontak opsional, menjaga SEO, URL canonical, dan SSG bila sesuai.
+- Pengguna memilih layanan. Frontend hanya menampilkan token transisi opaque yang diterbitkan server, bukan teks aksi sembarang.
+- Operasi terautentikasi memakai API/BFF resmi yang ada dengan validasi permintaan, proteksi CSRF/Origin bila berlaku, dan kredensial berumur pendek; tidak ada rahasia API di bundle.
+- Server mengembalikan respons bertipe dengan kebijakan kedaluwarsa/consent yang eksplisit. Astro meng-escape keluaran dan memeriksa CSP serta aksesibilitas.
+- Bila interaksi memerlukan provider atau petugas dukungan, kebijakan backend yang melakukan penugasan/pengiriman; Astro hanya menampilkan status yang berwenang.
 
-**Issue:** https://github.com/ahliweb/awcms-astro/issues/166. Astro hanya frontend website publik dan admin USER terdeklarasi, tidak memiliki SYSTEM admin maupun provider sender. Kontrak percakapan harus datang dari API AWCMS yang telah disetujui. Gunakan SSG untuk konten publik jika sesuai; authenticated actions memakai backend/BFF dengan validasi, CSP, perlindungan CSRF/Origin sesuai moda sesi dan output escaping.
+### Penerimaan khusus Astro
+1. Konten SSG tetap dapat dirayapi; tidak ada penulisan ulang paksa menjadi SPA.
+2. Akses admin USER yang terautentikasi tetap dibatasi sesi dan tidak menjadi admin SYSTEM.
+3. CSP dan rendering tautan mencegah XSS/navigasi tidak aman dari teks model/pengguna. CSP ketat yang dikirim penyaji ([ADR-0019](adr/0019-csp-ketat-dikirim-penyaji.id.md)) tidak dilonggarkan, dan tidak ada widget overlay atau chat pihak ketiga yang dimuat.
+4. Perilaku keyboard, pembaca layar, fokus, galat form, dan responsif seluler diuji. Bukti aksesibilitas adalah gerbang axe di peramban sungguhan tanpa pengecualian dan dengan versi dipin ([ADR-0056](adr/0056-accessibility-is-gated-by-axe-in-a-real-browser-with-no-exceptions.id.md)).
+5. Opt-out dan kebijakan retensi ditampilkan saat pengiriman form.
+6. Tidak ada bearer token provider, rahasia, atau data kotak masuk privat di HTML yang dirender/payload statis.
+7. Kapabilitas backend yang sebenarnya diverifikasi lewat OpenAPI dan uji negatif; endpoint yang tidak dikenal didokumentasikan sebagai direncanakan.
+8. Web Push/SSE/WS tidak menggantikan tanda terima pengiriman provider yang sebenarnya.
 
-**Contoh:** FAQ publik, pilihan menu mobile, formulir berconsent, handoff petugas, error state, retry tanpa double-submit, dan fallback jika tombol provider tidak tersedia. Jangan memuat secrets/inbox tenant pada HTML statis atau menjalankan Hermes langsung dari browser. Uji aksesibilitas WCAG 2.2, SEO, keyboard, screen reader, responsive, CSP serta pemisahan admin USER/SISTEM.
+### Keluaran yang diusulkan
+Sebuah wireframe, prototipe renderer UI bertipe minimal (setelah persetujuan), rangkaian kontrak mock, dan matriks uji untuk peramban seluler/desktop. Urutan mengikuti [ADR-0057](adr/0057-awcms-first-orders-ownership-and-contract-not-code-and-three-gates-separate-design-mock-and-release.id.md), yang berstatus **Proposed**, belum keputusan: gerbang A kesiapan desain, gerbang B build terhadap mock yang dihasilkan dari kontrak, gerbang C integrasi dan rilis terhadap backend nyata; mock tidak pernah menggantikan gerbang C. Implementasi penuh ditunda sampai kontrak AWCMS hulu dan DoR disetujui. Tidak ada runtime situs publik yang memanggil Hermes secara langsung.
 
 ## Changelog
-### v1.0.0 (2026-11-10)
-Kajian awal referensi CarikBot; belum mengubah runtime produk.
+- v1.1.0 (2026-11-20): Diverifikasi ulang terhadap `main` dan repositori hulu; admin USER dan BFF dinyatakan PLANNED, isu hulu dicatat sudah ditutup (bukan kontrak yang diterima), batas ADR-0019, ADR-0056, dan ADR-0057 ditambahkan, penempatan UAT dinyatakan; tanpa perubahan runtime.
+- v1.0.0 (2026-11-10): Lingkup riset, kontrak kandidat, ancaman, penerimaan; tanpa perubahan runtime.

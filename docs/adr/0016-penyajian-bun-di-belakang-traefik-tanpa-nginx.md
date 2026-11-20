@@ -6,6 +6,9 @@
 - **Date:** 31 July 2026
 - **Amends:** [ADR-0015](0015-runtime-bun-menutup-divergence-keluarga.md) §7
   (the "the runtime stage stays unprivileged nginx for as long as the output is static" exception)
+- **Amended by:** [ADR-0054](0054-html-gets-a-shared-cache-lifetime-and-every-deploy-purges-the-cdn.md)
+  (HTML now also carries `s-maxage=300` for shared caches, with a CDN purge on
+  every deploy; browsers still revalidate, and `/_astro/` is unchanged)
 - **Related:** [ADR-0014](0014-rendering-campuran-dan-bff-portal.md) (the adapter for
   on-demand routes), [`docs/deploy-coolify.md`](../deploy-coolify.md)
 

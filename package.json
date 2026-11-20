@@ -1,7 +1,7 @@
 {
   "name": "awcms-astro",
   "type": "module",
-  "version": "0.6.3",
+  "version": "0.7.0",
   "private": false,
   "description": "AWCMS family template for public static sites on Astro, integrated with ahliweb/awcms as its content backend.",
   "homepage": "https://github.com/ahliweb/awcms-astro",
@@ -34,7 +34,9 @@
     "knowledge:obsidian:export": "bun scripts/knowledge-obsidian-export.mjs",
     "knowledge:check": "bun run audit:graf",
     "test": "bun test",
+    "test:a11y": "bun e2e/jalankan.mjs",
     "serve": "bun dist/server/penyaji.mjs",
+    "purge:cdn": "bun server/purge-cdn.mjs",
     "start": "bun run serve",
     "preview": "bun run serve",
     "release": "bun scripts/rilis.mjs",
@@ -50,13 +52,15 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.9.12",
-    "@astrojs/node": "^11.1.11",
+    "@astrojs/node": "^11.1.13",
     "@astrojs/sitemap": "^3.7.4",
     "astro": "^7.4.7",
     "compression": "^1.8.2",
     "typescript": "^6.0.3"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@playwright/test": "1.65.0",
     "@types/bun": "^1.4.4"
   }
 }

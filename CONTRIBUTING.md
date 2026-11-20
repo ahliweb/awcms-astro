@@ -107,7 +107,7 @@ The full detail and the reasoning for each is in [`AGENTS.md`](AGENTS.md). The o
 - **A build token is never prefixed `PUBLIC_`.** Astro injects variables with that prefix into the client output.
 - **One site's identity may not enter the code.** Its place is `src/config/site.ts` and `.env`.
 - **Interface strings go through the PO catalogue**, including labels that come from configuration. A key assembled from configuration or editorial data must be called with a readable fallback argument — the end of the `t()` chain is the KEY NAME, and a key name on screen is not a readable page.
-- **Every core function works without JavaScript**, and WCAG 2.1 AA accessibility is a floor, not a target.
+- **Every core function works without JavaScript**, and WCAG 2.2 AA accessibility is a floor, not a target.
 - **Do not advertise an asset this build does not publish.** `og:image` and `ImageObject` are claims; a claim pointing at a 404 is worse than an absent tag.
 - Forbidden: third-party scripts, collecting readers' personal data, the emblems or logos of state institutions (including inside illustrations), and mocked-up government documents or application interfaces.
 

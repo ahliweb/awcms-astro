@@ -2,11 +2,11 @@
 
 # CarikBot Reference — Safe Channel-Neutral Conversation UI
 
-**Document version** v1.0.0 | **Date** 2026-11-10 | **Status** F0 design reference; no runtime code, shipped API or platform parity implied.
-**Changeset** Research CarikBot menu/form/intent concepts for the product's presentation boundary, with explicit status, legal constraints, security and tests.
+**Document version** v1.1.0 | **Date** 2026-11-20 | **Status** F0 design reference, research only; no runtime code, shipped API or platform parity implied. Every adoption disposition is a **proposal** until gate 9 passes in this repository.
+**Changeset** Brought current with `main` as of 2026-11-20: USER admin and BFF stated as PLANNED, ordering aligned with ADR-0057 (Proposed), CSP and accessibility tied to ADR-0019 and ADR-0056, upstream issue status stated, UAT placement stated.
 
 ## Verified reference and limits
-[CarikBot ecosystem](https://github.com/CarikBot/ecosystem) describes a mind-map-to-JSON interaction tree, category/package manifests, and generic text/menu/button/form responses. The [API specification](https://github.com/CarikBot/ecosystem/blob/main/docs/api-structure.md) includes channel/user metadata, action callbacks and form handlers. [Carik engine](https://github.com/luridarmawan/Carik) describes older SimpleBOT/SimpleAI, FastPlaz and Pascal handlers. The ecosystem's npm manifest advertises MIT but the engine's [LICENSE.txt](https://github.com/luridarmawan/Carik/blob/master/LICENSE.txt) gives no explicit permission to reuse engine code. **Take architecture ideas only**; do not import code or assume operational compatibility. The ecosystem test script is a placeholder, so there is no audited quality parity.
+[CarikBot ecosystem](https://github.com/CarikBot/ecosystem) describes a mind-map-to-JSON interaction tree, category/package manifests, and generic text/menu/button/form responses. The [API specification](https://github.com/CarikBot/ecosystem/blob/main/docs/api-structure.md) includes channel/user metadata, action callbacks and form handlers. [Carik engine](https://github.com/luridarmawan/Carik) describes older SimpleBOT/SimpleAI, FastPlaz and Pascal handlers. The ecosystem's npm manifest advertises MIT but the engine's [LICENSE.txt](https://github.com/luridarmawan/Carik/blob/master/LICENSE.txt) gives no explicit permission to reuse engine code. **Take architecture ideas only**; do not import code or assume operational compatibility. The ecosystem test script is a placeholder, so there is no audited quality parity. These facts were re-read against the upstream repositories on 2026-11-20 and still hold; they are a dated snapshot, so re-check before relying on them later.
 
 ## Candidate contract, not implemented
 - Response.kind: text | choice | typed_form | handoff | status; may include approved text and an accessibility equivalent.
@@ -60,12 +60,11 @@
 ## Design standards and legal conditions
 WCAG 2.2 AA for web and equivalent accessibility semantics on native surfaces; OWASP ASVS/API Top 10; ISO/IEC 27001, 27002, 27005, 27034, 27701 and 42001; ISO 20000-1 and ISO 22301 for operational safety/continuity. ISO 27017/27018 where public-cloud PII processors are involved. ISO/IEC 15408 only if a separate formal evaluation target is defined. Indonesian UU 27/2022 PDP and PP 71/2019 PSTE apply subject to legal role/scope; Perpres 95/2018 SPBE may apply to government products. Never infer legal compliance merely because documentation cites a standard.
 
-**Release gate:** the internal cross-portfolio standard requires 18-step development planning, a human cross-spec Definition of Ready (step 9), atomic issue/PR and verified tests, staging and UAT, then human Go/No-Go (step 15). Research docs alone do not authorize production deployment.
-
+**Release gate:** the internal cross-portfolio standard requires 18-step development planning, a human cross-spec Definition of Ready (step 9), atomic issue/PR and verified tests, staging, then human Go/No-Go (step 15). UAT (step 14) runs in the implementation or project repositories derived from this template, not in this upstream template (DL-059); gate 15 still applies here. Research docs alone do not authorize production deployment.
 
 ## Specific boundary: Astro public pages and declared USER admin
 
-**Owning issue:** https://github.com/ahliweb/awcms-astro/issues/166. Upstream context: https://github.com/ahliweb/awcms-astro/issues/127 (UI design) and https://github.com/ahliweb/awcms/issues/1253 (AWCMS canonical conversation and flow contract). Astro remains the public/USER-admin web/BFF experience; SYSTEM admin lives in AWCMS. No new provider sender, chatbot engine, business data store or runtime agent here.
+**Owning issue:** https://github.com/ahliweb/awcms-astro/issues/166. Upstream context: https://github.com/ahliweb/awcms-astro/issues/127 (UI design) and https://github.com/ahliweb/awcms/issues/1253 (AWCMS canonical conversation and flow contract). Both are closed research/design issues; closing an issue is not an accepted contract, so check the current AWCMS OpenAPI before relying on anything from them. Astro is the public web experience; a USER admin and a BFF are **allowed** by ADR-0034 but **PLANNED, not implemented** (`permukaanAdmin` is empty and no route sets `prerender = false`; see [ui-contract-inventory.md](ui-contract-inventory.md) §6). Today the only request-time calls are three browser-side ones (search, page-view beacon, newsletter), so the authenticated steps below apply only once a site declares a USER admin. SYSTEM admin lives in AWCMS. No new provider sender, chatbot engine, business data store or runtime agent here.
 
 ### Proposed user journey
 - Public static site displays sanitized published FAQ and optional contact entrypoint, preserving SEO, canonical URL and SSG where appropriate.
@@ -77,15 +76,16 @@ WCAG 2.2 AA for web and equivalent accessibility semantics on native surfaces; O
 ### Astro-specific acceptance
 1. SSG content remains crawlable; no forced SPA rewrite.
 2. Authenticated USER-admin access remains session-gated and does not become SYSTEM admin.
-3. CSP and link rendering prevent XSS/unsafe navigation from model/user text.
-4. Keyboard, screen reader, focus, form error and mobile responsive behavior tested.
+3. CSP and link rendering prevent XSS/unsafe navigation from model/user text. The strict CSP the server sends ([ADR-0019](adr/0019-csp-ketat-dikirim-penyaji.md)) is not relaxed, and no third-party overlay or chat widget is loaded.
+4. Keyboard, screen reader, focus, form error and mobile responsive behavior tested. Accessibility evidence is the axe gate in a real browser with no exceptions and a pinned version ([ADR-0056](adr/0056-accessibility-is-gated-by-axe-in-a-real-browser-with-no-exceptions.md)).
 5. Opt-out and retention policy shown at form submission.
 6. No provider bearer token, secret or private inbox data in rendered HTML/static payload.
 7. Actual backend capabilities verified by OpenAPI and negative tests; unknown endpoint is documented as planned.
 8. Web Push/SSE/WS are not substituted for actual provider delivery receipts.
 
 ### Proposed outcomes
-A wireframe, a minimal typed UI renderer prototype (after approval), mock contract suite, and a test matrix for mobile/desktop browsers. Full implementation is deferred until upstream AWCMS contract and DoR are approved. No public website runtime calls Hermes directly.
+A wireframe, a minimal typed UI renderer prototype (after approval), mock contract suite, and a test matrix for mobile/desktop browsers. Ordering follows [ADR-0057](adr/0057-awcms-first-orders-ownership-and-contract-not-code-and-three-gates-separate-design-mock-and-release.md), which is **Proposed**, not yet a decision: gate A design readiness, gate B build against a mock generated from the contract, gate C integration and release against the real backend; a mock never stands in for gate C. Full implementation is deferred until the upstream AWCMS contract and DoR are approved. No public website runtime calls Hermes directly.
 
 ## Changelog
+- v1.1.0 (2026-11-20): Re-verified against `main` and the upstream repositories; USER admin and BFF stated as PLANNED, upstream issues noted as closed (not an accepted contract), ADR-0019, ADR-0056 and ADR-0057 boundaries added, UAT placement stated; zero runtime changes.
 - v1.0.0 (2026-11-10): Research scope, candidate contract, threats, acceptance; zero runtime changes.

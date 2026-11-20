@@ -501,8 +501,12 @@ const sorotanVisual = sorotan
     transform: scale(1.03);
   }
 
+  /* Satu isian untuk KEDUA tema, dan bukan `--emerald-primary`: token itu hijau
+     terang di tema gelap (tepat untuk teks di atas hitam) sehingga teks putih
+     di atasnya hanya 2,53:1, dan di tema terang #059669 hanya 3,76:1. #047857
+     dengan teks putih 5,48:1 — di atas 4,5:1 untuk teks 12px. */
   .badge--emerald {
-    background: var(--emerald-primary);
+    background: #047857;
     color: #ffffff;
   }
 
@@ -780,6 +784,9 @@ const sorotanVisual = sorotan
     min-height: 44px;
     font-size: 0.95rem;
     font-weight: 650;
+    /* `--accent-primary` (#0284c7) hanya 3,91:1 di atas `--bg-primary` pada
+       tema terang; teks 15px berbobot 650 belum "besar" (WCAG 1.4.3). */
+    color: var(--accent-hover);
   }
 
   .kartu-tanpa-garis {
@@ -893,7 +900,10 @@ const sorotanVisual = sorotan
 
   .prinsip-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    /* `min(15rem, 100%)`, not a bare 15rem: it is a `rem`, so the reading-
+       preferences extra-large text size (ADR-0055) scales it to 336px, which
+       is wider than the 320px inner width at the 360px floor. */
+    grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
     gap: 2rem;
     margin-top: 2rem;
   }
@@ -906,7 +916,9 @@ const sorotanVisual = sorotan
     height: 2.375rem;
     border-radius: var(--radius-md);
     background: var(--accent-subtle);
-    color: var(--accent-primary);
+    /* `--accent-primary` di atas `--accent-subtle`: 3,56:1 (terang) dan 4,41:1
+       (gelap) — keduanya di bawah 4,5:1 (WCAG 1.4.3). */
+    color: var(--accent-hover);
     font-size: 0.95rem;
     font-weight: 800;
   }

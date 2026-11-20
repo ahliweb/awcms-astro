@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](AGENTS.md)
 
-<!-- i18n-source-hash: sha256:32422492c2382ea38e570e5d299399d8849fec2cb087983c9a11477129b5a2af -->
+<!-- i18n-source-hash: sha256:31c2f1b542703af1da7ec4db36ab780e81ea53f35bb67135ae975ac474c1670d -->
 
 # AGENTS.md — kontrak kerja `awcms-astro`
 
@@ -338,7 +338,7 @@ yang [ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.m
    perilaku itu — di repo ini dokumentasi adalah bagian dari produk, bukan
    pelengkap.
 6. Pekerjaan produk mengikuti alur pengembangan 18 langkah v2.0.0 milik
-   portofolio ([`ahliweb/personal-coding`, alur-pengembangan-produk](https://github.com/ahliweb/personal-coding/blob/main/docs/alur-pengembangan-produk.md),
+   portofolio (standar lintas-portofolio internal pemilik,
    diadopsi `awcms` lewat [ADR-0156](https://github.com/ahliweb/awcms/blob/main/docs/adr/0156-adopt-development-flow-v2-validated-ux-before-data-model-frontend-backend-integration-per-slice.id.md)).
    Untuk repo ini artinya: sebuah layar divisualisasikan dan diuji usabilitasnya
    (langkah 4) sebelum model data dan kontrak yang dibutuhkannya; langkah 11
@@ -348,6 +348,20 @@ yang [ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.m
    `tests/kontrak-awcms.test.mjs`, lalu E2E). Layar tanpa sumber data di kontrak
    belum siap dibangun. Otorisasi tidak pernah ditegakkan hanya di sini: `awcms`
    dan basis datanya yang memutuskan, repo ini mencerminkan.
+
+   "`awcms` dulu, selalu" (§Peran repo ini butir 4) mengurutkan **kepemilikan
+   dan kontrak**, bukan kode: tiga gerbang, bukan satu. **A, kesiapan desain** —
+   pemilik backend disebut dan kontrak disepakati di `awcms`; pekerjaan
+   frontend boleh dimulai, dan tidak ada handler, skema, atau ERD yang
+   dituntut. **B, build terhadap mock** yang dihasilkan dari kontrak itu, tidak
+   pernah ditulis tangan agar cocok dengan layar. **C, integrasi dan rilis** —
+   kapabilitas ada di `awcms`, `owner` bisa mengelolanya di sana, dan terbukti
+   terhadap backend nyata. **Mock, server tiruan, atau build hijau berbasis mock
+   tidak pernah menggantikan gerbang C**, dan tidak ada yang di sini boleh
+   menyimpan data atau jatuh kembali ke salinan saat `awcms` tidak terjangkau.
+   Ini adalah pembacaan yang diusulkan
+   [ADR-0057](docs/adr/0057-awcms-first-orders-ownership-and-contract-not-code-and-three-gates-separate-design-mock-and-release.id.md)
+   (Proposed, isu #186); ia tidak mengubah norma ADR-0034 maupun ADR-0038.
 
 ## Aturan yang tidak bisa dilanggar
 
@@ -510,12 +524,22 @@ yang [ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.m
   accordion, dan seluruh isi halaman. Yang benar-benar butuh JS disembunyikan
   saat JS mati — kontrol yang diam saat diklik lebih buruk daripada kontrol yang
   tidak ada.
-- **Aksesibilitas WCAG 2.1 AA** adalah batas, bukan target: kontras cukup di
+- **Aksesibilitas WCAG 2.2 AA** adalah batas, bukan target: kontras cukup di
   kedua tema, fokus terlihat, navigasi keyboard penuh, `prefers-reduced-motion`
   dihormati. Animasi dekoratif **dimatikan** saat itu diminta, bukan dipercepat
   — aturan `*` global hanya memangkas durasi, dan animasi 0,01 md tetap
   berkedip. Umpan balik hover juga aktif pada `:focus-visible`, sehingga
   pengguna keyboard tidak mendapat versi yang lebih miskin.
+- **Preferensi baca adalah pilihan tampilan, bukan overlay**
+  ([ADR-0055](docs/adr/0055-reading-preferences-are-a-native-same-origin-panel-not-an-overlay-widget.id.md)).
+  Setiap halaman punya panel native satu-origin (ukuran teks, kontras, monokrom,
+  teks ramah disleksia, penekanan tautan, kurangi gerakan) yang pilihannya
+  disimpan di `localStorage` dan menjadi atribut `data-a11y-*` pada `<html>`;
+  tidak ada yang dikirim ke mana pun. Jangan menambah overlay aksesibilitas
+  pihak ketiga, dan jangan membuat panel menyatakan bahwa sebuah halaman memenuhi
+  suatu standar. Fitur yang beranimasi, menggulir sendiri, atau memutar otomatis
+  harus berhenti di bawah `data-a11y-motion="reduce"` dan mendengarkan event
+  `awcms-a11y-change` pada `document`.
 - **Mobile-first dari 360px.** Padding `.container` sendiri menyisakan lebar
   bersih persis 320px pada lantai itu — sebuah track grid yang dipatok ke angka
   yang sama punya sisa nol, dan itu yang dilakukan `.grid-cards` sampai
@@ -585,7 +609,7 @@ yang [ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.m
   terlihat di `src/` sama sekali:
   1. `<script is:inline>` berisi kode. Skrip yang harus jalan sebelum paint
      pertama menjadi berkas di `public/` yang dimuat `<script src>` klasik —
-     lihat `public/tema.js`. Bundel Astro selalu `type="module"` dan modul
+     lihat `public/tema.js` dan `public/aksesibilitas.js`. Bundel Astro selalu `type="module"` dan modul
      selalu ditunda, jadi ia bukan pengganti untuk kasus itu.
   2. `<script>` biasa di komponen, yang Astro bundel lalu **sisipkan kembali**
      ke HTML bila chunk-nya lebih kecil dari `assetsInlineLimit`.
@@ -971,15 +995,17 @@ Tiga hal yang perlu dibaca sebelum menyentuh area itu:
 - **BFF tidak memutuskan apa pun yang punya konsekuensi bisnis.** Kepemilikan,
   entitlement, dan transisi status diputuskan `awcms`. Aturan yang hanya hidup di
   repo ini adalah aturan yang tidak ada.
-- **Setiap permukaan TERAUTENTIKASI bertarget WCAG 2.2 AA**, naik dari 2.1 AA di
-  atas — BFF Jualanku (ADR-0014) maupun permukaan admin USER yang sebuah situs
-  nyatakan lewat `permukaanAdmin` (ADR-0034). Yang menentukan bukan nama
-  permukaannya melainkan adanya kontrol, formulir, dan fokus yang berpindah.
-  Aturan lain di dokumen ini tetap berlaku penuh.
+- **Setiap permukaan TERAUTENTIKASI bertarget WCAG 2.2 AA** — batas yang sama
+  dengan halaman publik (dinaikkan dari 2.1 AA pada 19 November 2026, issue
+  #179; ADR-0014 lebih dulu menulis 2.2 untuk permukaan terautentikasi). Itu
+  mencakup BFF Jualanku (ADR-0014) maupun permukaan admin USER yang sebuah situs
+  nyatakan lewat `permukaanAdmin` (ADR-0034), dan yang mereka tambahkan adalah
+  kontrol, formulir, dan fokus yang berpindah. Aturan lain di dokumen ini tetap
+  berlaku penuh.
 
 ## Orchestrator & Agent (model AI)
 
-> Standar lintas-portofolio dari [`ahliweb/personal-coding`](https://github.com/ahliweb/personal-coding/blob/main/docs/tingkatan-model-ai-claude-openai.md) (docs/tingkatan-model-ai-claude-openai.md, snapshot 2026-10-28). Harga, effort, dan lini model dipelihara di sana — jangan disalin ke repo ini.
+> Standar lintas-portofolio internal tentang tingkatan model AI (snapshot 2026-10-28). Harga, effort, dan lini model dipelihara di standar internal itu — jangan disalin ke repo ini.
 
 Pekerjaan yang perlu dipecah ke beberapa agent memakai pola **orchestrator → agent**. Orchestrator memecah pekerjaan, membagi tugas, mengatur ketergantungan, lalu memeriksa dan menyatukan hasil; agent mengerjakan satu bagian yang sudah dibatasi.
 

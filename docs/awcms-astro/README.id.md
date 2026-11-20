@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:e6c47bf5b6847f8cf5851081bc5a335350599ca03c0d84b7fc379bc1a91f42cf -->
+<!-- i18n-source-hash: sha256:14f0ba6cf6eb141a76641803db91772474ad1ff7c0e0f073c51f6eaba0176016 -->
 
 # awcms-astro
 
@@ -115,6 +115,7 @@ Yang **tidak** menyimpang dan wajib diikuti: `AGENTS.md` sebagai kontrak kerja, 
 | [`integrasi-awcms.md`](integrasi-awcms.md) | Kontrak perpindahan ke pengelolaan dinamis: content model, adapter, batas tanggung jawab |
 | [`permukaan-admin-user.md`](permukaan-admin-user.md) | Peran kedua repo ini: bentuk permukaan admin USER, cara menyatakannya, apa yang berubah begitu ia menyala, dan apa yang tidak pernah boleh dibangun di sini |
 | [`checklist-repo-baru.md`](checklist-repo-baru.md) | Langkah memulai situs baru di atas standar ini |
+| [`ui-contract-inventory.md`](../ui-contract-inventory.id.md) | Laporan riset (isu #187): setiap layar yang dirender situs SSG dipetakan ke operasi `awcms`, izin, tes, beserta celah dan drift yang ditemukan, diklasifikasi VERIFIED, ASSUMED, PLANNED, atau DEFERRED |
 | [`jualanku/`](jualanku/README.md) | **Blueprint** experience layer Jualanku.info: rendering campuran, BFF, peta rute/UI, kesiapan ([ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md)) — rencana, belum diimplementasikan |
 
 ## Apa yang membuat standar ini berbeda
