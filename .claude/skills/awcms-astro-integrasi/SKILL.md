@@ -226,6 +226,28 @@ The `Dockerfile` **must** copy that file. Without it the server falls back to
 `img-src 'self'` and every article image is blocked, on an image whose build was
 green.
 
+## Order of work: ownership and contract first, not code (ADR-0057)
+
+[ADR-0057](../../../docs/adr/0057-awcms-first-orders-ownership-and-contract-not-code-and-three-gates-separate-design-mock-and-release.md)
+(Accepted 20 November 2026) reads "`awcms` first" as ordering **ownership and
+contract**, not code. It changes no norm of ADR-0034 or ADR-0038.
+
+- **Gate A, design readiness:** the backend need and owner are named and the
+  contract operations are agreed in `awcms`. Frontend work may start; no
+  handler is required.
+- **Gate B, build against a mock:** the mock is generated from the agreed
+  contract, never hand-written to fit the screen; every state is exercised.
+- **Gate C, integration and release:** the capability exists in `awcms`, the
+  `owner` screen exists there, contract tests pass on both sides, and a check
+  ran against the real backend. A mock or the stand-in `awcms` never replaces C.
+- **Merge rule for the mock stage:** frontend at the mock stage may merge to
+  `main` before gate C **only when inert**: nothing declared in
+  `permukaanAdmin` and no new surface called by the build. Otherwise it waits
+  on a branch until C.
+- Where the contract snapshot lives is decided on the `awcms` side (option C′,
+  issue awcms#1379): this repo consumes the pinned fixture package, tracked by
+  [#194](https://github.com/ahliweb/awcms-astro/issues/194).
+
 ## Before adding a fourth surface
 
 Apply the [ADR-0023](../../../docs/adr/0023-penahanan-dipersempit-pekerjaan-tanpa-awcms.md)
