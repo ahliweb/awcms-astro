@@ -23,9 +23,9 @@
 import { writeFileSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
 import {
-  MARKER_REGEX,
   computeSourceHash,
-  deriveSourcePath
+  deriveSourcePath,
+  stripMarkers
 } from "./lib/docs-i18n-checks.mjs";
 import { readFileIfPresent } from "./lib/files.mjs";
 import { gitLines, gitRun } from "./lib/git.mjs";
@@ -110,11 +110,7 @@ function withBanner(content, banner) {
  * @returns {string}
  */
 function withoutMarker(content) {
-  return content
-    .split("\n")
-    .filter((/** @type {string} */ line) => !MARKER_REGEX.test(line))
-    .join("\n")
-    .replace(/\n{3,}/g, "\n\n");
+  return stripMarkers(content);
 }
 
 /**
