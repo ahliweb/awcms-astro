@@ -159,7 +159,7 @@ Backlog candidates, each S or M and non-overlapping; none is opened as an issue 
 | Search-states test in the existing Playwright setup, with distinct `429` text and `reason` handling | M | G-04 | a UX decision on the `429` and `reason` copy |
 | ~~Apply `seoTitle`~~ (done, #195) and decide `itemsTruncated` | S each | G-05, G-06 | a decision for `itemsTruncated` only |
 | axe page list extended | S | G-08 | stand-in routes for the missing pages |
-| Contract-versus-OpenAPI check | M | G-01 | Decided: pinned fixture package from `awcms` (option C′, issue awcms#1379), backlog [#194](https://github.com/ahliweb/awcms-astro/issues/194); waits for gate 9 and the package; do not copy upstream code here |
+| Contract-versus-OpenAPI check | M | G-01 | Decided: pinned fixture package from `awcms` (option C′, `awcms` ADR-0167, issue awcms#1379), backlog [#194](https://github.com/ahliweb/awcms-astro/issues/194); waits for gate 9 and the package; do not copy upstream code here |
 | Fix D-01 to D-03 | S | D-01..03 | after PR #188 lands, to avoid editing the same lines |
 
 **Definition of ready for a new screen here:** its data source is a named operation in the spec; its permission is the one the spec names; it states what it shows for empty, error and unavailable-at-build; it names its test; and it is a consumer of an `awcms` capability that exists or whose contract is agreed upstream.
@@ -179,7 +179,7 @@ Backlog candidates, each S or M and non-overlapping; none is opened as an issue 
 
 ### 2026-11-20 - v1.1.1
 
-- G-05 marked implemented by #195 (`seoTitle` consumed, merged 2026-11-20); the follow-up row and the endpoint row updated. Findings of v1.0.0 unchanged.
+- G-05 marked implemented by #195 (`seoTitle` consumed, merged 2026-11-20); the follow-up row and the endpoint row updated. Findings of v1.0.0 unchanged. The C′ decision is now `awcms` ADR-0167 (Accepted 2026-11-20).
 
 ### 2026-11-20 - v1.1.0
 
