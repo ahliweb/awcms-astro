@@ -2,8 +2,6 @@
 
 <!-- i18n-source-hash: sha256:31cec538768e94d1000562eee7a63e593b4359e3bfc7901ec8dd29a4027eeb4f -->
 
-<!-- i18n-source-hash: sha256:placeholder -->
-
 # ADR-0057 — "`awcms` lebih dulu" mengurutkan kepemilikan dan kontrak, bukan kode, dan tiga gerbang memisahkan desain, build dengan mock, dan rilis
 
 - **Status:** Diusulkan (Proposed)
