@@ -13,7 +13,7 @@ import { seksiPunyaFeed } from '../lib/feed';
 import { jalurFeed } from '../lib/feed-seksi';
 import { tanggalPanjang, tanggalMesin, pernahDiubahSetelahTerbit } from '../lib/tanggal';
 import { getArticleVisual } from '../lib/article-images';
-import { getArticles } from '../lib/content';
+import { getArticles, judulHalamanArtikel } from '../lib/content';
 import { artikelLainnya } from '../lib/terkait';
 import { jalurArsip, termArtikel } from '../lib/arsip-taksonomi';
 import { JENIS_ARSIP, termMenurutId } from '../lib/awcms/taksonomi';
@@ -71,7 +71,7 @@ const canonicalUrl = getSiteUrl(localePath(locale, `/${data.kategori}/${slug}/`)
 // terbaca, tetapi tidak pernah diterjemahkan.
 const tabConfig = siteConfig.tabs.find((tab) => tab.slug === data.kategori);
 const tabName = t(locale, tabTitleKey(data.kategori), tabConfig?.label ?? data.kategori);
-const pageTitle = `${data.title} | ${tabName}`;
+const pageTitle = judulHalamanArtikel(data, tabName);
 
 const breadcrumbItems = [
   { name: tabName, url: localePath(locale, `/${data.kategori}/`) },

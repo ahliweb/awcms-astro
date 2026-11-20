@@ -176,6 +176,14 @@ type AwcmsBlogPost = AwcmsBlogPostSummary & {
    * build that fails.
    */
   authorByline?: string | null;
+  /**
+   * The editor-set SEO title (awcms `seoTitle`, consumed since the owner's
+   * decision of 20 November 2026, G-05 of `docs/ui-contract-inventory.md`).
+   * OPTIONAL and nullable for the same reason as `authorByline`: it rides on
+   * the full row, and an awcms that omits it, or an editor who never filled
+   * it, must still build a site, with the title it always had.
+   */
+  seoTitle?: string | null;
 };
 
 /**
@@ -213,6 +221,13 @@ export interface LocalizedArticle {
     id: string;
     data: {
       title: string;
+      /**
+       * The editor-set SEO title, or `undefined` (the article then keeps the
+       * title it always had). Read from the TRANSLATED post, like `title`: it is
+       * a title of the words on this page, so a translation never borrows the
+       * source language's.
+       */
+      seoTitle?: string;
       description: string;
       /**
        * When this post was PUBLISHED, and never a stand-in for anything else.
@@ -1035,6 +1050,9 @@ function toArticle(
       id: post.id,
       data: {
         title: post.title,
+        // Trimmed, and an all-whitespace value treated as absent, like the
+        // byline: a `<title>` of spaces would replace a good title with nothing.
+        seoTitle: post.seoTitle?.trim() || undefined,
         description: post.metaDescription ?? post.excerpt ?? "",
         publishedDate: new Date(post.publishedAt),
         updatedDate: new Date(post.updatedAt),
@@ -1328,4 +1346,23 @@ export function resetContentCacheForTests(): void {
   // test that seeds terms would otherwise hand them to the next test, which is
   // the failure mode where a suite passes in order and fails in isolation.
   resetTaksonomiCacheForTests();
+}
+
+/**
+ * The `<title>` of an article page.
+ *
+ * An editor-set SEO title (awcms `seoTitle`) wins when it has content; when it
+ * is empty, null or absent the title is what it has always been: the article
+ * title, a pipe and the section name. Kept as a pure function so the choice is
+ * testable without rendering a page.
+ *
+ * It returns PLAIN TEXT. Escaping is the template's job (`<title>{...}</title>`
+ * in `BaseLayout.astro` escapes it); escaping here too would print `&amp;`.
+ */
+export function judulHalamanArtikel(
+  data: { title: string; seoTitle?: string | null },
+  namaSeksi: string
+): string {
+  const seo = data.seoTitle?.trim();
+  return seo ? seo : `${data.title} | ${namaSeksi}`;
 }
