@@ -2,8 +2,6 @@
 
 <!-- i18n-source-hash: sha256:fa8cc007261d1f82b44798154a27fe81b2063035869f2ed179438297cd0a9e34 -->
 
-<!-- i18n-source-hash: sha256:placeholder -->
-
 # ADR-0055 — Preferensi baca adalah panel native satu-origin, bukan widget overlay
 
 - **Status:** Diterima

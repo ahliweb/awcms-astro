@@ -2,8 +2,6 @@
 
 <!-- i18n-source-hash: sha256:16bbb1cd43292abdbc52bac92eddb2ac9e5897befb0ee1f5a01e1fe4c79d9470 -->
 
-<!-- i18n-source-hash: sha256:placeholder -->
-
 # ADR-0056 — Aksesibilitas dijaga axe di peramban sungguhan, tanpa pengecualian
 
 - **Status:** Diterima

@@ -2,8 +2,6 @@
 
 <!-- i18n-source-hash: sha256:00e4906b585cd21fb7ef4f268a636da7aec40873f76e3d0467f73aac1451f7ef -->
 
-<!-- i18n-source-hash: sha256:placeholder -->
-
 # Inventaris UI, data, dan kontrak konsumen situs SSG
 
 **Laporan riset, 20 November 2026** · isu [#187](https://github.com/ahliweb/awcms-astro/issues/187). Hanya dokumentasi: tidak ada perubahan runtime, rute, dependency, endpoint, atau basis data, dan laporan ini tidak membuka isu implementasi apa pun (isu implementasi menunggu gerbang 9 dulu, di `awcms` untuk kontrak dan di sini untuk layar).
