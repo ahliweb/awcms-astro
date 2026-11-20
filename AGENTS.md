@@ -339,6 +339,19 @@ exactly what
    build. Authorisation is never enforced only here: `awcms` and its database
    decide, this repo reflects.
 
+   "`awcms` first, always" (§This repo's role item 4) orders **ownership and
+   contract**, not code: three gates, not one. **A, design readiness** — the
+   backend owner is named and the contract is agreed in `awcms`; frontend work
+   may start, and no handler, schema or ERD is required. **B, build against a
+   mock** generated from that contract, never hand-written to match the screen.
+   **C, integration and release** — the capability exists in `awcms`, `owner`
+   can manage it there, and it is proven against the real backend. **A mock, the
+   stand-in server or a mock-green build never substitutes for gate C**, and
+   nothing here may hold data or fall back to a copy when `awcms` is
+   unreachable. This is the reading proposed in
+   [ADR-0057](docs/adr/0057-awcms-first-orders-ownership-and-contract-not-code-and-three-gates-separate-design-mock-and-release.md)
+   (Proposed, issue #186); it changes no norm of ADR-0034 or ADR-0038.
+
 ## Rules that cannot be broken
 
 ### Data sources

@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](permukaan-admin-user.md)
 
-<!-- i18n-source-hash: sha256:ad5593421e7ac07fdd5a1950fc9c2d11b69a55ff22440bd8ad8cfc06e9417f45 -->
+<!-- i18n-source-hash: sha256:2ba3e4b45ca0fc76592c8a3f2839d6393552a8ad1de1e550513df14d791403eb -->
 
 # Permukaan admin USER — bentuk, prasyarat, dan batasnya
 
@@ -202,7 +202,10 @@ Bukan birokrasi. Fitur yang mendarat di sini lebih dulu adalah **fitur yang untu
 sementara tidak bisa dimatikan siapa pun** — dan "sementara" pada praktiknya
 berarti sampai seseorang mengingatnya.
 
-1. Pastikan kemampuannya sudah punya layar pengelolanya di `awcms`. Daftar layar
+1. Pastikan kemampuannya sudah punya layar pengelolanya di `awcms` — atau,
+   sebelum layar itu ada, bahwa pemilik backend-nya disebut dan layar
+   pengelolanya menjadi bagian kontrak yang disepakati pada langkah 2 (lihat
+   tiga gerbang di bawah). Daftar layar
    `/admin/*` yang tersedia hari ini ada di
    [`integrasi-awcms.md`](integrasi-awcms.md) §Layar `/admin/*` awcms.
 2. Sepakati bentuk permukaan barunya di `awcms` dan bekukan kontraknya di sana
@@ -210,6 +213,20 @@ berarti sampai seseorang mengingatnya.
    itu memang gunanya.
 3. Nyatakan `permukaanAdmin` di situsmu, lalu bangun layarnya.
 4. Tinjau ulang postur header, cache, dan aksesibilitas menurut §3.
+
+**Apa yang diurutkan oleh "dulu".** Langkah 1 dan 2 mengurutkan **kepemilikan dan
+kontrak**, bukan kode. Tiga gerbang
+([ADR-0057](../adr/0057-awcms-first-orders-ownership-and-contract-not-code-and-three-gates-separate-design-mock-and-release.id.md),
+Proposed):
+
+| Gerbang | Butuh | Mengizinkan |
+| --- | --- | --- |
+| **A. Kesiapan desain** | Pemilik backend disebut, kontrak disepakati di `awcms`, setiap state layar punya sumber data di sana, pengelolaan `owner` disebut | Pekerjaan frontend boleh dimulai; tidak ada handler atau skema yang dituntut |
+| **B. Build dengan mock** | Mock yang **dihasilkan dari** kontrak yang disepakati, tidak pernah ditulis tangan | Layar dibangun dan direview di setiap state |
+| **C. Integrasi dan rilis** | Kapabilitas ada di `awcms`, layar `owner`-nya ada, kedua sisi lolos uji kontrak, dan terbukti terhadap backend nyata | Rilis yang memaparkan fitur (langkah 3 menyatakan `permukaanAdmin` di situs yang dikirim) |
+
+Mock tidak pernah menggantikan gerbang C, tidak menyimpan data milik repo ini,
+dan tidak memutuskan izin: `awcms` yang tetap memutuskan.
 
 Satu hal yang **tidak** bisa diverifikasi mesin dari repo ini, dan karena itu
 ditulis alih-alih digerbangi: apakah kemampuan di balik permukaanmu benar-benar
