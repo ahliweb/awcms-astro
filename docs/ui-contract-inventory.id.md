@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](ui-contract-inventory.md)
 
-<!-- i18n-source-hash: sha256:479b6500a5421dee354e2c8edf568f0eb932829d88f354e0b516c76766f04f5c -->
+<!-- i18n-source-hash: sha256:f5ef81012f307e1930b7bbd9b77e54acebf44d9f17d8045547c19ab3fb2c1965 -->
 
 # Inventaris UI, data, dan kontrak konsumen situs SSG
 
@@ -63,7 +63,7 @@ Ketiga belas operasi ditemukan di spesifikasi pada SHA `awcms` di atas. "Gerbang
 
 | Operasi (metode) | Konsumen | Gerbang spesifikasi | Field yang ditawarkan spesifikasi tetapi diabaikan repo ini | Status |
 | --- | --- | --- | --- | --- |
-| `/api/v1/blog/posts` (GET) | `src/lib/content.ts` | `blog_content.posts.read` | `seoTitle`, `scheduledAt`, `unpublishAt`, `institutionIds`, `regionCode`, `redirectCapture`, `autoInternalTagLinksDisabled` | VERIFIED, lihat G-05 |
+| `/api/v1/blog/posts` (GET) | `src/lib/content.ts` | `blog_content.posts.read` | `seoTitle`, `scheduledAt`, `unpublishAt`, `institutionIds`, `regionCode`, `redirectCapture`, `autoInternalTagLinksDisabled` | VERIFIED; `seoTitle` dibaca sejak #195, lihat G-05 |
 | `/api/v1/media/objects` (GET) | `src/lib/awcms/media.ts` | `media_library.media.read` | `creditLine`, `sourceName`, `copyrightStatus`, `sizeBytes` (tipe konsumen menyimpan enam field: id, URL publik, teks alt, tipe MIME, lebar, tinggi) | VERIFIED |
 | `/api/v1/media/public-origin` (GET) | `src/lib/awcms/media.ts`, `scripts/asal-media.mjs` | `media_library.media.read` | tidak ada | VERIFIED |
 | `/api/v1/site-profile/composed` (GET) | `src/lib/awcms/profil.ts` | `site_profile.profile.read` | `updatedAt` | VERIFIED |
@@ -137,7 +137,7 @@ Tidak ada layar di §3 yang merupakan layar admin USER atau BFF, dan tidak ada b
 | G-02 | Status kegagalan `awcmsGet` selain timeout dan konfigurasi salah tidak diuji | celah | `src/lib/awcms/client.ts` | di sini |
 | G-03 | Fallback `403`/`404` untuk menu dan widget tidak diuji, terms hanya lewat teks sumber | celah | `src/lib/awcms/navigasi.ts`, `src/lib/awcms/taksonomi.ts` | di sini |
 | G-04 | Galat dan `429` pencarian tampak sama bagi pembaca, dan `reason` tidak dibaca, sehingga "kueri terlalu pendek" terbaca "tidak ada hasil" | drift, rendah | `src/components/views/HalamanCari.astro` | di sini; kontrak sudah mendefinisikan keduanya |
-| G-05 | `seoTitle` tidak pernah dibaca: `<title>` artikel adalah judulnya, sebuah tanda pipa, dan nama seksi, jadi judul SEO yang diisi editor tidak berpengaruh. Field post lain yang tak terpakai (`scheduledAt`, `unpublishAt`) adalah urusan sisi server | drift | `src/layouts/ArtikelLayout.astro` (`pageTitle`), spesifikasi `seoTitle` | **Diputuskan 2026-11-20 (pemilik): dikonsumsi.** `seoTitle` tidak kosong dari API menjadi `<title>` artikel; kosong atau tidak ada kembali ke judul plus seksi. Diimplementasikan di [#193](https://github.com/ahliweb/awcms-astro/issues/193) |
+| G-05 | `seoTitle` tidak pernah dibaca: `<title>` artikel adalah judulnya, sebuah tanda pipa, dan nama seksi, jadi judul SEO yang diisi editor tidak berpengaruh. Field post lain yang tak terpakai (`scheduledAt`, `unpublishAt`) adalah urusan sisi server | drift | `src/layouts/ArtikelLayout.astro` (`pageTitle`), spesifikasi `seoTitle` | **Diputuskan 2026-11-20 (pemilik): dikonsumsi.** `seoTitle` tidak kosong dari API menjadi `<title>` artikel; kosong atau tidak ada kembali ke judul plus seksi. Diimplementasikan oleh [#195](https://github.com/ahliweb/awcms-astro/pull/195) (menutup #193), di-merge 2026-11-20 |
 | G-06 | `itemsTruncated` pada menu tidak dibaca; menu lama di atas 200 item hanya merender 200 pertama tanpa sinyal | drift, rendah | `src/lib/awcms/navigasi.ts` | di sini |
 | G-07 | `awcms` tiruan ditulis tangan dan mencakup sembilan permintaan yang dibuat build dan halaman pencarian; ia membuktikan markup, bukan kontrak (header-nya menyatakan itu) | batas yang diketahui | `e2e/awcms-tiruan.mjs` | tidak ada; dicatat agar tak dikira mock |
 | G-08 | Daftar halaman axe tidak memuat halaman token, 404, halaman berpaginasi, dan `/en/cari/` | celah | `e2e/a11y.axe.mjs` | di sini |
@@ -159,9 +159,9 @@ Kandidat backlog, masing-masing S atau M dan tidak tumpang tindih; tidak ada yan
 | Tes status kegagalan klien (`401`, `403`, `5xx`, non-JSON, `UNREACHABLE`, `CONFIG_MISSING`) | S | G-02 | tidak ada |
 | Tes perilaku fallback `403`/`404` untuk menu, widget, terms | S | G-03 | tidak ada |
 | Tes state pencarian di setelan Playwright yang ada, dengan teks `429` tersendiri dan penanganan `reason` | M | G-04 | keputusan UX untuk teks `429` dan `reason` |
-| Terapkan `seoTitle` (diputuskan: dikonsumsi, #193) dan putuskan `itemsTruncated` | S masing-masing | G-05, G-06 | keputusan hanya untuk `itemsTruncated` |
+| ~~Terapkan `seoTitle`~~ (selesai, #195) dan putuskan `itemsTruncated` | S masing-masing | G-05, G-06 | keputusan hanya untuk `itemsTruncated` |
 | Daftar halaman axe diperluas | S | G-08 | rute tiruan untuk halaman yang kurang |
-| Pemeriksaan kontrak terhadap OpenAPI | M | G-01 | Diputuskan: paket fixture terpatok dari `awcms` (opsi C′, issue awcms#1379), backlog [#194](https://github.com/ahliweb/awcms-astro/issues/194); menunggu gerbang 9 dan paketnya; jangan menyalin kode hulu ke sini |
+| Pemeriksaan kontrak terhadap OpenAPI | M | G-01 | Diputuskan: paket fixture terpatok dari `awcms` (opsi C′, ADR-0167 `awcms`, issue awcms#1379), backlog [#194](https://github.com/ahliweb/awcms-astro/issues/194); menunggu gerbang 9 dan paketnya; jangan menyalin kode hulu ke sini |
 | Perbaiki D-01 sampai D-03 | S | D-01..03 | setelah PR #188 mendarat, agar tidak menyunting baris yang sama |
 
 **Definition of ready untuk layar baru di sini:** sumber datanya adalah operasi bernama di spesifikasi; izinnya yang disebut spesifikasi; ia menyatakan apa yang ditampilkan untuk kosong, galat, dan tak tersedia saat build; ia menyebut tesnya; dan ia konsumen kapabilitas `awcms` yang sudah ada atau yang kontraknya disepakati di hulu.
@@ -178,6 +178,10 @@ Kandidat backlog, masing-masing S atau M dan tidak tumpang tindih; tidak ada yan
 - `awcms` ADR-0156 (alur v2: inventaris data per layar dan mock yang dihasilkan), `awcms` ADR-0065 (kontrak konsumen yang dibekukan)
 
 ## Changelog
+
+### 2026-11-20 - v1.1.1
+
+- G-05 ditandai sudah diimplementasikan oleh #195 (`seoTitle` dikonsumsi, di-merge 2026-11-20); baris tindak lanjut dan baris endpoint diperbarui. Temuan v1.0.0 tidak berubah. Keputusan C′ kini ADR-0167 `awcms` (Diterima 2026-11-20).
 
 ### 2026-11-20 - v1.1.0
 
