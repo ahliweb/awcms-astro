@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](standar-teknis.md)
 
-<!-- i18n-source-hash: sha256:0115b25df9d10c66f53e260869da1a4ee7a1b8604027e1644d4220e9ea34eb50 -->
+<!-- i18n-source-hash: sha256:0c4b7933ed0ee97b1e6b445ebac061cd23ce8ac54057b8fc754aae30c7de7d3e -->
 
 # awcms-astro — Standar Teknis
 
@@ -30,7 +30,7 @@ Kata **wajib** di dokumen ini berarti pelanggarannya menggagalkan gerbang mutu, 
 | Nilai | `awcms` | repo ini | Keadaannya |
 | --- | --- | --- | --- |
 | Bun | `1.3.14` | `1.4.4` | Repo ini menaikkan pin-nya pada 5 September 2026 (ke `1.4.2`) dan lagi pada 24 Oktober 2026 (ke `1.4.4`); kolom `awcms` tidak berubah dan kini tertinggal — dijaga `tests/versi-toolchain.test.mjs` atas lima nilai di sini |
-| `astro` | `^7.2.4` | `^7.4.7` | **Repo ini DI DEPAN sejak 2 September 2026** — lima patch waktu itu, dan dua minor pada bump keamanan Oktober 2026 yang menaikkannya ke `^7.4.2` — dan arahnya yang baru: sejak 23 Agustus ia cocok persis dengan `awcms`, dan yang memisahkannya adalah Dependabot yang menaikkan repo ini sendirian. Tidak ada apa pun di sini yang bergantung pada keduanya sepakat — rentang patch `astro` tidak membawa kontrak lintas-repo — jadi selisihnya dicatat alih-alih ditutup dengan menahan patch yang bisa saja relevan bagi keamanan. `awcms` akan menutupnya lewat bump-nya sendiri. Kolom ketiga yang punya pemeriksa; **kolom ini ditulis tangan dan dibaca dari `ahliweb/awcms` pada 2 September 2026**, jadi perlakukan ia sebagai catatan yang bisa basi |
+| `astro` | `^7.2.4` | `^7.4.12` | **Repo ini DI DEPAN sejak 2 September 2026** — lima patch waktu itu, dan dua minor pada bump keamanan Oktober 2026 yang menaikkannya ke `^7.4.2` — dan arahnya yang baru: sejak 23 Agustus ia cocok persis dengan `awcms`, dan yang memisahkannya adalah Dependabot yang menaikkan repo ini sendirian. Tidak ada apa pun di sini yang bergantung pada keduanya sepakat — rentang patch `astro` tidak membawa kontrak lintas-repo — jadi selisihnya dicatat alih-alih ditutup dengan menahan patch yang bisa saja relevan bagi keamanan. `awcms` akan menutupnya lewat bump-nya sendiri. Kolom ketiga yang punya pemeriksa; **kolom ini ditulis tangan dan dibaca dari `ahliweb/awcms` pada 2 September 2026**, jadi perlakukan ia sebagai catatan yang bisa basi |
 | `@astrojs/node` | `^11.1.4` | `^11.1.13` | Sama seperti di atas; dinaikkan lagi 18 November 2026 untuk menutup GHSA-r3h5-4585-7x3w (`<=11.1.11`) |
 | `typescript` | `^7.0.2` | `^6.0.3` | **Sengaja berbeda, dan mengikat.** Pin 6.x di sini adalah syarat hidupnya gerbang `astro check` — lihat [ADR-0037](../adr/0037-pin-typescript-6-adalah-syarat-hidupnya-gerbang-astro-check.md) |
 
@@ -40,9 +40,9 @@ Potret yang ditulis tangan, diambil dengan `bun outdated` dan `bun audit --audit
 
 | Paket | Dinyatakan | Terkunci sebelum | Terkunci sesudah | Terbaru | Tindakan |
 | --- | --- | --- | --- | --- | --- |
-| `astro` | `^7.4.7` | `7.4.2` | `7.4.7` | `7.4.7` | dinaikkan 7 November 2026 (dalam rentang, tanpa major) |
+| `astro` | `^7.4.12` | `7.4.7` | `7.4.13` | `7.4.13` | dinaikkan 23 November 2026 (dalam rentang, tanpa major) |
 | `@astrojs/node` | `^11.1.13` | `11.1.11` | `11.1.13` | `11.1.13` | dinaikkan 18 November 2026 (dalam rentang, tanpa major) untuk menutup GHSA-r3h5-4585-7x3w; peer `astro ^7.2.1` terpenuhi |
-| `@astrojs/sitemap` | `^3.7.4` | `3.7.4` | `3.7.4` | `3.7.4` | tidak ada, sudah terbaru |
+| `@astrojs/sitemap` | `^3.7.5` | `3.7.4` | `3.7.6` | `3.7.6` | dinaikkan 23 November 2026 (dalam rentang, tanpa major) |
 | `@astrojs/check` | `^0.9.12` | `0.9.12` | `0.9.12` | `0.9.12` | tidak ada, sudah terbaru; peer `typescript ^5 \|\| ^6` |
 | `compression` | `^1.8.2` | `1.8.2` | `1.8.2` | `1.8.2` | tidak ada, sudah terbaru |
 | `@types/bun` | `^1.4.4` | `1.4.4` | `1.4.4` | `1.4.4` | tidak ada, sudah terbaru; sama dengan Bun yang dipin |
