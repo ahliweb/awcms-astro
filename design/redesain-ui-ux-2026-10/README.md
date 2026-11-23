@@ -19,7 +19,7 @@ python3 -m http.server 8080   # from the repository root
 
 Serve the repository root: the pages load this repo's own logo by relative
 path. [`support.js`](support.js) is a byte-identical copy of the vendor runtime
-in `ahliweb/omes` `ui/control-center/support.js`; it loads React from unpkg, so
+from an operator-side product's control-center UI; it loads React from unpkg, so
 viewing needs network access. [`canvas.json`](canvas.json) records the artboard
 layout.
 
@@ -27,7 +27,7 @@ layout.
 
 | File                                           | Screen                                                                                                                              | Interactive                       |
 | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
-| [`Main.dc.html`](Main.dc.html)                 | 00 · Analysis of awcms, awcms-one, omes and awcms-astro                                                                             | no                                |
+| [`Main.dc.html`](Main.dc.html)                 | 00 · Analysis of awcms, a consumer product, an operator-side product and awcms-astro                                               | no                                |
 | [`AstroHome.dc.html`](AstroHome.dc.html)       | Home: search in the hero, popular topics, latest panel, channel cards, highlights, principles, optional newsletter, footer          | no                                |
 | [`AstroArticle.dc.html`](AstroArticle.dc.html) | Service page: at-a-glance card, table of contents, requirements checklist, numbered steps, fee table with legal basis, FAQ, sources | native checkboxes and `<details>` |
 | [`PolaData.dc.html`](PolaData.dc.html)         | Data-page pattern shared by the family, including the two public variants below                                                     | no                                |
