@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](standar-teknis.md)
 
-<!-- i18n-source-hash: sha256:0c4b7933ed0ee97b1e6b445ebac061cd23ce8ac54057b8fc754aae30c7de7d3e -->
+<!-- i18n-source-hash: sha256:27121cbf20f159f73e4f1d08d294f0101bca7e8e73c09036d71f7fdbe0dde2a2 -->
 
 # awcms-astro — Standar Teknis
 
