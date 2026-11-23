@@ -64,7 +64,7 @@
  * active, one that is suppressed, and a host resolving to no tenant. It never
  * says which. ADR-0103 is explicit about the cost and about why it is worth it:
  * a distinguishing response turns a public endpoint into a way to ask "is this
- * person on this newsroom's list", and for a newsroom in Central Kalimantan
+ * person on this newsroom's list", and for a newsroom in a sensitive region
  * that is a question with consequences for the person being asked about.
  *
  * **So this file renders the neutral answer as-is and adds nothing.** Any

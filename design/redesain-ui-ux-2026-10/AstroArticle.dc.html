@@ -53,9 +53,9 @@ details[open]>summary .caret{transform:rotate(45deg)}
 <main>
 <div style="background: #f4f7fa; border-bottom: 1px solid #e2e8f0">
 <div style="max-width: 1200px; margin: 0 auto; padding: 32px clamp(16px, 4vw, 32px) 40px; display: flex; flex-direction: column; gap: 18px">
-<nav aria-label="Remah roti" style="font-size: 14px; color: #475569; display: flex; flex-wrap: wrap; gap: 8px"><a href="AstroHome.dc.html">Beranda</a><span aria-hidden="true">/</span><a href="#">Layanan</a><span aria-hidden="true">/</span><span aria-current="page">Perpanjangan SIM A dan C</span></nav>
-<div style="display: flex; flex-wrap: wrap; gap: 8px"><span style="font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0">Layanan</span><span style="font-size: 13px; padding: 3px 10px; border-radius: 999px; background: #ffffff; color: #334155; border: 1px solid #cbd5e1">SIM</span></div>
-<h1 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: clamp(34px, 4.6vw, 52px); line-height: 1.1; letter-spacing: -0.015em; font-weight: 700; max-width: 900px; text-wrap: balance">Perpanjangan SIM A dan C: syarat, langkah, dan biaya</h1>
+<nav aria-label="Remah roti" style="font-size: 14px; color: #475569; display: flex; flex-wrap: wrap; gap: 8px"><a href="AstroHome.dc.html">Beranda</a><span aria-hidden="true">/</span><a href="#">Layanan</a><span aria-hidden="true">/</span><span aria-current="page">Perpanjangan izin layanan</span></nav>
+<div style="display: flex; flex-wrap: wrap; gap: 8px"><span style="font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0">Layanan</span><span style="font-size: 13px; padding: 3px 10px; border-radius: 999px; background: #ffffff; color: #334155; border: 1px solid #cbd5e1">Izin</span></div>
+<h1 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: clamp(34px, 4.6vw, 52px); line-height: 1.1; letter-spacing: -0.015em; font-weight: 700; max-width: 900px; text-wrap: balance">Perpanjangan izin layanan: syarat, langkah, dan biaya</h1>
 <p style="margin: 0; font-size: 20px; color: #334155; max-width: 760px; text-wrap: pretty">Apa yang perlu dibawa, urutan di loket, dan rincian biaya beserta dasar hukumnya — dalam satu halaman.</p>
 <dl style="margin: 0; display: flex; flex-wrap: wrap; gap: 8px 28px; font-size: 14px; color: #475569">
 <div style="display: flex; gap: 6px"><dt>Ditulis oleh</dt><dd style="margin: 0; color: #0f172a; font-weight: 600">Redaksi</dd></div>
@@ -161,8 +161,8 @@ details[open]>summary .caret{transform:rotate(45deg)}
 <section id="sumber" aria-labelledby="h-sumber" style="display: flex; flex-direction: column; gap: 12px; padding: 22px 24px; border-radius: 14px; border: 1px solid #e2e8f0">
 <h2 id="h-sumber" style="margin: 0; font-size: 18px; font-weight: 700">Sumber</h2>
 <ol style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 15px; color: #334155">
-<li>Undang-Undang Nomor 22 Tahun 2009 tentang Lalu Lintas dan Angkutan Jalan — masa berlaku SIM.</li>
-<li>Peraturan Pemerintah Nomor 76 Tahun 2020 tentang jenis dan tarif PNBP di lingkungan Polri — tarif penerbitan SIM.</li>
+<li>Undang-undang contoh tentang layanan publik — masa berlaku izin.</li>
+<li>Peraturan pemerintah contoh tentang jenis dan tarif penerimaan negara bukan pajak — tarif penerbitan izin.</li>
 <li>[Pengumuman resmi unit layanan setempat] — jam layanan dan lokasi.</li>
 </ol>
 <p style="margin: 0; font-size: 14px; color: #475569">Menemukan kesalahan? <a href="#">Laporkan ke redaksi</a> — koreksi dicatat di bagian "Diperbarui".</p>
@@ -197,34 +197,34 @@ class Component extends DCLogic {
       { t: 'Ambil nomor antrean', d: 'Petugas memeriksa kelengkapan berkas. Berkas yang kurang dikembalikan, bukan ditahan.' },
       { t: 'Bayar biaya penerbitan', d: 'Di loket bank atau kanal resmi di lokasi. Simpan bukti bayar.' },
       { t: 'Foto, tanda tangan, dan sidik jari', d: 'Data biometrik direkam ulang untuk kartu baru.' },
-      { t: 'Ambil SIM baru', d: 'Periksa nama, golongan, dan tanggal berlaku sebelum meninggalkan loket.' }
+      { t: 'Ambil izin baru', d: 'Periksa nama, golongan, dan tanggal berlaku sebelum meninggalkan loket.' }
     ];
     return {
       toc: toc.map(([href, label], i) => ({ href, label, st: i === 0 ? 'color: #0369a1; font-weight: 700; background: #f0f9ff' : 'color: #334155' })),
       glance: [
-        { label: 'Masa berlaku SIM baru', value: '5 tahun' },
+        { label: 'Masa berlaku izin baru', value: '5 tahun' },
         { label: 'Waktu di lokasi', value: '± [durasi]' },
         { label: 'Perkiraan total biaya', value: 'Rp [total]' },
-        { label: 'Tempat', value: 'Unit layanan SIM / layanan keliling' }
+        { label: 'Tempat', value: 'Unit layanan izin / layanan keliling' }
       ],
       reqs: [
-        { t: 'KTP elektronik asli dan fotokopi', d: 'Nama dan alamat harus sama dengan data di SIM lama.' },
-        { t: 'SIM lama yang asli', d: 'Diajukan sebelum tanggal berlaku habis.' },
+        { t: 'KTP elektronik asli dan fotokopi', d: 'Nama dan alamat harus sama dengan data di izin lama.' },
+        { t: 'Izin lama yang asli', d: 'Diajukan sebelum tanggal berlaku habis.' },
         { t: 'Surat keterangan sehat jasmani', d: 'Dari penyedia yang ditunjuk; berlaku sesuai tanggal di surat.' },
         { t: 'Surat hasil tes psikologi', d: 'Dari penyedia yang ditunjuk.' },
         { t: '[Dokumen tambahan sesuai aturan setempat]', d: 'Diisi redaksi bila ada syarat daerah.' }
       ],
       steps: steps.map((s, i) => Object.assign({ n: String(i + 1), line: i === steps.length - 1 ? 'transparent' : '#cbd5e1' }, s)),
       fees: [
-        { item: 'Penerbitan perpanjangan SIM', cat: 'PNBP', bg: '#eff6ff', fg: '#1e40af', amt: 'Rp [nominal]', law: 'PP No. 76 Tahun 2020' },
+        { item: 'Penerbitan perpanjangan izin', cat: 'PNBP', bg: '#eff6ff', fg: '#1e40af', amt: 'Rp [nominal]', law: 'Peraturan contoh' },
         { item: 'Tes kesehatan jasmani', cat: 'Lainnya', bg: '#f1f5f9', fg: '#334155', amt: 'Rp [nominal]', law: '[tarif penyedia]' },
         { item: 'Tes psikologi', cat: 'Lainnya', bg: '#f1f5f9', fg: '#334155', amt: 'Rp [nominal]', law: '[tarif penyedia]' },
         { item: 'Asuransi pengemudi (opsional)', cat: 'Asuransi', bg: '#ecfdf5', fg: '#047857', amt: 'Rp [nominal]', law: '[penyelenggara]' }
       ],
       faq: [
-        { q: 'Bagaimana jika SIM saya sudah lewat masa berlaku?', a: '[Jawaban redaksi berdasarkan aturan yang berlaku di daerah ini, dengan rujukan.]' },
-        { q: 'Bisakah diwakilkan?', a: 'Tidak. Perekaman foto, tanda tangan, dan sidik jari harus dilakukan pemilik SIM.' },
-        { q: 'Apakah bisa di layanan keliling?', a: 'Bisa untuk perpanjangan selama SIM masih berlaku. Lihat jadwal di kanal Layanan.' },
+        { q: 'Bagaimana jika izin saya sudah lewat masa berlaku?', a: '[Jawaban redaksi berdasarkan aturan yang berlaku di daerah ini, dengan rujukan.]' },
+        { q: 'Bisakah diwakilkan?', a: 'Tidak. Perekaman foto, tanda tangan, dan sidik jari harus dilakukan pemilik izin.' },
+        { q: 'Apakah bisa di layanan keliling?', a: 'Bisa untuk perpanjangan selama izin masih berlaku. Lihat jadwal di kanal Layanan.' },
         { q: 'Berapa lama sampai kartu jadi?', a: '[Durasi menurut unit layanan setempat.]' }
       ],
       related: [

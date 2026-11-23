@@ -3,7 +3,7 @@
  *
  * Everything a deployment changes lives here or in `.env` — no other file
  * should need editing to stand up a new site. The reference implementation
- * this template was extracted from (`web-lalulintasmelayani.com`) hard-coded
+ * this template was extracted from (a client news site) hard-coded
  * its own name, tabs, and locales in this file; the point of the template is
  * that those are now inputs.
  */

@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](integrasi-awcms.md)
 
-<!-- i18n-source-hash: sha256:658693c04d6dcab08678000e8615420a71d84f4f0e4eaed99506119409aa385b -->
+<!-- i18n-source-hash: sha256:4e105e7ae438d88f1228f2f3deb08a044e9c731023f5536bba2470a760e3ef75 -->
 
 # Integrasi awcms-astro → awcms
 
@@ -145,7 +145,7 @@ Bentuk yang disarankan di `content_json`:
 
 ### Data referensi `src/data/`
 
-`wilayah-kalteng.ts` dan `unit-layanan.ts` **tidak wajib** ikut pindah. Keduanya jarang berubah dan bukan pekerjaan redaksi.
+`wilayah.ts` dan `unit-layanan.ts` **tidak wajib** ikut pindah. Keduanya jarang berubah dan bukan pekerjaan redaksi.
 
 Rekomendasi: **wilayah menjadi taxonomy term** (agar bisa difilter bersama artikel), **unit layanan tetap statis** sampai ada yang benar-benar mengelolanya dari antarmuka. Memindahkan data yang tidak ada pengelolanya hanya memindahkan tempat ia menjadi basi.
 

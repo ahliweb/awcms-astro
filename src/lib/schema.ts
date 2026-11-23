@@ -38,7 +38,7 @@ const PUBLISHER_ID = getSiteUrl('/#publisher');
  * Identitas situs, dipasang di setiap halaman.
  *
  * `Organization` di sini adalah penerbit situsnya sendiri, bukan instansi
- * layanan. Namanya nama situs dan tidak pernah nama satuan kepolisian.
+ * layanan. Namanya nama situs dan tidak pernah nama satuan instansi.
  *
  * Sejak `awcms` #596 nilainya datang dari `site_profile`, bukan dari
  * `src/config/site.ts`. Yang berubah bukan sekadar sumbernya: sebuah `logo`,
@@ -268,7 +268,7 @@ export function collectionSchema(name: string, description: string, items: Array
 }
 
 // `wilayahSchema()` pernah ada di sini: pembangun `CollectionPage` yang
-// menanamkan "Provinsi Kalimantan Tengah" dan `addressRegion` repo rujukan
+// menanamkan nama provinsi dan `addressRegion` situs rujukan
 // langsung di dalam kodenya. Tidak satu pun halaman template ini memanggilnya,
 // dan seandainya ada yang memanggil, ia akan menerbitkan klaim wilayah milik
 // situs lain. Dihapus, bukan digeneralisasi — sebuah situs yang benar-benar

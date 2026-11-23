@@ -59,7 +59,7 @@ a{color:#0369a1}a:hover{color:#075985}
 <form id="cari" role="search" style="display: flex; flex-direction: column; gap: 8px; max-width: 620px">
 <label for="q" style="font-weight: 600; font-size: 15px">Apa yang ingin Anda urus?</label>
 <div style="display: flex; gap: 8px; flex-wrap: wrap">
-<input id="q" type="search" placeholder="Contoh: perpanjang SIM, biaya balik nama" style="flex: 1 1 260px; height: 54px; padding: 0 16px; border: 1.5px solid #64748b; border-radius: 12px; font: inherit; font-size: 17px; background: #ffffff; color: #0f172a; min-width: 0">
+<input id="q" type="search" placeholder="Contoh: perpanjang izin, biaya balik nama" style="flex: 1 1 260px; height: 54px; padding: 0 16px; border: 1.5px solid #64748b; border-radius: 12px; font: inherit; font-size: 17px; background: #ffffff; color: #0f172a; min-width: 0">
 <button type="submit" style="height: 54px; padding: 0 24px; border: 0; border-radius: 12px; background: #0369a1; color: #ffffff; font: inherit; font-weight: 700; font-size: 16px; cursor: pointer; display: flex; align-items: center; gap: 8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14M21 21l-4.3-4.3"></path></svg>Cari</button>
 </div>
 </form>
@@ -126,7 +126,7 @@ a{color:#0369a1}a:hover{color:#075985}
 <article style="flex: 3 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
 <div role="img" aria-label="Ilustrasi artikel sorotan" style="aspect-ratio: 16 / 9; border-radius: 16px; background-color: #e0f2fe; background-image: repeating-linear-gradient(45deg, #bae6fd 0 2px, transparent 2px 16px); display: flex; align-items: flex-end; padding: 16px"><span style="font-size: 12px; font-weight: 600; color: #075985; background: rgba(255,255,255,.85); padding: 3px 8px; border-radius: 6px">Ilustrasi 16:9</span></div>
 <span style="display: flex; gap: 8px; font-size: 14px; color: #475569"><span style="font-weight: 600; color: #0369a1">Layanan</span><span aria-hidden="true">·</span>Diperbarui 20 Okt 2026</span>
-<h3 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 32px; line-height: 1.2; font-weight: 700"><a href="AstroArticle.dc.html" class="lk">Perpanjangan SIM A dan C: syarat, langkah, dan biaya</a></h3>
+<h3 style="margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 32px; line-height: 1.2; font-weight: 700"><a href="AstroArticle.dc.html" class="lk">Perpanjangan izin layanan: syarat, langkah, dan biaya</a></h3>
 <p style="margin: 0; color: #334155; font-size: 17px; max-width: 640px">Apa yang perlu dibawa, urutan di loket, dan rincian biaya beserta dasar hukumnya — dalam satu halaman.</p>
 </article>
 <div style="flex: 2 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
@@ -195,10 +195,10 @@ class Component extends DCLogic {
   renderVals() {
     const K = { Panduan: '#0369a1', Layanan: '#047857', Informasi: '#9a3412' };
     return {
-      topics: ['Perpanjang SIM', 'Biaya balik nama', 'Layanan keliling', 'Syarat BPKB'],
+      topics: ['Perpanjang izin', 'Biaya balik nama', 'Layanan keliling', 'Syarat BPKB'],
       latest: [
         { kanal: 'Informasi', kc: K.Informasi, date: '22 Okt 2026', title: 'Jam layanan berubah selama libur nasional' },
-        { kanal: 'Layanan', kc: K.Layanan, date: '20 Okt 2026', title: 'Perpanjangan SIM A dan C: syarat, langkah, dan biaya' },
+        { kanal: 'Layanan', kc: K.Layanan, date: '20 Okt 2026', title: 'Perpanjangan izin layanan: syarat, langkah, dan biaya' },
         { kanal: 'Panduan', kc: K.Panduan, date: '17 Okt 2026', title: 'Cara membaca rincian biaya di notice pajak' },
         { kanal: 'Panduan', kc: K.Panduan, date: '12 Okt 2026', title: 'Menyiapkan dokumen sebelum datang ke loket' }
       ],
@@ -209,7 +209,7 @@ class Component extends DCLogic {
       ],
       channels: [
         { title: 'Panduan', count: '19', desc: 'Langkah demi langkah untuk urusan yang sering ditanyakan.', tint: '#e0f2fe', line: '#bae6fd', ink: '#075985', items: ['Menyiapkan dokumen sebelum datang ke loket', 'Cara membaca rincian biaya di notice pajak', 'Mengurus kehilangan dokumen kendaraan'] },
-        { title: 'Layanan', count: '17', desc: 'Apa saja yang tersedia, syaratnya, dan berapa lama.', tint: '#ecfdf5', line: '#a7f3d0', ink: '#065f46', items: ['Perpanjangan SIM A dan C', 'Balik nama kendaraan bermotor', 'Layanan keliling dan jadwalnya'] },
+        { title: 'Layanan', count: '17', desc: 'Apa saja yang tersedia, syaratnya, dan berapa lama.', tint: '#ecfdf5', line: '#a7f3d0', ink: '#065f46', items: ['Perpanjangan izin layanan', 'Balik nama kendaraan bermotor', 'Layanan keliling dan jadwalnya'] },
         { title: 'Informasi', count: '12', desc: 'Pengumuman, perubahan aturan, dan hal yang perlu diketahui.', tint: '#fff7ed', line: '#fed7aa', ink: '#9a3412', items: ['Jam layanan berubah selama libur nasional', 'Perubahan tarif mulai tahun anggaran baru', 'Waspada calo dan tautan pembayaran palsu'] }
       ],
       featured: [

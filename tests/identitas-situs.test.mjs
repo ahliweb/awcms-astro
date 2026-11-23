@@ -137,17 +137,17 @@ describe("profil dibaca dari awcms", () => {
   test("setiap bidang sampai, dan id media diresolusi jadi objek", async () => {
     const jejak = pasangFetchTiruan({
       profil: muatan({
-        tagline: "Kabar dari Kalimantan Tengah",
-        copyrightNotice: "© 2019–2026 PT Lentera Kalteng",
+        tagline: "Kabar dari Wilayah Contoh",
+        copyrightNotice: "© 2019–2026 PT Contoh Media",
         logoMediaId: LOGO_ID,
         faviconMediaId: FAVICON_ID,
-        editorialAddress: "Jalan Yos Sudarso 1, Palangka Raya",
+        editorialAddress: "Jalan Contoh 1, Kota Contoh",
         contactEmail: "redaksi@contoh.test",
-        contactPhone: "+62 536 123456",
+        contactPhone: "+62 21 123456",
         whatsappNumber: "+62 812-3456-7890",
         socialLinks: [{ platform: "Facebook", url: "https://facebook.com/contoh" }],
-        siteName: "Lentera Kalteng",
-        organizationName: "PT Lentera Kalteng"
+        siteName: "Situs Contoh",
+        organizationName: "PT Contoh Media"
       }),
       media: new Map([
         [LOGO_ID, { publicUrl: "https://media.test/logo.png", altText: null, mimeType: "image/png", width: 400, height: 120 }],
@@ -158,7 +158,7 @@ describe("profil dibaca dari awcms", () => {
     const profil = await profilSitus();
 
     assert.equal(profil.tersedia, true);
-    assert.equal(profil.siteName, "Lentera Kalteng");
+    assert.equal(profil.siteName, "Situs Contoh");
     assert.equal(profil.logo?.publicUrl, "https://media.test/logo.png");
     assert.equal(profil.favicon?.mimeType, "image/png");
     assert.equal(profil.socialLinks.length, 1);
@@ -173,7 +173,7 @@ describe("profil dibaca dari awcms", () => {
     // gambarnya sekaligus. Sebuah situs punya paling banyak tiga berkas ini,
     // dan "operator menghapus logonya" adalah hal yang wajar terjadi.
     pasangFetchTiruan({
-      profil: muatan({ logoMediaId: LOGO_ID, siteName: "Lentera" }),
+      profil: muatan({ logoMediaId: LOGO_ID, siteName: "Contoh" }),
       media: new Map()
     });
 
@@ -181,11 +181,11 @@ describe("profil dibaca dari awcms", () => {
 
     assert.equal(profil.tersedia, true);
     assert.equal(profil.logo, null);
-    assert.equal(profil.siteName, "Lentera");
+    assert.equal(profil.siteName, "Contoh");
   });
 
   test("permintaan media TIDAK dikirim bila tidak ada satu pun id", async () => {
-    const jejak = pasangFetchTiruan({ profil: muatan({ siteName: "Lentera" }) });
+    const jejak = pasangFetchTiruan({ profil: muatan({ siteName: "Contoh" }) });
 
     await profilSitus();
 
@@ -260,7 +260,7 @@ describe("tautan sosial ditolak, bukan disanitasi", () => {
 
 describe("urutan jatuh, di satu tempat", () => {
   test("nama situs: profil menang, konfigurasi mencadangi", () => {
-    assert.equal(namaSitus({ ...KOSONG, siteName: "Lentera" }), "Lentera");
+    assert.equal(namaSitus({ ...KOSONG, siteName: "Contoh" }), "Contoh");
     // Tanpa profil ia jatuh ke `siteConfig.name`, yang di repo ini datang dari
     // `SITE_NAME` dengan bawaan template.
     assert.equal(typeof namaSitus(KOSONG), "string");
@@ -270,30 +270,30 @@ describe("urutan jatuh, di satu tempat", () => {
   test("penerbit jatuh ke nama situs, bukan ke null", () => {
     // Penerbit bernama `null` adalah structured data yang lebih buruk daripada
     // penerbit yang bernama sama dengan situsnya.
-    assert.equal(namaPenerbit({ ...KOSONG, siteName: "Lentera" }), "Lentera");
+    assert.equal(namaPenerbit({ ...KOSONG, siteName: "Contoh" }), "Contoh");
     assert.equal(
-      namaPenerbit({ ...KOSONG, siteName: "Lentera", organizationName: "PT Lentera" }),
-      "PT Lentera"
+      namaPenerbit({ ...KOSONG, siteName: "Contoh", organizationName: "PT Contoh" }),
+      "PT Contoh"
     );
   });
 
   test("tagline jatuh ke katalog PO, bukan ke string kosong", () => {
-    assert.equal(taglineSitus({ ...KOSONG, tagline: "Kabar Kalteng" }, "id"), "Kabar Kalteng");
+    assert.equal(taglineSitus({ ...KOSONG, tagline: "Kabar Wilayah" }, "id"), "Kabar Wilayah");
     assert.ok(taglineSitus(KOSONG, "id").length > 0);
   });
 
   test("baris hak cipta MENGGANTI baris rakitan, tidak menggabunginya", () => {
-    // Redaksi yang menulis "© 2019–2026 PT Lentera Kalteng" memaksudkan kata
+    // Redaksi yang menulis "© 2019–2026 PT Contoh Media" memaksudkan kata
     // itu; sebuah gabungan akan mencetak tahunnya dua kali dan namanya dua kali,
     // dan tidak ada cara menulis notice yang menghindarinya.
     assert.equal(
-      barisCopyright({ ...KOSONG, copyrightNotice: "© 2019–2026 PT Lentera" }, "id", 2026),
-      "© 2019–2026 PT Lentera"
+      barisCopyright({ ...KOSONG, copyrightNotice: "© 2019–2026 PT Contoh" }, "id", 2026),
+      "© 2019–2026 PT Contoh"
     );
 
-    const rakitan = barisCopyright({ ...KOSONG, siteName: "Lentera" }, "id", 2026);
+    const rakitan = barisCopyright({ ...KOSONG, siteName: "Contoh" }, "id", 2026);
     assert.ok(rakitan.includes("2026"));
-    assert.ok(rakitan.includes("Lentera"));
+    assert.ok(rakitan.includes("Contoh"));
   });
 
   test("blok kontak hanya ada bila ada isinya", () => {
@@ -321,8 +321,8 @@ describe("nomor telepon menjadi tautan", () => {
   });
 
   test("tel: mempertahankan awalan + tetapi membuang spasi", () => {
-    assert.equal(tautanTelepon("+62 536 123456"), "tel:+62536123456");
-    assert.equal(tautanTelepon("(0536) 123-456"), "tel:0536123456");
+    assert.equal(tautanTelepon("+62 21 123456"), "tel:+6221123456");
+    assert.equal(tautanTelepon("(021) 123-456"), "tel:021123456");
     assert.equal(tautanTelepon(null), null);
   });
 });

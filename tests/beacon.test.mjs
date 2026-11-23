@@ -38,8 +38,8 @@ const ASAL = "https://cms.contoh.test";
 
 describe("muatanBeacon", () => {
   test("muatan sah membawa kode tenant dan jalur", () => {
-    assert.deepEqual(muatanBeacon({ tenantCode: "lentera", path: "/informasi/banjir/" }), {
-      tenantCode: "lentera",
+    assert.deepEqual(muatanBeacon({ tenantCode: "contoh", path: "/informasi/banjir/" }), {
+      tenantCode: "contoh",
       path: "/informasi/banjir/"
     });
   });

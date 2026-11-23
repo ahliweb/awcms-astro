@@ -89,7 +89,7 @@ All of them are explained in [`.env.example`](../.env.example).
 ### The health check may be on here
 
 Two other applications on that server had to switch `health_check_enabled` off:
-awcms-micro because its image has no `curl`/`wget`, and SIMFAR because Django
+awcms-micro because its image has no `curl`/`wget`, and another application because Django
 refuses a probe with `Host: localhost` with `400 DisallowedHost`.
 
 This image hits neither — `wget` is present inside the alpine-based `oven/bun`
@@ -200,8 +200,8 @@ credentials.
 ## If the build fails
 
 Coolify keeps the previous container when a new build fails — the site stays live
-with its old content. This is already proven on that server, in the SIMFAR
-health-check regression of 2026-07-27: the deploy failed 10 out of 10 attempts and
+with its old content. This is already proven on that server, in a health-check
+regression of 2026-07-27: the deploy failed 10 out of 10 attempts and
 production never actually went down.
 
 That means a failed rebuild is **silent to readers**, and therefore has to be

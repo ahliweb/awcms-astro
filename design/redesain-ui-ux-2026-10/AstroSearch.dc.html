@@ -87,24 +87,24 @@ mark{background:#fef3c7;color:inherit;padding:0 2px;border-radius:3px}
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { q: 'SIM', shown: 20, sel: {} };
+    this.state = { q: 'izin', shown: 20, sel: {} };
   }
   renderVals() {
     const KC = { Panduan: '#0369a1', Layanan: '#047857', Informasi: '#9a3412' };
     const BASE = [
-      ['Perpanjangan SIM A dan C: syarat, langkah, dan biaya', 'Layanan', 'Apa yang perlu dibawa, urutan di loket, dan rincian biaya beserta dasar hukumnya.'],
-      ['Menyiapkan dokumen SIM sebelum datang ke loket', 'Panduan', 'Daftar periksa dokumen agar berkas tidak dikembalikan.'],
-      ['SIM hilang atau rusak: cara mengurus penggantinya', 'Layanan', 'Langkah, syarat surat keterangan, dan perkiraan waktu.'],
-      ['Jadwal layanan SIM keliling bulan ini', 'Informasi', 'Lokasi dan jam layanan per kecamatan.'],
-      ['Tes kesehatan dan psikologi untuk SIM', 'Panduan', 'Di mana tes dilakukan dan apa yang perlu disiapkan.'],
-      ['Waspada calo pengurusan SIM', 'Informasi', 'Ciri tawaran tidak resmi dan cara melapor.'],
-      ['Golongan SIM dan kendaraan yang boleh dikemudikan', 'Panduan', 'Perbedaan tiap golongan secara ringkas.'],
-      ['Pembayaran biaya penerbitan SIM lewat kanal resmi', 'Panduan', 'Kanal pembayaran yang sah dan bukti yang harus disimpan.'],
+      ['Perpanjangan izin layanan: syarat, langkah, dan biaya', 'Layanan', 'Apa yang perlu dibawa, urutan di loket, dan rincian biaya beserta dasar hukumnya.'],
+      ['Menyiapkan dokumen izin sebelum datang ke loket', 'Panduan', 'Daftar periksa dokumen agar berkas tidak dikembalikan.'],
+      ['izin hilang atau rusak: cara mengurus penggantinya', 'Layanan', 'Langkah, syarat surat keterangan, dan perkiraan waktu.'],
+      ['Jadwal layanan izin keliling bulan ini', 'Informasi', 'Lokasi dan jam layanan per kecamatan.'],
+      ['Tes kesehatan dan psikologi untuk izin', 'Panduan', 'Di mana tes dilakukan dan apa yang perlu disiapkan.'],
+      ['Waspada calo pengurusan izin', 'Informasi', 'Ciri tawaran tidak resmi dan cara melapor.'],
+      ['Golongan izin dan kendaraan yang boleh dikemudikan', 'Panduan', 'Perbedaan tiap golongan secara ringkas.'],
+      ['Pembayaran biaya penerbitan izin lewat kanal resmi', 'Panduan', 'Kanal pembayaran yang sah dan bukti yang harus disimpan.'],
       ['Balik nama kendaraan bermotor', 'Layanan', 'Syarat, langkah, dan rincian biaya balik nama.'],
       ['Jam layanan berubah selama libur nasional', 'Informasi', 'Penyesuaian jam buka loket.']
     ];
     const TOP = ['Surat izin mengemudi', 'Dokumen kendaraan', 'Pembayaran'];
-    const INS = ['Unit layanan SIM', 'Unit registrasi kendaraan', 'Bapenda'];
+    const INS = ['Unit layanan izin', 'Unit registrasi kendaraan', 'Bapenda'];
     const WIL = ['Kota', 'Kabupaten A', 'Kabupaten B'];
     const DATES = ['20 Okt 2026', '12 Okt 2026', '30 Sep 2026', '22 Sep 2026', '11 Sep 2026', '29 Agu 2026'];
     const all = [];

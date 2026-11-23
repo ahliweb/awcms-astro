@@ -1,12 +1,12 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](CODE_OF_CONDUCT.md)
 
-<!-- i18n-source-hash: sha256:8f18e8f9a5746add54a1971d9d7fbbd737235c0e2d87a8fcf2e38a8d29fce466 -->
+<!-- i18n-source-hash: sha256:698939abc5eec2b3fb4af78651328826c13bd8012faab5c4264c1a6216d0bcd8 -->
 
 # Pedoman Perilaku
 
 ## Komitmen
 
-Repo ini menyusun informasi layanan publik untuk masyarakat Kalimantan Tengah. Kontributornya datang dengan latar berbeda: pengembang, penulis konten, penutur asli bahasa daerah, dan orang yang bekerja di layanan terkait. Semuanya diperlakukan setara.
+Repo ini menyusun informasi layanan publik untuk masyarakat. Kontributornya datang dengan latar berbeda: pengembang, penulis konten, penutur asli bahasa daerah, dan orang yang bekerja di layanan terkait. Semuanya diperlakukan setara.
 
 Kami berkomitmen menjadikan partisipasi di repo ini bebas dari pelecehan bagi siapa pun, tanpa memandang usia, ukuran tubuh, disabilitas, suku, identitas dan ekspresi gender, tingkat pengalaman, pendidikan, status sosial-ekonomi, kebangsaan, penampilan, ras, agama, atau identitas dan orientasi seksual.
 

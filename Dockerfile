@@ -171,7 +171,7 @@ USER bun
 
 EXPOSE 8080
 
-# Berbeda dari awcms-micro dan SIMFAR di server Dinkes, healthcheck bawaan
+# Berbeda dari awcms-micro dan aplikasi lain di server rujukan, healthcheck bawaan
 # Coolify AMAN diaktifkan untuk image ini: busybox `wget` ada di dalam alpine,
 # dan penyaji ini tidak punya padanan `ALLOWED_HOSTS` yang menolak permintaan
 # ber-`Host: localhost`. Lihat docs/deploy-coolify.md.
