@@ -22,9 +22,9 @@ a{color:#1d4ed8}a:hover{color:#1e40af}
 <div style="max-width: 1280px; margin: 0 auto; padding: 64px clamp(16px, 4vw, 40px) 80px; display: flex; flex-direction: column; gap: 56px">
 
 <header style="display: flex; flex-direction: column; gap: 16px; max-width: 900px">
-<div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #1d4ed8">Analisis UI/UX · 24 Okt 2026 · ahliweb/awcms · awcms-one · omes · awcms-astro</div>
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #1d4ed8">Analisis UI/UX · 24 Okt 2026 · ahliweb/awcms · produk konsumen · produk sisi operator · awcms-astro</div>
 <h1 style="margin: 0; font-size: 44px; line-height: 1.12; letter-spacing: -0.02em; font-weight: 800; text-wrap: balance">Empat repo, satu bahasa visual: tenang saat normal, tegas saat ada masalah</h1>
-<p style="margin: 0; font-size: 18px; line-height: 1.6; color: #5b6672; text-wrap: pretty">Tiga panel admin (awcms, awcms-one, OMES) sebenarnya berbagi satu shell dan satu berkas token di <span style="font-family: 'JetBrains Mono', monospace; font-size: 15px">src/styles/tokens.css</span>. Redesain ini mempertahankan nama token dan nilai yang sudah diukur kontrasnya, lalu memperbaiki arsitektur informasi, hierarki layar, dan konsistensi status. awcms-astro mendapat bahasa editorial sendiri untuk pembaca publik.</p>
+<p style="margin: 0; font-size: 18px; line-height: 1.6; color: #5b6672; text-wrap: pretty">Tiga panel admin (awcms, sebuah produk konsumen, sebuah produk sisi operator) sebenarnya berbagi satu shell dan satu berkas token di <span style="font-family: 'JetBrains Mono', monospace; font-size: 15px">src/styles/tokens.css</span>. Redesain ini mempertahankan nama token dan nilai yang sudah diukur kontrasnya, lalu memperbaiki arsitektur informasi, hierarki layar, dan konsistensi status. awcms-astro mendapat bahasa editorial sendiri untuk pembaca publik.</p>
 </header>
 
 <section style="display: flex; flex-direction: column; gap: 20px">
@@ -74,15 +74,15 @@ a{color:#1d4ed8}a:hover{color:#1e40af}
 <section style="display: flex; flex-direction: column; gap: 20px">
 <div style="display: flex; flex-direction: column; gap: 6px">
 <h2 style="margin: 0; font-size: 24px; font-weight: 700">Kosakata status bersama — satu arti, satu bentuk, satu warna</h2>
-<p style="margin: 0; font-size: 15px; color: #5b6672; line-height: 1.55; max-width: 860px">Saat ini awcms memakai pill berwarna, sedangkan OMES v3 menambahkan bentuk ikon. Redesain menyeragamkan keduanya: status tidak pernah dibedakan oleh warna saja (WCAG 1.4.1). Kolom terang memakai pasangan <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px">--color-*-on-soft</span> di atas <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px">--color-*-soft</span> yang sudah lolos 4,5:1 di tokens.css.</p>
+<p style="margin: 0; font-size: 15px; color: #5b6672; line-height: 1.55; max-width: 860px">Saat ini awcms memakai pill berwarna, sedangkan konsol sisi operator menambahkan bentuk ikon. Redesain menyeragamkan keduanya: status tidak pernah dibedakan oleh warna saja (WCAG 1.4.1). Kolom terang memakai pasangan <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px">--color-*-on-soft</span> di atas <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px">--color-*-soft</span> yang sudah lolos 4,5:1 di tokens.css.</p>
 </div>
 <div style="background: #ffffff; border: 1px solid #dde3ea; border-radius: 12px; overflow-x: auto">
 <table style="width: 100%; min-width: 880px; border-collapse: collapse; font-size: 14px">
 <thead>
 <tr style="background: #f7f9fc; text-align: left">
 <th style="padding: 12px 20px; font-size: 12px; font-weight: 600; color: #646f7a; border-bottom: 1px solid #e8edf3">Status</th>
-<th style="padding: 12px 20px; font-size: 12px; font-weight: 600; color: #646f7a; border-bottom: 1px solid #e8edf3">Admin terang (awcms, awcms-one)</th>
-<th style="padding: 12px 20px; font-size: 12px; font-weight: 600; color: #646f7a; border-bottom: 1px solid #e8edf3">Konsol gelap (OMES)</th>
+<th style="padding: 12px 20px; font-size: 12px; font-weight: 600; color: #646f7a; border-bottom: 1px solid #e8edf3">Admin terang (awcms, produk konsumen)</th>
+<th style="padding: 12px 20px; font-size: 12px; font-weight: 600; color: #646f7a; border-bottom: 1px solid #e8edf3">Konsol gelap (sisi operator)</th>
 <th style="padding: 12px 20px; font-size: 12px; font-weight: 600; color: #646f7a; border-bottom: 1px solid #e8edf3">Dipakai untuk</th>
 </tr>
 </thead>
@@ -109,7 +109,7 @@ a{color:#1d4ed8}a:hover{color:#1e40af}
 <span style="font-size: {{t.size}}; font-weight: {{t.w}}; line-height: 1.25">{{t.use}}</span>
 </div>
 </sc-for>
-<p style="margin: 0; font-size: 13px; color: #5b6672; line-height: 1.5">Public Sans untuk UI, JetBrains Mono untuk ID, kode, hash, waktu. Label kolom tabel beralih dari KAPITAL 11px ke kalimat biasa 12px/600 — sama dengan OMES v3.</p>
+<p style="margin: 0; font-size: 13px; color: #5b6672; line-height: 1.5">Public Sans untuk UI, JetBrains Mono untuk ID, kode, hash, waktu. Label kolom tabel beralih dari KAPITAL 11px ke kalimat biasa 12px/600 — sama dengan konsol sisi operator.</p>
 </div>
 <div style="background: #ffffff; border: 1px solid #dde3ea; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 14px">
 <h3 style="margin: 0; font-size: 16px; font-weight: 700">Shell admin yang diusulkan</h3>
@@ -142,7 +142,7 @@ a{color:#1d4ed8}a:hover{color:#1e40af}
 </div>
 </sc-for>
 </div>
-<p style="margin: 0; font-size: 13px; color: #646f7a">Semua angka di layar admin adalah data contoh (ditandai di setiap layar). Data OMES diambil dari fixture <span style="font-family: 'JetBrains Mono', monospace">contracts/control-center/v1</span> + <span style="font-family: 'JetBrains Mono', monospace">sample-fleet.json</span>.</p>
+<p style="margin: 0; font-size: 13px; color: #646f7a">Semua angka di layar admin adalah data contoh (ditandai di setiap layar). Data konsol sisi operator diambil dari fixture kontraknya sendiri.</p>
 </section>
 
 </div>
@@ -167,12 +167,12 @@ class Component extends DCLogic {
           stack: 'Bun · Astro 7 SSR · PostgreSQL/RLS · 80 layar /admin · CSP default-src self · i18n id/en',
           sw: ['#101722', '#f5f7fa', '#ffffff', '#2563eb', '#141a21'],
           keep: ['Token semantik ADR-0120 dengan kontras terukur (-strong, -on-soft, border-strong 3:1).', 'Shell bebas skrip: drawer CSS, seksi <details>, font self-host — aman untuk CSP.', 'Palet perintah Ctrl K yang dibangun dari menu yang boleh diakses.'],
-          issues: ['Sidebar ±80 entri dalam 7 seksi yang semuanya terbuka — layar terdalam butuh banyak gulir.', 'Merek dan tenant tampil dua kali (topbar dan kepala sidebar).', 'Dasbor mencampur KPI tenant dengan info sesi; tidak ada antrean "perlu tindakan".', 'Label kolom KAPITAL 11px berbeda dengan konsol OMES.'],
+          issues: ['Sidebar ±80 entri dalam 7 seksi yang semuanya terbuka — layar terdalam butuh banyak gulir.', 'Merek dan tenant tampil dua kali (topbar dan kepala sidebar).', 'Dasbor mencampur KPI tenant dengan info sesi; tidak ada antrean "perlu tindakan".', 'Label kolom KAPITAL 11px berbeda dengan konsol sisi operator.'],
           dir: ['Satu lokasi merek + pemilih tenant di kepala sidebar; topbar untuk remah roti, pencarian, notifikasi, akun.', 'Hanya seksi aktif yang terbuka, ditambah Favorit yang disematkan.', 'Dasbor: "Perlu tindakan" di atas KPI; daftar dengan tab status, filter, aksi massal, laci detail.']
         },
         {
-          name: 'awcms-one', ver: 'v0.17.0', tag: 'Admin · desain ulang', tagFg: '#1d4ed8', tagBg: '#e8effc',
-          role: 'Platform commerce + berita (re-platform BjekMart) dan template GitHub; apps/cms adalah subtree awcms + modul commerce, apps/storefront situs toko.',
+          name: 'Produk konsumen', ver: 'versi terkini', tag: 'Admin · desain ulang', tagFg: '#1d4ed8', tagBg: '#e8effc',
+          role: 'Platform commerce + berita dan template GitHub; apps/cms adalah subtree awcms + modul commerce, apps/storefront situs toko.',
           stack: 'Monorepo Bun · apps/cms (awcms) · apps/storefront (Astro) · packages/kontrak · 112 layar admin, 32 di antaranya commerce',
           sw: ['#0284c7', '#0369a1', '#0b1120', '#2563eb', '#dc2626'],
           keep: ['Shell dan token identik dengan awcms — redesain cukup sekali.', 'Label status pesanan dan pembayaran sudah lengkap (7 + 5 status).', 'SITE_PROFILE toko/berita/landing dan template:init untuk warna merek.'],
@@ -180,13 +180,13 @@ class Component extends DCLogic {
           dir: ['Subgrup: Penjualan, Katalog, Pemasaran, Pelanggan, Keuangan, Booking, Kanal.', 'Warna merek dari template:init menjadi --color-primary admin setelah lolos cek kontras.', 'Layar pesanan: tab status ber-angka, timeline status, sesi gateway pembayaran.']
         },
         {
-          name: 'omes', ver: 'v0.6.0', tag: 'Admin · desain ulang', tagFg: '#1d4ed8', tagBg: '#e8effc',
-          role: 'Toolkit host Ubuntu/Mint + Hermes Agent. Control Center-nya diimplementasikan di awcms /admin/omes/* (15 layar) dengan skin gelap .omes-cc; proposal v3 ada di design/control-center-v3.',
-          stack: 'Bash + bats · kontrak control-center/v1 · UI: awcms omes-control-center.css · prototipe ui/control-center',
+          name: 'Produk sisi operator', ver: 'versi terkini', tag: 'Admin · desain ulang', tagFg: '#1d4ed8', tagBg: '#e8effc',
+          role: 'Toolkit host Linux + agen. Control Center-nya diimplementasikan di awcms di bawah shell /admin/* (15 layar) dengan skin gelap; proposal v3 ada di repo produk itu.',
+          stack: 'Bash + bats · kontrak control-center/v1 · UI: skin gelap di awcms · prototipe UI di repo produk',
           sw: ['#0d1115', '#10151a', '#141a20', '#5fc8d6', '#e8eef3'],
           keep: ['Status dengan bentuk + warna + teks; data basi tidak pernah tampil "Sehat".', 'Alur rencana → tinjau → setujui → jalankan via worker → verifikasi.', 'Konfirmasi ketik nama host untuk perubahan kritis.'],
-          issues: ['15 entri berawalan "OMES …" bercampur di sidebar AWCMS.', 'Palet .omes-cc menyimpang dari v3 (bahaya #e9a9a0 vs #F49A8B, latar #0b0f13 vs #0D1115).', 'Topbar AWCMS terang menempel di atas konsol gelap.'],
-          dir: ['Ruang kerja OMES: pengalih ruang kerja, IA v3 Pantau · Ubah & pulihkan · Agen · Tata kelola.', 'Satu sumber token v3, berlaku untuk seluruh shell saat di /admin/omes.', 'Strip siklus hidup dan kesegaran data per otoritas (omes-host, hermes, external-provider).']
+          issues: ['15 entri berawalan nama produk bercampur di sidebar AWCMS.', 'Palet skin gelap menyimpang dari v3 (bahaya #e9a9a0 vs #F49A8B, latar #0b0f13 vs #0D1115).', 'Topbar AWCMS terang menempel di atas konsol gelap.'],
+          dir: ['Ruang kerja produk: pengalih ruang kerja, IA v3 Pantau · Ubah & pulihkan · Agen · Tata kelola.', 'Satu sumber token v3, berlaku untuk seluruh shell saat di ruang kerja produk.', 'Strip siklus hidup dan kesegaran data per otoritas (host, agen, penyedia eksternal).']
         },
         {
           name: 'awcms-astro', ver: 'v0.6.1', tag: 'Web publik · desain baru', tagFg: '#0f7434', tagBg: '#e4f5ea',
@@ -233,17 +233,17 @@ class Component extends DCLogic {
         { repo: 'semua repo', screen: 'Pola halaman data', note: 'Pencarian + paging menurut fungsi: daftar, log, antrean, galeri, pohon, arsip publik, hasil cari.' },
         { repo: 'awcms', screen: 'Spesifikasi 66 layar', note: 'Tipe, cari, filter, urutan, paging per layar + kondisi kode kini (interaktif).' },
         { repo: 'awcms', screen: 'Jejak audit', note: 'Log keyset 50 tanpa total, cari tepat ID korelasi, rentang waktu (interaktif).' },
-        { repo: 'awcms-one', screen: 'Spesifikasi 32 layar commerce', note: 'Per subgrup sidebar (interaktif).' },
-        { repo: 'awcms-one', screen: 'Produk', note: 'Cari nama/SKU/barcode, tabel atau grid, keyset 25/24 (interaktif).' },
-        { repo: 'omes', screen: 'Spesifikasi 15 layar', note: 'Dipetakan ke navigasi ruang kerja v3 (interaktif).' },
-        { repo: 'omes', screen: 'Job', note: 'Log keyset 50, cari ID job/korelasi, chip status (interaktif).' },
+        { repo: 'produk konsumen', screen: 'Spesifikasi 32 layar commerce', note: 'Per subgrup sidebar (interaktif).' },
+        { repo: 'produk konsumen', screen: 'Produk', note: 'Cari nama/SKU/barcode, tabel atau grid, keyset 25/24 (interaktif).' },
+        { repo: 'sisi operator', screen: 'Spesifikasi 15 layar', note: 'Dipetakan ke navigasi ruang kerja v3 (interaktif).' },
+        { repo: 'sisi operator', screen: 'Job', note: 'Log keyset 50, cari ID job/korelasi, chip status (interaktif).' },
         { repo: 'awcms-astro', screen: 'Spesifikasi rute + arsip + pencarian', note: 'Arsip bernomor 12/halaman; pencarian facet + muat lebih banyak (interaktif).' },
         { repo: 'awcms', screen: 'Dasbor admin', note: 'Shell baru, antrean perlu tindakan, KPI, kesehatan sinkron, audit.' },
         { repo: 'awcms', screen: 'Pengguna', note: 'Pola daftar standar; klik baris untuk laci detail (interaktif).' },
-        { repo: 'awcms-one', screen: 'Dasbor commerce', note: 'Sidebar commerce bersubgrup, filter kanal, grafik pendapatan 14 hari.' },
-        { repo: 'awcms-one', screen: 'Pesanan', note: 'Tab status ber-angka + detail pesanan dengan timeline (interaktif).' },
-        { repo: 'omes', screen: 'Ringkasan armada', note: 'Ruang kerja OMES gelap dalam shell awcms; filter armada (interaktif).' },
-        { repo: 'omes', screen: 'Persetujuan operasi', note: 'Rencana, cek pra-syarat, empat mata, konfirmasi ketik (interaktif).' },
+        { repo: 'produk konsumen', screen: 'Dasbor commerce', note: 'Sidebar commerce bersubgrup, filter kanal, grafik pendapatan 14 hari.' },
+        { repo: 'produk konsumen', screen: 'Pesanan', note: 'Tab status ber-angka + detail pesanan dengan timeline (interaktif).' },
+        { repo: 'sisi operator', screen: 'Ringkasan armada', note: 'Ruang kerja gelap sisi operator dalam shell awcms; filter armada (interaktif).' },
+        { repo: 'sisi operator', screen: 'Persetujuan operasi', note: 'Rencana, cek pra-syarat, empat mata, konfirmasi ketik (interaktif).' },
         { repo: 'awcms-astro', screen: 'Beranda publik', note: 'Hero berbasis tugas, kanal, sorotan, prinsip, buletin.' },
         { repo: 'awcms-astro', screen: 'Halaman layanan', note: 'Ringkasan sekilas, daftar isi, syarat, langkah, biaya, FAQ.' }
       ]

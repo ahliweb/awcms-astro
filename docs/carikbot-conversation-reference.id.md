@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](carikbot-conversation-reference.md)
 
-<!-- i18n-source-hash: sha256:9201053da6237c039abadacfa72c068c5fad157f1ef59912492e6b4d590ec44c -->
+<!-- i18n-source-hash: sha256:6a750ddacf1b46445e206a7c691497c14a9074bc7626c9e0791f3eac9209535e -->
 
 # Referensi CarikBot — UI Percakapan Aman Netral-Kanal
 
@@ -31,7 +31,7 @@
 ~~~
 
 ## Kepemilikan, tata kelola, dan status
-**Ada:** hanya perilaku yang secara eksplisit hadir di berkas repositori saat ini dan lingkungan uji yang terverifikasi yang dianggap sudah dikirim. **Diusulkan:** kontrak respons dalam referensi ini adalah kandidat, bukan skema OpenAPI yang sudah dipublikasikan. **Eksternal:** Hermes memiliki runtime agent; AWCMS memiliki catatan tenant/kanonis, persetujuan, dan kebijakan pengirim; OMES memiliki jaminan host; aplikasi turunan tidak mengambil kepemilikan kredensial provider atau sistem data bisnis baru.
+**Ada:** hanya perilaku yang secara eksplisit hadir di berkas repositori saat ini dan lingkungan uji yang terverifikasi yang dianggap sudah dikirim. **Diusulkan:** kontrak respons dalam referensi ini adalah kandidat, bukan skema OpenAPI yang sudah dipublikasikan. **Eksternal:** sebuah runtime agent sisi operator memiliki runtime agent; AWCMS memiliki catatan tenant/kanonis, persetujuan, dan kebijakan pengirim; sebuah produk control-plane sisi operator memiliki jaminan host; aplikasi turunan tidak mengambil kepemilikan kredensial provider atau sistem data bisnis baru.
 
 ## Ancaman dan uji negatif yang diwajibkan
 | Ancaman | Uji/penerimaan |
@@ -86,7 +86,7 @@ WCAG 2.2 AA untuk web dan semantik aksesibilitas yang setara pada permukaan nati
 8. Web Push/SSE/WS tidak menggantikan tanda terima pengiriman provider yang sebenarnya.
 
 ### Keluaran yang diusulkan
-Sebuah wireframe, prototipe renderer UI bertipe minimal (setelah persetujuan), rangkaian kontrak mock, dan matriks uji untuk peramban seluler/desktop. Urutan mengikuti [ADR-0057](adr/0057-awcms-first-orders-ownership-and-contract-not-code-and-three-gates-separate-design-mock-and-release.id.md), yang berstatus **Proposed**, belum keputusan: gerbang A kesiapan desain, gerbang B build terhadap mock yang dihasilkan dari kontrak, gerbang C integrasi dan rilis terhadap backend nyata; mock tidak pernah menggantikan gerbang C. Implementasi penuh ditunda sampai kontrak AWCMS hulu dan DoR disetujui. Tidak ada runtime situs publik yang memanggil Hermes secara langsung.
+Sebuah wireframe, prototipe renderer UI bertipe minimal (setelah persetujuan), rangkaian kontrak mock, dan matriks uji untuk peramban seluler/desktop. Urutan mengikuti [ADR-0057](adr/0057-awcms-first-orders-ownership-and-contract-not-code-and-three-gates-separate-design-mock-and-release.id.md), yang berstatus **Proposed**, belum keputusan: gerbang A kesiapan desain, gerbang B build terhadap mock yang dihasilkan dari kontrak, gerbang C integrasi dan rilis terhadap backend nyata; mock tidak pernah menggantikan gerbang C. Implementasi penuh ditunda sampai kontrak AWCMS hulu dan DoR disetujui. Tidak ada runtime situs publik yang memanggil runtime agent secara langsung.
 
 ## Changelog
 - v1.1.0 (2026-11-20): Diverifikasi ulang terhadap `main` dan repositori hulu; admin USER dan BFF dinyatakan PLANNED, isu hulu dicatat sudah ditutup (bukan kontrak yang diterima), batas ADR-0019, ADR-0056, dan ADR-0057 ditambahkan, penempatan UAT dinyatakan; tanpa perubahan runtime.

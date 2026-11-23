@@ -29,7 +29,7 @@
 ~~~
 
 ## Ownership, governance, and status
-**Existing:** only behavior explicitly present in current repository files and verified test environments is considered shipped. **Proposed:** this reference's response contract is a candidate, not a published OpenAPI schema. **External:** Hermes owns agent runtime; AWCMS owns tenant/canonical records, approvals and sender policy; OMES owns host assurance; derivative apps do not take ownership of provider credentials or new business data systems.
+**Existing:** only behavior explicitly present in current repository files and verified test environments is considered shipped. **Proposed:** this reference's response contract is a candidate, not a published OpenAPI schema. **External:** an operator-side agent runtime owns the agent runtime; AWCMS owns tenant/canonical records, approvals and sender policy; an operator-side control-plane product owns host assurance; derivative apps do not take ownership of provider credentials or new business data systems.
 
 ## Threats and mandated negative tests
 | Threat | Test/acceptance |
@@ -84,7 +84,7 @@ WCAG 2.2 AA for web and equivalent accessibility semantics on native surfaces; O
 8. Web Push/SSE/WS are not substituted for actual provider delivery receipts.
 
 ### Proposed outcomes
-A wireframe, a minimal typed UI renderer prototype (after approval), mock contract suite, and a test matrix for mobile/desktop browsers. Ordering follows [ADR-0057](adr/0057-awcms-first-orders-ownership-and-contract-not-code-and-three-gates-separate-design-mock-and-release.md), which is **Proposed**, not yet a decision: gate A design readiness, gate B build against a mock generated from the contract, gate C integration and release against the real backend; a mock never stands in for gate C. Full implementation is deferred until the upstream AWCMS contract and DoR are approved. No public website runtime calls Hermes directly.
+A wireframe, a minimal typed UI renderer prototype (after approval), mock contract suite, and a test matrix for mobile/desktop browsers. Ordering follows [ADR-0057](adr/0057-awcms-first-orders-ownership-and-contract-not-code-and-three-gates-separate-design-mock-and-release.md), which is **Proposed**, not yet a decision: gate A design readiness, gate B build against a mock generated from the contract, gate C integration and release against the real backend; a mock never stands in for gate C. Full implementation is deferred until the upstream AWCMS contract and DoR are approved. No public website runtime calls an agent runtime directly.
 
 ## Changelog
 - v1.1.0 (2026-11-20): Re-verified against `main` and the upstream repositories; USER admin and BFF stated as PLANNED, upstream issues noted as closed (not an accepted contract), ADR-0019, ADR-0056 and ADR-0057 boundaries added, UAT placement stated; zero runtime changes.

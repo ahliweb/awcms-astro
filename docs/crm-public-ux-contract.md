@@ -2,7 +2,7 @@
 
 # AWCMS-Astro public lead, channel-consent and realtime consumer UX v1.0
 
-**Proposed documentation, 24 October 2026** · issue [#127](https://github.com/ahliweb/awcms-astro/issues/127). This repo is an Astro public frontend and optionally declared USER admin/BFF — **not** the AWCMS SYSTEM admin, provider sender, CRM customer master or OMES host. Follow existing [AGENTS.md](../AGENTS.md), [Bun runtime ADR](adr/0050-bun-is-this-repos-only-runtime-and-a-gate-finally-says-so.md), [realtime boundary #123](https://github.com/ahliweb/awcms-astro/issues/123) and [AWCMS-One CRM UX master #472](https://github.com/ahliweb/awcms-one/issues/472).
+**Proposed documentation, 24 October 2026** · issue [#127](https://github.com/ahliweb/awcms-astro/issues/127). This repo is an Astro public frontend and optionally declared USER admin/BFF — **not** the AWCMS SYSTEM admin, provider sender, CRM customer master or operator-side host manager. Follow existing [AGENTS.md](../AGENTS.md), [Bun runtime ADR](adr/0050-bun-is-this-repos-only-runtime-and-a-gate-finally-says-so.md) and [realtime boundary #123](https://github.com/ahliweb/awcms-astro/issues/123).
 
 ## 1. What is available vs planned
 
@@ -12,7 +12,7 @@
 | Optional USER admin/BFF | ARCHITECTURE DECLARED, actual site must opt in | Hide for sites without explicitly declared USER admin; no SYSTEM owner controls |
 | Contact/lead intake wired to generic CRM prospect module | PLANNED (upstream AWCMS #1163/#1166) | Render only after public API contract and validated consent/privacy purpose exist |
 | Omnichannel social follow/share links | MAY EXIST as simple website links | Distinguish links from authenticated social provider accounts |
-| Consent preferences / customer Web Push | PLANNED per derived product; AWCMS-One #430–#432 | Opt-in UI only when API/Service Worker registration is available |
+| Consent preferences / customer Web Push | PLANNED per derived product; tracked in the consumer product repo | Opt-in UI only when API/Service Worker registration is available |
 | Campaign/progress SSE/WS client | PLANNED after upstream AWCMS #1168/#1171 | Bun server connection only through authorized API; polling fallback |
 | Email/WhatsApp/Telegram/social send worker | NOT OWNED HERE | Never ship; use upstream AWCMS Bun channel ports/queue |
 | Bun runtime | Pinned at bun@1.4.4 (`packageManager`; upgrade [#125](https://github.com/ahliweb/awcms-astro/issues/125) closed) | Dependency and library freshness [#126](https://github.com/ahliweb/awcms-astro/issues/126) |
@@ -42,38 +42,38 @@ AWCMS upstream validates form input, CSRF/anti-bot/abuse, tenant/domain ownershi
 ## 5. Acceptance and issue dependency
 AT-W1 keyboard/mobile 360px input and valid/error/retry; AT-W2 anonymized opt-in/opt-out with purpose separation; AT-W3 synthetic two tenants and cross-site form submission rejected; AT-W4 Web Push closed-browser behavior distinguished from realtime connection; AT-W5 SSG SEO/sitemap/robots/CSP and optional USER admin constraints; AT-W6 provider link does not imply API connection; AT-W7 Bun build/tests on the pinned Bun 1.4.4 and no Node runtime. Repo commands: bun test, bun run check, bun run build, bun run audit:translation and documentation/asset gates. Client/producer contracts follow AWCMS #1168 and #1166. **No new public route or API is shipped in this docs-only issue.**
 
-## 6. Frontend ownership and reuse boundary (OMES Control Center vs this repo)
+## 6. Frontend ownership and reuse boundary (an operator-side control-plane product vs this repo)
 
-**Proposed documentation, 24 October 2026** · issue [#136](https://github.com/ahliweb/awcms-astro/issues/136). Per issue #136, the cross-repo ownership decision is OMES [#350](https://github.com/ahliweb/omes/issues/350) (Option A, five-repo ownership) and the OMES website side is [omes-web#21](https://github.com/ahliweb/omes-web/issues/21). This section only states what that means for **this** repo; it does not restate or change what `awcms` or OMES do. Any claim about those repos below is "per issue #136 / OMES #350", not something verified from here.
+**Proposed documentation, 24 October 2026** · issue [#136](https://github.com/ahliweb/awcms-astro/issues/136). Per issue #136, the cross-repo ownership decision is recorded in the operator-side product's own tracker (five-repo ownership), and the website side in that product's website repo. This section only states what that means for **this** repo; it does not restate or change what `awcms` or the operator-side product do. Any claim about those repos below is "per issue #136", not something verified from here.
 
-Why it needs saying: pointing at this template as a reference for the OMES website could be read as "copy the admin too". It must not be. This repo is an Astro public-content frontend with an optional, declared USER admin ([ADR-0034](adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md), `permukaanAdmin` in `src/config/site.ts`); the SYSTEM admin lives in `awcms`.
+Why it needs saying: pointing at this template as a reference for an operator-side product's website could be read as "copy the admin too". It must not be. This repo is an Astro public-content frontend with an optional, declared USER admin ([ADR-0034](adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md), `permukaanAdmin` in `src/config/site.ts`); the SYSTEM admin lives in `awcms`.
 
 ### 6.1 Surface ownership matrix
 
 | Surface | Lives in | Relation to this repo |
 | --- | --- | --- |
-| OMES website — Astro public landing | OMES-Web (`ahliweb/omes-web`), an independent site deriving from the AWCMS-One `landing` site (per issue #136) | May **adopt** this repo's patterns and contract (below). No code or runtime dependency on this repo; deployed independently |
-| OMES CMS — SYSTEM Control Center | `awcms`, route `/admin/omes`, canonical per issue #136 / OMES #350 | **Not here, never.** This repo does not implement, mirror or proxy it |
-| OMES native host / Hermes (poll worker, provider send runtime) | the `omes` repo (per OMES #350) | **Not here, never.** No host poll-worker, no provider send runtime, no credentials for either |
+| Operator-side product website — Astro public landing | an independent site in its own repo, deriving from a consumer product repo's landing site (per issue #136) | May **adopt** this repo's patterns and contract (below). No code or runtime dependency on this repo; deployed independently |
+| Operator-side control-plane product — SYSTEM Control Center | `awcms`, under its own `/admin/*` shell, canonical per issue #136 | **Not here, never.** This repo does not implement, mirror or proxy it |
+| Operator-side native host and agent runtime (poll worker, provider send runtime) | the operator-side product's own repo (per issue #136) | **Not here, never.** No host poll-worker, no provider send runtime, no credentials for either |
 | Public pages of a site built from this template | this repo and its derived sites | Primary function ([ADR-0034](adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md)) |
 | Optional USER admin of one site | this repo, only if declared in `permukaanAdmin` | Current state: **none declared** |
 
-**No duplicate `/admin/omes` routes outside `awcms`.** A route file here under `/admin/omes` (or any `omes` SYSTEM screen under another name) would be a second copy of the Control Center. `tests/peran-situs.test.mjs` already refuses an on-demand route whose prefix is not declared, and `owner` is refused in `permukaanAdmin.peran`; this section adds the rule in prose only and **adds no new gate** — it is not machine-checked beyond those two.
+**No duplicate control-plane routes outside `awcms`.** A route file here under `/admin/*` for an operator-side control-plane product (or any such SYSTEM screen under another name) would be a second copy of the Control Center. `tests/peran-situs.test.mjs` already refuses an on-demand route whose prefix is not declared, and `owner` is refused in `permukaanAdmin.peran`; this section adds the rule in prose only and **adds no new gate** — it is not machine-checked beyond those two.
 
 ### 6.2 What to preserve and what to avoid
 
 Preserve in this repo: `output: 'static'` public pages, SEO (canonical, sitemap, structured data), the strict CSP and other headers decided only in [`server/penyaji.mjs`](../server/penyaji.mjs) ([ADR-0016](adr/0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md), [ADR-0019](adr/0019-csp-ketat-dikirim-penyaji.md)), WCAG-targeted accessible branding and contact components, and the optional USER admin through `permukaanAdmin`.
 
-Do not implement here: the OMES SYSTEM admin, host or provider credentials, a host poll-worker, a provider send runtime, or any cross-tenant screen.
+Do not implement here: the operator-side SYSTEM admin, host or provider credentials, a host poll-worker, a provider send runtime, or any cross-tenant screen.
 
-### 6.3 Adoption by OMES-Web, and generic primitives
+### 6.3 Adoption by an operator-side product website, and generic primitives
 
-OMES-Web may adopt patterns and this contract (tokens, accessible contact/branding components, SEO and CSP posture) by **copying or re-implementing them in its own repo**, not by importing from here: each site deploys independently, so a dependency on `awcms-astro` would couple two release cycles. Visual primitives added here must stay generic — reusable with no OMES name, theme or copy embedded; a site's identity comes from `src/config/site.ts` and `.env`, as AGENTS.md already requires.
+An operator-side product website may adopt patterns and this contract (tokens, accessible contact/branding components, SEO and CSP posture) by **copying or re-implementing them in its own repo**, not by importing from here: each site deploys independently, so a dependency on `awcms-astro` would couple two release cycles. Visual primitives added here must stay generic — reusable with no product name, theme or copy embedded; a site's identity comes from `src/config/site.ts` and `.env`, as AGENTS.md already requires.
 
 ### 6.4 Accessibility, SEO, BFF and CSP
 
 - **A11y/SEO.** Same floor as §3 above: keyboard, visible focus, reduced motion, 360px; any authenticated surface targets WCAG 2.2 AA. Public content stays indexable.
-- **BFF role and tenant boundary.** The Jualanku portal BFF ([ADR-0014](adr/0014-rendering-campuran-dan-bff-portal.md)) composes `awcms` calls for this site's own screens and decides nothing with business consequences; the tenant comes from the machine credential, never from the browser. This is not an OMES control plane and must not become one.
+- **BFF role and tenant boundary.** The Jualanku portal BFF ([ADR-0014](adr/0014-rendering-campuran-dan-bff-portal.md)) composes `awcms` calls for this site's own screens and decides nothing with business consequences; the tenant comes from the machine credential, never from the browser. This is not an operator-side control plane and must not become one.
 - **CSP `connect-src`.** If a declared surface ever needs a connection (for example the SSE badge in Web-F4), the allowlist is loosened in `server/penyaji.mjs` and nowhere else, proven by `tests/penyaji.test.mjs`.
 - **Runtime.** Bun only; no Node runtime re-enters this repo ([ADR-0050](adr/0050-bun-is-this-repos-only-runtime-and-a-gate-finally-says-so.md)).
 
@@ -84,9 +84,9 @@ OMES-Web may adopt patterns and this contract (tokens, accessible contact/brandi
 | On-demand (`prerender = false`) routes | **None exist today.** The adapter is installed only to serve the build output |
 | Jualanku portal BFF (`/penjual/**`, `/_portal-api/**`) | PLANNED, not implemented (ADR-0014) |
 | USER admin via `permukaanAdmin` | Allowed by ADR-0034, **zero declared** in this template |
-| `/admin/omes` | **Never** planned here; `awcms` only |
-| OMES-Web landing | Tracked in omes-web#21; outside this repo |
+| Operator-side control-plane routes under `/admin/*` | **Never** planned here; `awcms` only |
+| Operator-side product website landing | Tracked in that product's own repo; outside this repo |
 
 ### 6.6 Acceptance for this section
 
-Documentation and terminology alignment only (EN source plus ID mirror): **no app UI, no routes, no control-plane code, no hardcoded OMES dependency and no new external contract** is added by issue #136.
+Documentation and terminology alignment only (EN source plus ID mirror): **no app UI, no routes, no control-plane code, no hardcoded operator-side product dependency and no new external contract** is added by issue #136.

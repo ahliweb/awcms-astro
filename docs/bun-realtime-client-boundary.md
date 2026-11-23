@@ -9,7 +9,7 @@ This repository is a Bun-hosted Astro public site and optional USER admin/BFF. `
 
 ## Future interface contract
 
-1. **No duplicate sender or queue here.** Email/Mailketing, WhatsApp StarSender/Meta, Telegram and Web Push are dispatched from upstream AWCMS using the upstream repo's pinned Bun, durable outbox and provider HTTP APIs; OMES and Hermes remain outside this responsibility.
+1. **No duplicate sender or queue here.** Email/Mailketing, WhatsApp StarSender/Meta, Telegram and Web Push are dispatched from upstream AWCMS using the upstream repo's pinned Bun, durable outbox and provider HTTP APIs; operator-side host tooling and agent runtimes remain outside this responsibility.
 2. Once [AWCMS #1168](https://github.com/ahliweb/awcms/issues/1168) accepts a protocol, an eligible user/admin page may subscribe to approved, sanitized **Bun SSE** for one-way campaign/inbox progress and notifications; **native Bun WebSocket** only for truly bidirectional features with an agreed contract. Authenticated bounded polling is a valid fallback. Browser `EventSource` and `WebSocket` APIs **do not run Node.js servers**.
 3. If a consumer-owned BFF streaming route is later admitted, it must run under this repository's **pinned Bun**, never Node.js, `npm`/pnpm/yarn runtime, Node-only Socket.IO sidecar or direct database/provider sender. Keep current public/static + optional USER admin architecture; no forbidden owner/SYSTEM admin surface.
 4. Require server-checked tenant/site/user/role permissions and verified Origin, CSP `connect-src` for approved endpoints, short-lived audience-scoped authorization/ticket (no long-lived token in query), reconnect/cursor/snapshot, payload/redaction limits, connection caps and backpressure. Client must not supply authoritative tenant topic names or provider credentials.
@@ -18,7 +18,7 @@ This repository is a Bun-hosted Astro public site and optional USER admin/BFF. `
 
 ## Cross-repository references
 - Upstream [AWCMS Bun worker standard #1167](https://github.com/ahliweb/awcms/issues/1167) and [realtime design #1168](https://github.com/ahliweb/awcms/issues/1168); existing [AWCMS email](https://github.com/ahliweb/awcms/blob/main/src/modules/email/README.md), [WhatsApp](https://github.com/ahliweb/awcms/blob/main/src/modules/whatsapp-delivery/README.md), [push](https://github.com/ahliweb/awcms/blob/main/src/modules/push-delivery/README.md).
-- Template [AWCMS-One CRM runtime #467](https://github.com/ahliweb/awcms-one/issues/467), multi-channel campaign [#458](https://github.com/ahliweb/awcms-one/issues/458), AI #459, Telegram #460, Mailketing #461, Web Push #430–432.
-- OMES signed HTTPS host pull-worker remains unchanged. [OMES #345](https://github.com/ahliweb/omes/issues/345).
+- Consumer product repos that derive from the AWCMS family track their own CRM runtime, campaign, Telegram, Mailketing and Web Push work in their own trackers; none of it is tracked here.
+- Operator-side host workers that pull over signed outbound HTTPS remain unchanged and are out of scope here.
 
 **Bun implementation references:** https://bun.com/docs/runtime/http/websockets and https://bun.com/guides/http/sse. Verify against the pinned runtime at implementation.

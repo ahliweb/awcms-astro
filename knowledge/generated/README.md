@@ -23,7 +23,7 @@ because that is the Obsidian app's own per-machine workspace state.
 This is also what [`ahliweb/awcms`](https://github.com/ahliweb/awcms) does for
 its own vault (its ADR-0124), including keeping a tracked README here for
 exactly this reason. It is the one place this workflow deliberately differs from
-`ahliweb/awcms-one`, which tracks its generated notes.
+a sibling consumer product repo, which tracks its generated notes.
 
 ## How to fill it
 
