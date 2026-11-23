@@ -73,7 +73,7 @@ An operator-side product website may adopt patterns and this contract (tokens, a
 ### 6.4 Accessibility, SEO, BFF and CSP
 
 - **A11y/SEO.** Same floor as §3 above: keyboard, visible focus, reduced motion, 360px; any authenticated surface targets WCAG 2.2 AA. Public content stays indexable.
-- **BFF role and tenant boundary.** The Jualanku portal BFF ([ADR-0014](adr/0014-rendering-campuran-dan-bff-portal.md)) composes `awcms` calls for this site's own screens and decides nothing with business consequences; the tenant comes from the machine credential, never from the browser. This is not an operator-side control plane and must not become one.
+- **BFF role and tenant boundary.** The marketplace portal BFF ([ADR-0014](adr/0014-rendering-campuran-dan-bff-portal.md)) composes `awcms` calls for this site's own screens and decides nothing with business consequences; the tenant comes from the machine credential, never from the browser. This is not an operator-side control plane and must not become one.
 - **CSP `connect-src`.** If a declared surface ever needs a connection (for example the SSE badge in Web-F4), the allowlist is loosened in `server/penyaji.mjs` and nowhere else, proven by `tests/penyaji.test.mjs`.
 - **Runtime.** Bun only; no Node runtime re-enters this repo ([ADR-0050](adr/0050-bun-is-this-repos-only-runtime-and-a-gate-finally-says-so.md)).
 
@@ -82,7 +82,7 @@ An operator-side product website may adopt patterns and this contract (tokens, a
 | Item | State |
 | --- | --- |
 | On-demand (`prerender = false`) routes | **None exist today.** The adapter is installed only to serve the build output |
-| Jualanku portal BFF (`/penjual/**`, `/_portal-api/**`) | PLANNED, not implemented (ADR-0014) |
+| marketplace portal BFF (`/penjual/**`, `/_portal-api/**`) | PLANNED, not implemented (ADR-0014) |
 | USER admin via `permukaanAdmin` | Allowed by ADR-0034, **zero declared** in this template |
 | Operator-side control-plane routes under `/admin/*` | **Never** planned here; `awcms` only |
 | Operator-side product website landing | Tracked in that product's own repo; outside this repo |

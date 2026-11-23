@@ -153,7 +153,7 @@ from `git log` always loses its reasoning.
    `SITE_SOCIAL_IMAGE` (one card, optional) remains a supported state.
 4. **The Jualanku portal BFF (ADR-0014).** The two contracts that used to block it
    have landed in `awcms` (ADR-0049/0050); the remaining prerequisites are in
-   [`04-kesiapan.md`](../awcms-astro/jualanku/04-kesiapan.md).
+   [`04-kesiapan.md`](../awcms-astro/portal-bff/04-kesiapan.md).
 
 ## Consequences
 

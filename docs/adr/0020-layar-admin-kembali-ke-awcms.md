@@ -80,7 +80,7 @@ What **still applies** and must not be deleted along with ADR-0017:
 - **ADR-0014 does not change.** On-demand routes + the Jualanku portal BFF
   (`/penjual/**`, `/affiliate/**`, `/_portal-api/**`) are an ADR-0045 role, not an
   admin role. Its prerequisites remain in
-  [`04-kesiapan.md`](../awcms-astro/jualanku/04-kesiapan.md).
+  [`04-kesiapan.md`](../awcms-astro/portal-bff/04-kesiapan.md).
 - **ADR-0017's four rules still bind the Jualanku BFF surface**, because all four
   concern any authenticated surface: `awcms` remains the system of record;
   permissions are decided by `awcms` and a surface here is not a second, looser

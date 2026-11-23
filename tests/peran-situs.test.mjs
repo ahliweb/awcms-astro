@@ -32,10 +32,10 @@ import {
 
 /**
  * Prefiks rute on-demand yang sudah dibolehkan SEBELUM ADR-0034, dan tetap
- * dibolehkan olehnya: BFF portal Jualanku (ADR-0014).
+ * dibolehkan olehnya: BFF portal marketplace (ADR-0014).
  *
  * Ia ada di sini karena gerbang di bawah menuntut setiap rute on-demand punya
- * izinnya, dan izin Jualanku datang dari ADR-nya sendiri alih-alih dari
+ * izinnya, dan izin portal marketplace datang dari ADR-nya sendiri alih-alih dari
  * `permukaanAdmin` — ia bukan permukaan admin, ia portal pengguna.
  */
 const PREFIKS_ADR_0014 = ["/penjual", "/affiliate", "/_portal-api"];
@@ -170,7 +170,7 @@ describe("setiap rute on-demand punya izinnya", () => {
       liar,
       [],
       "rute ini menyatakan `prerender = false` tanpa prefiksnya ada di " +
-        "`permukaanAdmin.prefiks` (ADR-0034) maupun di prefiks BFF Jualanku " +
+        "`permukaanAdmin.prefiks` (ADR-0034) maupun di prefiks BFF portal marketplace " +
         "(ADR-0014). Nyatakan permukaannya, atau jadikan rutenya statis."
     );
   });

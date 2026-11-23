@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](0014-rendering-campuran-dan-bff-portal.md)
 
-<!-- i18n-source-hash: sha256:b58378ff4bd4ffa5a48d178db663278fa15d978f28f6a88084a5dd1b428693b6 -->
+<!-- i18n-source-hash: sha256:524236110330c10f0e54925485e2fd0ad77befda64b904094b3a4a50fe5609fb -->
 
 # ADR-0014 — Rendering campuran (static-by-default + rute on-demand) dan BFF portal Jualanku
 
@@ -12,7 +12,7 @@
   (`awcms` sebagai system of record, `awcms-astro` sebagai experience layer);
   [`AGENTS.md`](../../AGENTS.md) §"Berpindah ke SSR" yang mensyaratkan ADR ini
   ada lebih dulu; dokumen validasi PT TIM SIX v1.0 (29 Juli 2026); blueprint
-  [`docs/awcms-astro/jualanku/`](../awcms-astro/jualanku/README.md).
+  [`docs/awcms-astro/portal-bff/`](../awcms-astro/portal-bff/README.md).
 
 ## Konteks
 
@@ -78,7 +78,7 @@ yang hanya hidup di BFF adalah aturan yang tidak ada — panggilan langsung ke
 **5. Kontrak sesi:** cookie portal `HttpOnly`/`Secure`/`SameSite`, token `awcms`
 tidak pernah sampai ke JavaScript, tenant diturunkan server dari host, logout
 mencabut sesi di `awcms` **sebelum** cookie dihapus, dan revokasi tetap milik
-`awcms`. Rinciannya di [`../awcms-astro/jualanku/02-kontrak-bff.md`](../awcms-astro/jualanku/02-kontrak-bff.md).
+`awcms`. Rinciannya di [`../awcms-astro/portal-bff/02-kontrak-bff.md`](../awcms-astro/portal-bff/02-kontrak-bff.md).
 
 **6. Deployment berubah dan perubahannya eksplisit.** Image berhenti menjadi
 "nginx + berkas statis" untuk deployment Jualanku: dibutuhkan proses Node yang

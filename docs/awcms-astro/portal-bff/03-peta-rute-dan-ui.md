@@ -36,13 +36,13 @@ version is stored — not merely text that can change without a trace.
 
 ## 4. What is NOT in this repo
 
-All of `/admin/jualanku/**` lives in `awcms`. This repo has no route, menu, link,
+All of `/admin/{portal}/**` lives in `awcms`. This repo has no route, menu, link,
 or component pointing there — including a "log in as admin" link. Merchants and
 affiliates do not have a session audience that could open it.
 
 ## 5. The Elementor porting disposition
 
-| Code       | Meaning                                  | Jualanku example                               |
+| Code       | Meaning                                  | Portal example                               |
 | ---------- | ---------------------------------------- | ---------------------------------------------- |
 | `PORT`     | Purpose & structure preserved            | The hero, category cards, business cards       |
 | `REDESIGN` | Purpose kept, the flow improved          | The seller dashboard, onboarding               |
@@ -75,7 +75,7 @@ silently, not scaled down.
 
 ## 7. Accessibility
 
-The baseline is **WCAG 2.2 AA** for the Jualanku surfaces (up from the 2.1 AA
+The baseline is **WCAG 2.2 AA** for the portal surfaces (up from the 2.1 AA
 written in `AGENTS.md`; that rise was decided in
 [ADR-0014](../../adr/0014-rendering-campuran-dan-bff-portal.md)).
 

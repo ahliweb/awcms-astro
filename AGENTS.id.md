@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](AGENTS.md)
 
-<!-- i18n-source-hash: sha256:31c2f1b542703af1da7ec4db36ab780e81ea53f35bb67135ae975ac474c1670d -->
+<!-- i18n-source-hash: sha256:46a703053765f908276c2f7b4f0980b5cadb62add2780b33097da7fe233ab45f -->
 
 # AGENTS.md — kontrak kerja `awcms-astro`
 
@@ -19,7 +19,7 @@ bukan saat request. Yang tinggal seluruhnya di `awcms` adalah layar admin
 bukan setiap layar yang meminta pembacanya masuk (§Peran repo ini).
 
 Permukaan terautentikasi yang direncanakan di sini karena itu ada **dua pintu**,
-dan keduanya belum ada kodenya: BFF portal Jualanku (ADR-0014), dan permukaan
+dan keduanya belum ada kodenya: BFF portal marketplace (ADR-0014), dan permukaan
 admin USER yang sebuah situs nyatakan lewat `permukaanAdmin`
 ([ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md)).
 Template ini sendiri menyatakan nol permukaan terautentikasi, dan `bun test`
@@ -82,7 +82,7 @@ yang pertama bukan syarat tambahan melainkan keadaan yang keempat lainnya jaga:
    terautentikasi di domain yang pemiliknya tidak pernah memutuskan untuk
    memilikinya — dengan build hijau. `tests/peran-situs.test.mjs` menolak rute
    on-demand yang prefiksnya tidak ada di `permukaanAdmin.prefiks` maupun di
-   prefiks BFF Jualanku ADR-0014.
+   prefiks BFF portal marketplace ADR-0014.
 2. **Menyatakannya tidak memindahkan satu izin pun.** RBAC/ABAC default-deny
    `awcms` tetap yang memutuskan setiap permintaan. Deklarasi di sini menggambar
    tombol; ia tidak memberi apa pun, dan peran yang ditolak `awcms` tetap
@@ -126,7 +126,7 @@ itu **tidak dicabut** ADR-0034: yang dibuka hanya admin SITUS untuk peran
 non-owner; admin SISTEM tetap milik `awcms`.
 
 Satu permukaan terautentikasi lain tetap direncanakan di sini, dan ia bukan
-admin: **BFF portal Jualanku** (ADR-0014, `awcms` ADR-0045). Empat aturan
+admin: **BFF portal marketplace** (ADR-0014, `awcms` ADR-0045). Empat aturan
 berikut mengikat **setiap** permukaan terautentikasi di repo ini — BFF maupun
 admin situs — dan dipindahkan utuh dari ADR-0017 karena keempatnya menyangkut
 permukaan terautentikasi apa pun, bukan khusus layar admin:
@@ -156,7 +156,7 @@ dipertanggungjawabkan.
 Dua kontrak yang dulu memblokir permukaan itu — header tenant dan kredensial
 mesin yang bisa dipegang BFF — **sudah mendarat** di `awcms` (ADR-0049 dan
 ADR-0050, 1 Agustus 2026). Yang belum: implementasinya di sini, dengan
-prasyarat di [`04-kesiapan.md`](docs/awcms-astro/jualanku/04-kesiapan.md).
+prasyarat di [`04-kesiapan.md`](docs/awcms-astro/portal-bff/04-kesiapan.md).
 
 **Dan kontrak sesi itu bergerak lagi sejak 12 Agustus 2026, jadi jangan
 membangun di atas ingatan.** Perubahan `awcms` yang menentukan bentuk permukaan
@@ -231,7 +231,7 @@ tidak punya instans; itu sebabnya job `build` di CI dikondisikan pada terisinya
 Batas eksplisit ADR-0023 juga tidak berubah: **"endpoint-nya sudah ada" bukan
 jawaban "tidak".**
 
-Yang masih ditahan oleh uji itu, dan oleh apa: **BFF portal Jualanku**
+Yang masih ditahan oleh uji itu, dan oleh apa: **BFF portal marketplace**
 (ADR-0014) memanggil `awcms` di SETIAP permintaan runtime, bukan sekali per
 build, jadi bentuknya ditentukan respons `awcms` pada tiap permintaan.
 
@@ -969,11 +969,11 @@ hidup, dan seluruh kontrol operasional keluarga AWCMS. Keputusan itu ditulis
 sebagai ADR lebih dulu, bukan diambil lewat satu baris di `astro.config.mjs`.
 
 **Satu ADR seperti itu sudah ada:**
-[ADR-0014](docs/adr/0014-rendering-campuran-dan-bff-portal.md) (Jualanku.info)
+[ADR-0014](docs/adr/0014-rendering-campuran-dan-bff-portal.md) (portal marketplace)
 memutuskan pola **static-by-default dengan rute on-demand** — adapter dipasang,
 `output` **tetap** `static`, dan hanya `/penjual/**`, `/affiliate/**` (selain
 landing), serta `/_portal-api/**` yang menyatakan `export const prerender = false`.
-Rancangannya di [`docs/awcms-astro/jualanku/`](docs/awcms-astro/jualanku/README.md).
+Rancangannya di [`docs/awcms-astro/portal-bff/`](docs/awcms-astro/portal-bff/README.md).
 
 **Dan sejak ADR-0034 ada KELAS KEDUA rute on-demand yang sah**, dengan bentuk
 yang sama persis: prefiks yang dinyatakan situs di `permukaanAdmin.prefiks`.
@@ -990,7 +990,7 @@ Tiga hal yang perlu dibaca sebelum menyentuh area itu:
   **sudah** terpasang sejak ADR-0016 — tetapi untuk MENYAJIKAN hasil build,
   bukan untuk merender saat request; `output` tetap `static`. Jangan membaca
   kehadirannya sebagai tanda prasyarat portal sudah lewat: prasyaratnya ada di
-  [`04-kesiapan.md`](docs/awcms-astro/jualanku/04-kesiapan.md) dan belum
+  [`04-kesiapan.md`](docs/awcms-astro/portal-bff/04-kesiapan.md) dan belum
   berubah.
 - **BFF tidak memutuskan apa pun yang punya konsekuensi bisnis.** Kepemilikan,
   entitlement, dan transisi status diputuskan `awcms`. Aturan yang hanya hidup di
@@ -998,7 +998,7 @@ Tiga hal yang perlu dibaca sebelum menyentuh area itu:
 - **Setiap permukaan TERAUTENTIKASI bertarget WCAG 2.2 AA** — batas yang sama
   dengan halaman publik (dinaikkan dari 2.1 AA pada 19 November 2026, issue
   #179; ADR-0014 lebih dulu menulis 2.2 untuk permukaan terautentikasi). Itu
-  mencakup BFF Jualanku (ADR-0014) maupun permukaan admin USER yang sebuah situs
+  mencakup BFF portal marketplace (ADR-0014) maupun permukaan admin USER yang sebuah situs
   nyatakan lewat `permukaanAdmin` (ADR-0034), dan yang mereka tambahkan adalah
   kontrol, formulir, dan fokus yang berpindah. Aturan lain di dokumen ini tetap
   berlaku penuh.

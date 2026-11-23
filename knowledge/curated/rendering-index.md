@@ -11,7 +11,7 @@ is an ADR decision, not a config edit. Full statement:
 `tests/peran-situs.test.mjs` accepts exactly two prefix lists for a route
 declaring `export const prerender = false`, and refuses everything else:
 
-1. The Jualanku BFF prefixes from
+1. The marketplace portal BFF prefixes from
    [ADR-0014](../../docs/adr/0014-rendering-campuran-dan-bff-portal.md).
 2. The prefixes a site declares in `permukaanAdmin.prefiks`
    ([ADR-0034](../../docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md)).

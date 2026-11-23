@@ -23,7 +23,7 @@
 # Alasannya bukan sekadar ukuran. Changeset **menceritakan ulang** dokumen yang
 # ia rangkum, jadi isinya masuk graf dua kali dengan kata yang berbeda. Itu
 # terlihat langsung di laporan: "Deploy dan rebuild lewat webhook (Coolify)",
-# "ADR-0014 — Rendering campuran dan BFF portal Jualanku", dan "Postur performa
+# "ADR-0014 — Rendering campuran dan BFF portal marketplace", dan "Postur performa
 # dan keamanan punya nama, dan celahnya punya nomor" masing-masing muncul DUA
 # KALI sebagai konsep kunci — satu dari dokumennya, satu dari changeset yang
 # meringkasnya.

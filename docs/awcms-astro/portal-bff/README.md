@@ -1,6 +1,6 @@
 🇬🇧 English (source) · 🇮🇩 [Bahasa Indonesia](README.id.md)
 
-# Jualanku.info — the experience layer blueprint
+# Marketplace portal — the experience layer blueprint
 
 > **Status: PLANNED.** There is no adapter, and no `/penjual/**`,
 > `/affiliate/**`, or `/_portal-api/**` route in this repo. `astro.config.mjs` is
@@ -8,10 +8,10 @@
 > the prerequisites below are closed. The source of truth remains the code +
 > `bun run build`.
 
-This folder designs the experience side of the Jualanku.info port. Its decisions
+This folder designs the experience side of the marketplace portal port. Its decisions
 are recorded in [ADR-0014](../../adr/0014-rendering-campuran-dan-bff-portal.md);
 the platform side (domain, authorisation, data, API) is designed in the
-[`ahliweb/awcms`](https://github.com/ahliweb/awcms/blob/main/docs/awcms/jualanku/README.md)
+[`ahliweb/awcms`](https://github.com/ahliweb/awcms/blob/main/docs/awcms/README.md)
 repo.
 
 ## Document map

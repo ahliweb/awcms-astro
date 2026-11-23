@@ -353,7 +353,7 @@ lets it need no `node_modules` at all.
   dependency, so it deserves an ADR of its own. `SITE_SOCIAL_IMAGE` (one
   optional site-wide card) remains a supported state, and a page with no card at
   all sets no image tag whatsoever — the preview degrades to a tidy text card.
-- **The Jualanku portal BFF (ADR-0014).** `/internal/login`, a server-side BFF
+- **The marketplace portal BFF (ADR-0014).** `/internal/login`, a server-side BFF
   session, portal cookies, CSRF. Its `awcms` foundation has been **complete since
   4 August 2026**: the session contract (ADR-0049/0050) and a business-scope
   resolver that now has a provider (`awcms` ADR-0060 — previously a fail-closed
@@ -369,9 +369,9 @@ lets it need no `node_modules` at all.
   calls `awcms` **on every runtime request**, not once per build, so its shape
   is decided by `awcms`'s response on each request — and this template repo has
   no instance to prove it against. One prerequisite remains on that side too:
-  the shape of Jualanku's merchant scope still needs its own admission ADR. The
+  the shape of the marketplace portal's merchant scope still needs its own admission ADR. The
   prerequisites in this repo are in
-  [`04-kesiapan.md`](docs/awcms-astro/jualanku/04-kesiapan.md).
+  [`04-kesiapan.md`](docs/awcms-astro/portal-bff/04-kesiapan.md).
 - **A locale filter on the awcms feed — it already EXISTS in awcms, and is
   precisely what this template must NOT use.** The content traversal itself is
   finished: one `GET /api/v1/blog/posts?view=full&order=created_at`, walked

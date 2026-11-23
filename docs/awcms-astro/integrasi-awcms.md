@@ -49,7 +49,7 @@ flowchart TB
 | `src/content.config.ts` | Replaced by the API contract + server-side validation |
 | `src/content/*.md` | A one-way migration into `awcms_blog_posts` |
 | `src/data/*.ts` | Becomes taxonomy/terms or stays static — see below |
-| `astro.config.mjs` | `output: 'static'` **stays**; a server adapter is installed and only routes whose prefix is DECLARED use `prerender = false` ([ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md) for the Jualanku BFF, [ADR-0034](../adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md) for `permukaanAdmin`). "Private" alone is no longer a sufficient condition: `tests/peran-situs.test.mjs` refuses an on-demand route whose prefix is on neither list. The runtime has been Bun since [ADR-0015](../adr/0015-runtime-bun-menutup-divergence-keluarga.md) |
+| `astro.config.mjs` | `output: 'static'` **stays**; a server adapter is installed and only routes whose prefix is DECLARED use `prerender = false` ([ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md) for the marketplace portal BFF, [ADR-0034](../adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md) for `permukaanAdmin`). "Private" alone is no longer a sufficient condition: `tests/peran-situs.test.mjs` refuses an on-demand route whose prefix is on neither list. The runtime has been Bun since [ADR-0015](../adr/0015-runtime-bun-menutup-divergence-keluarga.md) |
 
 ## The data model mapping
 

@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:7ded9b1ec9c00ee09bb716dcc23b37c2d967266aeaf455fe695cfdde8aacb7e1 -->
+<!-- i18n-source-hash: sha256:83da4ff86bf5f4ae614cf5e878ce6cc81eb259982f1b895e8f51608831a7e26f -->
 
 # awcms-astro
 
@@ -354,7 +354,7 @@ membuatnya tidak perlu `node_modules` sama sekali.
   pantas mendapat ADR-nya sendiri. `SITE_SOCIAL_IMAGE` (satu kartu situs,
   opsional) tetap keadaan yang didukung, dan halaman tanpa kartu mana pun tidak
   memasang tag gambar sama sekali — pratinjau jatuh ke kartu teks yang rapi.
-- **BFF portal Jualanku (ADR-0014).** `/internal/login`, sesi BFF sisi server,
+- **BFF portal marketplace (ADR-0014).** `/internal/login`, sesi BFF sisi server,
   cookie portal, CSRF. Fondasi `awcms`-nya **lengkap per 4 Agustus 2026**:
   kontrak sesi (ADR-0049/0050) dan business-scope resolver yang kini punya
   penyedia (`awcms` ADR-0060 — sebelumnya NO-OP fail-closed). Tanggal itu perlu
@@ -370,9 +370,9 @@ membuatnya tidak perlu `node_modules` sama sekali.
   memanggil `awcms` **di setiap permintaan runtime**, bukan sekali per build,
   jadi bentuknya ditentukan respons `awcms` pada tiap permintaan — dan repo
   template ini tidak punya instans untuk membuktikannya. Satu prasyarat tersisa
-  di sisi sana juga: bentuk scope merchant Jualanku masih butuh ADR admission-nya
+  di sisi sana juga: bentuk scope merchant portal marketplace masih butuh ADR admission-nya
   sendiri. Prasyarat di repo ini ada di
-  [`04-kesiapan.md`](docs/awcms-astro/jualanku/04-kesiapan.md).
+  [`04-kesiapan.md`](docs/awcms-astro/portal-bff/04-kesiapan.md).
 - **Filter locale di feed awcms — sudah ADA di awcms, dan justru TIDAK boleh
   dipakai template ini.** Traversal kontennya sendiri sudah selesai: satu
   `GET /api/v1/blog/posts?view=full&order=created_at`, disusuri lewat

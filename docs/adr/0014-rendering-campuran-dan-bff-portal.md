@@ -10,7 +10,7 @@
   (`awcms` as the system of record, `awcms-astro` as the experience layer);
   [`AGENTS.md`](../../AGENTS.md) §"Moving to SSR", which requires this ADR to
   exist first; the PT TIM SIX validation document v1.0 (29 July 2026); the
-  [`docs/awcms-astro/jualanku/`](../awcms-astro/jualanku/README.md) blueprint.
+  [`docs/awcms-astro/portal-bff/`](../awcms-astro/portal-bff/README.md) blueprint.
 
 ## Context
 
@@ -76,7 +76,7 @@ rule living only in the BFF is a rule that does not exist — a direct call to
 the `awcms` token never reaches JavaScript, the tenant is derived server-side from
 the host, logout revokes the session in `awcms` **before** the cookie is deleted,
 and revocation stays `awcms`'s. Details in
-[`../awcms-astro/jualanku/02-kontrak-bff.md`](../awcms-astro/jualanku/02-kontrak-bff.md).
+[`../awcms-astro/portal-bff/02-kontrak-bff.md`](../awcms-astro/portal-bff/02-kontrak-bff.md).
 
 **6. Deployment changes, and the change is explicit.** The image stops being
 "nginx + static files" for the Jualanku deployment: a Node process running the

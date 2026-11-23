@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:8b9ecc5564872e8b4b58da6b961f079adc24c78eae9b1bc3f414eabc2b05880d -->
+<!-- i18n-source-hash: sha256:520997b585fd9ff6b2f0ef709675f04313e8bb27b78c8f538ed4b8b4351ee2a4 -->
 
 # awcms-astro
 
@@ -101,7 +101,7 @@ Keluarga AWCMS bersifat **Bun-only** dan **PostgreSQL + RLS wajib**. Sejak [ADR-
 
 Divergence yang tersisa berlaku **selama repo tetap tanpa basis data DAN tanpa permukaan terautentikasi**. Dua baris terakhir tabel tidak beralasan pada basis data melainkan pada ketiadaan mutation dan ketiadaan permukaan yang disajikan — jadi begitu sebuah situs menyatakan `permukaanAdmin` atau memasang BFF, keduanya berhenti berlaku apa adanya. Dan saat situs itu mulai menyimpan data tenant-scoped sendiri, seluruh kontrol keluarga kembali berlaku penuh.
 
-[ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md) (Jualanku.info) memberi batas yang presisi untuk kasus pertama yang benar-benar butuh sesi: `output` **tetap** `static`, adapter dipasang, dan hanya rute portal yang menjadi on-demand. Datanya tetap milik `awcms` — kontrol keluarga (idempotency, audit, otorisasi, RLS) dijalankan di sana, **bukan** dipindahkan ke repo ini.
+[ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md) (portal marketplace) memberi batas yang presisi untuk kasus pertama yang benar-benar butuh sesi: `output` **tetap** `static`, adapter dipasang, dan hanya rute portal yang menjadi on-demand. Datanya tetap milik `awcms` — kontrol keluarga (idempotency, audit, otorisasi, RLS) dijalankan di sana, **bukan** dipindahkan ke repo ini.
 
 Yang **tidak** menyimpang dan wajib diikuti: `AGENTS.md` sebagai kontrak kerja, `docs/adr/`, Conventional Commits, changeset, Definition of Done, larangan secret di repo, dan gerbang CI.
 
@@ -116,7 +116,7 @@ Yang **tidak** menyimpang dan wajib diikuti: `AGENTS.md` sebagai kontrak kerja, 
 | [`permukaan-admin-user.md`](permukaan-admin-user.md) | Peran kedua repo ini: bentuk permukaan admin USER, cara menyatakannya, apa yang berubah begitu ia menyala, dan apa yang tidak pernah boleh dibangun di sini |
 | [`checklist-repo-baru.md`](checklist-repo-baru.md) | Langkah memulai situs baru di atas standar ini |
 | [`ui-contract-inventory.md`](../ui-contract-inventory.id.md) | Laporan riset (isu #187): setiap layar yang dirender situs SSG dipetakan ke operasi `awcms`, izin, tes, beserta celah dan drift yang ditemukan, diklasifikasi VERIFIED, ASSUMED, PLANNED, atau DEFERRED |
-| [`jualanku/`](jualanku/README.md) | **Blueprint** experience layer Jualanku.info: rendering campuran, BFF, peta rute/UI, kesiapan ([ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md)) — rencana, belum diimplementasikan |
+| [`portal-bff/`](portal-bff/README.md) | **Blueprint** experience layer portal marketplace: rendering campuran, BFF, peta rute/UI, kesiapan ([ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md)) — rencana, belum diimplementasikan |
 
 ## Apa yang membuat standar ini berbeda
 

@@ -84,7 +84,7 @@ describe("isInScope — which documents the policy governs", () => {
     for (const path of [
       "docs/adr/0038-kebutuhan-backend-menjadi-modul-di-awcms.md",
       "docs/awcms-astro/standar-teknis.md",
-      "docs/awcms-astro/jualanku/README.md",
+      "docs/awcms-astro/portal-bff/README.md",
       ".claude/skills/awcms-astro-gerbang/SKILL.md",
       ".claude/skills/README.md",
       "README.md",

@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](ui-ux-design-system.md)
 
-<!-- i18n-source-hash: sha256:c6c6163a8456d341a9b09d5a10b8df99e772fc34c152ae8e803cd7cf16d11cb6 -->
+<!-- i18n-source-hash: sha256:a34a0d7807a7eb377855a9a0ba252fa50af600282cfcc745c59260bb8947d243 -->
 
 # awcms-astro — Design System
 
@@ -209,7 +209,7 @@ Gerbang yang sama lalu mencatat apa yang masih salah dan tidak diperbaiki di sin
 - `prefers-reduced-motion: reduce` dihormati, dan pembaca juga bisa mematikan (atau menyalakan kembali) gerakan di panel preferensi baca.
 - Badan konten yang jatuh ke locale default membawa atribut `lang` yang benar, supaya pembaca layar melafalkannya dengan aturan yang tepat.
 
-Targetnya **WCAG 2.2 AA** untuk permukaan publik dan untuk setiap permukaan TERAUTENTIKASI bila ia kelak ada (halaman publik sebelumnya 2.1 AA, sampai 19 November 2026, issue #179) — bukan hanya Jualanku ([ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md)), melainkan juga permukaan admin USER yang sebuah situs nyatakan lewat `permukaanAdmin` ([ADR-0034](../adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md)). Keduanya membawa kontrol, formulir, dan fokus yang berpindah, itulah sebabnya kriteria 2.2 di bawah paling penting di sana. Dua kriteria 2.2 yang paling mungkin menggigit lebih dulu di antarmuka mana pun yang membawa kontrol: **2.4.11 Focus Not Obscured** dan **2.5.8 Target Size (Minimum)** — yang kedua sudah dipenuhi di sini lewat aturan target sentuh 44px di atas, yang pertama **belum diuji di browser**, dan kini ada yang bisa diuji: tombol preferensi baca adalah elemen tetap di inline-start bawah setiap halaman (§Preferensi baca). Apakah ia bisa menutupi kontrol yang sedang fokus belum diperiksa, dan butuh uji browser yang belum dimiliki repo ini (tindak lanjut ADR-0055).
+Targetnya **WCAG 2.2 AA** untuk permukaan publik dan untuk setiap permukaan TERAUTENTIKASI bila ia kelak ada (halaman publik sebelumnya 2.1 AA, sampai 19 November 2026, issue #179) — bukan hanya portal marketplace ([ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md)), melainkan juga permukaan admin USER yang sebuah situs nyatakan lewat `permukaanAdmin` ([ADR-0034](../adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md)). Keduanya membawa kontrol, formulir, dan fokus yang berpindah, itulah sebabnya kriteria 2.2 di bawah paling penting di sana. Dua kriteria 2.2 yang paling mungkin menggigit lebih dulu di antarmuka mana pun yang membawa kontrol: **2.4.11 Focus Not Obscured** dan **2.5.8 Target Size (Minimum)** — yang kedua sudah dipenuhi di sini lewat aturan target sentuh 44px di atas, yang pertama **belum diuji di browser**, dan kini ada yang bisa diuji: tombol preferensi baca adalah elemen tetap di inline-start bawah setiap halaman (§Preferensi baca). Apakah ia bisa menutupi kontrol yang sedang fokus belum diperiksa, dan butuh uji browser yang belum dimiliki repo ini (tindak lanjut ADR-0055).
 
 Kontras token warna di repo ini **belum pernah diaudit terukur** (lihat peringatan di §Gap terhadap kosakata AWCMS). Itu satu-satunya butir WCAG di dokumen ini yang tidak bisa dijawab "sudah" — dan ia ditulis begitu alih-alih dibiarkan tampak terjaga.
 

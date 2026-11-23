@@ -1630,7 +1630,7 @@ repo lain), `audit:graf`.
 
 Fase kelima dan terakhir [ADR-0039](docs/adr/0039-english-is-the-source-language.md):
 dua belas dokumen terakhir — enam di [`docs/awcms-astro/`](docs/awcms-astro/README.md),
-lima di [`jualanku/`](docs/awcms-astro/jualanku/README.md), dan
+lima di [`portal-bff/`](docs/awcms-astro/portal-bff/README.md), dan
 [`deploy-coolify.md`](docs/deploy-coolify.md) — kini berbahasa Inggris di
 jalur telanjangnya. **`DOCS_AWAITING_MIRROR` kosong**: 53 cermin, nol utang.
 Migrasi 52 dokumen yang ADR-0039 jadwalkan selesai dalam lima commit.

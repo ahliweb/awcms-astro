@@ -16,7 +16,7 @@ admin screens — modules, roles, tenants, audit trail, anything cross-tenant �
 not every screen that asks its reader to sign in (§This repo's role).
 
 Authenticated surfaces planned here therefore have **two doors**, and neither
-has code yet: the Jualanku portal BFF (ADR-0014), and the USER admin surface a
+has code yet: the marketplace portal BFF (ADR-0014), and the USER admin surface a
 site declares through `permukaanAdmin`
 ([ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md)).
 This template itself declares zero authenticated surfaces, and `bun test` is
@@ -75,7 +75,7 @@ because the first is not an extra condition but the state the other four guard:
    `export const prerender = false` is enough to stand up an authenticated
    surface on a domain whose owner never decided to have one — with a green
    build. `tests/peran-situs.test.mjs` refuses an on-demand route whose prefix
-   is in neither `permukaanAdmin.prefiks` nor the Jualanku BFF prefixes of
+   is in neither `permukaanAdmin.prefiks` nor the marketplace portal BFF prefixes of
    ADR-0014.
 2. **Declaring it moves not one permission.** `awcms`'s default-deny RBAC/ABAC
    still decides every request. A declaration here draws a button; it grants
@@ -116,7 +116,7 @@ That boundary is **not lifted** by ADR-0034: what opened is only SITE admin for
 non-owner roles; SYSTEM admin stays `awcms`'s.
 
 One other authenticated surface is still planned here, and it is not admin: the
-**Jualanku portal BFF** (ADR-0014, `awcms` ADR-0045). The four rules below bind
+**marketplace portal BFF** (ADR-0014, `awcms` ADR-0045). The four rules below bind
 **every** authenticated surface in this repo — BFF and site admin alike — and
 were moved across whole from ADR-0017 because all four concern any authenticated
 surface, not admin screens specifically:
@@ -144,7 +144,7 @@ on, and writing it down as "gated" would be a claim nobody could stand behind.
 Two contracts that used to block that surface — the tenant header and machine
 credentials a BFF can hold — **have landed** in `awcms` (ADR-0049 and ADR-0050,
 1 August 2026). What has not: their implementation here, with the prerequisites
-in [`04-kesiapan.md`](docs/awcms-astro/jualanku/04-kesiapan.md).
+in [`04-kesiapan.md`](docs/awcms-astro/portal-bff/04-kesiapan.md).
 
 **And that session contract moved again on 12 August 2026, so do not build on
 memory.** The `awcms` changes that decide the shape of any surface asking people
@@ -220,7 +220,7 @@ why the `build` job in CI is conditioned on `vars.AWCMS_API_URL` being filled.
 ADR-0023's explicit boundary has not changed either: **"the endpoint already
 exists" is not an answer of "no".**
 
-What that test still holds back, and by what: the **Jualanku portal BFF**
+What that test still holds back, and by what: the **marketplace portal BFF**
 (ADR-0014) calls `awcms` on EVERY runtime request, not once per build, so its
 shape is decided by `awcms`'s response on each request.
 
@@ -936,12 +936,12 @@ dependency, and every operational control of the AWCMS family. That decision is
 written as an ADR first, not taken through one line in `astro.config.mjs`.
 
 **One such ADR already exists:**
-[ADR-0014](docs/adr/0014-rendering-campuran-dan-bff-portal.md) (Jualanku.info)
+[ADR-0014](docs/adr/0014-rendering-campuran-dan-bff-portal.md) (marketplace portal)
 decides the pattern of **static-by-default with on-demand routes** — an adapter
 is installed, `output` **stays** `static`, and only `/penjual/**`,
 `/affiliate/**` (other than the landing page), and `/_portal-api/**` declare
 `export const prerender = false`. Its design is in
-[`docs/awcms-astro/jualanku/`](docs/awcms-astro/jualanku/README.md).
+[`docs/awcms-astro/portal-bff/`](docs/awcms-astro/portal-bff/README.md).
 
 **And since ADR-0034 there is a SECOND legitimate class of on-demand route**,
 with exactly the same shape: the prefixes a site declares in
@@ -958,14 +958,14 @@ Three things to read before touching that area:
   installed, since ADR-0016 — but to SERVE the build output, not to render at
   request time; `output` stays `static`. Do not read its presence as a sign that
   the portal prerequisites have been passed: they are in
-  [`04-kesiapan.md`](docs/awcms-astro/jualanku/04-kesiapan.md) and have not
+  [`04-kesiapan.md`](docs/awcms-astro/portal-bff/04-kesiapan.md) and have not
   changed.
 - **The BFF decides nothing with business consequences.** Ownership,
   entitlement, and status transitions are decided by `awcms`. A rule that lives
   only in this repo is a rule that does not exist.
 - **Every AUTHENTICATED surface targets WCAG 2.2 AA** — the same floor as the
   public pages (raised from 2.1 AA on 19 November 2026, issue #179; ADR-0014
-  wrote 2.2 for authenticated surfaces first). That covers the Jualanku BFF
+  wrote 2.2 for authenticated surfaces first). That covers the marketplace portal BFF
   (ADR-0014) and the USER admin surface a site declares through
   `permukaanAdmin` (ADR-0034) alike, and what those add is controls, forms, and
   focus that moves. Every other rule in this document still applies in full.

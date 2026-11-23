@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](ui-contract-inventory.md)
 
-<!-- i18n-source-hash: sha256:f5ef81012f307e1930b7bbd9b77e54acebf44d9f17d8045547c19ab3fb2c1965 -->
+<!-- i18n-source-hash: sha256:f3e7f595d3d310ebb090770701dd06df5f03e454ecaa6affa75065f48541ea56 -->
 
 # Inventaris UI, data, dan kontrak konsumen situs SSG
 
@@ -94,7 +94,7 @@ Ketiga belas operasi ditemukan di spesifikasi pada SHA `awcms` di atas. "Gerbang
 | Permukaan | Status | Bukti |
 | --- | --- | --- |
 | Admin USER lewat `permukaanAdmin` | **PLANNED.** Dinyatakan boleh oleh ADR-0034, **tanpa kode**. `permukaanAdmin.prefiks` dan `.peran` adalah larik kosong di `src/config/site.ts` | `tests/peran-situs.test.mjs` ("template ini TIDAK menyatakan satu pun permukaan admin") |
-| BFF portal Jualanku (`/penjual/**`, `/affiliate/**`, `/_portal-api/**`) | **PLANNED**, tertahan di balik prasyarat `docs/awcms-astro/jualanku/04-kesiapan.md`. Fase roadmap F3, status di tabel roadmap, kriteria keluar masih "diusulkan pemilik" | tidak ada string `_portal-api` atau BFF di `src/`, `server/`; `docs/roadmap.md` |
+| BFF portal marketplace (`/penjual/**`, `/affiliate/**`, `/_portal-api/**`) | **PLANNED**, tertahan di balik prasyarat `docs/awcms-astro/portal-bff/04-kesiapan.md`. Fase roadmap F3, status di tabel roadmap, kriteria keluar masih "diusulkan pemilik" | tidak ada string `_portal-api` atau BFF di `src/`, `server/`; `docs/roadmap.md` |
 | Klien lead publik, consent, dan real-time | **PLANNED** oleh `docs/crm-public-ux-contract.md` dan `docs/bun-realtime-client-boundary.md`, bertanda "dokumen usulan" di sana | dokumen-dokumen itu; tidak diulang di sini |
 
 Tidak ada layar di §3 yang merupakan layar admin USER atau BFF, dan tidak ada baris yang mengklaim sebaliknya. Pembacaan ADR-0057 (Diterima 2026-11-20; ia Proposed pada SHA baseline) mempertahankan aturan yang sama: rilis permukaan semacam itu butuh kapabilitas nyata di `awcms`.

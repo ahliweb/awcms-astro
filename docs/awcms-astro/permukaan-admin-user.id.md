@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](permukaan-admin-user.md)
 
-<!-- i18n-source-hash: sha256:2ba3e4b45ca0fc76592c8a3f2839d6393552a8ad1de1e550513df14d791403eb -->
+<!-- i18n-source-hash: sha256:1a42c4587d7dae6f7877ed5343faadf59533e288addc7e1fb942b87b9140b9c5 -->
 
 # Permukaan admin USER — bentuk, prasyarat, dan batasnya
 
@@ -23,7 +23,7 @@ membutuhkannya. Dokumen ini untuk yang membutuhkannya.
 > **Satu hal di sini MELEBARKAN aturan yang sudah ada alih-alih menyatakannya
 > ulang**, dan itu disebut supaya tidak lolos sebagai restatement: target WCAG
 > 2.2 AA di §3 kini berlaku untuk setiap permukaan terautentikasi, bukan hanya
-> Jualanku (ADR-0014). ADR-0034 tidak menyebut aksesibilitas sama sekali. Ia
+> portal marketplace (ADR-0014). ADR-0034 tidak menyebut aksesibilitas sama sekali. Ia
 > **belum punya pemeriksa** — seperti aksesibilitas di repo ini secara umum —
 > jadi ia penilaian manusia pada review, bukan gerbang. Untuk aturan baru
 > selebihnya, [ADR-0030](../adr/0030-aturan-tertulis-mendapat-pemeriksanya.md)
@@ -80,7 +80,7 @@ Lima hal yang **memerahkan `bun test`** lewat `tests/peran-situs.test.mjs`:
    antaranya kini meminta pembacanya masuk lebih dulu.
 3. Deklarasi separuh — prefiks tanpa peran, atau peran tanpa prefiks.
 4. Sebuah rute ber-`export const prerender = false` yang prefiksnya tidak ada di
-   `permukaanAdmin.prefiks` maupun di prefiks BFF Jualanku
+   `permukaanAdmin.prefiks` maupun di prefiks BFF portal marketplace
    ([ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md)). Inilah yang
    membuat "publik secara bawaan" menjadi keadaan yang **ditegakkan**: satu
    berkas rute sudah cukup untuk menegakkan permukaan terautentikasi di domain

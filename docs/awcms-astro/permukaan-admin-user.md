@@ -20,7 +20,7 @@ that do.
 >
 > **One thing here WIDENS an existing rule rather than restating it**, and it is
 > named so it does not pass as a restatement: the WCAG 2.2 AA target in §3 now
-> applies to every authenticated surface, not only Jualanku (ADR-0014). ADR-0034
+> applies to every authenticated surface, not only the marketplace portal (ADR-0014). ADR-0034
 > does not mention accessibility at all. It **has no checker** — as accessibility
 > in this repo generally does not — so it is a human judgement at review, not a
 > gate. For any other new rule,
@@ -75,7 +75,7 @@ Five things that **turn `bun test` red** through `tests/peran-situs.test.mjs`:
    reader to log in first.
 3. A half declaration — a prefix with no role, or a role with no prefix.
 4. A route with `export const prerender = false` whose prefix is in neither
-   `permukaanAdmin.prefiks` nor the Jualanku BFF prefix
+   `permukaanAdmin.prefiks` nor the marketplace portal BFF prefix
    ([ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md)). This is what
    makes "public by default" an **enforced** state: one route file is enough to
    stand up an authenticated surface on a domain whose owner never decided to have

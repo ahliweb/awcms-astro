@@ -35,7 +35,7 @@ cannot be verified is written `not measured`, not `met`.
 | ISO/IEC 25010 | 2023 | The product quality model (performance, compatibility, reliability) | Compatibility/interoperability: the surface gate in §The relationship with `awcms` |
 | Core Web Vitals | LCP · INP · CLS | Performance as a reader feels it | §Performance |
 | RFC 9111 (+ RFC 5861) | HTTP Caching, `stale-while-revalidate` | `Cache-Control` semantics | [`tests/penyaji.test.mjs`](../../tests/penyaji.test.mjs) |
-| WCAG | 2.2 AA (public pages, the Jualanku BFF, and USER admin alike) | Accessibility | [`standar-teknis.md`](standar-teknis.md#accessibility) |
+| WCAG | 2.2 AA (public pages, the marketplace portal BFF, and USER admin alike) | Accessibility | [`standar-teknis.md`](standar-teknis.md#accessibility) |
 
 **This list is deliberately matched to the `ahliweb/awcms` assessment of 4 August 2026** (`docs/awcms/repo-assessment-2026-08-04.md`), which measures itself against ISO/IEC 25010, RFC 9111/5861, Core Web Vitals, OWASP Top 10 2021, OWASP API Security Top 10 2023, ASVS 4.0, and ISO/IEC 27001:2022 Annex A. Two of them were absent from this list until today, and one (API Security Top 10) does not apply here — it is still recorded, because a "not applicable, and here is why" row is what makes two family matrices addable.
 
@@ -117,7 +117,7 @@ applicable" row below rests on an EMPTY `permukaanAdmin` in
 routes. A site declaring a USER admin surface
 ([ADR-0034](../adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md))
 voids that premise, and A01/A07/A09 apply again along with CSRF, sessions, and
-cache separation. That holds for the Jualanku surface and the USER admin surface
+cache separation. That holds for the portal surface and the USER admin surface
 alike — the surface's name decides nothing; what decides is whether there is a
 path carrying credentials. Its full list is in
 [`permukaan-admin-user.md`](permukaan-admin-user.md) §3.
@@ -424,8 +424,8 @@ Three lines change their meaning the moment this template becomes a site:
    it.** A credentialed surface targets WCAG 2.2 AA and brings back every OWASP
    category written "not applicable" above — A01, A07, and A09 in particular —
    along with sessions, CSRF, cache separation, and a re-examination of the
-   COOP/CORP and SRI posture. The first door is the Jualanku BFF, its prerequisites
-   in [`jualanku/04-kesiapan.md`](jualanku/04-kesiapan.md); the second is
+   COOP/CORP and SRI posture. The first door is the marketplace portal BFF, its prerequisites
+   in [`portal-bff/04-kesiapan.md`](portal-bff/04-kesiapan.md); the second is
    `permukaanAdmin` for USER admin, and all of its consequences are in
    [`permukaan-admin-user.md`](permukaan-admin-user.md). What decides is not the
    surface's name but the existence of a path carrying credentials.

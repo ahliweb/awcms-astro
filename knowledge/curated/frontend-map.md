@@ -21,10 +21,10 @@ declares zero authenticated surfaces — `bun test` goes red if a route ships
 
 ## Two planned authenticated doors — neither has code yet
 
-1. **The Jualanku portal BFF** (ADR-0014): `/penjual/**`, `/affiliate/**`
+1. **The marketplace portal BFF** (ADR-0014): `/penjual/**`, `/affiliate/**`
    (other than its landing page), `/_portal-api/**`. Composes `awcms` calls
    for this site's own screens; owns no data. Prerequisites tracked in
-   [`docs/awcms-astro/jualanku/04-kesiapan.md`](../../docs/awcms-astro/jualanku/04-kesiapan.md).
+   [`docs/awcms-astro/portal-bff/04-kesiapan.md`](../../docs/awcms-astro/portal-bff/04-kesiapan.md).
 2. **A site's own USER admin surface**, declared through `permukaanAdmin`
    (ADR-0034) — writing an article, submitting for review, managing a
    profile. Never the **main admin** (`owner`, modules, roles, tenants,

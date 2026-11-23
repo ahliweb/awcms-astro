@@ -63,7 +63,7 @@ to call `awcms` leaves a live session nobody can see any more.
 | `POST /_portal-api/auth/login`             | `/api/v1/auth/login`                                | Rate-limited, uniform responses |
 | `POST /_portal-api/auth/logout`            | `/api/v1/auth/logout`                               | Revoke first, cookie after      |
 | `GET  /_portal-api/auth/session`           | the session introspection endpoint                  | Safe claims only                |
-| `GET/PATCH /_portal-api/merchant/profile`  | `/api/v1/jualanku/portal/merchant/profile`          | The ETag is forwarded           |
+| `GET/PATCH /_portal-api/merchant/profile`  | `/api/v1/{portal}/portal/merchant/profile`          | The ETag is forwarded           |
 | `GET/POST/PATCH /_portal-api/merchant/catalog` | `.../portal/merchant/offerings`                 | The Idempotency-Key is forwarded |
 | `GET/POST /_portal-api/merchant/promotions`| `.../portal/merchant/promotions`                    | —                               |
 | `GET  /_portal-api/merchant/leads`         | `.../portal/merchant/leads`                         | PII already masked by `awcms`   |
@@ -71,7 +71,7 @@ to call `awcms` leaves a live session nobody can see any more.
 | `GET  /_portal-api/affiliate/summary`      | `.../portal/affiliate/summary`                      | The balance from the ledger     |
 | `GET/POST /_portal-api/affiliate/links`    | `.../portal/affiliate/links`                        | —                               |
 | `POST /_portal-api/affiliate/payouts`      | `.../portal/affiliate/payouts`                      | **Idempotency mandatory**       |
-| `POST /_portal-api/interactions`           | `/api/v1/jualanku/public/interactions`              | Public, minimal data, rate-limited |
+| `POST /_portal-api/interactions`           | `/api/v1/{portal}/public/interactions`              | Public, minimal data, rate-limited |
 
 **There is no generic passthrough.** There is no `/_portal-api/[...path].ts`
 forwarding anything at all to `awcms`; every endpoint is registered explicitly. A

@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](integrasi-awcms.md)
 
-<!-- i18n-source-hash: sha256:4e105e7ae438d88f1228f2f3deb08a044e9c731023f5536bba2470a760e3ef75 -->
+<!-- i18n-source-hash: sha256:6a8a6ab5624f46a2065185f682b254752f7c522e277b8861c17b69888d050a28 -->
 
 # Integrasi awcms-astro → awcms
 
@@ -51,7 +51,7 @@ flowchart TB
 | `src/content.config.ts` | Diganti kontrak API + validasi sisi server |
 | `src/content/*.md` | Migrasi sekali jalan ke `awcms_blog_posts` |
 | `src/data/*.ts` | Menjadi taxonomy/term atau tetap statis — lihat di bawah |
-| `astro.config.mjs` | `output: 'static'` **tetap**; adapter server dipasang dan hanya rute yang prefiksnya DINYATAKAN memakai `prerender = false` ([ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md) untuk BFF Jualanku, [ADR-0034](../adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md) untuk `permukaanAdmin`). "Privat" saja bukan lagi syarat yang cukup: `tests/peran-situs.test.mjs` menolak rute on-demand yang prefiksnya tidak ada di salah satu dari dua daftar itu. Runtime sudah Bun sejak [ADR-0015](../adr/0015-runtime-bun-menutup-divergence-keluarga.md) |
+| `astro.config.mjs` | `output: 'static'` **tetap**; adapter server dipasang dan hanya rute yang prefiksnya DINYATAKAN memakai `prerender = false` ([ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md) untuk BFF portal marketplace, [ADR-0034](../adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.md) untuk `permukaanAdmin`). "Privat" saja bukan lagi syarat yang cukup: `tests/peran-situs.test.mjs` menolak rute on-demand yang prefiksnya tidak ada di salah satu dari dua daftar itu. Runtime sudah Bun sejak [ADR-0015](../adr/0015-runtime-bun-menutup-divergence-keluarga.md) |
 
 ## Pemetaan model data
 
