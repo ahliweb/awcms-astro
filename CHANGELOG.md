@@ -5272,7 +5272,7 @@ oleh yang mencoba men-deploy, sebagai kegagalan build yang menyebut `git` —
 sesuatu yang tidak pernah ditulis siapa pun sebagai dependency runtime.
 
 Ditemukan saat men-deploy template ini ke server Coolify rujukan
-(`ahliweb/serv-dinkesdocker`), tempat dua aplikasi untuk repo ini terdaftar sejak
+(repo infrastruktur operator), tempat dua aplikasi untuk repo ini terdaftar sejak
 29 Juli 2026 dan tidak pernah sekali pun menghasilkan container.
 
 - Yang berjalan di dalam image sekarang hanya gerbang artefak: `penyaji`,
