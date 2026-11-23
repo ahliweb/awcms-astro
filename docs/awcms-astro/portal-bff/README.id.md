@@ -1,18 +1,18 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:21f67b1b41466f5404fd7f5a4e67431db34836cd8081035279a3297e1e93fb42 -->
+<!-- i18n-source-hash: sha256:cffbba8fdad9ab9b1710972d319678d1a24f461b825b45d9bc578b702c43eda7 -->
 
-# Jualanku.info — blueprint experience layer
+# Portal marketplace — blueprint experience layer
 
 > **Status: RENCANA.** Belum ada adapter, belum ada rute `/penjual/**`,
 > `/affiliate/**`, maupun `/_portal-api/**` di repo ini. `astro.config.mjs` masih
 > `output: "static"` tanpa adapter, dan itu memang keadaan yang benar sampai
 > prasyarat di bawah tertutup. Sumber kebenaran tetap kode + `bun run build`.
 
-Folder ini merancang sisi experience dari porting Jualanku.info. Keputusannya
+Folder ini merancang sisi experience dari porting portal marketplace. Keputusannya
 tercatat di [ADR-0014](../../adr/0014-rendering-campuran-dan-bff-portal.md);
 sisi platform (domain, otorisasi, data, API) dirancang di repo
-[`ahliweb/awcms`](https://github.com/ahliweb/awcms/blob/main/docs/awcms/jualanku/README.md).
+[`ahliweb/awcms`](https://github.com/ahliweb/awcms/blob/main/docs/awcms/README.md).
 
 ## Peta dokumen
 

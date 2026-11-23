@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](04-kesiapan.md)
 
-<!-- i18n-source-hash: sha256:1cc1e7c41160da4bee71e29e9382c82f0a5ab3b37d9f7b117e539ac02e53f7c0 -->
+<!-- i18n-source-hash: sha256:c2587f8adc246e9fdde327b2a0db0fc75e9dc39fe9ed56c40a08e4025fc019c5 -->
 
 # 04 — Kesiapan, proof-of-concept, dan checklist
 
@@ -33,7 +33,7 @@ lain**, dan keduanya perlu disebut supaya tabel di atas tidak terbaca sebagai
   punya instans untuk membuktikan panggilannya benar. Butir 4 (PoC) karena itu
   bukan sekadar pekerjaan yang belum dimulai; ia pekerjaan yang belum bisa
   dibuktikan siapa pun di sini.
-- **Di `awcms`:** bentuk scope merchant Jualanku masih butuh ADR admission-nya
+- **Di `awcms`:** bentuk scope merchant portal marketplace masih butuh ADR admission-nya
   sendiri. ADR-0060 memberi resolver-nya penyedia; ia tidak memutuskan bagaimana
   merchant dipetakan ke scope.
 

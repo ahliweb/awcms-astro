@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](0021-tahan-pengembangan-menunggu-fondasi-awcms.md)
 
-<!-- i18n-source-hash: sha256:a846e4cce2c0e0ee8f0dfa6106298041700a62d2d89a61d0222d6e67ad48d0f5 -->
+<!-- i18n-source-hash: sha256:b5661d7dc3e2f283e463d90d030fcc9e07bb47ac25e46eb835344b96494fd052 -->
 
 # ADR-0021 — Pengembangan repo ini ditahan sampai fondasi `awcms` selesai
 
@@ -154,7 +154,7 @@ berbulan-bulan kemudian dari `git log` selalu kehilangan alasannya.
    `SITE_SOCIAL_IMAGE` (satu kartu, opsional) tetap keadaan yang didukung.
 4. **BFF portal Jualanku (ADR-0014).** Dua kontrak yang dulu memblokirnya sudah
    mendarat di `awcms` (ADR-0049/0050); prasyarat sisanya di
-   [`04-kesiapan.md`](../awcms-astro/jualanku/04-kesiapan.md).
+   [`04-kesiapan.md`](../awcms-astro/portal-bff/04-kesiapan.md).
 
 ## Konsekuensi
 

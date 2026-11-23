@@ -92,7 +92,7 @@ All thirteen operations were found in the spec at the `awcms` SHA above. "Gate" 
 | Surface | Status | Evidence |
 | --- | --- | --- |
 | USER admin through `permukaanAdmin` | **PLANNED.** Declared as allowed by ADR-0034, **no code**. `permukaanAdmin.prefiks` and `.peran` are empty arrays in `src/config/site.ts` | `tests/peran-situs.test.mjs` ("template ini TIDAK menyatakan satu pun permukaan admin") |
-| Jualanku portal BFF (`/penjual/**`, `/affiliate/**`, `/_portal-api/**`) | **PLANNED**, held behind the prerequisites of `docs/awcms-astro/jualanku/04-kesiapan.md`. Roadmap phase F3, status in the roadmap table, exit criteria still "to be proposed by the owner" | no `_portal-api` or BFF string in `src/`, `server/`; `docs/roadmap.md` |
+| marketplace portal BFF (`/penjual/**`, `/affiliate/**`, `/_portal-api/**`) | **PLANNED**, held behind the prerequisites of `docs/awcms-astro/portal-bff/04-kesiapan.md`. Roadmap phase F3, status in the roadmap table, exit criteria still "to be proposed by the owner" | no `_portal-api` or BFF string in `src/`, `server/`; `docs/roadmap.md` |
 | Public lead, consent and realtime client | **PLANNED** by `docs/crm-public-ux-contract.md` and `docs/bun-realtime-client-boundary.md`, marked "proposed documentation" in them | those documents; not repeated here |
 
 No screen of §3 is a USER-admin or BFF screen, and no row claims otherwise. The ADR-0057 reading (Accepted 2026-11-20; it was Proposed at the baseline SHA) keeps the same rule: a release of such a surface needs the real capability in `awcms`.

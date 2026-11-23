@@ -5,7 +5,7 @@
 **WCAG 2.2 AA is the floor for every public page.** Sufficient contrast in
 both themes, visible focus, full keyboard navigation,
 `prefers-reduced-motion` honoured — never a target to reach eventually.
-**Every authenticated surface targets the same WCAG 2.2 AA** — the Jualanku
+**Every authenticated surface targets the same WCAG 2.2 AA** — the marketplace portal
 BFF and any declared USER admin surface alike (`AGENTS.md` §"Moving to
 SSR"). Public pages were 2.1 AA until 19 November 2026 (issue #179).
 

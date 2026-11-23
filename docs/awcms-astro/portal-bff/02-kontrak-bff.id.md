@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](02-kontrak-bff.md)
 
-<!-- i18n-source-hash: sha256:8218f20d29e637fb3a9471e24cd73e53b989efb5b3cdbcce86b5f87f5aa39a06 -->
+<!-- i18n-source-hash: sha256:0977c3ed7eb67ef963053bb75aa744b6d1fc5d9580bdd3906035bae4f3490fbb -->
 
 # 02 — Kontrak BFF `/_portal-api/**`
 
@@ -65,7 +65,7 @@ memanggil `awcms` meninggalkan sesi hidup yang tidak lagi terlihat siapa pun.
 | `POST /_portal-api/auth/login`             | `/api/v1/auth/login`                                | Rate-limited, respons seragam   |
 | `POST /_portal-api/auth/logout`            | `/api/v1/auth/logout`                               | Revokasi dulu, cookie kemudian  |
 | `GET  /_portal-api/auth/session`           | endpoint introspeksi sesi                           | Hanya safe claims               |
-| `GET/PATCH /_portal-api/merchant/profile`  | `/api/v1/jualanku/portal/merchant/profile`          | ETag diteruskan                 |
+| `GET/PATCH /_portal-api/merchant/profile`  | `/api/v1/{portal}/portal/merchant/profile`          | ETag diteruskan                 |
 | `GET/POST/PATCH /_portal-api/merchant/catalog` | `.../portal/merchant/offerings`                 | Idempotency-Key diteruskan      |
 | `GET/POST /_portal-api/merchant/promotions`| `.../portal/merchant/promotions`                    | —                               |
 | `GET  /_portal-api/merchant/leads`         | `.../portal/merchant/leads`                         | PII sudah masked dari `awcms`   |
@@ -73,7 +73,7 @@ memanggil `awcms` meninggalkan sesi hidup yang tidak lagi terlihat siapa pun.
 | `GET  /_portal-api/affiliate/summary`      | `.../portal/affiliate/summary`                      | Saldo dari ledger               |
 | `GET/POST /_portal-api/affiliate/links`    | `.../portal/affiliate/links`                        | —                               |
 | `POST /_portal-api/affiliate/payouts`      | `.../portal/affiliate/payouts`                      | **Idempotency wajib**           |
-| `POST /_portal-api/interactions`           | `/api/v1/jualanku/public/interactions`              | Publik, minim data, ber-rate-limit |
+| `POST /_portal-api/interactions`           | `/api/v1/{portal}/public/interactions`              | Publik, minim data, ber-rate-limit |
 
 **Tidak ada passthrough generik.** Tidak ada `/_portal-api/[...path].ts` yang
 meneruskan apa saja ke `awcms`; setiap endpoint didaftarkan eksplisit. Proxy

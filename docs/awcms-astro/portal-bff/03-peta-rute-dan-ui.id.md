@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](03-peta-rute-dan-ui.md)
 
-<!-- i18n-source-hash: sha256:3ee00228b7d70be3daeb0ff5f9184f34f687554a0ed8bfb76b943f49fe889317 -->
+<!-- i18n-source-hash: sha256:eab0c49d8eecf0c9e991caf67e68feaef044ebf37c9dbd5f73c271c2b0a04c1a -->
 
 # 03 — Peta rute, porting UI, dan komponen
 
@@ -38,13 +38,13 @@ tersimpan — bukan sekadar teks yang bisa berubah tanpa jejak.
 
 ## 4. Yang TIDAK ada di repo ini
 
-Seluruh `/admin/jualanku/**` hidup di `awcms`. Repo ini tidak punya rute, menu,
+Seluruh `/admin/{portal}/**` hidup di `awcms`. Repo ini tidak punya rute, menu,
 tautan, maupun komponen ke sana — termasuk tautan "masuk sebagai admin".
 Merchant dan affiliate tidak memiliki audience sesi yang bisa membukanya.
 
 ## 5. Disposition porting Elementor
 
-| Kode       | Makna                                   | Contoh Jualanku                                |
+| Kode       | Makna                                   | Contoh portal                                |
 | ---------- | ---------------------------------------- | ---------------------------------------------- |
 | `PORT`     | Tujuan & struktur dipertahankan          | Hero, kartu kategori, kartu usaha              |
 | `REDESIGN` | Tujuan tetap, alur diperbaiki            | Dashboard penjual, onboarding                  |
@@ -79,7 +79,7 @@ diam-diam, bukan diperkecil.
 
 ## 7. Aksesibilitas
 
-Baseline **WCAG 2.2 AA** untuk permukaan Jualanku (naik dari 2.1 AA yang
+Baseline **WCAG 2.2 AA** untuk permukaan portal (naik dari 2.1 AA yang
 tertulis di `AGENTS.md`; kenaikan ini diputuskan di
 [ADR-0014](../../adr/0014-rendering-campuran-dan-bff-portal.md)).
 

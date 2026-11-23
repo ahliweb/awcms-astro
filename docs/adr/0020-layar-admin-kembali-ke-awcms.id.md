@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](0020-layar-admin-kembali-ke-awcms.md)
 
-<!-- i18n-source-hash: sha256:2159cb80be927aa900b9aaeaaad1b6e8f8ccb6854ffcf08316ea985e5c0eab71 -->
+<!-- i18n-source-hash: sha256:4efc99aca27ee4ceadcfbaef41cc3f2c88122bbe0d557af92b0682914f515bde -->
 
 # ADR-0020 — Layar admin owner/internal kembali ke `awcms`; repo ini kembali murni publik + BFF
 
@@ -79,7 +79,7 @@ Yang **tetap berlaku** dan tidak boleh ikut terhapus bersama ADR-0017:
 
 - **ADR-0014 tidak berubah.** Rute on-demand + BFF portal Jualanku (`/penjual/**`,
   `/affiliate/**`, `/_portal-api/**`) adalah peran ADR-0045, bukan peran admin.
-  Prasyaratnya tetap di [`04-kesiapan.md`](../awcms-astro/jualanku/04-kesiapan.md).
+  Prasyaratnya tetap di [`04-kesiapan.md`](../awcms-astro/portal-bff/04-kesiapan.md).
 - **Empat aturan ADR-0017 tetap mengikat permukaan BFF Jualanku**, karena
   keempatnya menyangkut permukaan terautentikasi apa pun: `awcms` tetap system of
   record; izin diputuskan `awcms` dan permukaan di sini bukan jalur kedua yang

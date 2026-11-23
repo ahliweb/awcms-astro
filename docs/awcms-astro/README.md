@@ -98,7 +98,7 @@ The AWCMS family is **Bun-only** and **PostgreSQL + RLS mandatory**. Since [ADR-
 
 The remaining divergence holds **as long as the repo stays without a database AND without an authenticated surface**. The last two rows of the table rest not on the database but on the absence of mutations and the absence of a served surface — so the moment a site declares `permukaanAdmin` or mounts a BFF, both stop holding as written. And once that site starts storing tenant-scoped data of its own, every family control applies again in full.
 
-[ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md) (Jualanku.info) gives a precise boundary for the first case that genuinely needs sessions: `output` **stays** `static`, an adapter is installed, and only the portal routes become on-demand. The data stays `awcms`'s — the family controls (idempotency, audit, authorization, RLS) run there, **not** moved into this repo.
+[ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md) (marketplace portal) gives a precise boundary for the first case that genuinely needs sessions: `output` **stays** `static`, an adapter is installed, and only the portal routes become on-demand. The data stays `awcms`'s — the family controls (idempotency, audit, authorization, RLS) run there, **not** moved into this repo.
 
 What does **not** diverge and must be followed: `AGENTS.md` as the working contract, `docs/adr/`, Conventional Commits, changesets, the Definition of Done, the ban on secrets in the repo, and the CI gates.
 
@@ -113,7 +113,7 @@ What does **not** diverge and must be followed: `AGENTS.md` as the working contr
 | [`permukaan-admin-user.md`](permukaan-admin-user.md) | This repo's second role: the shape of a USER admin surface, how to declare it, what changes the moment it is switched on, and what may never be built here |
 | [`checklist-repo-baru.md`](checklist-repo-baru.md) | The steps for starting a new site on this standard |
 | [`ui-contract-inventory.md`](../ui-contract-inventory.md) | Research report (issue #187): every screen the SSG site renders mapped to its `awcms` operation, permission, tests, and the gaps and drift found, classed VERIFIED, ASSUMED, PLANNED or DEFERRED |
-| [`jualanku/`](jualanku/README.md) | The **blueprint** for the Jualanku.info experience layer: mixed rendering, BFF, route/UI map, readiness ([ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md)) — a plan, not yet implemented |
+| [`portal-bff/`](portal-bff/README.md) | The **blueprint** for the marketplace portal experience layer: mixed rendering, BFF, route/UI map, readiness ([ADR-0014](../adr/0014-rendering-campuran-dan-bff-portal.md)) — a plan, not yet implemented |
 
 ## What makes this standard different
 

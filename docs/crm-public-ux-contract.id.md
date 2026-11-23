@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](crm-public-ux-contract.md)
 
-<!-- i18n-source-hash: sha256:b1a9e430f3713310b53f5a1a830bc353005325cf575d659d839d3ed230166b93 -->
+<!-- i18n-source-hash: sha256:5f34c564fef627cd144be60444567a0aa622db85ca15c5959c734410b860665d -->
 
 # AWCMS-Astro — UI/UX form lead publik, consent dan konsumen real-time v1.0
 
@@ -76,7 +76,7 @@ Situs produk sisi operator boleh mengadopsi pola dan kontrak ini (token, kompone
 ### 6.4 Aksesibilitas, SEO, BFF dan CSP
 
 - **A11y/SEO.** Batas bawah sama dengan §3 di atas: keyboard, fokus terlihat, reduced motion, 360px; permukaan terautentikasi menarget WCAG 2.2 AA. Konten publik tetap dapat diindeks.
-- **Peran BFF dan batas tenant.** BFF portal Jualanku ([ADR-0014](adr/0014-rendering-campuran-dan-bff-portal.id.md)) menyusun panggilan `awcms` untuk layar situs ini sendiri dan tidak memutuskan apa pun yang berkonsekuensi bisnis; tenant berasal dari kredensial mesin, bukan dari browser. Ini bukan control plane sisi operator dan tidak boleh menjadi itu.
+- **Peran BFF dan batas tenant.** BFF portal marketplace ([ADR-0014](adr/0014-rendering-campuran-dan-bff-portal.id.md)) menyusun panggilan `awcms` untuk layar situs ini sendiri dan tidak memutuskan apa pun yang berkonsekuensi bisnis; tenant berasal dari kredensial mesin, bukan dari browser. Ini bukan control plane sisi operator dan tidak boleh menjadi itu.
 - **CSP `connect-src`.** Bila suatu permukaan yang dinyatakan kelak perlu koneksi (misalnya badge SSE di Web-F4), allowlist dilonggarkan di `server/penyaji.mjs` dan tidak di tempat lain, dibuktikan oleh `tests/penyaji.test.mjs`.
 - **Runtime.** Hanya Bun; tidak ada runtime Node yang masuk kembali ke repo ini ([ADR-0050](adr/0050-bun-is-this-repos-only-runtime-and-a-gate-finally-says-so.id.md)).
 
@@ -85,7 +85,7 @@ Situs produk sisi operator boleh mengadopsi pola dan kontrak ini (token, kompone
 | Butir | Kondisi |
 | --- | --- |
 | Rute on-demand (`prerender = false`) | **Belum ada satu pun.** Adapter terpasang hanya untuk menyajikan keluaran build |
-| BFF portal Jualanku (`/penjual/**`, `/_portal-api/**`) | RENCANA, belum diimplementasikan (ADR-0014) |
+| BFF portal marketplace (`/penjual/**`, `/_portal-api/**`) | RENCANA, belum diimplementasikan (ADR-0014) |
 | Admin USER lewat `permukaanAdmin` | Diizinkan ADR-0034, **nol yang dinyatakan** di template ini |
 | Rute control-plane sisi operator di bawah `/admin/*` | **Tidak pernah** direncanakan di sini; hanya `awcms` |
 | Landing situs produk sisi operator | Dilacak di repo produk itu sendiri; di luar repo ini |

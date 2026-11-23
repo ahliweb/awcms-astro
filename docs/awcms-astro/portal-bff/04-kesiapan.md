@@ -30,7 +30,7 @@ left":
   decided by an `awcms` response on every request — and this template repo has no
   instance to prove its calls are right. Item 4 (the PoC) is therefore not merely
   work not yet started; it is work nobody here can yet prove.
-- **In `awcms`:** the shape of the Jualanku merchant scope still needs its own
+- **In `awcms`:** the shape of the marketplace portal merchant scope still needs its own
   admission ADR. ADR-0060 gave its resolver a provider; it did not decide how a
   merchant maps onto a scope.
 
