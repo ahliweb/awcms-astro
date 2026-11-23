@@ -104,7 +104,7 @@ choice; it is never something any script above does on its own.
 | `knowledge/generated/` | the allowlisted Obsidian export of the graph | **no — diverges from the reference workflow, see below** |
 
 **`knowledge/generated/` is gitignored here, and this is a deliberate
-divergence from the `awcms-one` design this workflow was ported from**, which
+divergence from the design of the sibling consumer product repo this workflow was ported from**, which
 tracks its equivalent directory. Reason: a full export of this graph is
 roughly 1520 files. This repo already refuses to track `graphify-out/graph.html`
 ("a committed copy rots silently, and its size doubles every rebuild's load on
@@ -150,14 +150,14 @@ proves the export script's wiring against a fixture tree.
   same reason `*.id.md` mirrors are excluded from the graph (`.graphifyignore`):
   a second copy of the same fact drifts from the first, silently, and a graph
   that indexed both would report the drifted copy as if it were still true.
-- **This repo diverges from `awcms-one`'s design on purpose in several places**
+- **This repo diverges from that sibling repo's design on purpose in several places**
   (D2/D4/D6/D7 of this issue's own working notes) — divergences from prior art
   in a sibling repo, not from a family standard.
 - **`ahliweb/awcms#805` closed as completed at 2026-09-23T22:25:59Z**, landed
   by `awcms` PR #819 and recorded as `awcms` ADR-0124 ("Obsidian opens a
   dedicated `knowledge/` vault, not the repository root"). This repo's
-  workflow was built following `awcms-one`'s prior art
-  ([issue #11](https://github.com/ahliweb/awcms-one/issues/11)) while
+  workflow was built following that sibling repo's prior art
+  while
   `awcms#805` was still open, and the two designs converged independently: a
   dedicated `knowledge/` vault, curated notes beside a disposable generated
   export, and an allowlisted fail-closed sync fed by an isolated staging
@@ -166,7 +166,7 @@ proves the export script's wiring against a fixture tree.
   README so the directory does not read as empty in a fresh checkout, which
   this repo now does too (`knowledge/generated/README.md`). So not tracking
   the generated vault is family-consistent, not a divergence — the divergence
-  is only from `awcms-one`, which does track its equivalent directory.
+  is only from that sibling repo, which does track its equivalent directory.
 - **One real divergence from `awcms` remains, and needs recording in its
   `awcms-family-compatibility.yaml` (`awcms` ADR-0068) — this repo cannot
   write that file itself:** `awcms` mirrors its knowledge tree into
