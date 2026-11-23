@@ -6,7 +6,7 @@ The AWCMS family standard for **static Astro sites**: public information sites w
 
 "No server runtime" is not part of that claim, and was once written here as though it were: since [ADR-0016](../adr/0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md) the build output is served by a Bun process. What is absent is still absent — a database, and any dependency on a live CMS at request time.
 
-The `ahliweb/awcms-astro` repo is the reference implementation of this standard. The standard itself was not born on paper: it was extracted from `web-lalulintasmelayani.com`, a six-language site already running in production, where every rule below was proven first.
+The `ahliweb/awcms-astro` repo is the reference implementation of this standard. The standard itself was not born on paper: it was extracted from a client news site, a six-language site already running in production, where every rule below was proven first.
 
 > **One difference to read before the rest.** That reference repo stored its content as markdown inside the repo. This template pulls it from `awcms` at build time. Rules about CONTENT therefore move to a different place of enforcement — from Zod and audit gates in the repo, to API validation and a quality checklist in the CMS. See [`integrasi-awcms.md`](integrasi-awcms.md) §"What is most at risk of being lost in migration".
 

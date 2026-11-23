@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:fd80b18f8191b07162319fe709a804c8cc83d32b2efb91b2ddc5477d396d985b -->
+<!-- i18n-source-hash: sha256:7ded9b1ec9c00ee09bb716dcc23b37c2d967266aeaf455fe695cfdde8aacb7e1 -->
 
 # awcms-astro
 
@@ -68,7 +68,7 @@ kerja ada di
 [`AGENTS.md`](AGENTS.md#where-work-may-land-in-force-2-august-2026).
 
 Repo ini adalah **implementasi rujukan** standar `awcms-astro`. Standarnya
-sendiri lahir dari `web-lalulintasmelayani.com`, situs enam bahasa yang sudah
+sendiri lahir dari sebuah situs berita klien, situs enam bahasa yang sudah
 berjalan di produksi; dokumen standarnya ikut dibawa ke sini di
 [`docs/awcms-astro/`](docs/awcms-astro/README.md).
 

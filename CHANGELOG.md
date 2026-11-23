@@ -198,8 +198,8 @@ nol.
 Menambahkan bagian "Orchestrator & agent (AI models)" ke `AGENTS.md` (dan
 cerminnya `AGENTS.id.md`) serta dua subagen Claude Code di `.claude/agents/`:
 `pelaksana-kompleks` (Sonnet, `medium`) dan `pelaksana-sederhana` (Haiku, `low`).
-Standarnya dipelihara di `ahliweb/personal-coding`; repo ini hanya menunjuk ke
-sana, tanpa menyalin harga atau lini model.
+Standarnya dipelihara di luar repo ini; repo ini hanya menunjuk ke sana, tanpa
+menyalin harga atau lini model.
 
 - Hanya memengaruhi cara agen AI membagi kerja saat mengembangkan repo ini.
 - Tidak mengubah keluaran situs, dependensi, atau deployment.
@@ -207,8 +207,8 @@ sana, tanpa menyalin harga atau lini model.
 ### Alur pengembangan produk v2: UX tervalidasi, lalu frontend → backend → integrasi
 
 Menambahkan butir 6 di §"The mandatory workflow" `AGENTS.md` (dan cerminnya
-`AGENTS.id.md`): pekerjaan produk mengikuti alur 18 langkah v2.0.0 milik
-`ahliweb/personal-coding`, yang diadopsi `awcms` lewat ADR-0156. Untuk repo ini,
+`AGENTS.id.md`): pekerjaan produk mengikuti alur 18 langkah v2.0.0 yang dipelihara di luar repo
+ini, yang diadopsi `awcms` lewat ADR-0156. Untuk repo ini,
 layar diuji pengguna sebelum kontrak, dan setiap slice dikerjakan sebagai 11.1
 frontend di sini terhadap mock kontrak `awcms` → 11.2 backend sebagai PR di
 `awcms` → 11.3 integrasi.
@@ -1489,7 +1489,7 @@ berubah.
 ### HSTS tidak pernah terkirim di produksi, dan gerbangnya kini membaca ARTEFAK alih-alih sumber
 
 Ditemukan saat memverifikasi deploy produksi pertama, 14 Agustus 2026:
-`awcms-astro.ahlikoding.com` menjawab `200` dengan lima header keamanannya —
+situs produksi pertama menjawab `200` dengan lima header keamanannya —
 dan **tanpa `Strict-Transport-Security`**, meski `NODE_ENV=production`
 terpasang di container.
 

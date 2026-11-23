@@ -65,7 +65,7 @@ export function namaPenerbit(profil: ProfilSitus): string {
  * The footer's bottom line, whole.
  *
  * `copyrightNotice` replaces the composed line RATHER than joining it. A
- * newsroom that writes "© 2019–2026 PT Lentera Kalteng" means those words: a
+ * newsroom that writes "© 2019–2026 PT Contoh Media" means those words: a
  * composition would print its year twice and its name twice, and there is no
  * way to write a notice that avoids that.
  *

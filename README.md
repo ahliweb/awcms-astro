@@ -65,7 +65,7 @@ is **withdrawn**, not suspended. The consequences for the workflow are in
 [`AGENTS.md`](AGENTS.md#where-work-may-land-in-force-2-august-2026).
 
 This repo is the **reference implementation** of the `awcms-astro` standard. The
-standard itself came out of `web-lalulintasmelayani.com`, a six-language site
+standard itself came out of a client news site, a six-language site
 already running in production; its standard documents came along to
 [`docs/awcms-astro/`](docs/awcms-astro/README.md).
 

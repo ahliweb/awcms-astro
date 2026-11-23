@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](deploy-coolify.md)
 
-<!-- i18n-source-hash: sha256:2259cafcf09b43fc0a7f52ff4637c149277aab0c2748289578cbefa335018136 -->
+<!-- i18n-source-hash: sha256:e24aac231dfb855233d9b6aa07c96fe65677e8de85a243f77e07695c2b833f71 -->
 
 # Deploy dan rebuild lewat webhook (Coolify)
 
@@ -91,7 +91,7 @@ Seluruhnya dijelaskan di [`.env.example`](../.env.example).
 ### Health check boleh menyala di sini
 
 Dua aplikasi lain di server itu terpaksa mematikan `health_check_enabled`:
-awcms-micro karena image-nya tidak punya `curl`/`wget`, dan SIMFAR karena Django
+awcms-micro karena image-nya tidak punya `curl`/`wget`, dan aplikasi lain karena Django
 menolak probe ber-`Host: localhost` dengan `400 DisallowedHost`.
 
 Image ini tidak kena keduanya — `wget` ada di dalam image `oven/bun` berbasis
@@ -207,8 +207,8 @@ kredensial Coolify.
 ## Kalau build gagal
 
 Coolify mempertahankan container sebelumnya saat build baru gagal — situs tetap
-tayang dengan konten lama. Ini sudah terbukti di server itu, pada regresi
-health-check SIMFAR 2026-07-27: deploy gagal 10/10 percobaan dan produksi tidak
+tayang dengan konten lama. Ini sudah terbukti di server itu, pada sebuah regresi
+health-check 2026-07-27: deploy gagal 10/10 percobaan dan produksi tidak
 pernah benar-benar mati.
 
 Artinya kegagalan rebuild **sunyi bagi pembaca**, dan karena itu perlu dilihat

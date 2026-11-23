@@ -141,7 +141,7 @@ The recommended shape in `content_json`:
 
 ### The `src/data/` reference data
 
-`wilayah-kalteng.ts` and `unit-layanan.ts` do **not** have to move. Both change rarely and are not editorial work.
+`wilayah.ts` and `unit-layanan.ts` do **not** have to move. Both change rarely and are not editorial work.
 
 The recommendation: **regions become taxonomy terms** (so they can be filtered alongside articles), **service units stay static** until somebody genuinely manages them from an interface. Moving data that has no manager only moves the place where it goes stale.
 

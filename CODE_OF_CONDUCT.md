@@ -4,7 +4,7 @@
 
 ## Commitment
 
-This repo assembles public service information for the people of Central Kalimantan. Its contributors come from different backgrounds: developers, content writers, native speakers of regional languages, and people working in the related services. All of them are treated as equals.
+This repo assembles public service information for the public. Its contributors come from different backgrounds: developers, content writers, native speakers of regional languages, and people working in the related services. All of them are treated as equals.
 
 We are committed to making participation in this repo free of harassment for everyone, regardless of age, body size, disability, ethnicity, gender identity and expression, level of experience, education, socio-economic status, nationality, appearance, race, religion, or sexual identity and orientation.
 

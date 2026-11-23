@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:14f0ba6cf6eb141a76641803db91772474ad1ff7c0e0f073c51f6eaba0176016 -->
+<!-- i18n-source-hash: sha256:8b9ecc5564872e8b4b58da6b961f079adc24c78eae9b1bc3f414eabc2b05880d -->
 
 # awcms-astro
 
@@ -8,7 +8,7 @@ Standar keluarga AWCMS untuk **situs statis Astro**: situs informasi publik yang
 
 "Tanpa runtime server" bukan bagian dari klaim itu, dan pernah keliru ditulis begitu di sini: sejak [ADR-0016](../adr/0016-penyajian-bun-di-belakang-traefik-tanpa-nginx.md) keluaran build disajikan sebuah proses Bun. Yang tidak ada tetap tidak ada — basis data, dan ketergantungan pada CMS yang hidup saat request.
 
-Repo `ahliweb/awcms-astro` adalah implementasi rujukan standar ini. Standarnya sendiri tidak lahir di atas kertas: ia diekstraksi dari `web-lalulintasmelayani.com`, situs enam bahasa yang sudah berjalan di produksi, tempat setiap aturan di bawah lebih dulu dibuktikan.
+Repo `ahliweb/awcms-astro` adalah implementasi rujukan standar ini. Standarnya sendiri tidak lahir di atas kertas: ia diekstraksi dari sebuah situs berita klien, situs enam bahasa yang sudah berjalan di produksi, tempat setiap aturan di bawah lebih dulu dibuktikan.
 
 > **Satu perbedaan yang harus dibaca lebih dulu.** Repo rujukan itu menyimpan kontennya sebagai markdown di dalam repo. Template ini menariknya dari `awcms` saat build. Aturan tentang KONTEN karena itu berpindah tempat penegakannya — dari Zod dan gerbang audit di repo, ke validasi API dan quality checklist di CMS. Lihat [`integrasi-awcms.md`](integrasi-awcms.md) §"Yang paling berisiko hilang saat migrasi".
 

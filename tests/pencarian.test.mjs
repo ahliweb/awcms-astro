@@ -153,8 +153,8 @@ describe("alamatSaran", () => {
 describe("jalurPencarian", () => {
   test("keadaan filter menjadi URL situs INI, bisa ditandai dan dibagikan", () => {
     assert.equal(
-      jalurPencarian("/cari/", filter({ tipe: "blog_post", term: { region: "kalteng" } })),
-      "/cari/?q=banjir&type=blog_post&region=kalteng"
+      jalurPencarian("/cari/", filter({ tipe: "blog_post", term: { region: "wilayah-a" } })),
+      "/cari/?q=banjir&type=blog_post&region=wilayah-a"
     );
   });
 
