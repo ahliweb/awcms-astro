@@ -52,7 +52,7 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.9.12",
-    "@astrojs/node": "^11.1.13",
+    "@astrojs/node": "^11.1.14",
     "@astrojs/sitemap": "^3.7.5",
     "astro": "^7.4.12",
     "compression": "^1.8.2",
@@ -60,7 +60,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "4.14.0",
-    "@playwright/test": "1.65.0",
-    "@types/bun": "^1.4.4"
+    "@playwright/test": "1.65.1",
+    "@types/bun": "^1.4.5"
   }
 }
