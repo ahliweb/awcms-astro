@@ -1,0 +1,19 @@
+{
+  "versi": 1,
+  "entri": [
+    {
+      "rule": "typescript.react.security.react-insecure-request",
+      "path": "tests/penyaji.test.mjs",
+      "fingerprint": "02184fd00feeeb1b401902c276698e219036cc687e6fb2ccf8fb08e698b152d7",
+      "alasan": "temuan lama saat adopsi 2026-11-27",
+      "baris": 573
+    },
+    {
+      "rule": "typescript.react.security.react-insecure-request",
+      "path": "tests/penyaji.test.mjs",
+      "fingerprint": "b2609c9e111c4c8313fad3340ae45c39d4aa8a7ec5c6249d99e7b446c5521516",
+      "alasan": "temuan lama saat adopsi 2026-11-27",
+      "baris": 456
+    }
+  ]
+}

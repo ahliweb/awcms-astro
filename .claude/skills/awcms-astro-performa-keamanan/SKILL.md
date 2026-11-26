@@ -150,7 +150,7 @@ stated every time a compliance question is answered:
 
 | The claim that is true | The claim that is TOO LARGE — do not write it |
 | --- | --- |
-| "The JS/TS surface is analysed by scheduled CodeQL; `.astro` is not, and every run's summary says so" | "This repo is statically analysed", without naming the `.astro` limit |
+| "The JS/TS surface is analysed by OpenGrep (copied rules, shrink-only baseline; ADR-0059); `.astro` is not, and every run's summary says so" | "This repo is statically analysed", without naming the `.astro` limit |
 | "LCP and CLS are asserted in a LAB in a site's CI over a sample of ≤10 pages (TBT 200 ms as an INP proxy)" | "Meets Core Web Vitals" — that is a claim about p75 of real visits, which is not measured because RUM is refused; and "measured over dist/client" without the word SAMPLE |
 
 ## Five controls that are REFUSED — do not propose them again without reading why

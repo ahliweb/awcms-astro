@@ -217,7 +217,7 @@ describe("CI workflows never reintroduce a Node.js toolchain (ADR-0050)", () => 
       // Scans trimmed lines for a shell command that OPENS on one of these
       // binaries — the shape a `run:` step (inline or block-scalar) actually
       // takes on disk — while skipping comment lines outright, so a comment
-      // such as codeql.yml's mention of `node_modules` is read as prose, not
+      // such as a workflow comment's mention of `node_modules` is read as prose, not
       // as a step. `\s` after the binary name is what keeps `node_modules`,
       // `node:fs`, and `@astrojs/node` (none followed by a space) from ever
       // matching.

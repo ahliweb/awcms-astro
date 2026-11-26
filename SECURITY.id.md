@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](SECURITY.md)
 
-<!-- i18n-source-hash: sha256:a5f86b8e73bbaa228d60021e311bac7fc5df9098750d72e295bd867d2e0e42ff -->
+<!-- i18n-source-hash: sha256:e0ea5edbbc82191f4849b6e6422b97232ee9f874ae47156be9c2c2f4d45f9237 -->
 
 # Kebijakan Keamanan
 
@@ -36,7 +36,7 @@ Pemetaan lengkap ke **OWASP Top 10 2021, OWASP ASVS 4.0.3, OWASP Secure Headers 
 
 Dokumen itu memuat **daftar celah**, dan daftar itu sengaja publik: kesepuluh celah bernomornya kini tertutup, dan baris yang tertutup tetap di tabel beserta pemeriksanya masing-masing.
 
-Dua batas yang dinyatakan terus terang — bukan celah, melainkan keadaan yang diterima sadar: berkas `.astro` tidak teranalisis statik (CodeQL tidak menguranya, dan ringkasan run menyatakannya), dan Core Web Vitals diukur lab, bukan pada kunjungan nyata (RUM ditolak karena mengumpulkan data pembaca). Melaporkan keduanya lagi tidak menambah informasi; melaporkan **akibat konkret**-nya pada sebuah deployment nyata, menambah.
+Dua batas yang dinyatakan terus terang — bukan celah, melainkan keadaan yang diterima sadar: berkas `.astro` tidak teranalisis statik (aturan OpenGrep hanya mencakup JavaScript dan TypeScript, dan ringkasan run menyatakannya), dan Core Web Vitals diukur lab, bukan pada kunjungan nyata (RUM ditolak karena mengumpulkan data pembaca). Melaporkan keduanya lagi tidak menambah informasi; melaporkan **akibat konkret**-nya pada sebuah deployment nyata, menambah.
 
 Satu batas yang perlu diketahui pelapor: `Strict-Transport-Security` dikirim **hanya saat `NODE_ENV=production`**. Sebuah deployment yang tidak menyetelnya tidak mendapat HSTS dan tidak ada yang mengatakannya — itu diterima sadar di [ADR-0029](docs/adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md), dan `Dockerfile` menyetelnya.
 

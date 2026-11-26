@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](AGENTS.md)
 
-<!-- i18n-source-hash: sha256:46a703053765f908276c2f7b4f0980b5cadb62add2780b33097da7fe233ab45f -->
+<!-- i18n-source-hash: sha256:1a0e675fdeab4fdd085e31259d60b85541eff7969285f7e51fe2e5b59a076d1a -->
 
 # AGENTS.md — kontrak kerja `awcms-astro`
 
@@ -325,7 +325,7 @@ yang [ADR-0034](docs/adr/0034-publik-secara-bawaan-admin-hanya-bila-dinyatakan.m
 2. Buat branch dari `main` sebelum menyentuh kode. Jangan commit langsung ke
    `main` — sejak 26 Oktober 2026 ruleset `main-protection` menolaknya, juga
    force push dan penghapusan, dan sebuah perubahan sampai ke `main` hanya lewat
-   pull request dengan `Check`, `Build`, dan `Analyze (javascript-typescript)`
+   pull request dengan `Check`, `Build`, dan `keamanan / sast-rahasia-dependensi`
    hijau pada branch yang mutakhir. Ruleset itu hidup di pengaturan GitHub,
    jadi **tak ada gerbang di sini yang bisa mendeteksi pencabutannya**; ia
    diverifikasi manual, dan tag tidak dicakupnya

@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](CONTRIBUTING.md)
 
-<!-- i18n-source-hash: sha256:0bbfc049d75b0c7c6f54b2626a5cf6bcce171b900a3ccbe1ea85c33b182a774b -->
+<!-- i18n-source-hash: sha256:b9a07a1008b8728640f5502caadf8b91420d2de47d83414a169d568969e9c7a7 -->
 
 # Panduan Kontribusi
 
@@ -65,7 +65,7 @@ bun run dev           # http://localhost:4321
 5. **Perbarui dokumentasi** bila perilaku, workflow, struktur, atau konfigurasi berubah — pada iterasi yang sama. Di repo ini dokumentasi adalah bagian dari produk.
 6. **Tulis changeset** di [`.changesets/`](.changesets/README.md) pada iterasi yang sama, bukan dirapel di akhir.
 7. **Jalankan `bun run build` dan `bun test`**; keduanya harus bersih.
-8. **Buka Pull Request** dengan `Closes #<issue>`. Pull request adalah satu-satunya jalan masuk ke `main`: `Check`, `Build`, dan `Analyze (javascript-typescript)` harus hijau dan branch harus mutakhir terhadap `main` (rebase atau merge `main` bila GitHub menyatakan tertinggal). Tidak ada jumlah approval yang diwajibkan — satu maintainer tak bisa menyetujui pull request-nya sendiri — jadi review adalah soal praktik, tidak ditegakkan. Branch yang sudah di-merge dihapus otomatis. Perhatikan bahwa `Build` memiliki `needs: Check`: saat `Check` gagal, `Build` di-skip dan dianggap terpenuhi, jadi pemblokirannya datang dari `Check`; dan di template ini `Build` melewati langkah integrasinya selama `vars.AWCMS_API_URL` kosong, jadi hijau tidak berarti build integrasi berjalan.
+8. **Buka Pull Request** dengan `Closes #<issue>`. Pull request adalah satu-satunya jalan masuk ke `main`: `Check`, `Build`, dan `keamanan / sast-rahasia-dependensi` harus hijau dan branch harus mutakhir terhadap `main` (rebase atau merge `main` bila GitHub menyatakan tertinggal). Tidak ada jumlah approval yang diwajibkan — satu maintainer tak bisa menyetujui pull request-nya sendiri — jadi review adalah soal praktik, tidak ditegakkan. Branch yang sudah di-merge dihapus otomatis. Perhatikan bahwa `Build` memiliki `needs: Check`: saat `Check` gagal, `Build` di-skip dan dianggap terpenuhi, jadi pemblokirannya datang dari `Check`; dan di template ini `Build` melewati langkah integrasinya selama `vars.AWCMS_API_URL` kosong, jadi hijau tidak berarti build integrasi berjalan.
 
 ### Penamaan branch
 

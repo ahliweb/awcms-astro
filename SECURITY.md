@@ -34,7 +34,7 @@ The full mapping to **OWASP Top 10 2021, OWASP ASVS 4.0.3, the OWASP Secure Head
 
 That document carries a **list of gaps**, and the list is deliberately public: all ten of its numbered gaps are now closed, and a closed row stays in the table together with its checker.
 
-Two limits are stated plainly — not gaps, but conditions accepted knowingly: `.astro` files are not statically analysed (CodeQL does not parse them, and each run's summary says so), and Core Web Vitals are measured in a lab, not on real visits (RUM is refused because it collects reader data). Reporting either of them again adds no information; reporting its **concrete consequence** on a real deployment does.
+Two limits are stated plainly — not gaps, but conditions accepted knowingly: `.astro` files are not statically analysed (the OpenGrep rules cover only JavaScript and TypeScript, and each run's summary says so), and Core Web Vitals are measured in a lab, not on real visits (RUM is refused because it collects reader data). Reporting either of them again adds no information; reporting its **concrete consequence** on a real deployment does.
 
 One limit a reporter should know: `Strict-Transport-Security` is sent **only when `NODE_ENV=production`**. A deployment that does not set it gets no HSTS and nothing says so — that is knowingly accepted in [ADR-0029](docs/adr/0029-hsts-digerbangi-produksi-tanpa-includesubdomains.md), and the `Dockerfile` sets it.
 

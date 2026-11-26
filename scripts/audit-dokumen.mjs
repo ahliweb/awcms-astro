@@ -588,7 +588,11 @@ const JALUR_DIKECUALIKAN = new Map([
   ["scripts/kartu-share.mjs", "milik repo rujukan — disebut PERSIS karena tidak ada di sini"],
   ["src/content.config.ts", "bentuk konten-di-repo yang repo ini gantikan — disebut untuk menjelaskan penggantinya"],
   ["docs/ARCHITECTURE.md", "dokumen yang checklist minta DIBUAT situs turunan, bukan yang template ini bawa"],
-  ["docs/adr/x.md", "placeholder contoh di `.changesets/README.md`, bukan jalur sungguhan"]
+  ["docs/adr/x.md", "placeholder contoh di `.changesets/README.md`, bukan jalur sungguhan"],
+  [
+    "tests/analisis-statik.test.mjs",
+    "milik repo INI, dihapus oleh ADR-0059 bersama workflow CodeQL yang dijaganya — disebut sebagai catatan di ADR-0032 dan CHANGELOG yang tidak diedit, serta di ADR-0059 dan standar performa yang menjelaskan penggantinya `tests/sast-opengrep.test.mjs`"
+  ]
 ]);
 
 /** Awalan yang menandai sebuah span kode sebagai jalur berkas repo. */

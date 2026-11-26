@@ -5,7 +5,7 @@ description: Pemeriksaan performa dan keamanan awcms-astro terhadap standar yang
 
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](SKILL.md)
 
-<!-- i18n-source-hash: sha256:fc2714082ecc8050469a950dd180cb29bb0cf9ec8060bba3fa7f9c08873594ed -->
+<!-- i18n-source-hash: sha256:8e4de4b4985e243fae41c6c6324210f5bab7135f711bd6da8a8f9ca1ebafc9f3 -->
 
 # awcms-astro — performa dan keamanan
 
@@ -154,7 +154,7 @@ disebut setiap kali menjawab pertanyaan kepatuhan:
 
 | Klaim yang benar | Klaim yang TERLALU BESAR — jangan tulis |
 | --- | --- |
-| "Permukaan JS/TS dianalisis CodeQL terjadwal; `.astro` tidak, dan ringkasan tiap run menyatakannya" | "Repo ini dianalisis statik" tanpa menyebut batas `.astro` |
+| "Permukaan JS/TS dianalisis OpenGrep (aturan tersalin, baseline hanya menyusut; ADR-0059); `.astro` tidak, dan ringkasan tiap run menyatakannya" | "Repo ini dianalisis statik" tanpa menyebut batas `.astro` |
 | "LCP dan CLS diasersi LAB di CI situs atas sampel ≤10 halaman (TBT 200 ms sebagai proksi INP)" | "Memenuhi Core Web Vitals" — itu klaim p75 kunjungan nyata, yang tidak diukur karena RUM ditolak; dan "diukur atas dist/client" tanpa kata SAMPEL |
 
 ## Lima kontrol yang DITOLAK — jangan usulkan lagi tanpa membaca alasannya
