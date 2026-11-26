@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](0059-opengrep-replaces-codeql-with-copied-rules-and-a-shrink-only-baseline.md)
 
-<!-- i18n-source-hash: sha256:9cbf02992cf7b7ceba53a166aebe343554394ee8ab482ee563cdb040a5bf026d -->
+<!-- i18n-source-hash: sha256:3aba5afa489177aa434f8c5fb0a552338f6b136682467aebccf8103e6bcca4c8 -->
 
 # ADR-0059 — OpenGrep menggantikan CodeQL, dengan aturan tersalin dan baseline yang hanya menyusut
 
@@ -23,7 +23,7 @@ Syarat kejujuran ADR-0032 §A tidak bergantung pada mesinnya: ringkasan run haru
    - **gitleaks** 8.30.1 (checksum diverifikasi, `--redact`) atas **rentang commit** (`base..head` pada pull request, rentang yang di-push pada push), bukan seluruh riwayat;
    - **OpenGrep** v2.1.0, biner Linux x86 dipin SHA256 dan diverifikasi sebelum dijalankan, dengan `SEMGREP_SEND_METRICS=off` dan `--disable-version-check`;
    - **audit dependensi tidak diulang:** `bun audit --audit-level=low` sudah berjalan di job `Check` pada `ci.yml` dan mempertahankan ambangnya tanpa pengecualian.
-3. **Aturan adalah salinan, bukan registry.** `tools/ci/sast/rules/` memuat semua `.yaml` dan `.yml` di `javascript/` dan `typescript/` dari `opengrep/opengrep-rules` pada commit `f1d2b562b414783763fd02a6ed2736eaed622efa`, beserta `LICENSE` dan `SUMBER.md`, ditambah aturan lokal di `rules/lokal/`. Semgrep Registry (`p/...`) dan `semgrep/semgrep-rules` tidak dipakai.
+3. **Aturan adalah salinan, bukan registry.** `tools/ci/sast/rules/` memuat semua `.yaml` dan `.yml` di `javascript/`, `typescript/` dan `yaml/github-actions/` dari `opengrep/opengrep-rules` pada commit `f1d2b562b414783763fd02a6ed2736eaed622efa`, beserta `LICENSE` dan `SUMBER.md`, ditambah aturan lokal di `rules/lokal/`. Semgrep Registry (`p/...`) dan `semgrep/semgrep-rules` tidak dipakai.
 4. **Gerbang gagal hanya pada ERROR yang tidak ada di baseline.** `tools/ci/sast/baseline.json` dibuat sekali saat adopsi dan hanya menyusut: alat boleh membuatnya atau membuang entri basi, tidak pernah menambah; menambah entri adalah edit tangan dengan alasan yang tidak kosong, ditinjau di pull request. Temuan tidak diunggah ke code scanning GitHub.
 5. **Satu pengecualian dinyatakan:** `design/redesain-ui-ux-2026-10/support.js`, yang dihasilkan (baris pertamanya menyatakannya) dari runtime yang hidup di luar repo ini. `--exclude` yang sama wajib diberikan saat baseline dibuat atau dirapikan.
 6. **Cakupan dinyatakan, bukan diklaim.** Langkah `Nyatakan cakupan` menulis ke ringkasan run berapa berkas `.ts`/`.mjs`/`.js` terlacak yang disasar aturan dan berapa berkas `.astro` TIDAK dianalisis, keduanya dihitung `git ls-files`. `tests/sast-opengrep.test.mjs` adalah pemeriksanya.
@@ -33,7 +33,7 @@ Syarat kejujuran ADR-0032 §A tidak bergantung pada mesinnya: ringkasan run haru
 
 **Didapat.** Satu jalur bebas lisensi yang sama dengan repositori lain; temuan yang menggagalkan build selalu temuan baru; aturan dan mesin dipin, sehingga hasil dapat direproduksi.
 
-**Dibayar.** Salinan 203 berkas aturan tinggal di repo dan disegarkan oleh skrip, bukan oleh GitHub; kueri aliran data CodeQL hilang, dan aturan JS/TS OpenGrep sebagian besar berbasis pola, sehingga sebagian kelas temuan yang bisa dijangkau CodeQL (taint antar-prosedur) tidak lagi tercakup; waktu run bertambah sebesar pemindaian (sekitar 5 detik secara lokal); dan `.astro` tetap tidak dianalisis, seperti sebelumnya.
+**Dibayar.** Salinan 212 berkas aturan (203 JS/TS dan 9 aturan workflow GitHub Actions) tinggal di repo dan disegarkan oleh skrip, bukan oleh GitHub; kueri aliran data CodeQL hilang, dan aturan JS/TS OpenGrep sebagian besar berbasis pola, sehingga sebagian kelas temuan yang bisa dijangkau CodeQL (taint antar-prosedur) tidak lagi tercakup; waktu run bertambah sebesar pemindaian (sekitar 5 detik secara lokal); dan `.astro` tetap tidak dianalisis, seperti sebelumnya.
 
 **Tidak berubah.** Batas `.astro` beserta pernyataannya, `bun audit` tanpa pengecualian, pin SHA, dan aturan bahwa repo ini tidak punya rahasia yang perlu dipindai.
 

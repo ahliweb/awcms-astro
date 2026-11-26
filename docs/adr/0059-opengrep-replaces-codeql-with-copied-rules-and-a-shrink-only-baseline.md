@@ -21,7 +21,7 @@ The honesty condition of ADR-0032 §A is independent of the engine: a run summar
    - **gitleaks** 8.30.1 (checksum verified, `--redact`) over a **commit range** (`base..head` on a pull request, the pushed range on a push), not the whole history;
    - **OpenGrep** v2.1.0, the Linux x86 binary pinned by SHA256 and verified before it runs, with `SEMGREP_SEND_METRICS=off` and `--disable-version-check`;
    - **dependency audit is not repeated:** `bun audit --audit-level=low` already runs in the `Check` job of `ci.yml` and keeps its threshold with no exception.
-3. **Rules are a copy, not a registry.** `tools/ci/sast/rules/` holds every `.yaml` and `.yml` under `javascript/` and `typescript/` of `opengrep/opengrep-rules` at commit `f1d2b562b414783763fd02a6ed2736eaed622efa`, plus its `LICENSE` and a `SUMBER.md`, plus local rules in `rules/lokal/`. The Semgrep Registry (`p/...`) and `semgrep/semgrep-rules` are not used.
+3. **Rules are a copy, not a registry.** `tools/ci/sast/rules/` holds every `.yaml` and `.yml` under `javascript/`, `typescript/` and `yaml/github-actions/` of `opengrep/opengrep-rules` at commit `f1d2b562b414783763fd02a6ed2736eaed622efa`, plus its `LICENSE` and a `SUMBER.md`, plus local rules in `rules/lokal/`. The Semgrep Registry (`p/...`) and `semgrep/semgrep-rules` are not used.
 4. **The gate fails only on an ERROR that is not in the baseline.** `tools/ci/sast/baseline.json` is created once at adoption and only shrinks: tooling may create it or drop stale entries, never add; adding an entry is a hand edit with a non-empty reason, reviewed in the pull request. Findings are not uploaded to GitHub code scanning.
 5. **One exclusion is declared:** `design/redesain-ui-ux-2026-10/support.js`, which is generated (its first line says so) from a runtime that lives outside this repo. The same `--exclude` must be given when the baseline is created or tidied.
 6. **Coverage is stated, not claimed.** The `Nyatakan cakupan` step writes into the run summary how many tracked `.ts`/`.mjs`/`.js` files the rules target and how many `.astro` files are NOT analysed, both counted by `git ls-files`. `tests/sast-opengrep.test.mjs` is its checker.
@@ -31,7 +31,7 @@ The honesty condition of ADR-0032 §A is independent of the engine: a run summar
 
 **Gained.** One licence-free path shared with every other repository; findings that fail the build are always new ones; the rules and the engine are pinned, so a result can be reproduced.
 
-**Paid.** A copy of 203 rule files lives in the repo and is refreshed by a script, not by GitHub; CodeQL's data-flow queries are gone, and the OpenGrep JS/TS rules are mostly pattern-based, so some classes of finding CodeQL could reach (inter-procedural taint) are no longer covered; the repo's run time grows by the scan (about 5 seconds locally); and `.astro` stays unanalysed, as before.
+**Paid.** A copy of 212 rule files (203 JS/TS and 9 GitHub Actions workflow rules) lives in the repo and is refreshed by a script, not by GitHub; CodeQL's data-flow queries are gone, and the OpenGrep JS/TS rules are mostly pattern-based, so some classes of finding CodeQL could reach (inter-procedural taint) are no longer covered; the repo's run time grows by the scan (about 5 seconds locally); and `.astro` stays unanalysed, as before.
 
 **Unchanged.** The `.astro` limit and its statement, `bun audit` with no exception, SHA pins, and the rule that this repo has no secrets to need a scanner for them.
 
