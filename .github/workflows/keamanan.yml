@@ -1,0 +1,127 @@
+# Leg keamanan CI: rahasia (gitleaks) + SAST (OpenGrep). Menggantikan CodeQL
+# (standar lintas-portofolio internal DL-098).
+#
+# Alasan: ketentuan GitHub CodeQL melarang pemakaian pada codebase non-open-source
+# dan di CI tanpa lisensi GitHub Advanced Security; pemilik memilih satu jalur
+# untuk semua repo, termasuk repo publik ini. Audit dependensi TIDAK diulang di
+# sini: `bun audit --audit-level=low` sudah berjalan di job `Check` pada ci.yml.
+#
+# Nama check yang dijadikan wajib di ruleset:
+#   "keamanan / sast-rahasia-dependensi"  (= nilai `name:` pada job di bawah;
+#   "dependensi" pada namanya adalah nama baku lintas-repo, audit dependensinya
+#   ada di ci.yml seperti dijelaskan di atas)
+#
+# Sengaja TANPA filter `paths` pada pull_request: check wajib harus selalu jalan,
+# karena check wajib yang tidak pernah dilaporkan menahan merge selamanya
+# (ADR-0053). Sengaja TANPA upload SARIF ke code scanning; hasil ada di log job
+# dan ringkasan run.
+name: ci-keamanan
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-keamanan-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Harus sama dengan OPENGREP_VERSION dan sha256 di tools/ci/sast/opengrep-scan.ts
+  # (kunci cache; skrip tetap memverifikasi sha256 sendiri).
+  OPENGREP_VERSION: v2.1.0
+  OPENGREP_SHA256_X86: d6a68a84c01a3d8ee933f60847decf1b4d0fd7791a26833b32b95922baf28974
+  GITLEAKS_VERSION: 8.30.1
+  # sha256 gitleaks_8.30.1_linux_x64.tar.gz (digest asset release GitHub).
+  GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+
+jobs:
+  keamanan:
+    name: keamanan / sast-rahasia-dependensi
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # rentang commit gitleaks butuh commit dasar
+          persist-credentials: false
+
+      # Skrip pemindai hanya memakai modul bawaan Bun; tidak ada `bun install`.
+      # Versi sama dengan `packageManager` (ADR-0015); dijaga tests/sast-opengrep.test.mjs.
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: "1.4.4"
+
+      # Gitleaks memindai RENTANG commit, bukan seluruh riwayat: pada
+      # pull_request base..head, pada push rentang yang di-push. Tanpa rentang
+      # (dispatch, atau push cabang baru) dipindai 50 commit terakhir.
+      - name: Gitleaks (versi dipin, checksum diverifikasi, rentang commit)
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_AFTER: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          tmp="$(mktemp -d)"
+          trap 'rm -rf "$tmp"' EXIT
+          url="https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -fsSL --retry 3 -o "$tmp/gitleaks.tgz" "$url"
+          echo "${GITLEAKS_SHA256}  $tmp/gitleaks.tgz" | sha256sum -c -
+          tar -xzf "$tmp/gitleaks.tgz" -C "$tmp" gitleaks
+
+          zero="0000000000000000000000000000000000000000"
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            rentang="${PR_BASE}..${PR_HEAD}"
+          elif [ "$EVENT_NAME" = "push" ] && [ "$PUSH_BEFORE" != "$zero" ] \
+            && git cat-file -e "${PUSH_BEFORE}^{commit}" 2>/dev/null; then
+            rentang="${PUSH_BEFORE}..${PUSH_AFTER}"
+          else
+            rentang="-n 50 ${PUSH_AFTER}"
+          fi
+          echo "Rentang gitleaks: ${rentang}"
+
+          # --redact: nilai rahasia tidak dicetak ke log. Repo ini tidak punya
+          # konfigurasi gitleaks sendiri; aturan bawaan dipakai.
+          # shellcheck disable=SC2086
+          "$tmp/gitleaks" git --no-banner --redact --verbose --log-opts="${rentang}" .
+
+      # actions/cache v6.1.0. Cache hanya mempercepat; binary tetap diverifikasi sha256 oleh skrip.
+      - name: Cache binary OpenGrep
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/opengrep/${{ env.OPENGREP_VERSION }}
+          key: opengrep-${{ env.OPENGREP_VERSION }}-${{ env.OPENGREP_SHA256_X86 }}
+
+      # `--exclude`: hanya keluaran hasil generate (bundle `dc-runtime`, berkas
+      # bertanda "GENERATED ... do not edit"). Pengecualian yang sama WAJIB dipakai
+      # saat baseline dibuat atau dirapikan.
+      - name: "SAST OpenGrep (gerbang: ERROR baru di luar baseline)"
+        run: >-
+          bun tools/ci/sast/opengrep-scan.ts
+          --exclude design/redesain-ui-ux-2026-10/support.js
+          --keluaran "$RUNNER_TEMP/sast"
+
+      # Dihitung dari berkas TERLACAK, bukan daftar tulisan tangan: angka yang
+      # ditulis tangan berhenti benar begitu berkas bertambah. Syarat kejujuran
+      # yang dulu dipikul langkah CodeQL (ADR-0032 §A) dipertahankan: aturan
+      # OpenGrep yang terpasang menyasar JS/TS, bukan markup `.astro`.
+      - name: Nyatakan cakupan
+        if: always()
+        run: |
+          TS_MJS=$(git ls-files '*.ts' '*.mjs' '*.js' | wc -l)
+          ASTRO=$(git ls-files '*.astro' | wc -l)
+          {
+            echo "## Cakupan analisis statik"
+            echo ""
+            echo "- **Disasar aturan:** ${TS_MJS} berkas \`.ts\`/\`.mjs\`/\`.js\` terlacak (lib, config, scripts, server, tests, tema)."
+            echo "- **TIDAK dianalisis:** ${ASTRO} berkas \`.astro\` — aturan OpenGrep yang terpasang hanya untuk JavaScript dan TypeScript."
+            echo ""
+            echo "Batas ini sama dengan yang dulu berlaku pada CodeQL; menyatakannya di sini"
+            echo "menjaga klaim tidak lebih besar daripada kenyataan."
+          } >> "$GITHUB_STEP_SUMMARY"

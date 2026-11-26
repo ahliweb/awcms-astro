@@ -62,16 +62,16 @@
  * browser" yang dinyatakan di bawah, bukan sesuatu yang diam-diam diasumsikan
  * benar selamanya.
  *
- * ## Kenapa berkas baru, bukan perluasan `tests/analisis-statik.test.mjs`
+ * ## Kenapa berkas baru, bukan perluasan `tests/sast-opengrep.test.mjs`
  *
- * Seluruh isi `analisis-statik.test.mjs` adalah satu subjek sempit: workflow
- * CodeQL menyatakan cakupannya dan dipin ke SHA (celah 7 ADR-0028). Lebar
+ * Seluruh isi `sast-opengrep.test.mjs` adalah satu subjek sempit: workflow
+ * analisis statik menyatakan cakupannya dan dipin ke SHA (celah 7 ADR-0028). Lebar
  * layar tidak punya hubungan dengan itu selain sama-sama "aturan tertulis
  * yang butuh gerbang" (ADR-0030) — menumpangkannya ke sana membuat siapa pun
- * yang mencari "kenapa CodeQL merah" harus menyaring asersi CSS yang tidak
+ * yang mencari "kenapa analisis statik merah" harus menyaring asersi CSS yang tidak
  * relevan, dan sebaliknya. Pola repo ini adalah satu berkas per subjek
  * (`tests/versi-toolchain.test.mjs`, `tests/documented-counts.test.mjs`,
- * `tests/analisis-statik.test.mjs` sendiri) — berkas ini mengikutinya.
+ * `tests/sast-opengrep.test.mjs` sendiri) — berkas ini mengikutinya.
  *
  * ## Celah ketiga: format satu-baris mengelabui jangkar `^`
  *

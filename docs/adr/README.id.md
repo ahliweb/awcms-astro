@@ -1,6 +1,6 @@
 🇮🇩 Bahasa Indonesia · 🇬🇧 [English (source)](README.md)
 
-<!-- i18n-source-hash: sha256:afc648d0f2da8f85fce6d9996814ce10955f10f717a71cf6a35b485485a36eef -->
+<!-- i18n-source-hash: sha256:6fd4ab4b9abd2b765868c8f005870d4edc0d6104769f1b9ccace5486126c7e02 -->
 
 # Architecture Decision Records
 
@@ -65,6 +65,7 @@ menyesuaikan gaya, menambah tes.
 | [0056](0056-accessibility-is-gated-by-axe-in-a-real-browser-with-no-exceptions.md) | Aksesibilitas dijaga axe-core di Chromium sungguhan (Playwright) atas build produksi dan `awcms` tiruan, di job `check`; tag `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`; setiap jenis halaman publik, kedua tema, tiap mode preferensi baca, dan panel terbuka; pelanggaran apa pun menggagalkan, tanpa pengecualian; spesifikasi di `e2e/` di luar `bun test`; Playwright 1.65.0 dan `@axe-core/playwright` 4.14.0 dipin — menutup tindak lanjut 1 [ADR-0055](0055-reading-preferences-are-a-native-same-origin-panel-not-an-overlay-widget.md) | Diterima |
 | [0057](0057-awcms-first-orders-ownership-and-contract-not-code-and-three-gates-separate-design-mock-and-release.md) | "`awcms` dulu" mengurutkan kepemilikan dan kontrak, bukan kode: tiga gerbang (kesiapan desain, build dengan mock hasil kontrak, integrasi dan rilis) agar mock tidak pernah menggantikan backend nyata; menjernihkan ADR-0034 §4 dan ADR-0038 tanpa mengubah norma | Diterima |
 | [0058](0058-editorial-neutralisation-of-entity-names-meaning-unchanged.md) | Netralisasi editorial nama entitas di ADR yang diterima: nama dibaca sebagai kategori, hanya target tautan yang disunting, tidak ada keputusan yang berubah | Diterima |
+| [0059](0059-opengrep-replaces-codeql-with-copied-rules-and-a-shrink-only-baseline.md) | OpenGrep menggantikan CodeQL sebagai mesin analisis statik (aturan tersalin pada commit terpin, baseline yang hanya menyusut, gitleaks atas rentang commit, check wajib berganti nama menjadi `keamanan / sast-rahasia-dependensi`) — menggantikan [ADR-0032](0032-dua-celah-terakhir-ditutup-dengan-syarat-kejujuran.md) §A | Diterima |
 
 > **Kenapa penomoran mulai dari 0014.** ADR di repo ini melanjutkan urutan repo
 > rujukan yang identitasnya dilepas di [#11](https://github.com/ahliweb/awcms-astro/pull/11);

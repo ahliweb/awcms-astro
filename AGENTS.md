@@ -317,7 +317,7 @@ exactly what
 2. Branch from `main` before touching code. Do not commit straight to `main` —
    since 26 October 2026 the `main-protection` ruleset refuses it, along with
    force pushes and deletion, and a change reaches `main` only through a pull
-   request with `Check`, `Build` and `Analyze (javascript-typescript)` green on
+   request with `Check`, `Build` and `keamanan / sast-rahasia-dependensi` green on
    an up-to-date branch. The ruleset lives in GitHub settings, so **no gate here
    can detect it being removed**; it is verified by hand, and tags are not
    covered by it ([ADR-0053](docs/adr/0053-main-is-fenced-by-a-ruleset-that-no-gate-can-see.md)).
