@@ -8,6 +8,137 @@ Berkas ini diisi `bun run release` dengan melipat seluruh changeset di [`.change
 
 Sejak [ADR-0040](docs/adr/0040-changeset-menyatakan-bump-semver.md) setiap changeset menyatakan `bump: major | minor | patch`, dan versi berikutnya adalah bump TERBESAR di antara yang menunggu — jadi besar sebuah rilis adalah akibat dari isinya, bukan keputusan terpisah yang diambil saat merilis.
 
+## [0.7.1] — 2026-11-28
+
+> **Build integrasi tidak berjalan pada rilis ini.** `AWCMS_API_URL` kosong,
+> yang normal untuk repo template ini sendiri — jadi `bun run build`,
+> `bun run audit:konten`, dan lapis penyaji/CSP di `bun test` DILEWATI, bukan
+> lulus. Sebuah situs yang dibangun dari template ini mengisi variabel itu dan
+> menjalankan ketiganya.
+
+### Riset UI percakapan CarikBot untuk Astro
+
+Menambahkan referensi dokumentasi EN/ID tentang renderer menu, tombol, formulir, handoff petugas, consent, keamanan dan batas konsumsi API AWCMS. Cermin `.id.md` kini terjemahan setia sumber Inggris (ADR-0039). Isi disegarkan terhadap `main`: admin USER dan BFF masih PLANNED, urutan backend dan UI mengikuti ADR-0057 (Proposed), CSP ADR-0019 dan gerbang axe ADR-0056 tidak disentuh, UAT dijalankan di repo turunan. Semua disposisi tetap usulan sampai gerbang 9. Tidak mengubah perilaku runtime, SSR/SSG, maupun endpoint situs. Issue #166.
+
+Dokumentasikan penerapan konseptual diagnostic Astro yang dapat dibaca agent tanpa mengubah runtime, otorisasi, situs publik, atau admin USER. Dokumen mendapat cermin `.id.md` (ADR-0039), dan isinya disegarkan terhadap `main`: admin USER masih PLANNED, urutan backend dan UI mengikuti ADR-0057 (Proposed), bukti aksesibilitas tetap gerbang axe ADR-0056, CSP ketat ADR-0019 tidak disentuh. Semua disposisi tetap usulan sampai gerbang 9. Issue #164.
+
+### ADR-0057 diterima, dan keputusan pemilik 20 November 2026 dicatat
+
+ADR-0057 (urutan kepemilikan dan kontrak, tiga gerbang) berpindah dari
+Proposed ke Accepted atas keputusan pemilik. Yang dicatat hanya keputusan itu,
+supaya penafsiran yang sudah ada di kontrak kerja punya status yang benar.
+
+- ADR-0057 dan cerminnya: Accepted, dengan catatan keputusan bertanggal
+  (ADR-0034 §4 tidak diamandemen; merge tahap-mock sebelum gerbang C hanya bila
+  inert; letak snapshot kontrak diputuskan di sisi `awcms`, opsi C′).
+- Inventaris UI dan kontrak: G-01 menjadi keputusan (mengonsumsi paket fixture
+  `awcms`, backlog #194), G-05 menjadi keputusan "dikonsumsi" (#193).
+- Skill `awcms-astro-integrasi` menyebut ADR-0057, tiga gerbang, dan aturan
+  merge tahap-mock yang inert.
+- Tidak ada perubahan kode runtime, rute, dependency, atau basis data.
+
+### Stamp dan pemeriksa terjemahan menangani marker yang tidak valid
+
+`docs:i18n:stamp` hanya membuang marker `sha256:<64 hex>`, sehingga baris tulisan
+tangan seperti `<!-- i18n-source-hash: sha256:placeholder -->` bertahan dan
+menjadi marker ganda, sementara `audit:translation` hanya melihat marker valid
+pertama dan tidak melaporkannya.
+
+- Stamp membuang SETIAP baris marker `i18n-source-hash`, apa pun nilainya, lalu
+  menulis satu marker valid.
+- `audit:translation` gagal bila cermin punya lebih dari satu marker atau satu
+  marker yang bukan `sha256:<64 hex>`, menyebut berkasnya dan menunjuk
+  `bun run docs:i18n:stamp`.
+- Tes unit untuk marker placeholder, marker ganda, dan marker tidak valid.
+- Hanya perkakas pengembangan; tidak ada perubahan keluaran situs.
+
+### Inventaris UI, data, dan kontrak konsumen situs SSG
+
+Laporan riset isu #187: setiap layar yang dirender situs, operasi `awcms` yang
+menyuplainya, izin, dan tes yang menjaganya, diklasifikasi VERIFIED, ASSUMED,
+PLANNED, atau DEFERRED dengan bukti pada SHA tertentu.
+
+- Dokumen baru `docs/ui-contract-inventory.md` dan cermin Indonesia, dengan
+  baris indeks di `docs/awcms-astro/README.md`.
+- Temuan utama: tiga belas operasi dipanggil dan semuanya ada di OpenAPI publik
+  `awcms`; tes kontrak tidak membaca spesifikasi itu; admin USER dan BFF
+  belum ada kodenya; tiga pernyataan dokumentasi "tepat tiga permukaan" sudah
+  basi.
+- Tidak ada perubahan kode runtime, rute, dependency, atau basis data, dan tidak
+  ada isu implementasi yang dibuka.
+
+### Urutan backend dan UI direkonsiliasi: tiga gerbang, mock tidak menggantikan rilis
+
+"`awcms` first, always" (ADR-0034 §4) dan alur v2 (frontend, lalu backend, lalu
+integrasi, per irisan) bisa dibaca saling berlawanan: yang pertama memblokir
+frontend sampai handler ada, yang kedua merilis layar tanpa backend. Keduanya
+kompatibel dalam kepemilikan dan hanya ambigu dalam urutan.
+
+- ADR-0057 (Proposed, bukan Accepted): "first" mengurutkan kepemilikan dan
+  kontrak, bukan kode. Tiga gerbang: A kesiapan desain, B build terhadap mock
+  yang dihasilkan dari kontrak, C integrasi dan rilis terhadap backend nyata.
+  Tidak ada norma ADR-0034 atau ADR-0038 yang diubah.
+- `AGENTS.md` (dan cermin), `docs/awcms-astro/permukaan-admin-user.md` §7, dan
+  `docs/awcms-astro/checklist-repo-baru.md` memuat tiga gerbang itu.
+- `tests/tanpa-backend.test.mjs` mendapat pemeriksaan bahwa kontrak kerja tetap
+  menyatakan mock tidak pernah menggantikan gerbang C.
+- Tidak ada perubahan kode runtime, rute, dependency, atau basis data.
+
+### Judul SEO dari editor kini menjadi `<title>` artikel
+
+`awcms` sudah lama menawarkan `seoTitle`, tetapi build tidak pernah
+membacanya: `<title>` artikel selalu judul, sebuah tanda pipa, dan nama seksi,
+sehingga judul SEO yang diisi editor tidak berpengaruh. Pemilik memutuskan
+(20 November 2026) bahwa field itu dikonsumsi.
+
+- `seoTitle` yang tidak kosong dari API menjadi `<title>` artikel. Kosong,
+  hanya spasi, `null`, atau tidak ada kembali ke judul + seksi seperti
+  sebelumnya, jadi `awcms` yang tidak mengirimnya tetap membangun situs yang sama.
+- Dibaca dari baris terjemahan, seperti `title`; terjemahan tidak meminjam
+  judul SEO bahasa sumber.
+- Aturan nama situs tetap berlaku: `BaseLayout` menambahkan ` — Nama Situs`
+  kecuali judulnya sudah memuatnya, dan nilai yang sama ikut ke `og:title` dan
+  `twitter:title`. JSON-LD `headline` tetap memakai judul artikel.
+- Karakter khusus di-escape oleh templat; tidak ada `set:html`.
+- Tidak ada perubahan rute, dependency, CSP, atau basis data.
+
+### Direktori blueprint portal diganti nama generik, dan ADR-0058 mencatat netralisasi editorial
+
+Direktori blueprint BFF portal kini `docs/awcms-astro/portal-bff/`, dan semua tautan serta rujukan di dokumen hidup, skill, uji, dan indeks ADR mengikutinya. ADR-0058 mencatat bahwa nama entitas di ADR yang sudah diterima dibaca sebagai kategori, tanpa mengubah satu keputusan pun; satu-satunya suntingan pada berkas ADR lama adalah target tautan agar tidak patah.
+
+- Hanya nama direktori, teks dokumentasi, dan target tautan yang berubah; tidak ada perubahan perilaku, keluaran situs, atau dependensi.
+
+### Dependensi dinaikkan: astro dan @astrojs/sitemap
+
+`astro` ke ^7.4.12 dan `@astrojs/sitemap` ke ^3.7.5, bersama lockfile-nya. `@playwright/test` tetap di 1.65.0: ADR-0056 §8 hanya menerima rilis yang sudah berumur dua minggu, dan 1.65.1 baru memenuhinya pada 27 November. Tabel selisih versi di standar teknis ikut diperbarui; tanpa itu uji "kolom repo ini sama dengan package.json" merah, dan itulah satu-satunya yang membuat pembaruan otomatis sebelumnya gagal di Check.
+
+- Semua kenaikan di dalam rentang yang sama, tanpa major; tidak ada perubahan kode.
+
+### Nama klien dan pihak ketiga dinetralkan di kode, tes, dan dokumen hidup
+
+Fixture tes, komentar kode, dokumen hidup, dan mock desain tidak lagi memuat nama klien, wilayah klien, atau host deploy; diganti nilai generik. Dua baris CHANGELOG yang merujuk repo pedoman internal pemilik dan satu host deploy diredaksi. Alasannya: repo ini publik dan template, jadi contohnya tidak boleh mengidentifikasi pihak tertentu.
+
+- Hanya fixture, komentar, dan teks dokumentasi yang berubah; tidak ada perubahan perilaku, keluaran situs, atau dependensi.
+
+### Nama produk dan repo lain dinetralkan di prosa, komentar, dan mock desain
+
+Dokumen hidup, skill integrasi, README pohon pengetahuan, dan mock desain tidak lagi menyebut produk atau repo di luar keluarga AWCMS; diganti istilah generik seperti "produk konsumen" dan "produk sisi operator". Rujukan isu ke repo non-keluarga dihapus. Alasannya: repo ini publik dan template, jadi prosanya tidak boleh menunjuk produk atau repo pihak lain.
+
+- Hanya prosa, komentar, dan teks mock yang berubah; identifier teknis tidak disentuh.
+- Tidak ada perubahan perilaku, keluaran situs, atau dependensi.
+
+### Serap ADR 0168 dan 0169 dari awcms
+
+Menambahkan dua baris vonis `diperiksa` di blok serapan skill integrasi, supaya `audit:serapan` hijau lagi. Kedua keputusan dibaca dan tidak menyentuh jalur build statis: 0168 (passkey, masih Proposed) hanya mengubah autentikasi di sisi `awcms` dan BFF tetap menerima sesi lewat handoff; 0169 (integration_hub ditunda) tidak menambah atau menghapus rute yang dipanggil repo ini.
+
+- Hanya memengaruhi pencatatan serapan; tidak ada perubahan keluaran situs, dependensi, atau deployment.
+
+### Serap ADR 0170, 0171, dan 0172 dari awcms
+
+Menambahkan tiga baris vonis `diperiksa` di blok serapan skill integrasi, supaya `audit:serapan` hijau lagi. Ketiganya dibaca dan tidak menyentuh jalur build statis: 0170 (klaim akun eksternal lewat verifikasi) adalah modul `channel-accounts` di `awcms` yang tidak dipanggil repo ini; 0171 (autentikasi klien native, masih di balik `AUTH_NATIVE_ENABLED=false`) bersifat aditif dan menyatakan `awcms-astro` serta BFF tidak berubah; 0172 (beberapa proses aplikasi per node, bawaan tetap 1) murni dokumentasi dan kapasitas sisi server.
+
+- Hanya memengaruhi pencatatan serapan; tidak ada perubahan keluaran situs, dependensi, atau deployment.
+
 ## [0.7.0] — 2026-11-19
 
 > **Build integrasi tidak berjalan pada rilis ini.** `AWCMS_API_URL` kosong,
